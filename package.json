@@ -1,0 +1,29 @@
+{
+	"name": "solidity",
+	"description": "Support for the Ethereum Solidity Language",
+	"version": "0.0.1",
+	"publisher": "Juan Blanco",
+	"engines": {
+		"vscode": "^0.10.1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/juanfranblanco/vscode-solidity"
+	}
+	"categories": [
+		"Languages"
+	],
+	"contributes": {
+		"languages": [{
+			"id": "solidity",
+			"aliases": ["Solidity", "solidity"],
+			"extensions": [".sol"],
+			"configuration": "./solidity.configuration.json"
+		}],
+		"grammars": [{
+			"language": "solidity",
+			"scopeName": "source.solidity",
+			"path": "./syntaxes/solidity.tmLanguage"
+		}]
+	}
+}
