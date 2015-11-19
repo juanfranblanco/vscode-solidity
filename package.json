@@ -1,8 +1,8 @@
 {
 	"name": "solidity",
-	"description": "Support for the Ethereum Solidity Language",
+	"description": "Ethereum Solidity Language for Visual Studio Code",
 	"version": "0.0.1",
-	"publisher": "Juan Blanco",
+	"publisher": "JuanBlanco",
 	"engines": {
 		"vscode": "^0.10.1"
 	},
