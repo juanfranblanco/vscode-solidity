@@ -29,9 +29,9 @@ export function activate(context: vscode.ExtensionContext) {
        }
        
        let binPath = path.join(vscode.workspace.rootPath, 'bin');
-       
-       if(!fs.exists(binPath)){
-          fs.mkdir(binPath);
+       //TODO 
+       if(!fs.existsSync(binPath)){
+          fs.mkdirSync(binPath);
        }
        
        
@@ -41,8 +41,10 @@ export function activate(context: vscode.ExtensionContext) {
        
        let output = solc.compile(contractCode, 1);
       
+       diagnosticCollection.clear();
+       
        if(output.errors){
-           diagnosticCollection.clear();
+           
            
            let diagnosticMap: Map<vscode.Uri, vscode.Diagnostic[]> = new Map();
            
@@ -69,14 +71,27 @@ export function activate(context: vscode.ExtensionContext) {
 			entries.push([uri, diags]);
 		  });
 		  diagnosticCollection.set(entries);
-       }
+       }else{
        
        for (var contractName in output.contracts) {
-            fs.writeFileSync(path.join(binPath, contractName + ".bin" ), output.contracts[contractName].bytecode);
-            fs.writeFileSync(path.join(binPath, contractName + ".abi" ), output.contracts[contractName].interface);
+           let contractAbiPath = path.join(binPath, contractName + ".abi");
+           let contractBinPath = path.join(binPath, contractName + ".bin");
+           
+           //TODO: Refactor all this when doing multiple contracts, including all the sync 
+           if(fs.existsSync(contractAbiPath)){
+               fs.unlinkSync(contractAbiPath)
+           }
+           
+           if(fs.existsSync(contractBinPath)){
+               fs.unlinkSync(contractBinPath)
+           }
+           
+           fs.writeFileSync(path.join(binPath, contractName + ".bin" ), output.contracts[contractName].bytecode);
+           fs.writeFileSync(path.join(binPath, contractName + ".abi" ), output.contracts[contractName].interface);
         }
        
-       vscode.window.showInformationMessage('Compiled succesfully!');
+         vscode.window.showInformationMessage('Compiled succesfully!');
+       }
     });
 
     context.subscriptions.push(disposable);
