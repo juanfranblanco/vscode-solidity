@@ -53,7 +53,7 @@
 		"grammars": [{
 			"language": "solidity",
 			"scopeName": "source.solidity",
-			"path": "./syntaxes/Solidity.tmLanguage"
+			"path": "./syntaxes/solidity.json"
 		}]
 	}
 }

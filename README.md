@@ -12,6 +12,5 @@ Many thanks to:
 
 ChrisEth for his Solidity Compiler https://github.com/chriseth/browser-solidity
 
-
-David Krmpotic and Ralph Pichler for the original Sublime extension, for syntax highlighting
+David Krmpotic and Ralph Pichler for the original TM extension
 https://github.com/davidhq/SublimeEthereum

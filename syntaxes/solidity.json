@@ -1,0 +1,146 @@
+{
+    "fileTypes": [
+        "sol"
+    ],
+    "name": "Solidity",
+    "patterns": [
+        {
+            "name": "comment.line.solidity",
+            "match": "(?<!tp:)//.*?$"
+        },
+        {
+            "name": "comment.block.solidity",
+            "begin": "/\\*",
+            "end": "\\*/"
+        },
+        {
+            "captures": {
+                "2": {
+                    "name": "support.function"
+                }
+            },
+            "comment": "Events",
+            "match": "\\b(event|enum)\\s+([A-Za-z_]\\w*)\\b",
+            "name": "keyword.control"
+        },
+        {
+            "captures": {
+                "2": {
+                    "name": "entity.name.function"
+                },
+                "3": {
+                    "name": "entity.name.function"
+                }
+            },
+            "comment": "Main keywords",
+            "match": "\\b(contract|struct|function|modifier)\\s+([A-Za-z_]\\w*)(?:\\s+is\\s+((?:[A-Za-z_][\\,\\s]*)*))?\\b",
+            "name": "keyword.control"
+        },
+        {
+            "captures": {
+                "1": {
+                    "name": "constant.language"
+                },
+                "2": {
+                    "name": "variable.parameter"
+                }
+            },
+            "comment": "Built-in types",
+            "match": "\\b(address|string\\d*|bytes\\d*|int\\d*|uint\\d*|bool|hash\\d*)(?:\\s+(?:indexed\\s+)?([A-Za-z_]\\w*)\\s*[,\\)])?"
+        },
+        {
+            "captures": {
+                "1": {
+                    "name": "constant.language"
+                },
+                "2": {
+                    "name": "constant.language"
+                },
+                "3": {
+                    "name": "constant.language"
+                },
+                "4": {
+                    "name": "keyword.control"
+                }
+            },
+            "comment": "Mapping definition",
+            "match": "\\b(mapping)\\s*\\((.*)\\s+=>\\s+(.*)\\)(\\s+(?:private|public|external|inherited))?\\s+([A-Za-z_]\\w*)\\b"
+        },
+        {
+            "comment": "True and false keywords",
+            "match": "\\b(true|false)\\b",
+            "name": "constant.language"
+        },
+        {
+            "comment": "Langauge keywords",
+            "match": "\\b(var|import|function|constant|if|else|for|while|do|break|continue|returns?|private|public|external|inherited|this|suicide|new|is|\\_)\\b",
+            "name": "keyword.control"
+        },
+        {
+            "captures": {
+                "1": {
+                    "name": "constant.language"
+                },
+                "2": {
+                    "name": "keyword.control"
+                }
+            },
+            "comment": "Variable definitions",
+            "match": "\\b([A-Za-z_]\\w+)(\\s+(?:private|public|external|inherited))?\\s+([A-Za-z_]\\w*)\\;"
+        },
+        {
+            "comment": "Operators",
+            "match": "(=|!|>|<|\\||&)",
+            "name": "keyword.control"
+        },
+        {
+            "captures": {
+                "1": {
+                    "name": "constant.language"
+                },
+                "2": {
+                    "name": "constant.language"
+                }
+            },
+            "comment": "msg and block special usage",
+            "match": "\\b(msg|block|tx)\\.([A-Za-z_]\\w*)\\b"
+        },
+        {
+            "captures": {
+                "1": {
+                    "name": "support.type"
+                }
+            },
+            "comment": "Function call",
+            "match": "\\b([A-Za-z_]\\w*)\\s*\\("
+        },
+        {
+            "comment": "Strings",
+            "match": "([\\\"\\'].*[\\\"\\'])",
+            "name": "string.quoted"
+        },
+        {
+            "comment": "Numbers",
+            "match": "\\b(\\d+)\\b",
+            "name": "constant.numeric"
+        },
+        {
+            "comment": "Hexadecimal",
+            "match": "\\b(0[xX][a-fA-F0-9]+)\\b",
+            "name": "constant.numeric"
+        },
+        {
+            "comment": "Comments",
+            "match": "\\/\\/.*",
+            "name": "comment"
+        },
+        {
+            "begin": "(\\/\\*)",
+            "comment": "Multiline comments",
+            "end": "(\\*\\/)",
+            "name": "comment"
+        }
+    ],
+    "scopeName": "source.solidity",
+    "uuid": "ad87d2cd-8575-4afe-984e-9421a3788933"
+}
