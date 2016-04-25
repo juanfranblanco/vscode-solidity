@@ -34,10 +34,9 @@ export function activate(context: vscode.ExtensionContext) {
             
             if(path.extname(document.fileName) === 'sol'){
                 let contract = {}
-                let contractRelativePath = path.relative(vscode.workspace.rootPath, document.fileName).replace(/\\/g, '/');
+                let contractRelativePath = document.fileName.replace(/\\/g, '/'); 
                 let currentDirectory = path.dirname(document.fileName);
                 let contractCode = document.getText();
-                contractCode = convertImportsToRelativeToRoot(contractCode, currentDirectory);
                 contracts[contractRelativePath] = contractCode;
             }
         });
@@ -48,14 +47,12 @@ export function activate(context: vscode.ExtensionContext) {
         return files.then(documents => {
                 
                 documents.forEach(document => {
-                    let contractRelativePath = path.relative(vscode.workspace.rootPath, document.fsPath).replace(/\\/g, '/');
+                    let contractRelativePath = document.fsPath.replace(/\\/g, '/'); 
                     
                     //have we got this already opened? used those instead
                     if (!contracts.hasOwnProperty(contractRelativePath)) {
 
                         let contractCode = fs.readFileSync(document.fsPath, "utf8");
-                        let currentDirectory = path.dirname(document.fsPath);
-                        contractCode = convertImportsToRelativeToRoot(contractCode, currentDirectory);
                         contracts[contractRelativePath] = contractCode;
                     }
                 });
@@ -82,13 +79,20 @@ export function activate(context: vscode.ExtensionContext) {
                     vscode.window.showErrorMessage('Compilation Error', output.errors);
 
                     output.errors.forEach(error => {
-                        //TODO: No file?
-                        //TODO: No Line Number?
+                        
                         let errorSplit = error.split(":");
+                        
                         let fileName = errorSplit[0];
-                        let line = parseInt(errorSplit[1]);
-                        let column = parseInt(errorSplit[2]);
-                        let targetUri = vscode.Uri.file(path.join(vscode.workspace.rootPath, fileName));
+                        let index = 1;
+                        
+                        if(process.platform === 'win32') {
+                            fileName = errorSplit[0] + ":" + errorSplit[1];
+                            index = 2;    
+                        }
+                        
+                        let line = parseInt(errorSplit[index]);
+                        let column = parseInt(errorSplit[index + 1]);
+                        let targetUri = vscode.Uri.file(fileName); 
                         let range = new vscode.Range(line - 1, column, line - 1, column);
                         let diagnostic = new vscode.Diagnostic(range, error, vscode.DiagnosticSeverity.Error);
                         let diagnostics = diagnosticMap.get(targetUri);
@@ -117,7 +121,10 @@ export function activate(context: vscode.ExtensionContext) {
                         output.sources[source].AST.children.forEach(child => {
                             if(child.name == "Contract"){
                                 let contractName = child.attributes.name;
-                                let dirName = path.dirname(path.join(binPath, source));
+                               
+                                let relativePath = path.relative(vscode.workspace.rootPath, source);
+                                                                
+                                let dirName = path.dirname(path.join(binPath, relativePath));
                                 
                                  if (!fs.existsSync(dirName)) {
                                     fsex.mkdirsSync(dirName);
@@ -151,7 +158,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 }
 
-
+//this might be required to inject temp libraries
 function convertImportsToRelativeToRoot(document: string, currentPath: string){
       var importRegex = /(^\s*import\s*['|""])([^'|"]+)/gm;
       return document.replace(

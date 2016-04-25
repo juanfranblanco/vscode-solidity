@@ -1,7 +1,7 @@
 {
 	"name": "solidity",
 	"description": "Ethereum Solidity Language for Visual Studio Code",
-	"version": "0.0.6",
+	"version": "0.0.7",
 	"publisher": "JuanBlanco",
 	"engines": {
 		"vscode": "^0.10.1"
