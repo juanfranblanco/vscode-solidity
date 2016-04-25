@@ -34,10 +34,9 @@ export function activate(context: vscode.ExtensionContext) {
             
             if(path.extname(document.fileName) === 'sol'){
                 let contract = {}
-                let contractRelativePath = document.fileName.replace(/\\/g, '/'); 
-                let currentDirectory = path.dirname(document.fileName);
+                let contractPath = document.fileName.replace(/\\/g, '/'); 
                 let contractCode = document.getText();
-                contracts[contractRelativePath] = contractCode;
+                contracts[contractPath] = contractCode;
             }
         });
 
@@ -47,13 +46,12 @@ export function activate(context: vscode.ExtensionContext) {
         return files.then(documents => {
                 
                 documents.forEach(document => {
-                    let contractRelativePath = document.fsPath.replace(/\\/g, '/'); 
+                    let contractPath = document.fsPath.replace(/\\/g, '/'); 
                     
                     //have we got this already opened? used those instead
-                    if (!contracts.hasOwnProperty(contractRelativePath)) {
-
+                    if (!contracts.hasOwnProperty(contractPath)) {
                         let contractCode = fs.readFileSync(document.fsPath, "utf8");
-                        contracts[contractRelativePath] = contractCode;
+                        contracts[contractPath] = contractCode;
                     }
                 });
                 
@@ -84,7 +82,7 @@ export function activate(context: vscode.ExtensionContext) {
                         
                         let fileName = errorSplit[0];
                         let index = 1;
-                        
+                        //a full path in windows includes a : for the drive
                         if(process.platform === 'win32') {
                             fileName = errorSplit[0] + ":" + errorSplit[1];
                             index = 2;    
