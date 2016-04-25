@@ -26,15 +26,18 @@ export function activate(context: vscode.ExtensionContext) {
               vscode.window.showWarningMessage('Please open a folder in Visual Studio Code as a workspace');
               return; 
         }
-
+        
         let contracts = {};
 
-        //Process open Text Documents first (We might need to save them all first? Is this assumed?) 
+        //Process open Text Documents first as it is faster (We might need to save them all first? Is this assumed?) 
         vscode.workspace.textDocuments.forEach(document => {
+            
             if(path.extname(document.fileName) === 'sol'){
                 let contract = {}
                 let contractRelativePath = path.relative(vscode.workspace.rootPath, document.fileName).replace(/\\/g, '/');
+                let currentDirectory = path.dirname(document.fileName);
                 let contractCode = document.getText();
+                contractCode = convertImportsToRelativeToRoot(contractCode, currentDirectory);
                 contracts[contractRelativePath] = contractCode;
             }
         });
@@ -51,6 +54,8 @@ export function activate(context: vscode.ExtensionContext) {
                     if (!contracts.hasOwnProperty(contractRelativePath)) {
 
                         let contractCode = fs.readFileSync(document.fsPath, "utf8");
+                        let currentDirectory = path.dirname(document.fsPath);
+                        contractCode = convertImportsToRelativeToRoot(contractCode, currentDirectory);
                         contracts[contractRelativePath] = contractCode;
                     }
                 });
@@ -71,7 +76,6 @@ export function activate(context: vscode.ExtensionContext) {
                 diagnosticCollection.clear();
 
                 if (output.errors) {
-
 
                     let diagnosticMap: Map<vscode.Uri, vscode.Diagnostic[]> = new Map();
 
@@ -145,6 +149,25 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(disposable);
+}
+
+
+function convertImportsToRelativeToRoot(document: string, currentPath: string){
+      var importRegex = /(^\s*import\s*['|""])([^'|"]+)/gm;
+      return document.replace(
+        importRegex, (_, importPrefix, importPath) => {
+          let resolvedPath = convertImportToRelativeToRoot(importPath, currentPath);
+          return importPrefix + resolvedPath;
+       }); 
+}
+
+function convertImportToRelativeToRoot(importPath: string, currentPath: string){
+    let absolutePath = path.join(currentPath, importPath);
+    let resolvedPath = path.relative(vscode.workspace.rootPath, absolutePath).replace(/\\/g, '/');
+    if(!resolvedPath.endsWith(".sol")){
+        resolvedPath = resolvedPath + ".sol";
+    }
+    return resolvedPath;
 }
 
 // this method is called when your extension is deactivated
