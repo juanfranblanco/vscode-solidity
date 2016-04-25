@@ -61,6 +61,9 @@ export function activate(context: vscode.ExtensionContext) {
                      return;
                 }
                 
+                let outputChannel = vscode.window.createOutputChannel("solidity compilation");
+                outputChannel.clear();
+                
                 let output = solc.compile({ sources: contracts }, 1);
                 
                 if(Object.keys(output).length === 0){
@@ -73,10 +76,15 @@ export function activate(context: vscode.ExtensionContext) {
                 if (output.errors) {
 
                     let diagnosticMap: Map<vscode.Uri, vscode.Diagnostic[]> = new Map();
-
+                    
+                    outputChannel.show();
+                    
                     vscode.window.showErrorMessage('Compilation Error', output.errors);
+                    
 
                     output.errors.forEach(error => {
+                        
+                        outputChannel.appendLine(error);
                         
                         let errorSplit = error.split(":");
                         
@@ -106,7 +114,7 @@ export function activate(context: vscode.ExtensionContext) {
                     });
                     diagnosticCollection.set(entries);
                 } else {
-
+                        
                     let binPath = path.join(vscode.workspace.rootPath, 'bin');
                 
                     if (!fs.existsSync(binPath)) {
@@ -141,11 +149,12 @@ export function activate(context: vscode.ExtensionContext) {
 
                                 fs.writeFileSync(contractBinPath, output.contracts[contractName].bytecode);
                                 fs.writeFileSync(contractAbiPath, output.contracts[contractName].interface);
+                                
                             }
                         });
-                                                
+                                                    
                     }
-
+                    outputChannel.hide();
                     vscode.window.showInformationMessage('Compiled succesfully!');
                 }
             });
