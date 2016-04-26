@@ -4,184 +4,33 @@ import * as solc from 'solc';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as fsex from 'fs-extra';
+import {compile} from './compiler';
+import {compileAllContracts} from './compileAll';
+import {compileActiveContract, initDiagnosticCollection, highlightErrors} from './compileActive';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
-//working spike needs refactoring MVP
-
 export function activate(context: vscode.ExtensionContext) {
-
+    
+    
     diagnosticCollection = vscode.languages.createDiagnosticCollection('solidity');
     context.subscriptions.push(diagnosticCollection);
+    
+    //for compile active..
+    initDiagnosticCollection(diagnosticCollection);
+    
+	context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.active', () => {
+		 compileActiveContract();
+	}));
 
-    let disposable = vscode.commands.registerCommand('solidity.compile', () => {
-
-        let editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            return; // We need something open
-        }
-
-        //Check if is folder, if not stop we need to output to a bin folder on rootPath
-        if (vscode.workspace.rootPath === undefined) {
-              vscode.window.showWarningMessage('Please open a folder in Visual Studio Code as a workspace');
-              return; 
-        }
-        
-        let contracts = {};
-
-        //Process open Text Documents first as it is faster (We might need to save them all first? Is this assumed?) 
-        vscode.workspace.textDocuments.forEach(document => {
-            
-            if(path.extname(document.fileName) === 'sol'){
-                let contract = {}
-                let contractPath = document.fileName.replace(/\\/g, '/'); 
-                let contractCode = document.getText();
-                contracts[contractPath] = contractCode;
-            }
-        });
-
-        //Find all the other sol files, to compile them (1000 maximum should be enough for now)
-        let files = vscode.workspace.findFiles('**/*.sol', '**/bin/**', 1000);
-        
-        return files.then(documents => {
-                
-                documents.forEach(document => {
-                    let contractPath = document.fsPath.replace(/\\/g, '/'); 
-                    
-                    //have we got this already opened? used those instead
-                    if (!contracts.hasOwnProperty(contractPath)) {
-                        let contractCode = fs.readFileSync(document.fsPath, "utf8");
-                        contracts[contractPath] = contractCode;
-                    }
-                });
-                
-                //Did we find any sol files after all?
-                if(Object.keys(contracts).length === 0){
-                     vscode.window.showWarningMessage('No solidity files (*.sol) found');
-                     return;
-                }
-                
-                let outputChannel = vscode.window.createOutputChannel("solidity compilation");
-                outputChannel.clear();
-                
-                let output = solc.compile({ sources: contracts }, 1);
-                
-                if(Object.keys(output).length === 0){
-                     vscode.window.showWarningMessage('No output by the compiler');
-                     return;
-                }
-                
-                diagnosticCollection.clear();
-
-                if (output.errors) {
-
-                    let diagnosticMap: Map<vscode.Uri, vscode.Diagnostic[]> = new Map();
-                    
-                    outputChannel.show();
-                    
-                    vscode.window.showErrorMessage('Compilation Error', output.errors);
-                    
-
-                    output.errors.forEach(error => {
-                        
-                        outputChannel.appendLine(error);
-                        
-                        let errorSplit = error.split(":");
-                        
-                        let fileName = errorSplit[0];
-                        let index = 1;
-                        //a full path in windows includes a : for the drive
-                        if(process.platform === 'win32') {
-                            fileName = errorSplit[0] + ":" + errorSplit[1];
-                            index = 2;    
-                        }
-                        
-                        let line = parseInt(errorSplit[index]);
-                        let column = parseInt(errorSplit[index + 1]);
-                        let targetUri = vscode.Uri.file(fileName); 
-                        let range = new vscode.Range(line - 1, column, line - 1, column);
-                        let diagnostic = new vscode.Diagnostic(range, error, vscode.DiagnosticSeverity.Error);
-                        let diagnostics = diagnosticMap.get(targetUri);
-                        if (!diagnostics) {
-                            diagnostics = [];
-                        }
-                        diagnostics.push(diagnostic);
-                        diagnosticMap.set(targetUri, diagnostics);
-                    });
-                    let entries: [vscode.Uri, vscode.Diagnostic[]][] = [];
-                    diagnosticMap.forEach((diags, uri) => {
-                        entries.push([uri, diags]);
-                    });
-                    diagnosticCollection.set(entries);
-                } else {
-                        
-                    let binPath = path.join(vscode.workspace.rootPath, 'bin');
-                
-                    if (!fs.existsSync(binPath)) {
-                        fs.mkdirSync(binPath);
-                    }
-                    
-                    //iterate through all the sources, find contracts and output them into the same folder structure to avoid collisions, named as the contract
-                    for(var source in output.sources){
-                        
-                        output.sources[source].AST.children.forEach(child => {
-                            if(child.name == "Contract"){
-                                let contractName = child.attributes.name;
-                               
-                                let relativePath = path.relative(vscode.workspace.rootPath, source);
-                                                                
-                                let dirName = path.dirname(path.join(binPath, relativePath));
-                                
-                                 if (!fs.existsSync(dirName)) {
-                                    fsex.mkdirsSync(dirName);
-                                 }
-                                
-                                let contractAbiPath = path.join(dirName, contractName + ".abi");
-                                let contractBinPath = path.join(dirName, contractName + ".bin");
-
-                                if (fs.existsSync(contractAbiPath)) {
-                                    fs.unlinkSync(contractAbiPath)
-                                }
-
-                                if (fs.existsSync(contractBinPath)) {
-                                    fs.unlinkSync(contractBinPath)
-                                }
-
-                                fs.writeFileSync(contractBinPath, output.contracts[contractName].bytecode);
-                                fs.writeFileSync(contractAbiPath, output.contracts[contractName].interface);
-                                
-                            }
-                        });
-                                                    
-                    }
-                    outputChannel.hide();
-                    vscode.window.showInformationMessage('Compiled succesfully!');
-                }
-            });
-           
-
-    });
-
-    context.subscriptions.push(disposable);
-}
-
-//this might be required to inject temp libraries
-function convertImportsToRelativeToRoot(document: string, currentPath: string){
-      var importRegex = /(^\s*import\s*['|""])([^'|"]+)/gm;
-      return document.replace(
-        importRegex, (_, importPrefix, importPath) => {
-          let resolvedPath = convertImportToRelativeToRoot(importPath, currentPath);
-          return importPrefix + resolvedPath;
-       }); 
-}
-
-function convertImportToRelativeToRoot(importPath: string, currentPath: string){
-    let absolutePath = path.join(currentPath, importPath);
-    let resolvedPath = path.relative(vscode.workspace.rootPath, absolutePath).replace(/\\/g, '/');
-    if(!resolvedPath.endsWith(".sol")){
-        resolvedPath = resolvedPath + ".sol";
-    }
-    return resolvedPath;
+    
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.compile', () => {
+          compileAllContracts(diagnosticCollection);
+    }));
+    
+    //error hightlighting on the fly is very slow
+   //vscode.workspace.onDidChangeTextDocument(highlightErrors, this, context.subscriptions);
+    
 }
 
 // this method is called when your extension is deactivated

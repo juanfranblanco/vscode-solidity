@@ -1,7 +1,7 @@
 {
 	"name": "solidity",
 	"description": "Ethereum Solidity Language for Visual Studio Code",
-	"version": "0.0.7",
+	"version": "0.0.11",
 	"publisher": "JuanBlanco",
 	"engines": {
 		"vscode": "^0.10.1"
@@ -16,7 +16,9 @@
 		"Snippets"
 	],
 	 "activationEvents": [
-        "onCommand:solidity.compile"
+        "onCommand:solidity.compile",
+		"onCommand:solidity.compile.active",
+		"onLanguage:solidity"
     ],
     "main": "./out/src/extension",
 	"scripts": {
@@ -29,10 +31,9 @@
 		"fs-extra": "^0.26.0"
     },
 	"devDependencies": {
-		"fs-extra": "^0.26.0",
 		"tslint": "^3.3.0",
 		"typescript": "^1.8.5",
-		"vscode": "^0.11.0"
+		"vscode": "^0.11.12"
     },
 	"contributes": {
 		"languages": [{
@@ -43,8 +44,13 @@
 		}],
 		 "commands": [{
             "command": "solidity.compile",
-            "title": "Compile Solidity Contract"
-        }],
+            "title": "Compile All Solidity Contracts"
+        	},
+			{
+			 "command": "solidity.compile.active",
+			 "title": "Compile Current Solidity Contract"
+			}
+		],
        "snippets": [
        {
          "language": "solidity",
