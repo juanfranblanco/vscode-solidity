@@ -17,8 +17,8 @@
 	],
 	 "activationEvents": [
         "onCommand:solidity.compile",
-		"onCommand:solidity.compile.active",
-		"onLanguage:solidity"
+		"onCommand:solidity.compile.active"
+		
     ],
     "main": "./out/src/extension",
 	"scripts": {

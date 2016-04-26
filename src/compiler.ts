@@ -121,8 +121,7 @@ export function compile(contracts: any, diagnosticCollection: vscode.DiagnosticC
             }
         }
 
-
         outputChannel.hide();
-        vscode.window.showInformationMessage('Compiled succesfully!');
+        vscode.window.showInformationMessage('Compilation completed succesfully!');
     }
 }

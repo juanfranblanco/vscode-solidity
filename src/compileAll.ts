@@ -6,14 +6,7 @@ import * as path from 'path';
 import * as fsex from 'fs-extra';
 import {compile} from './compiler';
 
-//working spike needs refactoring MVP
-
 export function compileAllContracts(diagnosticCollection : vscode.DiagnosticCollection) {
-
-        let editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            return; // We need something open
-        }
 
         //Check if is folder, if not stop we need to output to a bin folder on rootPath
         if (vscode.workspace.rootPath === undefined) {

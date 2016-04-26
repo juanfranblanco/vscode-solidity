@@ -16,7 +16,7 @@ export function activate(context: vscode.ExtensionContext) {
     diagnosticCollection = vscode.languages.createDiagnosticCollection('solidity');
     context.subscriptions.push(diagnosticCollection);
     
-    //for compile active..
+    //required for highlightErrors on the fly move to a server
     initDiagnosticCollection(diagnosticCollection);
     
 	context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.active', () => {
@@ -28,7 +28,7 @@ export function activate(context: vscode.ExtensionContext) {
           compileAllContracts(diagnosticCollection);
     }));
     
-    //error hightlighting on the fly is very slow
+    //error hightlighting on the fly is very slow this needs to be put in a server
    //vscode.workspace.onDidChangeTextDocument(highlightErrors, this, context.subscriptions);
     
 }
