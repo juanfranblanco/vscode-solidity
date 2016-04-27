@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as fsex from 'fs-extra';
 import {compile, compileAndHighlightErrors} from './compiler';
+import {ContractCollection} from './contractsCollection';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
@@ -12,12 +13,11 @@ let diagnosticCollection: vscode.DiagnosticCollection;
 export function highlightErrors(eventArgs: vscode.TextDocumentChangeEvent) {
     if (eventArgs.contentChanges.length > 0 && eventArgs.contentChanges[0].text !== "\r\n") {
         let editor = vscode.window.activeTextEditor;
-        let contracts = {};
+        let contractsCollection = new ContractCollection();
         let contractCode = editor.document.getText();
-        let contractPath = editor.document.fileName.replace(/\\/g, '/');
-        contracts[contractPath] = contractCode;
-        findAllContractsImported(contractCode, contractPath, contracts);
-        compileAndHighlightErrors(contracts, diagnosticCollection);
+        let contractPath = editor.document.fileName;
+        contractsCollection.addContractAndResolveImports(contractPath, contractCode);
+        compileAndHighlightErrors(contractsCollection.contracts, diagnosticCollection);
     }
 }
 
@@ -31,6 +31,11 @@ export function compileActiveContract() {
     if (!editor) {
         return; // We need something open
     }
+    
+    if(path.extname(editor.document.fileName) !== '.sol'){
+        vscode.window.showWarningMessage('This not a solidity file (*.sol)');
+        return;
+    }
 
     //Check if is folder, if not stop we need to output to a bin folder on rootPath
     if (vscode.workspace.rootPath === undefined) {
@@ -38,30 +43,11 @@ export function compileActiveContract() {
         return;
     }
 
-    let contracts = {};
+    let contractsCollection = new ContractCollection();
     let contractCode = editor.document.getText();
-    let contractPath = editor.document.fileName.replace(/\\/g, '/');
-    contracts[contractPath] = contractCode;
-    findAllContractsImported(contractCode, contractPath, contracts);
-    compile(contracts, diagnosticCollection, contractPath);
+    let contractPath = editor.document.fileName;
+    contractsCollection.addContractAndResolveImports(contractPath, contractCode);
+    compile(contractsCollection.contracts, diagnosticCollection, contractPath);
 
 }
 
-function findAllContractsImported(contractCode: string, contractPath: string, contractsFound: any) {
-    let importRegEx = /^\s?import\s+[^'"]*['"](.*)['"]\s*/gm;
-    let foundImport = importRegEx.exec(contractCode);
-    while (foundImport != null) {
-        let importFullPath = path.resolve(path.dirname(contractPath), foundImport[1]).replace(/\\/g, '/');
-        //check if exists if it doesn't it will error compiling
-        if (fs.existsSync(importFullPath)) {
-            //have we found it already? Is it referenced already?
-            if (!contractsFound.hasOwnProperty(importFullPath)) {
-                let importContractCode = fs.readFileSync(importFullPath, "utf8");
-                contractsFound[importFullPath] = importContractCode;
-                //lets find all the contracts this one imports
-                findAllContractsImported(importContractCode, importFullPath, contractsFound);
-            }
-        }
-        foundImport = importRegEx.exec(contractCode);
-    }
-}
