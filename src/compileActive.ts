@@ -48,7 +48,7 @@ export function compileActiveContract() {
 }
 
 function findAllContractsImported(contractCode: string, contractPath: string, contractsFound: any) {
-    let importRegEx = /import\s+['"](.*)['"]\s*/gm;
+    let importRegEx = /^\s?import\s+[^'"]*['"](.*)['"]\s*/gm;
     let foundImport = importRegEx.exec(contractCode);
     while (foundImport != null) {
         let importFullPath = path.resolve(path.dirname(contractPath), foundImport[1]).replace(/\\/g, '/');
