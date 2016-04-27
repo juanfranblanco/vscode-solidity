@@ -3,7 +3,10 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
 
 * Syntax highlighting
 * Snippets
-* Compilation of multiple contracts (Press F1 Compile Solidity). Work in progress, any feedback appreciated.
+* Compilation of the current contract (Press F1 Compile Current Solidity Contract). 
+* Compilation of all the contracts (Press F1 Compile all Solidity Contracts)
+
+Work in progress, any feedback appreciated.
 
 For ideas, issues, additions, modifications please raise an issue or a pull request at https://github.com/juanfranblanco/vscode-solidity/
 
