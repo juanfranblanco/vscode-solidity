@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as fsex from 'fs-extra';
 import {compile} from './compiler';
-import {ContractCollection} from './contractsCollection';
+import {ContractCollection, Package, Contract, Project} from './contractsCollection';
 
 export function compileAllContracts(diagnosticCollection: vscode.DiagnosticCollection) {
 
@@ -42,7 +42,7 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
             }
         });
 
-        compile(contractsCollection.contracts, diagnosticCollection);
+        compile(contractsCollection.getContractsForCompilation(), diagnosticCollection);
 
     });
 }
