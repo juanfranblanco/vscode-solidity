@@ -5,7 +5,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as fsex from 'fs-extra';
 import {compile} from './compiler';
-import {ContractCollection, Package, Contract, Project} from './contractsCollection';
+import {ContractCollection} from './model/contractsCollection';
+import * as projService from './projectService';
+import * as util from './util';
+
 
 export function compileAllContracts(diagnosticCollection: vscode.DiagnosticCollection) {
 
@@ -16,6 +19,17 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
     }
 
     let contractsCollection = new ContractCollection();
+    let project = projService.initialiseProject();
+    let solidityPath = '**/*.sol';
+    if(project.projectPackage.sol_sources !== undefined || project.projectPackage.sol_sources === ''){
+        solidityPath = project.projectPackage.sol_sources + '/' + solidityPath;
+    }
+
+    //TODO parse excluded files
+    let excludePath = '**/bin/**';
+    if(project.projectPackage.build_dir !== undefined || project.projectPackage.build_dir === ''){
+        excludePath = '**/' + project.projectPackage.build_dir + '/**';
+    }
 
     //Process open Text Documents first as it is faster (We might need to save them all first? Is this assumed?) 
     vscode.workspace.textDocuments.forEach(document => {
@@ -23,12 +37,12 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
         if (path.extname(document.fileName) === '.sol') {
             let contractPath = document.fileName;
             let contractCode = document.getText();
-            contractsCollection.addContract(contractPath, contractCode);
+            contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
         }
     });
 
     //Find all the other sol files, to compile them (1000 maximum should be enough for now)
-    let files = vscode.workspace.findFiles('**/*.sol', '**/bin/**', 1000);
+    let files = vscode.workspace.findFiles(solidityPath, excludePath, 1000);
 
     return files.then(documents => {
 
@@ -38,11 +52,11 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
             //have we got this already opened? used those instead
             if (!contractsCollection.containsContract(contractPath)) {
                 let contractCode = fs.readFileSync(document.fsPath, "utf8");
-                contractsCollection.addContract(contractPath, contractCode);
+                contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
             }
         });
-
-        compile(contractsCollection.getContractsForCompilation(), diagnosticCollection);
+        let sourceDirPath = util.formatPath(project.projectPackage.getSolSourcesAbsolutePath());;
+        compile(contractsCollection.getContractsForCompilation(), diagnosticCollection, project.projectPackage.build_dir, sourceDirPath);
 
     });
 }

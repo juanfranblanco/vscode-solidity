@@ -6,11 +6,11 @@ import * as path from 'path';
 import * as fsex from 'fs-extra';
 
 export function compileAndHighlightErrors(contracts: any, diagnosticCollection: vscode.DiagnosticCollection) {
-  let output = solc.compile({ sources: contracts }, 1);
-  diagnosticCollection.clear();
-  if(output.errors){
-      outputErrorsToDiagnostics(diagnosticCollection, output.errors);
-  }
+    let output = solc.compile({ sources: contracts }, 1);
+    diagnosticCollection.clear();
+    if (output.errors) {
+        outputErrorsToDiagnostics(diagnosticCollection, output.errors);
+    }
 }
 
 function outputErrorsToChannel(outputChannel: vscode.OutputChannel, errors: any) {
@@ -51,7 +51,7 @@ function outputErrorsToDiagnostics(diagnosticCollection: vscode.DiagnosticCollec
     diagnosticCollection.set(entries);
 }
 
-export function compile(contracts: any, diagnosticCollection: vscode.DiagnosticCollection, singleContractFilePath?: string) {
+export function compile(contracts: any, diagnosticCollection: vscode.DiagnosticCollection, buildDir: string, sourceDir: string, singleContractFilePath?: string) {
 
     //Did we find any sol files after all?
     if (Object.keys(contracts).length === 0) {
@@ -79,7 +79,7 @@ export function compile(contracts: any, diagnosticCollection: vscode.DiagnosticC
 
     } else {
 
-        let binPath = path.join(vscode.workspace.rootPath, 'bin');
+        let binPath = path.join(vscode.workspace.rootPath, buildDir);
 
         if (!fs.existsSync(binPath)) {
             fs.mkdirSync(binPath);
@@ -87,37 +87,41 @@ export function compile(contracts: any, diagnosticCollection: vscode.DiagnosticC
 
         //iterate through all the sources, find contracts and output them into the same folder structure to avoid collisions, named as the contract
         for (var source in output.sources) {
-
+            //output only single contract compilation or all
             if (!singleContractFilePath || source === singleContractFilePath) {
+                
+                //output only source directory compilation or all (this will exclude external references)
+                if (!sourceDir || source.startsWith(sourceDir)) {
 
-                output.sources[source].AST.children.forEach(child => {
+                    output.sources[source].AST.children.forEach(child => {
 
-                    if (child.name == "Contract") {
-                        let contractName = child.attributes.name;
+                        if (child.name == "Contract") {
+                            let contractName = child.attributes.name;
 
-                        let relativePath = path.relative(vscode.workspace.rootPath, source);
+                            let relativePath = path.relative(vscode.workspace.rootPath, source);
 
-                        let dirName = path.dirname(path.join(binPath, relativePath));
+                            let dirName = path.dirname(path.join(binPath, relativePath));
 
-                        if (!fs.existsSync(dirName)) {
-                            fsex.mkdirsSync(dirName);
+                            if (!fs.existsSync(dirName)) {
+                                fsex.mkdirsSync(dirName);
+                            }
+
+                            let contractAbiPath = path.join(dirName, contractName + ".abi");
+                            let contractBinPath = path.join(dirName, contractName + ".bin");
+
+                            if (fs.existsSync(contractAbiPath)) {
+                                fs.unlinkSync(contractAbiPath)
+                            }
+
+                            if (fs.existsSync(contractBinPath)) {
+                                fs.unlinkSync(contractBinPath)
+                            }
+
+                            fs.writeFileSync(contractBinPath, output.contracts[contractName].bytecode);
+                            fs.writeFileSync(contractAbiPath, output.contracts[contractName].interface);
                         }
-
-                        let contractAbiPath = path.join(dirName, contractName + ".abi");
-                        let contractBinPath = path.join(dirName, contractName + ".bin");
-
-                        if (fs.existsSync(contractAbiPath)) {
-                            fs.unlinkSync(contractAbiPath)
-                        }
-
-                        if (fs.existsSync(contractBinPath)) {
-                            fs.unlinkSync(contractBinPath)
-                        }
-
-                        fs.writeFileSync(contractBinPath, output.contracts[contractName].bytecode);
-                        fs.writeFileSync(contractAbiPath, output.contracts[contractName].interface);
-                    }
-                });
+                    });
+                }
             }
         }
 
