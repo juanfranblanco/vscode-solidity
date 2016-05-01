@@ -11,7 +11,7 @@ import {Project} from  './model/project';
 
 //todo: this needs to be validated
 const packageConfigFileName = 'dappfile';
-const packageDependenciesDirectory = 'dapple-packages';
+const packageDependenciesDirectory = 'dapple_packages';
 
 function createPackage(rootPath: string) {
     let projectPackageFile = path.join(rootPath, packageConfigFileName);
