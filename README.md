@@ -5,6 +5,7 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
 * Snippets
 * Compilation of the current contract (Press F1 Compile Current Solidity Contract). 
 * Compilation of all the contracts (Press F1 Compile all Solidity Contracts)
+* Compilation supporting EIP82 (dappfile and dependency packages) 
 
 Work in progress, any feedback appreciated.
 
