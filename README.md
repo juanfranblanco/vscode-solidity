@@ -10,8 +10,25 @@ Work in progress, any feedback appreciated.
 
 For ideas, issues, additions, modifications please raise an issue or a pull request at https://github.com/juanfranblanco/vscode-solidity/
 
+Road map:
+
+* Support for compilation together with dependency resolution as per EIP82 https://github.com/ethereum/EIPs/issues/82 (Work in progress)
+    
+    For more information: https://github.com/juanfranblanco/vscode-solidity/issues/4
+     
+* Deployment using the configured enviroment settings as per EIP82 
+
+* Unit testing support
+
+* As you type Error highlighting
+
+* Autocomplete of functions / events from the imported contracts (package dependencies, local contracts)
+ 
+
 ## Credits
 Many thanks to:
+
+Nexus team for the creation of Dapple https://github.com/nexusdev/dapple
 
 ChrisEth for his Solidity Compiler https://github.com/chriseth/browser-solidity
 
