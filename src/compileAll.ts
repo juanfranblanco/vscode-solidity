@@ -55,8 +55,9 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
                 contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
             }
         });
-        let sourceDirPath = util.formatPath(project.projectPackage.getSolSourcesAbsolutePath());;
-        compile(contractsCollection.getContractsForCompilation(), diagnosticCollection, project.projectPackage.build_dir, sourceDirPath);
+        let sourceDirPath = util.formatPath(project.projectPackage.getSolSourcesAbsolutePath());
+        let packagesPath = util.formatPath(project.packagesDir);
+        compile(contractsCollection.getContractsForCompilation(), diagnosticCollection, project.projectPackage.build_dir, sourceDirPath, packagesPath);
 
     });
 }

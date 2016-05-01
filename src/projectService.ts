@@ -35,9 +35,11 @@ function createPackage(rootPath: string) {
 }
 
 export function initialiseProject() {
-    let projectPackage = createProjectPackage(vscode.workspace.rootPath);
-    let dependencies = loadDependencies(vscode.workspace.rootPath, projectPackage);
-    return new Project(projectPackage, dependencies);
+    let rootPath = vscode.workspace.rootPath;
+    let projectPackage = createProjectPackage(rootPath);
+    let dependencies = loadDependencies(rootPath, projectPackage);
+    let packagesDirAbsolutePath =  path.join(rootPath, packageDependenciesDirectory);
+    return new Project(projectPackage, dependencies, packagesDirAbsolutePath);
 }
 
 function loadDependencies(rootPath: string, projectPackage: Package, depPackages: Array<Package> = new Array<Package>()) {

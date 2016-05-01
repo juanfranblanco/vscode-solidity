@@ -51,7 +51,7 @@ function outputErrorsToDiagnostics(diagnosticCollection: vscode.DiagnosticCollec
     diagnosticCollection.set(entries);
 }
 
-export function compile(contracts: any, diagnosticCollection: vscode.DiagnosticCollection, buildDir: string, sourceDir: string, singleContractFilePath?: string) {
+export function compile(contracts: any, diagnosticCollection: vscode.DiagnosticCollection, buildDir: string, sourceDir: string, excludePath?:string, singleContractFilePath?: string) {
 
     //Did we find any sol files after all?
     if (Object.keys(contracts).length === 0) {
@@ -87,9 +87,13 @@ export function compile(contracts: any, diagnosticCollection: vscode.DiagnosticC
 
         //iterate through all the sources, find contracts and output them into the same folder structure to avoid collisions, named as the contract
         for (var source in output.sources) {
+            
+            //TODO ALL this validation to a method
+            
             //output only single contract compilation or all
             if (!singleContractFilePath || source === singleContractFilePath) {
                 
+                if(!excludePath || !source.startsWith(excludePath)){
                 //output only source directory compilation or all (this will exclude external references)
                 if (!sourceDir || source.startsWith(sourceDir)) {
 
@@ -121,6 +125,7 @@ export function compile(contracts: any, diagnosticCollection: vscode.DiagnosticC
                             fs.writeFileSync(contractAbiPath, output.contracts[contractName].interface);
                         }
                     });
+                   }
                 }
             }
         }

@@ -14,7 +14,10 @@ export class Package {
     }
     
     getSolSourcesAbsolutePath(){
+        if(this.sol_sources !== undefined || this.sol_sources === ''){
         return path.join(this.absoluletPath, this.sol_sources);
+        }
+        return this.absoluletPath;
     }
     
     isImportForThis(contractDependencyImport: string) {

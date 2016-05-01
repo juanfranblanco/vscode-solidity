@@ -8,6 +8,7 @@ import * as readyaml from 'read-yaml';
 import {compile, compileAndHighlightErrors} from './compiler';
 import {ContractCollection} from './model/contractsCollection';
 import * as projService from './projectService';
+import * as util from './util';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
@@ -53,8 +54,9 @@ export function compileActiveContract() {
     let contractPath = editor.document.fileName;
     let project = projService.initialiseProject();
     let contract = contractsCollection.addContractAndResolveImports(contractPath, contractCode, project );
+    let packagesPath = util.formatPath(project.packagesDir);
     
-    compile(contractsCollection.getContractsForCompilation(), diagnosticCollection, project.projectPackage.build_dir, contract.absolutePath);
+    compile(contractsCollection.getContractsForCompilation(), diagnosticCollection, project.projectPackage.build_dir, null, packagesPath, contract.absolutePath);
 
 }
 
