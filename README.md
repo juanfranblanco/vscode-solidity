@@ -16,12 +16,18 @@ Road map:
     
     For more information: https://github.com/juanfranblanco/vscode-solidity/issues/4
      
-* Deployment using the configured enviroment settings as per EIP82 
+* Deployment using the configured enviroment settings as per EIP82
+   
+    For more information: https://github.com/juanfranblanco/vscode-solidity/issues/5 
 
 * Unit testing support
 
+    For more information: https://github.com/juanfranblanco/vscode-solidity/issues/6
+    
 * As you type Error highlighting
-
+    
+    For more information: https://github.com/juanfranblanco/vscode-solidity/issues/7
+    
 * Autocomplete of functions / events from the imported contracts (package dependencies, local contracts)
  
 
