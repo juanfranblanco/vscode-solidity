@@ -1,24 +1,22 @@
 'use strict';
 import * as vscode from 'vscode';
-import * as solc from 'solc';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as fsex from 'fs-extra';
 import * as readyaml from 'read-yaml';
-import {compile, compileAndHighlightErrors} from './compiler';
 import {Package} from './model/package';
 import {Project} from  './model/project';
 
-//todo: this needs to be validated
+// TODO: These are temporary constants until standard agreed
 const packageConfigFileName = 'dappfile';
 const packageDependenciesDirectory = 'dapple_packages';
 
 function createPackage(rootPath: string) {
     let projectPackageFile = path.join(rootPath, packageConfigFileName);
     if (fs.existsSync(projectPackageFile)) {
-        //todo automapper
+        // TODO: automapper
         let packageConfig = readyaml.sync(projectPackageFile);
-        var projectPackage = new Package();
+        // TODO: throw expection / warn user of invalid package file
+        let projectPackage = new Package();
         projectPackage.absoluletPath = rootPath;
         if (packageConfig) {
             if (packageConfig.layout !== undefined) {
@@ -38,23 +36,23 @@ export function initialiseProject() {
     let rootPath = vscode.workspace.rootPath;
     let projectPackage = createProjectPackage(rootPath);
     let dependencies = loadDependencies(rootPath, projectPackage);
-    let packagesDirAbsolutePath =  path.join(rootPath, packageDependenciesDirectory);
+    let packagesDirAbsolutePath = path.join(rootPath, packageDependenciesDirectory);
     return new Project(projectPackage, dependencies, packagesDirAbsolutePath);
 }
 
 function loadDependencies(rootPath: string, projectPackage: Package, depPackages: Array<Package> = new Array<Package>()) {
-    if (projectPackage.dependencies != undefined) {
+    if (projectPackage.dependencies !== undefined) {
         Object.keys(projectPackage.dependencies).forEach(dependency => {
-            if (!depPackages.some((existingDepPack: Package) => existingDepPack.name == dependency)) {
+            if (!depPackages.some((existingDepPack: Package) => existingDepPack.name === dependency)) {
                 let depPackagePath = path.join(rootPath, packageDependenciesDirectory, dependency);
                 let depPackage = createPackage(depPackagePath);
 
                 if (depPackage !== null) {
                     depPackages.push(depPackage);
-                    //Assumed the package manager will install all the dependencies at root so adding all the existing ones
+                    // Assumed the package manager will install all the dependencies at root so adding all the existing ones
                     loadDependencies(rootPath, depPackage, depPackages);
                 } else {
-                    //should warn user of a package dependency missing
+                    // should warn user of a package dependency missing
                 }
             }
         });
@@ -64,7 +62,7 @@ function loadDependencies(rootPath: string, projectPackage: Package, depPackages
 
 function createProjectPackage(rootPath: string) {
     let projectPackage = createPackage(rootPath);
-    //Default project package,this could be passed as a function
+    // Default project package,this could be passed as a function
     if (projectPackage === null) {
         projectPackage = new Package();
         projectPackage.absoluletPath = rootPath;

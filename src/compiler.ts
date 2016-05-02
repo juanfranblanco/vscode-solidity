@@ -23,12 +23,12 @@ function outputErrorsToChannel(outputChannel: vscode.OutputChannel, errors: any)
 function outputErrorsToDiagnostics(diagnosticCollection: vscode.DiagnosticCollection, errors: any) {
     let diagnosticMap: Map<vscode.Uri, vscode.Diagnostic[]> = new Map();
     errors.forEach(error => {
-        let errorSplit = error.split(":");
+        let errorSplit = error.split(':');
         let fileName = errorSplit[0];
         let index = 1;
-        //a full path in windows includes a : for the drive
+        // a full path in windows includes a : for the drive
         if (process.platform === 'win32') {
-            fileName = errorSplit[0] + ":" + errorSplit[1];
+            fileName = errorSplit[0] + ':' + errorSplit[1];
             index = 2;
         }
 
@@ -51,15 +51,19 @@ function outputErrorsToDiagnostics(diagnosticCollection: vscode.DiagnosticCollec
     diagnosticCollection.set(entries);
 }
 
-export function compile(contracts: any, diagnosticCollection: vscode.DiagnosticCollection, buildDir: string, sourceDir: string, excludePath?:string, singleContractFilePath?: string) {
+// TODO: decouple compilation of error reporting formatters (passed as a function), and saving to disk
 
-    //Did we find any sol files after all?
+export function compile(contracts: any,
+                        diagnosticCollection: vscode.DiagnosticCollection,
+                        buildDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string) {
+
+    // Did we find any sol files after all?
     if (Object.keys(contracts).length === 0) {
         vscode.window.showWarningMessage('No solidity files (*.sol) found');
         return;
     }
 
-    let outputChannel = vscode.window.createOutputChannel("solidity compilation");
+    let outputChannel = vscode.window.createOutputChannel('solidity compilation');
     outputChannel.clear();
 
     let output = solc.compile({ sources: contracts }, 0);
@@ -85,47 +89,47 @@ export function compile(contracts: any, diagnosticCollection: vscode.DiagnosticC
             fs.mkdirSync(binPath);
         }
 
-        //iterate through all the sources, find contracts and output them into the same folder structure to avoid collisions, named as the contract
-        for (var source in output.sources) {
-            
-            //TODO ALL this validation to a method
-            
-            //output only single contract compilation or all
+        // iterate through all the sources, find contracts and output them into the same folder structure to avoid collisions, named as the contract
+        for (let source in output.sources) {
+
+            // TODO: ALL this validation to a method
+
+            // Output only single contract compilation or all
             if (!singleContractFilePath || source === singleContractFilePath) {
-                
-                if(!excludePath || !source.startsWith(excludePath)){
-                //output only source directory compilation or all (this will exclude external references)
-                if (!sourceDir || source.startsWith(sourceDir)) {
 
-                    output.sources[source].AST.children.forEach(child => {
+                if (!excludePath || !source.startsWith(excludePath)) {
+                    // Output only source directory compilation or all (this will exclude external references)
+                    if (!sourceDir || source.startsWith(sourceDir)) {
 
-                        if (child.name == "Contract") {
-                            let contractName = child.attributes.name;
+                        output.sources[source].AST.children.forEach(child => {
 
-                            let relativePath = path.relative(vscode.workspace.rootPath, source);
+                            if (child.name === 'Contract') {
+                                let contractName = child.attributes.name;
 
-                            let dirName = path.dirname(path.join(binPath, relativePath));
+                                let relativePath = path.relative(vscode.workspace.rootPath, source);
 
-                            if (!fs.existsSync(dirName)) {
-                                fsex.mkdirsSync(dirName);
+                                let dirName = path.dirname(path.join(binPath, relativePath));
+
+                                if (!fs.existsSync(dirName)) {
+                                    fsex.mkdirsSync(dirName);
+                                }
+
+                                let contractAbiPath = path.join(dirName, contractName + '.abi');
+                                let contractBinPath = path.join(dirName, contractName + '.bin');
+
+                                if (fs.existsSync(contractAbiPath)) {
+                                    fs.unlinkSync(contractAbiPath);
+                                }
+
+                                if (fs.existsSync(contractBinPath)) {
+                                    fs.unlinkSync(contractBinPath);
+                                }
+
+                                fs.writeFileSync(contractBinPath, output.contracts[contractName].bytecode);
+                                fs.writeFileSync(contractAbiPath, output.contracts[contractName].interface);
                             }
-
-                            let contractAbiPath = path.join(dirName, contractName + ".abi");
-                            let contractBinPath = path.join(dirName, contractName + ".bin");
-
-                            if (fs.existsSync(contractAbiPath)) {
-                                fs.unlinkSync(contractAbiPath)
-                            }
-
-                            if (fs.existsSync(contractBinPath)) {
-                                fs.unlinkSync(contractBinPath)
-                            }
-
-                            fs.writeFileSync(contractBinPath, output.contracts[contractName].bytecode);
-                            fs.writeFileSync(contractAbiPath, output.contracts[contractName].interface);
-                        }
-                    });
-                   }
+                        });
+                    }
                 }
             }
         }

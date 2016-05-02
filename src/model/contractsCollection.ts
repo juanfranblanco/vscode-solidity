@@ -1,39 +1,25 @@
 
 'use strict';
 import * as fs from 'fs';
-import * as path from 'path';
 import {Contract} from './contract';
 import {Project} from './project';
 import * as util from '../util';
 
 export class ContractCollection {
-    contracts: Array<Contract>;
+    public contracts: Array<Contract>;
     constructor() {
         this.contracts = new Array<Contract>();
     }
 
-    formatPath(contractPath: string) {
-        return util.formatPath(contractPath);
-    }
-
-    findContract(contract: Contract, contractPath: string) {
+    public findContract(contract: Contract, contractPath: string) {
         return contract.absolutePath === contractPath;
     }
 
-    containsContract(contractPath: string) {
-        return this.contracts.findIndex((contract: Contract) => { return contract.absolutePath === contractPath }) > -1;
+    public containsContract(contractPath: string) {
+        return this.contracts.findIndex((contract: Contract) => { return contract.absolutePath === contractPath; }) > -1;
     }
 
-    addContract(contractPath: string, code: string) {
-        if (!this.containsContract(contractPath)) {
-            let contract = new Contract(contractPath, code);
-            this.contracts.push(contract);
-            return contract;
-        }
-        return null;
-    }
-
-    getContractsForCompilation() {
+    public getContractsForCompilation() {
         let contractsForCompilation = {};
         this.contracts.forEach(contract => {
             contractsForCompilation[contract.absolutePath] = contract.code;
@@ -41,44 +27,7 @@ export class ContractCollection {
         return contractsForCompilation;
     }
 
-    getAllImportFromPackages() {
-        let importsFromPackages = new Array<string>();
-        this.contracts.forEach(contract => {
-            let contractImports = contract.getAllImportFromPackages();
-            contractImports.forEach(contractImport => {
-                if (importsFromPackages.indexOf(contractImport) < 0) {
-                    importsFromPackages.push(contractImport);
-                }
-            });
-        });
-        return importsFromPackages;
-    }
-
-    private readContractCode(contractPath: string) {
-        if (fs.existsSync(contractPath)) {
-            return fs.readFileSync(contractPath, "utf8");
-        }
-        return null;
-    }
-
-    private addContractAndResolveDependencyImport(dependencyImport: string, contract: Contract, project: Project) {
-        let depPack = project.findPackage(dependencyImport);
-        
-        if (depPack !== undefined) {
-            let depImportPath = this.formatPath(depPack.resolveImport(dependencyImport));
-            if (!this.containsContract(depImportPath)) {
-                let importContractCode = this.readContractCode(depImportPath);
-                if (importContractCode != null) {
-                    this.addContractAndResolveImports(depImportPath, importContractCode, project);
-                    contract.replaceDependencyPath(dependencyImport, depImportPath);
-                }
-            } else {
-                contract.replaceDependencyPath(dependencyImport, depImportPath);
-            }
-        }
-    }
-
-    addContractAndResolveImports(contractPath: string, code: string, project: Project) {
+    public addContractAndResolveImports(contractPath: string, code: string, project: Project) {
         let contract = this.addContract(contractPath, code);
         if (contract !== null) {
             contract.resolveImports();
@@ -97,4 +46,55 @@ export class ContractCollection {
         }
         return contract;
     }
+
+    private addContract(contractPath: string, code: string) {
+        if (!this.containsContract(contractPath)) {
+            let contract = new Contract(contractPath, code);
+            this.contracts.push(contract);
+            return contract;
+        }
+        return null;
+    }
+
+    private formatPath(contractPath: string) {
+        return util.formatPath(contractPath);
+    }
+
+    private getAllImportFromPackages() {
+        let importsFromPackages = new Array<string>();
+        this.contracts.forEach(contract => {
+            let contractImports = contract.getAllImportFromPackages();
+            contractImports.forEach(contractImport => {
+                if (importsFromPackages.indexOf(contractImport) < 0) {
+                    importsFromPackages.push(contractImport);
+                }
+            });
+        });
+        return importsFromPackages;
+    }
+
+    private readContractCode(contractPath: string) {
+        if (fs.existsSync(contractPath)) {
+            return fs.readFileSync(contractPath, 'utf8');
+        }
+        return null;
+    }
+
+    private addContractAndResolveDependencyImport(dependencyImport: string, contract: Contract, project: Project) {
+        let depPack = project.findPackage(dependencyImport);
+
+        if (depPack !== undefined) {
+            let depImportPath = this.formatPath(depPack.resolveImport(dependencyImport));
+            if (!this.containsContract(depImportPath)) {
+                let importContractCode = this.readContractCode(depImportPath);
+                if (importContractCode != null) {
+                    this.addContractAndResolveImports(depImportPath, importContractCode, project);
+                    contract.replaceDependencyPath(dependencyImport, depImportPath);
+                }
+            } else {
+                contract.replaceDependencyPath(dependencyImport, depImportPath);
+            }
+        }
+    }
+
 }
