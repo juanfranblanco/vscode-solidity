@@ -20,6 +20,14 @@ function outputErrorsToChannel(outputChannel: vscode.OutputChannel, errors: any)
     outputChannel.show();
 }
 
+function getDiagnosticSeverity(sev: string): vscode.DiagnosticSeverity {
+    switch (sev) {
+        case ' Error': return vscode.DiagnosticSeverity.Error;
+        case ' Warning': return vscode.DiagnosticSeverity.Warning;
+        default: return vscode.DiagnosticSeverity.Error;
+    }
+}
+
 function outputErrorsToDiagnostics(diagnosticCollection: vscode.DiagnosticCollection, errors: any) {
     let diagnosticMap: Map<vscode.Uri, vscode.Diagnostic[]> = new Map();
     errors.forEach(error => {
@@ -34,9 +42,10 @@ function outputErrorsToDiagnostics(diagnosticCollection: vscode.DiagnosticCollec
 
         let line = parseInt(errorSplit[index]);
         let column = parseInt(errorSplit[index + 1]);
+        let severity = getDiagnosticSeverity(errorSplit[index + 2]);
         let targetUri = vscode.Uri.file(fileName);
         let range = new vscode.Range(line - 1, column, line - 1, column);
-        let diagnostic = new vscode.Diagnostic(range, error, vscode.DiagnosticSeverity.Error);
+        let diagnostic = new vscode.Diagnostic(range, error, severity);
         let diagnostics = diagnosticMap.get(targetUri);
         if (!diagnostics) {
             diagnostics = [];
