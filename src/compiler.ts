@@ -20,15 +20,27 @@ function outputErrorsToChannel(outputChannel: vscode.OutputChannel, errors: any)
     outputChannel.show();
 }
 
-function getDiagnosticSeverity(sev: string): vscode.DiagnosticSeverity {
+interface ErrorWarningCounts {
+    errors: number;
+    warnings: number;
+}
+
+function getDiagnosticSeverity(sev: string, errorWarningCounts: ErrorWarningCounts): vscode.DiagnosticSeverity {
     switch (sev) {
-        case ' Error': return vscode.DiagnosticSeverity.Error;
-        case ' Warning': return vscode.DiagnosticSeverity.Warning;
-        default: return vscode.DiagnosticSeverity.Error;
+        case ' Error':
+            errorWarningCounts.errors++;
+            return vscode.DiagnosticSeverity.Error;
+        case ' Warning':
+            errorWarningCounts.warnings++;
+            return vscode.DiagnosticSeverity.Warning;
+        default:
+            errorWarningCounts.errors++;
+            return vscode.DiagnosticSeverity.Error;
     }
 }
 
-function outputErrorsToDiagnostics(diagnosticCollection: vscode.DiagnosticCollection, errors: any) {
+function outputErrorsToDiagnostics(diagnosticCollection: vscode.DiagnosticCollection, errors: any): ErrorWarningCounts {
+    let errorWarningCounts: ErrorWarningCounts = {errors: 0, warnings: 0};
     let diagnosticMap: Map<vscode.Uri, vscode.Diagnostic[]> = new Map();
     errors.forEach(error => {
         let errorSplit = error.split(':');
@@ -42,7 +54,8 @@ function outputErrorsToDiagnostics(diagnosticCollection: vscode.DiagnosticCollec
 
         let line = parseInt(errorSplit[index]);
         let column = parseInt(errorSplit[index + 1]);
-        let severity = getDiagnosticSeverity(errorSplit[index + 2]);
+        let severity = getDiagnosticSeverity(errorSplit[index + 2], errorWarningCounts);
+        
         let targetUri = vscode.Uri.file(fileName);
         let range = new vscode.Range(line - 1, column, line - 1, column);
         let diagnostic = new vscode.Diagnostic(range, error, severity);
@@ -58,6 +71,7 @@ function outputErrorsToDiagnostics(diagnosticCollection: vscode.DiagnosticCollec
         entries.push([uri, diags]);
     });
     diagnosticCollection.set(entries);
+    return errorWarningCounts;
 }
 
 // TODO: decouple compilation of error reporting formatters (passed as a function), and saving to disk
@@ -86,9 +100,15 @@ export function compile(contracts: any,
 
     if (output.errors) {
 
-        outputErrorsToDiagnostics(diagnosticCollection, output.errors);
+        const errorWarningCounts = outputErrorsToDiagnostics(diagnosticCollection, output.errors);
         outputErrorsToChannel(outputChannel, output.errors);
-        vscode.window.showErrorMessage('Compilation Error');
+
+        if (errorWarningCounts.errors > 0) {
+            vscode.window.showErrorMessage(`Compilation failed with ${errorWarningCounts.errors} errors`);
+        }
+        else if (errorWarningCounts.warnings > 0) {
+            vscode.window.showWarningMessage(`Compilation had ${errorWarningCounts.warnings} warnings`);
+        }
 
     } else {
 
