@@ -30,9 +30,26 @@ Road map:
     For more information: https://github.com/juanfranblanco/vscode-solidity/issues/7
     
 * Autocomplete of functions / events from the imported contracts (package dependencies, local contracts)
- 
 
-## Credits
+# Running and debugging
+The VS Code documentation explains how to [Run and Debug Extensions](https://code.visualstudio.com/docs/extensions/debugging-extensions)
+
+## Compiling
+This extension is written in TypeScript hence needs to be compiled into JavaScript. In the root folder of the extention run
+
+`npm run compile`
+
+## Debugging
+If you are editing this extension in VS Code, you can use the debug view and select `Launch Extension`.
+
+## Running
+If you fork this VS Code extension, you can override the extension installed from the extension marketplace by running
+
+```code --extensionDevelopmentPath={repo folder}/vscode-solidity```
+
+where `{folder of repo}` is the folder you have checked out the extension to
+
+# Credits
 Many thanks to:
 
 Nexus team for the creation of Dapple https://github.com/nexusdev/dapple
