@@ -89,7 +89,7 @@ export function compile(contracts: any,
     let outputChannel = vscode.window.createOutputChannel('solidity compilation');
     outputChannel.clear();
 
-    let output = solc.compile({ sources: contracts }, 0);
+    let output = solc.compile({ sources: contracts }, 1);
 
     if (Object.keys(output).length === 0) {
         vscode.window.showWarningMessage('No output by the compiler');
