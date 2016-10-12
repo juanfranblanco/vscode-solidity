@@ -132,7 +132,7 @@ export function compile(contracts: any,
 
                         output.sources[source].AST.children.forEach(child => {
 
-                            if (child.name === 'Contract') {
+                            if (child.name === 'Contract' || child.name === 'ContractDefinition') {
                                 let contractName = child.attributes.name;
 
                                 let relativePath = path.relative(vscode.workspace.rootPath, source);
