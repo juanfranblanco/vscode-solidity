@@ -1,5 +1,9 @@
 {
 	".source.solidity": {
+		"pragma solidity":{
+			"prefix": "pra",
+			"body": "pragma solidity ${1:version};"
+		},
 		"import contract": {
 			"prefix": "im",
 			"body": "import '${1:contract}';"

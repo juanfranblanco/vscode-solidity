@@ -1,67 +1,76 @@
 {
-	"name": "solidity",
-	"description": "Ethereum Solidity Language for Visual Studio Code",
-	"version": "0.0.15",
-	"publisher": "JuanBlanco",
-	"engines": {
-		"vscode": "^1.5.1"
-	},
-	"icon": "images/icon.png",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/juanfranblanco/vscode-solidity"
-	},
-	"categories": [
-		"Languages",
-		"Snippets"
-	],
-	 "activationEvents": [
-        "onCommand:solidity.compile",
-		"onCommand:solidity.compile.active"
-		
+  "name": "solidity",
+  "description": "Ethereum Solidity Language for Visual Studio Code",
+  "version": "0.0.16",
+  "publisher": "JuanBlanco",
+  "engines": {
+    "vscode": "^1.5.1"
+  },
+  "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/juanfranblanco/vscode-solidity"
+  },
+  "categories": [
+    "Languages",
+    "Snippets"
+  ],
+  "activationEvents": [
+    "onCommand:solidity.compile",
+    "onCommand:solidity.compile.active"
+  ],
+  "main": "./out/src/extension",
+  "scripts": {
+    "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
+    "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install"
+  },
+  "dependencies": {
+    "fs-extra": "^0.30.0",
+    "read-yaml": "^1.0.0",
+    "solc": "^0.4.4"
+  },
+  "devDependencies": {
+    "tslint": "^3.15.1",
+    "typescript": "1.8.10",
+    "vscode": "^0.11.18"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "solidity",
+        "aliases": [
+          "Solidity",
+          "solidity"
+        ],
+        "extensions": [
+          ".sol"
+        ],
+        "configuration": "./solidity.configuration.json"
+      }
     ],
-    "main": "./out/src/extension",
-	"scripts": {
-        "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
-        "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install"
-    },
-	"dependencies": {
-        "solc":"^0.4.1",
-		"fs-extra": "^0.30.0",
-		"read-yaml": "^1.0.0"
-    },
-	"devDependencies": {
-		"tslint": "^3.15.1",
-		"typescript": "^1.8.10",
-		"vscode": "^0.11.18"
-    },
-	"contributes": {
-		"languages": [{
-			"id": "solidity",
-			"aliases": ["Solidity", "solidity"],
-			"extensions": [".sol"],
-			"configuration": "./solidity.configuration.json"
-		}],
-		 "commands": [{
-            "command": "solidity.compile",
-            "title": "Compile All Solidity Contracts"
-        	},
-			{
-			 "command": "solidity.compile.active",
-			 "title": "Compile Current Solidity Contract"
-			}
-		],
-       "snippets": [
-       {
-         "language": "solidity",
-         "path": "./snippets/solidity.json"
-        }
-       ],
-		"grammars": [{
-			"language": "solidity",
-			"scopeName": "source.solidity",
-			"path": "./syntaxes/solidity.json"
-		}]
-	}
+    "commands": [
+      {
+        "command": "solidity.compile",
+        "title": "Compile All Solidity Contracts"
+      },
+      {
+        "command": "solidity.compile.active",
+        "title": "Compile Current Solidity Contract"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "solidity",
+        "path": "./snippets/solidity.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "solidity",
+        "scopeName": "source.solidity",
+        "path": "./syntaxes/solidity.json"
+      }
+    ]
+  }
 }

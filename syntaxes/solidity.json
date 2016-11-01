@@ -33,7 +33,7 @@
                 }
             },
             "comment": "Main keywords",
-            "match": "\\b(contract|struct|function|modifier)\\s+([A-Za-z_]\\w*)(?:\\s+is\\s+((?:[A-Za-z_][\\,\\s]*)*))?\\b",
+            "match": "\\b(pragma|contract|struct|function|modifier)\\s+([A-Za-z_]\\w*)(?:\\s+is\\s+((?:[A-Za-z_][\\,\\s]*)*))?\\b",
             "name": "keyword.control"
         },
         {
