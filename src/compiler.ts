@@ -55,7 +55,7 @@ function outputErrorsToDiagnostics(diagnosticCollection: vscode.DiagnosticCollec
         let line = parseInt(errorSplit[index]);
         let column = parseInt(errorSplit[index + 1]);
         let severity = getDiagnosticSeverity(errorSplit[index + 2], errorWarningCounts);
-        
+
         let targetUri = vscode.Uri.file(fileName);
         let range = new vscode.Range(line - 1, column, line - 1, column);
         let diagnostic = new vscode.Diagnostic(range, error, severity);
@@ -88,8 +88,13 @@ export function compile(contracts: any,
 
     let outputChannel = vscode.window.createOutputChannel('solidity compilation');
     outputChannel.clear();
+    outputChannel.show();
+
+    vscode.window.setStatusBarMessage('Compilation started');
 
     let output = solc.compile({ sources: contracts }, 1);
+
+    vscode.window.setStatusBarMessage('Compilation completed');
 
     if (Object.keys(output).length === 0) {
         vscode.window.showWarningMessage('No output by the compiler');
@@ -105,20 +110,32 @@ export function compile(contracts: any,
 
         if (errorWarningCounts.errors > 0) {
             vscode.window.showErrorMessage(`Compilation failed with ${errorWarningCounts.errors} errors`);
-        }
-        else if (errorWarningCounts.warnings > 0) {
+            if (errorWarningCounts.warnings > 0) {
+                 vscode.window.showWarningMessage(`Compilation had ${errorWarningCounts.warnings} warnings`);
+            }
+        } else if (errorWarningCounts.warnings > 0) {
+            writeCompilationOutputToBuildDirectory(output, buildDir, sourceDir, excludePath, singleContractFilePath);
             vscode.window.showWarningMessage(`Compilation had ${errorWarningCounts.warnings} warnings`);
+            vscode.window.showInformationMessage('Compilation completed succesfully!');
         }
-
     } else {
+        writeCompilationOutputToBuildDirectory(output, buildDir, sourceDir, excludePath, singleContractFilePath);
+        outputChannel.hide();
+        vscode.window.showInformationMessage('Compilation completed succesfully!');
+    }
 
+}
+
+     function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, sourceDir: string,
+                                                     excludePath?: string, singleContractFilePath?: string) {
         let binPath = path.join(vscode.workspace.rootPath, buildDir);
 
         if (!fs.existsSync(binPath)) {
             fs.mkdirSync(binPath);
         }
 
-        // iterate through all the sources, find contracts and output them into the same folder structure to avoid collisions, named as the contract
+        // iterate through all the sources, 
+        //find contracts and output them into the same folder structure to avoid collisions, named as the contract
         for (let source in output.sources) {
 
             // TODO: ALL this validation to a method
@@ -145,6 +162,7 @@ export function compile(contracts: any,
 
                                 let contractAbiPath = path.join(dirName, contractName + '.abi');
                                 let contractBinPath = path.join(dirName, contractName + '.bin');
+                                let contractJsonPath = path.join(dirName, contractName + '.json');
 
                                 if (fs.existsSync(contractAbiPath)) {
                                     fs.unlinkSync(contractAbiPath);
@@ -154,16 +172,26 @@ export function compile(contracts: any,
                                     fs.unlinkSync(contractBinPath);
                                 }
 
+                                if (fs.existsSync(contractJsonPath)) {
+                                    fs.unlinkSync(contractJsonPath);
+                                }
+
                                 fs.writeFileSync(contractBinPath, output.contracts[contractName].bytecode);
                                 fs.writeFileSync(contractAbiPath, output.contracts[contractName].interface);
+
+                                let shortJsonOutput = {
+                                    abi : output.contracts[contractName].interface,
+                                    bytecode : output.contracts[contractName].bytecode,
+                                    functionHashes : output.contracts[contractName].functionHashes,
+                                    gasEstimates : output.contracts[contractName].gasEstimates,
+                                    runtimeBytecode : output.contracts[contractName].runtimeBytecode,
+                                };
+
+                                fs.writeFileSync(contractJsonPath, JSON.stringify(shortJsonOutput, null, 4));
                             }
                         });
                     }
                 }
             }
-        }
-
-        outputChannel.hide();
-        vscode.window.showInformationMessage('Compilation completed succesfully!');
     }
 }
