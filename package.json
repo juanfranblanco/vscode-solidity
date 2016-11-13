@@ -1,11 +1,20 @@
 {
   "name": "solidity",
   "description": "Ethereum Solidity Language for Visual Studio Code",
-  "version": "0.0.16",
+  "keywords": [
+    "soliity", "ethereum", "blockchain", "compiler"
+  ],
+  "version": "0.0.18",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.5.1"
   },
+  "contributors": [
+    "Juan Blanco"
+  ],
+  "bugs": {
+		"url": "https://github.com/juanfranblanco/vscode-solidity/issues"
+	},
   "icon": "images/icon.png",
   "repository": {
     "type": "git",
@@ -19,6 +28,7 @@
     "onCommand:solidity.compile",
     "onCommand:solidity.compile.active"
   ],
+  
   "main": "./out/src/extension",
   "scripts": {
     "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
@@ -58,6 +68,18 @@
         "command": "solidity.compile.active",
         "title": "Compile Current Solidity Contract"
       }
+    ],
+    "keybindings": [{
+        "command": "solidity.compile.active",
+        "key": "f5",
+        "mac": "f5",
+        "when": "editorTextFocus"
+    },{
+        "command": "solidity.compile",
+        "key": "Ctrl+f5",
+        "mac": "Cmd+f5",
+        "when": "editorTextFocus"
+    }
     ],
     "snippets": [
       {
