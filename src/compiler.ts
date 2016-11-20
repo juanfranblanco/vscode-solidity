@@ -74,8 +74,6 @@ function outputErrorsToDiagnostics(diagnosticCollection: vscode.DiagnosticCollec
     return errorWarningCounts;
 }
 
-// TODO: decouple compilation of error reporting formatters (passed as a function), and saving to disk
-
 export function compile(contracts: any,
                         diagnosticCollection: vscode.DiagnosticCollection,
                         buildDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string) {
@@ -92,8 +90,26 @@ export function compile(contracts: any,
 
     vscode.window.setStatusBarMessage('Compilation started');
 
-    let output = solc.compile({ sources: contracts }, 1);
+    let remoteCompiler = vscode.workspace.getConfiguration('solidity').get('compileUsingRemoteVersion');
+    if (remoteCompiler !== null) {
+        solc.loadRemoteVersion(remoteCompiler, function(err, solcSnapshot) {
+            if (err) {
+                vscode.window.showWarningMessage('There was an error loading the remote version: ' + remoteCompiler);
+                return;
+            } else {
+                let output = solcSnapshot.compile({ sources: contracts }, 1);
+                processCompilationOuput(output, outputChannel, diagnosticCollection, buildDir,
+                                            sourceDir, excludePath, singleContractFilePath);
+            }
+        });
+    } else {
+        let output = solc.compile({ sources: contracts }, 1);
+        processCompilationOuput(output, outputChannel, diagnosticCollection, buildDir, sourceDir, excludePath, singleContractFilePath);
+    }
+ }
 
+function processCompilationOuput(output: any, outputChannel: vscode.OutputChannel, diagnosticCollection: vscode.DiagnosticCollection,
+                    buildDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string) {
     vscode.window.setStatusBarMessage('Compilation completed');
 
     if (Object.keys(output).length === 0) {
@@ -104,14 +120,13 @@ export function compile(contracts: any,
     diagnosticCollection.clear();
 
     if (output.errors) {
-
         const errorWarningCounts = outputErrorsToDiagnostics(diagnosticCollection, output.errors);
         outputErrorsToChannel(outputChannel, output.errors);
 
         if (errorWarningCounts.errors > 0) {
             vscode.window.showErrorMessage(`Compilation failed with ${errorWarningCounts.errors} errors`);
             if (errorWarningCounts.warnings > 0) {
-                 vscode.window.showWarningMessage(`Compilation had ${errorWarningCounts.warnings} warnings`);
+                vscode.window.showWarningMessage(`Compilation had ${errorWarningCounts.warnings} warnings`);
             }
         } else if (errorWarningCounts.warnings > 0) {
             writeCompilationOutputToBuildDirectory(output, buildDir, sourceDir, excludePath, singleContractFilePath);
@@ -123,75 +138,74 @@ export function compile(contracts: any,
         outputChannel.hide();
         vscode.window.showInformationMessage('Compilation completed succesfully!');
     }
-
 }
 
-     function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, sourceDir: string,
-                                                     excludePath?: string, singleContractFilePath?: string) {
-        let binPath = path.join(vscode.workspace.rootPath, buildDir);
+function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, sourceDir: string,
+                                                    excludePath?: string, singleContractFilePath?: string) {
+    let binPath = path.join(vscode.workspace.rootPath, buildDir);
 
-        if (!fs.existsSync(binPath)) {
-            fs.mkdirSync(binPath);
-        }
+    if (!fs.existsSync(binPath)) {
+        fs.mkdirSync(binPath);
+    }
 
-        // iterate through all the sources, 
-        //find contracts and output them into the same folder structure to avoid collisions, named as the contract
-        for (let source in output.sources) {
+    // iterate through all the sources, 
+    //find contracts and output them into the same folder structure to avoid collisions, named as the contract
+    for (let source in output.sources) {
 
-            // TODO: ALL this validation to a method
+        // TODO: ALL this validation to a method
 
-            // Output only single contract compilation or all
-            if (!singleContractFilePath || source === singleContractFilePath) {
+        // Output only single contract compilation or all
+        if (!singleContractFilePath || source === singleContractFilePath) {
 
-                if (!excludePath || !source.startsWith(excludePath)) {
-                    // Output only source directory compilation or all (this will exclude external references)
-                    if (!sourceDir || source.startsWith(sourceDir)) {
+            if (!excludePath || !source.startsWith(excludePath)) {
+                // Output only source directory compilation or all (this will exclude external references)
+                if (!sourceDir || source.startsWith(sourceDir)) {
 
-                        output.sources[source].AST.children.forEach(child => {
+                    output.sources[source].AST.children.forEach(child => {
 
-                            if (child.name === 'Contract' || child.name === 'ContractDefinition') {
-                                let contractName = child.attributes.name;
+                        if (child.name === 'Contract' || child.name === 'ContractDefinition') {
+                            let contractName = child.attributes.name;
 
-                                let relativePath = path.relative(vscode.workspace.rootPath, source);
+                            let relativePath = path.relative(vscode.workspace.rootPath, source);
 
-                                let dirName = path.dirname(path.join(binPath, relativePath));
+                            let dirName = path.dirname(path.join(binPath, relativePath));
 
-                                if (!fs.existsSync(dirName)) {
-                                    fsex.mkdirsSync(dirName);
-                                }
-
-                                let contractAbiPath = path.join(dirName, contractName + '.abi');
-                                let contractBinPath = path.join(dirName, contractName + '.bin');
-                                let contractJsonPath = path.join(dirName, contractName + '.json');
-
-                                if (fs.existsSync(contractAbiPath)) {
-                                    fs.unlinkSync(contractAbiPath);
-                                }
-
-                                if (fs.existsSync(contractBinPath)) {
-                                    fs.unlinkSync(contractBinPath);
-                                }
-
-                                if (fs.existsSync(contractJsonPath)) {
-                                    fs.unlinkSync(contractJsonPath);
-                                }
-
-                                fs.writeFileSync(contractBinPath, output.contracts[contractName].bytecode);
-                                fs.writeFileSync(contractAbiPath, output.contracts[contractName].interface);
-
-                                let shortJsonOutput = {
-                                    abi : output.contracts[contractName].interface,
-                                    bytecode : output.contracts[contractName].bytecode,
-                                    functionHashes : output.contracts[contractName].functionHashes,
-                                    gasEstimates : output.contracts[contractName].gasEstimates,
-                                    runtimeBytecode : output.contracts[contractName].runtimeBytecode,
-                                };
-
-                                fs.writeFileSync(contractJsonPath, JSON.stringify(shortJsonOutput, null, 4));
+                            if (!fs.existsSync(dirName)) {
+                                fsex.mkdirsSync(dirName);
                             }
-                        });
-                    }
+
+                            let contractAbiPath = path.join(dirName, contractName + '.abi');
+                            let contractBinPath = path.join(dirName, contractName + '.bin');
+                            let contractJsonPath = path.join(dirName, contractName + '.json');
+
+                            if (fs.existsSync(contractAbiPath)) {
+                                fs.unlinkSync(contractAbiPath);
+                            }
+
+                            if (fs.existsSync(contractBinPath)) {
+                                fs.unlinkSync(contractBinPath);
+                            }
+
+                            if (fs.existsSync(contractJsonPath)) {
+                                fs.unlinkSync(contractJsonPath);
+                            }
+
+                            fs.writeFileSync(contractBinPath, output.contracts[contractName].bytecode);
+                            fs.writeFileSync(contractAbiPath, output.contracts[contractName].interface);
+
+                            let shortJsonOutput = {
+                                abi : output.contracts[contractName].interface,
+                                bytecode : output.contracts[contractName].bytecode,
+                                functionHashes : output.contracts[contractName].functionHashes,
+                                gasEstimates : output.contracts[contractName].gasEstimates,
+                                runtimeBytecode : output.contracts[contractName].runtimeBytecode,
+                            };
+
+                            fs.writeFileSync(contractJsonPath, JSON.stringify(shortJsonOutput, null, 4));
+                        }
+                    });
                 }
             }
+        }
     }
 }
