@@ -4,7 +4,7 @@
   "keywords": [
     "soliity", "ethereum", "blockchain", "compiler"
   ],
-  "version": "0.0.19",
+  "version": "0.0.20",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.5.1"
@@ -26,7 +26,8 @@
   ],
   "activationEvents": [
     "onCommand:solidity.compile",
-    "onCommand:solidity.compile.active"
+    "onCommand:solidity.compile.active",
+    "onCommand:solidity.codegen"
   ],
   
   "main": "./out/src/extension",
@@ -38,7 +39,8 @@
   "dependencies": {
     "fs-extra": "^0.30.0",
     "read-yaml": "^1.0.0",
-    "solc": "^0.4.4"
+    "solc": "^0.4.4",
+    "abi-code-gen": "0.0.3"
   },
   "devDependencies": {
     "tslint": "^3.15.1",
@@ -73,12 +75,17 @@
     "commands": [
       {
         "command": "solidity.compile",
-        "title": "Compile All Solidity Contracts"
+        "title": "Solidity: Compile All Solidity Contracts"
       },
       {
         "command": "solidity.compile.active",
-        "title": "Compile Current Solidity Contract"
+        "title": "Solidity: Compile Current Solidity Contract"
+      },
+      {
+        "command": "solidity.codegen",
+        "title": "Solidity: Code generate from compilation output 'contract.json'"
       }
+      
     ],
     "keybindings": [{
         "command": "solidity.compile.active",

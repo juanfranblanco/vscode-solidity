@@ -2,6 +2,7 @@
 import * as vscode from 'vscode';
 import {compileAllContracts} from './compileAll';
 import {compileActiveContract, initDiagnosticCollection, highlightErrors} from './compileActive';
+import {codeGenerate} from './codegen';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
@@ -21,6 +22,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile', () => {
         compileAllContracts(diagnosticCollection);
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.codegen', (args: any[]) => {
+        codeGenerate(args, diagnosticCollection);
     }));
 
     // Commented out to disable error hightlighting on the fly is very slow this needs to be put in a server
