@@ -46,7 +46,7 @@
                 }
             },
             "comment": "Built-in types",
-            "match": "\\b(address|string\\d*|bytes\\d*|int\\d*|uint\\d*|bool|hash\\d*)(?:\\s+(?:indexed\\s+)?([A-Za-z_]\\w*)\\s*[,\\)])?"
+            "match": "\\b(address|string\\d*|bytes\\d*|int\\d*|uint\\d*|bool|hash\\d*)(?:\\s+(?:indexed\\s+)?([A-Za-z_]\\w*)\\s*[,\\)])?\\b"
         },
         {
             "captures": {
@@ -73,7 +73,7 @@
         },
         {
             "comment": "Langauge keywords",
-            "match": "\\b(var|import|function|constant|if|else|for|while|do|break|continue|returns?|private|public|external|inherited|this|suicide|new|is|\\_)\\b",
+            "match": "\\b(var|import|function|constant|if|else|for|while|do|break|continue|throw|returns?|private|public|external|inherited|this|suicide|new|is|\\_)\\b",
             "name": "keyword.control"
         },
         {
