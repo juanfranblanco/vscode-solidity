@@ -91,8 +91,11 @@ export function compile(contracts: any,
     vscode.window.setStatusBarMessage('Compilation started');
 
     let remoteCompiler = vscode.workspace.getConfiguration('solidity').get('compileUsingRemoteVersion');
-    if (remoteCompiler !== null) {
-        solc.loadRemoteVersion(remoteCompiler, function(err, solcSnapshot) {
+    if (typeof remoteCompiler === 'undefined' || remoteCompiler === null) {
+        let output = solc.compile({ sources: contracts }, 1);
+        processCompilationOuput(output, outputChannel, diagnosticCollection, buildDir, sourceDir, excludePath, singleContractFilePath);
+    } else {
+       solc.loadRemoteVersion(remoteCompiler, function(err, solcSnapshot) {
             if (err) {
                 vscode.window.showWarningMessage('There was an error loading the remote version: ' + remoteCompiler);
                 return;
@@ -102,9 +105,6 @@ export function compile(contracts: any,
                                             sourceDir, excludePath, singleContractFilePath);
             }
         });
-    } else {
-        let output = solc.compile({ sources: contracts }, 1);
-        processCompilationOuput(output, outputChannel, diagnosticCollection, buildDir, sourceDir, excludePath, singleContractFilePath);
     }
  }
 
@@ -190,15 +190,15 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
                                 fs.unlinkSync(contractJsonPath);
                             }
 
-                            fs.writeFileSync(contractBinPath, output.contracts[contractName].bytecode);
-                            fs.writeFileSync(contractAbiPath, output.contracts[contractName].interface);
+                            fs.writeFileSync(contractBinPath, output.contracts[source + ':' + contractName].bytecode);
+                            fs.writeFileSync(contractAbiPath, output.contracts[source + ':' + contractName].interface);
 
                             let shortJsonOutput = {
-                                abi : output.contracts[contractName].interface,
-                                bytecode : output.contracts[contractName].bytecode,
-                                functionHashes : output.contracts[contractName].functionHashes,
-                                gasEstimates : output.contracts[contractName].gasEstimates,
-                                runtimeBytecode : output.contracts[contractName].runtimeBytecode,
+                                abi : output.contracts[source + ':' + contractName].interface,
+                                bytecode : output.contracts[source + ':' + contractName].bytecode,
+                                functionHashes : output.contracts[source + ':' + contractName].functionHashes,
+                                gasEstimates : output.contracts[source + ':' + contractName].gasEstimates,
+                                runtimeBytecode : output.contracts[source + ':' + contractName].runtimeBytecode,
                             };
 
                             fs.writeFileSync(contractJsonPath, JSON.stringify(shortJsonOutput, null, 4));
