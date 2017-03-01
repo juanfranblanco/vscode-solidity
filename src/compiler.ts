@@ -4,6 +4,7 @@ import * as solc from 'solc';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as fsex from 'fs-extra';
+import * as artifactor from 'truffle-artifactor';
 
 export function compileAndHighlightErrors(contracts: any, diagnosticCollection: vscode.DiagnosticCollection) {
     let output = solc.compile({ sources: contracts }, 1);
@@ -177,6 +178,7 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
                             let contractAbiPath = path.join(dirName, contractName + '.abi');
                             let contractBinPath = path.join(dirName, contractName + '.bin');
                             let contractJsonPath = path.join(dirName, contractName + '.json');
+                            let truffleArtifactPath = path.join(dirName, contractName + '.sol.js');
 
                             if (fs.existsSync(contractAbiPath)) {
                                 fs.unlinkSync(contractAbiPath);
@@ -188,6 +190,10 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
 
                             if (fs.existsSync(contractJsonPath)) {
                                 fs.unlinkSync(contractJsonPath);
+                            }
+
+                            if (fs.existsSync(truffleArtifactPath)) {
+                                fs.unlinkSync(truffleArtifactPath);
                             }
 
                             fs.writeFileSync(contractBinPath, output.contracts[source + ':' + contractName].bytecode);
@@ -202,6 +208,13 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
                             };
 
                             fs.writeFileSync(contractJsonPath, JSON.stringify(shortJsonOutput, null, 4));
+
+                            let contract_data = {
+                                abi: output.contracts[source + ':' + contractName].interface,
+                                unlinked_binary: output.contracts[source + ':' + contractName].bytecode,
+                                };
+
+                            artifactor.save(contract_data, truffleArtifactPath);
                         }
                     });
                 }
