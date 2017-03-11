@@ -92,12 +92,12 @@
         "command": "solidity.compile.active",
         "key": "f5",
         "mac": "f5",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && editorLangId == 'solidity'"
     },{
         "command": "solidity.compile",
         "key": "Ctrl+f5",
         "mac": "Cmd+f5",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && editorLangId == 'solidity'"
     }
     ],
     "snippets": [
