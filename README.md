@@ -21,6 +21,7 @@ To compile using a different version of Solidity, for example latest or 'v0.4.3+
 Work in progress, any feedback appreciated.
 
 For ideas, issues, additions, modifications please raise an issue or a pull request at https://github.com/juanfranblanco/vscode-solidity/
+and / or send a message on gitter at https://gitter.im/vscode-solidity/Lobby
 
 # Credits
 

@@ -4,7 +4,7 @@
   "keywords": [
     "soliity", "ethereum", "blockchain", "compiler"
   ],
-  "version": "0.0.21",
+  "version": "0.0.22",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.5.1"
@@ -29,25 +29,26 @@
     "onCommand:solidity.compile.active",
     "onCommand:solidity.codegen"
   ],
-  
-  "main": "./out/src/extension",
-  "scripts": {
-    "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
-    "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install"
-  },
-  "dependencies": {
+    "main": "./out/src/extension",
+    "scripts": {
+        "vscode:prepublish": "tsc -p ./",
+        "compile": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install"
+    },
+
+ "dependencies": {
     "fs-extra": "^0.30.0",
     "read-yaml": "^1.0.0",
-    "solc": "^0.4.9",
+    "solc": "^0.4.10",
     "abi-code-gen": "0.0.3",
     "truffle-artifactor":"2.1.3"
   },
-  "devDependencies": {
-    "tslint": "^3.15.1",
-    "typescript": "1.8.10",
-    "vscode": "^0.11.18"
-  },
+ "devDependencies": {
+        "typescript": "^2.0.3",
+        "vscode": "^1.0.0",
+        "@types/node": "^6.0.40",
+        "tslint": "^3.15.1"
+    },
   "contributes": {
     "configuration": {
         "type": "object",

@@ -208,13 +208,15 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
                             };
 
                             fs.writeFileSync(contractJsonPath, JSON.stringify(shortJsonOutput, null, 4));
-
+                            /*
                             let contract_data = {
+                                contract_name: contractName,
                                 abi: output.contracts[source + ':' + contractName].interface,
                                 unlinked_binary: output.contracts[source + ':' + contractName].bytecode,
                                 };
 
                             artifactor.save(contract_data, truffleArtifactPath);
+                            */
                         }
                     });
                 }
