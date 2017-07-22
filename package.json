@@ -2,12 +2,15 @@
   "name": "solidity",
   "description": "Ethereum Solidity Language for Visual Studio Code",
   "keywords": [
-    "soliity", "ethereum", "blockchain", "compiler"
+    "soliity",
+    "ethereum",
+    "blockchain",
+    "compiler"
   ],
   "version": "0.0.22",
   "publisher": "JuanBlanco",
   "engines": {
-    "vscode": "^1.5.1"
+    "vscode": "^1.8.0"
   },
   "contributors": [
     "Juan Blanco"
@@ -25,6 +28,7 @@
     "Snippets"
   ],
   "activationEvents": [
+    "onLanguage:solidity",
     "onCommand:solidity.compile",
     "onCommand:solidity.compile.active",
     "onCommand:solidity.codegen"
@@ -36,17 +40,20 @@
     "postinstall": "node ./node_modules/vscode/bin/install"
   },
   "dependencies": {
-    "fs-extra": "^0.30.0",
-    "read-yaml": "^1.0.0",
-    "solc": "^0.4.10",
     "abi-code-gen": "0.0.3",
-    "truffle-artifactor":"2.1.3"
+    "fs-extra": "^4.0.0",
+    "read-yaml": "^1.1.0",
+    "solc": "^0.4.13",
+    "solium": "^0.5.3",
+    "truffle-artifactor": "^2.1.4",
+    "vscode-languageclient": "^3.3.0",
+    "vscode-languageserver": "^3.3.0"
   },
   "devDependencies": {
-    "typescript": "^2.0.3",
-    "vscode": "^1.0.0",
-    "@types/node": "^6.0.40",
-    "tslint": "^3.15.1"
+    "@types/node": "^8.0.14",
+    "tslint": "^5.5.0",
+    "typescript": "^2.4.2",
+    "vscode": "^1.1.4"
   },
   "contributes": {
     "configuration": {
@@ -54,7 +61,10 @@
       "title": "Solidity configuration",
       "properties": {
         "solidity.compileUsingRemoteVersion": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null,
           "description": "Compile using a remote version instead of the current one, for example: 'latest' or 'v0.4.3+commit.2353da71'"
         }
