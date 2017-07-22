@@ -58,6 +58,4 @@ export function compileActiveContract() {
             null,
             packagesPath,
             contract.absolutePath);
-
 }
-
