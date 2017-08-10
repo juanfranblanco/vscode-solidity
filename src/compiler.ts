@@ -92,7 +92,13 @@ export function compile(contracts: any,
     vscode.window.setStatusBarMessage('Compilation started');
 
     let remoteCompiler = vscode.workspace.getConfiguration('solidity').get('compileUsingRemoteVersion');
+    let localCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingLocalVersion');
     if (typeof remoteCompiler === 'undefined' || remoteCompiler === null) {
+       if(typeof localCompiler !== 'undefined' || localCompiler !== null) {
+        //var solidityfile = require("C:\\Users\\JuanFran\\Downloads\\soljson-v0.4.15%2Bcommit.bbb8e64f.js");
+            var solidityfile = require(localCompiler);
+            solc.setupMethods(solidityfile);
+        }
         let output = solc.compile({ sources: contracts }, 1);
         processCompilationOuput(output, outputChannel, diagnosticCollection, buildDir, sourceDir, excludePath, singleContractFilePath);
     } else {

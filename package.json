@@ -4,7 +4,7 @@
   "keywords": [
     "soliity", "ethereum", "blockchain", "compiler"
   ],
-  "version": "0.0.22",
+  "version": "0.0.24",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.5.1"
@@ -39,7 +39,7 @@
  "dependencies": {
     "fs-extra": "^0.30.0",
     "read-yaml": "^1.0.0",
-    "solc": "^0.4.10",
+    "solc": "^0.4.15",
     "abi-code-gen": "0.0.3",
     "truffle-artifactor":"2.1.3"
   },

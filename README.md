@@ -12,11 +12,19 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
   Please contribute more templates.
 
 
-To compile using a different version of Solidity, for example latest or 'v0.4.3+commit.2353da71', use the user settings as follow:
+To compile using a different version of Solidity, for example latest or 'v0.4.3+commit.2353da71', this will download this version everytime you compile:
 
 ```
 "solidity.compileUsingRemoteVersion" : "latest"
 ```
+
+If you have downloaded a local version you can configure it as follows:
+
+```
+"solidity.compileUsingLocalVersion" : "C:\\Users\\JuanFran\\Downloads\\soljson-v0.4.15%2Bcommit.bbb8e64f.js"
+```
+
+You can find all the different versions in the solc-bin repository https://github.com/ethereum/solc-bin/tree/gh-pages/bin
 
 Work in progress, any feedback appreciated.
 
