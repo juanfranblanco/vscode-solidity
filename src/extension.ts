@@ -1,24 +1,24 @@
 'use strict';
+
+import * as path from 'path';
 import * as vscode from 'vscode';
 import {compileAllContracts} from './compileAll';
-import {compileActiveContract, initDiagnosticCollection, highlightErrors} from './compileActive';
+import {compileActiveContract, initDiagnosticCollection} from './compileActive';
 import {codeGenerate} from './codegen';
+import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind} from 'vscode-languageclient';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
 export function activate(context: vscode.ExtensionContext) {
-
-
     diagnosticCollection = vscode.languages.createDiagnosticCollection('solidity');
+
     context.subscriptions.push(diagnosticCollection);
 
-    // TODO: This is required for highlightErrors on the fly move to a server
     initDiagnosticCollection(diagnosticCollection);
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.active', () => {
         compileActiveContract();
     }));
-
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile', () => {
         compileAllContracts(diagnosticCollection);
@@ -28,11 +28,31 @@ export function activate(context: vscode.ExtensionContext) {
         codeGenerate(args, diagnosticCollection);
     }));
 
-    // Commented out to disable error hightlighting on the fly is very slow this needs to be put in a server
-    // vscode.workspace.onDidChangeTextDocument(highlightErrors, this, context.subscriptions);
+    const serverModule = path.join(__dirname, 'server.js');
 
-}
+    const serverOptions: ServerOptions = {
+        debug: {
+            module: serverModule,
+            options: {
+                execArgv: ['--nolazy', '--debug=6004'],
+            },
+            transport: TransportKind.ipc,
+        },
+        run: {
+            module: serverModule,
+            transport: TransportKind.ipc,
+        },
+    };
 
-// this method is called when your extension is deactivated
-export function deactivate() {
+    const clientOptions: LanguageClientOptions = {
+        documentSelector: ['solidity'],
+    };
+
+    const client = new LanguageClient(
+        'solidity',
+        'Solidity Language Server',
+        serverOptions,
+        clientOptions);
+
+    context.subscriptions.push(client.start());
 }

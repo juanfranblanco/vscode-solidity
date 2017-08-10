@@ -17,7 +17,7 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
     }
 
     let contractsCollection = new ContractCollection();
-    let project = projService.initialiseProject();
+    let project = projService.initialiseProject(vscode.workspace.rootPath);
     let solidityPath = '**/*.sol';
     if (project.projectPackage.sol_sources !== undefined || project.projectPackage.sol_sources === '') {
         solidityPath = project.projectPackage.sol_sources + '/' + solidityPath;

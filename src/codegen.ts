@@ -9,9 +9,8 @@ export function codeGenerate(args: any, diagnostics: vscode.DiagnosticCollection
     } catch (e) {
         let outputChannel = vscode.window.createOutputChannel('solidity code generation');
         outputChannel.clear();
-        outputChannel.appendLine('Error generating code:')
+        outputChannel.appendLine('Error generating code:');
         outputChannel.appendLine(e.message);
         outputChannel.show();
     }
 }
-

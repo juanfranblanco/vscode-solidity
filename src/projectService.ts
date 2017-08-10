@@ -1,5 +1,4 @@
 'use strict';
-import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as readyaml from 'read-yaml';
@@ -32,8 +31,7 @@ function createPackage(rootPath: string) {
     return null;
 }
 
-export function initialiseProject() {
-    let rootPath = vscode.workspace.rootPath;
+export function initialiseProject(rootPath) {
     let projectPackage = createProjectPackage(rootPath);
     let dependencies = loadDependencies(rootPath, projectPackage);
     let packagesDirAbsolutePath = path.join(rootPath, packageDependenciesDirectory);
