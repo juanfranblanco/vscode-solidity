@@ -1,118 +1,124 @@
 {
-  "name": "solidity",
-  "description": "Ethereum Solidity Language for Visual Studio Code",
-  "keywords": [
-    "soliity", "ethereum", "blockchain", "compiler"
-  ],
-  "version": "0.0.24",
-  "publisher": "JuanBlanco",
-  "engines": {
-    "vscode": "^1.5.1"
-  },
-  "contributors": [
-    "Juan Blanco"
-  ],
-  "bugs": {
-		"url": "https://github.com/juanfranblanco/vscode-solidity/issues"
-	},
-  "icon": "images/icon.png",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/juanfranblanco/vscode-solidity"
-  },
-  "categories": [
-    "Languages",
-    "Snippets"
-  ],
-  "activationEvents": [
-    "onCommand:solidity.compile",
-    "onCommand:solidity.compile.active",
-    "onCommand:solidity.codegen"
-  ],
+    "name": "solidity",
+    "description": "Ethereum Solidity Language for Visual Studio Code",
+    "keywords": [
+        "soliity",
+        "ethereum",
+        "blockchain",
+        "compiler"
+    ],
+    "version": "0.0.24",
+    "publisher": "JuanBlanco",
+    "engines": {
+        "vscode": "^1.5.1"
+    },
+    "contributors": [
+        "Juan Blanco"
+    ],
+    "bugs": {
+        "url": "https://github.com/juanfranblanco/vscode-solidity/issues"
+    },
+    "icon": "images/icon.png",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/juanfranblanco/vscode-solidity"
+    },
+    "categories": [
+        "Languages",
+        "Snippets"
+    ],
+    "activationEvents": [
+        "onCommand:solidity.compile",
+        "onCommand:solidity.compile.active",
+        "onCommand:solidity.codegen"
+    ],
     "main": "./out/src/extension",
     "scripts": {
         "vscode:prepublish": "tsc -p ./",
         "compile": "tsc -watch -p ./",
         "postinstall": "node ./node_modules/vscode/bin/install"
     },
-
- "dependencies": {
-    "fs-extra": "^0.30.0",
-    "read-yaml": "^1.0.0",
-    "solc": "^0.4.15",
-    "abi-code-gen": "0.0.3",
-    "truffle-artifactor":"2.1.3"
-  },
- "devDependencies": {
-        "typescript": "^2.0.3",
-        "vscode": "^1.0.0",
-        "@types/node": "^6.0.40",
-        "tslint": "^3.15.1"
+    "dependencies": {
+        "fs-extra": "^0.30.0",
+        "read-yaml": "^1.0.0",
+        "solc": "^0.4.15",
+        "abi-code-gen": "0.0.3",
+        "truffle-artifactor": "2.1.3"
     },
-  "contributes": {
-    "configuration": {
-        "type": "object",
-        "title": "Solidity configuration",
-        "properties": {
-            "solidity.compileUsingRemoteVersion": {
-                "type": ["string", "null"],
-                "default": null,
-                "description": "Compile using a remote version instead of the current one, for example: 'latest' or 'v0.4.3+commit.2353da71'"
+    "devDependencies": {
+        "@types/node": "^8.0.14",
+        "tslint": "^5.5.0",
+        "typescript": "^2.4.2",
+        "vscode": "^1.1.4"
+    },
+    "contributes": {
+        "configuration": {
+            "type": "object",
+            "title": "Solidity configuration",
+            "properties": {
+                "solidity.compileUsingRemoteVersion": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null,
+                    "description": "Compile using a remote version instead of the current one, for example: 'latest' or 'v0.4.3+commit.2353da71'"
                 }
             }
-    },
-    "languages": [
-      {
-        "id": "solidity",
-        "aliases": [
-          "Solidity",
-          "solidity"
+        },
+        "languages": [
+            {
+                "id": "solidity",
+                "aliases": [
+                    "Solidity",
+                    "solidity"
+                ],
+                "extensions": [
+                    ".sol"
+                ],
+                "configuration": "./solidity.configuration.json"
+            }
         ],
-        "extensions": [
-          ".sol"
+        "commands": [
+            {
+                "command": "solidity.compile",
+                "title": "Solidity: Compile All Solidity Contracts"
+            },
+            {
+                "command": "solidity.compile.active",
+                "title": "Solidity: Compile Current Solidity Contract"
+            },
+            {
+                "command": "solidity.codegen",
+                "title": "Solidity: Code generate from compilation output 'contract.json'"
+            }
         ],
-        "configuration": "./solidity.configuration.json"
-      }
-    ],
-    "commands": [
-      {
-        "command": "solidity.compile",
-        "title": "Solidity: Compile All Solidity Contracts"
-      },
-      {
-        "command": "solidity.compile.active",
-        "title": "Solidity: Compile Current Solidity Contract"
-      },
-      {
-        "command": "solidity.codegen",
-        "title": "Solidity: Code generate from compilation output 'contract.json'"
-      }
-      
-    ],
-    "keybindings": [{
-        "command": "solidity.compile.active",
-        "key": "f5",
-        "mac": "f5",
-        "when": "editorTextFocus && editorLangId == 'solidity'"
-    },{
-        "command": "solidity.compile",
-        "key": "Ctrl+f5",
-        "mac": "Cmd+f5",
-        "when": "editorTextFocus && editorLangId == 'solidity'"
+        "keybindings": [
+            {
+                "command": "solidity.compile.active",
+                "key": "f5",
+                "mac": "f5",
+                "when": "editorTextFocus && editorLangId == 'solidity'"
+            },
+            {
+                "command": "solidity.compile",
+                "key": "Ctrl+f5",
+                "mac": "Cmd+f5",
+                "when": "editorTextFocus && editorLangId == 'solidity'"
+            }
+        ],
+        "snippets": [
+            {
+                "language": "solidity",
+                "path": "./snippets/solidity.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "solidity",
+                "scopeName": "source.solidity",
+                "path": "./syntaxes/solidity.json"
+            }
+        ]
     }
-    ],
-    "snippets": [
-      {
-        "language": "solidity",
-        "path": "./snippets/solidity.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "solidity",
-        "scopeName": "source.solidity",
-        "path": "./syntaxes/solidity.json"
-      }
-    ]
-  }
 }
