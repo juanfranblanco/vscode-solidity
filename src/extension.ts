@@ -46,13 +46,21 @@ export function activate(context: vscode.ExtensionContext) {
 
     const clientOptions: LanguageClientOptions = {
         documentSelector: ['solidity'],
+        synchronize: {
+                    // Synchronize the setting section 'solidity' to the server
+                    configurationSection: 'solidity',
+                    // Notify the server about file changes to '.soliumrc files contain in the workspace
+                    fileEvents: vscode.workspace.createFileSystemWatcher('**/.soliumrc.json'),
+                },
     };
 
-    const client = new LanguageClient(
+    const clientDisposible = new LanguageClient(
         'solidity',
         'Solidity Language Server',
         serverOptions,
-        clientOptions);
+        clientOptions).start();
 
-    context.subscriptions.push(client.start());
+    // Push the disposable to the context's subscriptions so that the
+    // client can be deactivated on extension deactivation
+    context.subscriptions.push(clientDisposible);
 }

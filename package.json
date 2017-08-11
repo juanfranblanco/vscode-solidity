@@ -44,14 +44,14 @@
     "fs-extra": "^4.0.0",
     "read-yaml": "^1.1.0",
     "solc": "^0.4.13",
-    "solium": "^0.5.3",
+    "solium": "^0.5.5",
     "truffle-artifactor": "^2.1.4",
     "vscode-languageclient": "^3.3.0",
     "vscode-languageserver": "^3.3.0"
   },
   "devDependencies": {
     "@types/node": "^8.0.14",
-    "tslint": "^5.5.0",
+    "tslint": "^5.6.0",
     "typescript": "^2.4.2",
     "vscode": "^1.1.4"
   },
@@ -67,6 +67,28 @@
           ],
           "default": null,
           "description": "Compile using a remote version instead of the current one, for example: 'latest' or 'v0.4.3+commit.2353da71'"
+        },
+        "solidity.compileUsingLocalVersion": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Compile using a local version instead of the current one, for example: 'C://v0.4.3+commit.2353da71.js'"
+        },
+        "solidity.enableSolium": {
+          "type": [
+            "boolean"
+          ],
+          "default": true,
+          "description": "Enables solium linting"
+        },
+        "solidity.enabledAsYouTypeErrorCheck": {
+          "type": [
+            "boolean"
+          ],
+          "default": false,
+          "description": "Enables as you type compilation and error highlighting"
         }
       }
     },

@@ -6,8 +6,8 @@ import {Package} from './model/package';
 import {Project} from  './model/project';
 
 // TODO: These are temporary constants until standard agreed
-const packageConfigFileName = 'dappfile';
-const packageDependenciesDirectory = 'dapple_packages';
+const packageConfigFileName = 'dappFile';
+const packageDependenciesDirectory = 'lib';
 
 function createPackage(rootPath: string) {
     let projectPackageFile = path.join(rootPath, packageConfigFileName);
@@ -42,8 +42,8 @@ function loadDependencies(rootPath: string, projectPackage: Package, depPackages
     if (projectPackage.dependencies !== undefined) {
         Object.keys(projectPackage.dependencies).forEach(dependency => {
             if (!depPackages.some((existingDepPack: Package) => existingDepPack.name === dependency)) {
-                let depPackagePath = path.join(rootPath, packageDependenciesDirectory, dependency);
-                let depPackage = createPackage(depPackagePath);
+                let depPackageDependencyPath = path.join(rootPath, packageDependenciesDirectory, dependency);
+                let depPackage = createPackage(depPackageDependencyPath);
 
                 if (depPackage !== null) {
                     depPackages.push(depPackage);
@@ -55,15 +55,44 @@ function loadDependencies(rootPath: string, projectPackage: Package, depPackages
             }
         });
     }
+    // lets not skip packages in lib
+    let depPackagePath = path.join(projectPackage.absoluletPath, packageDependenciesDirectory);
+    if (fs.existsSync(depPackagePath)) {
+        let depPackagesDirectories = getDirectories(depPackagePath);
+        depPackagesDirectories.forEach(depPackageDir => {
+            let fullPath = path.join(depPackagePath, depPackageDir);
+            let depPackage = createPackage(fullPath);
+            if (depPackage == null) {
+                depPackage = createDefaultPackage(fullPath);
+            }
+            if (!depPackages.some((existingDepPack: Package) => existingDepPack.name === depPackage.name)) {
+                depPackages.push(depPackage);
+                    loadDependencies(rootPath, depPackage, depPackages);
+            }
+        });
+    }
     return depPackages;
 }
 
-function createProjectPackage(rootPath: string) {
+function getDirectories(dirPath: string): string[] {
+  return fs.readdirSync(dirPath).filter(function (file) {
+    const subdirPath = path.join(dirPath, file);
+    return fs.statSync(subdirPath).isDirectory();
+  });
+}
+
+function createDefaultPackage(packagePath: string): Package {
+    let defaultPackage = new Package();
+    defaultPackage.absoluletPath = packagePath;
+    defaultPackage.name = path.basename(packagePath);
+    return defaultPackage;
+}
+
+function createProjectPackage(rootPath: string): Package {
     let projectPackage = createPackage(rootPath);
     // Default project package,this could be passed as a function
     if (projectPackage === null) {
-        projectPackage = new Package();
-        projectPackage.absoluletPath = rootPath;
+        projectPackage = createDefaultPackage(rootPath);
     }
     return projectPackage;
 }

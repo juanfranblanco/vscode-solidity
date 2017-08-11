@@ -11,6 +11,7 @@ export class Package {
 
     constructor() {
         this.build_dir = 'bin';
+        this.sol_sources = 'src';
     }
 
     public getSolSourcesAbsolutePath() {
@@ -21,7 +22,11 @@ export class Package {
     }
 
     public isImportForThis(contractDependencyImport: string) {
-        return contractDependencyImport.startsWith(this.name);
+       let splitDirectories = contractDependencyImport.split('/');
+        if (splitDirectories.length === 1) {
+            return false;
+        }
+        return splitDirectories[0] === this.name;
     }
 
     public resolveImport(contractDependencyImport: string) {

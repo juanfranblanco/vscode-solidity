@@ -29,7 +29,7 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
         excludePath = '**/' + project.projectPackage.build_dir + '/**';
     }
 
-    // Process open Text Documents first as it is faster (We might need to save them all first? Is this assumed?) 
+    // Process open Text Documents first as it is faster (We might need to save them all first? Is this assumed?)
     vscode.workspace.textDocuments.forEach(document => {
 
         if (path.extname(document.fileName) === '.sol') {
@@ -58,6 +58,7 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
         compile(contractsCollection.getContractsForCompilation(),
                 diagnosticCollection,
                 project.projectPackage.build_dir,
+                 project.projectPackage.absoluletPath,
                 sourceDirPath,
                 packagesPath);
 

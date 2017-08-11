@@ -82,7 +82,6 @@ export class ContractCollection {
 
     private addContractAndResolveDependencyImport(dependencyImport: string, contract: Contract, project: Project) {
         let depPack = project.findPackage(dependencyImport);
-
         if (depPack !== undefined) {
             let depImportPath = this.formatPath(depPack.resolveImport(dependencyImport));
             if (!this.containsContract(depImportPath)) {
@@ -96,5 +95,4 @@ export class ContractCollection {
             }
         }
     }
-
 }

@@ -3,16 +3,18 @@
 import * as projService from './projectService';
 import * as solc from 'solc';
 import * as Solium from 'solium';
+import * as vscode from  'vscode';
 import {
     createConnection, IConnection,
     IPCMessageReader, IPCMessageWriter,
     TextDocuments, InitializeResult,
-    Files, DiagnosticSeverity, TextDocumentChangeEvent,
+    Files, DiagnosticSeverity, Diagnostic, TextDocumentChangeEvent,
 } from 'vscode-languageserver';
-import { ContractCollection } from "./model/contractsCollection";
+import { ContractCollection } from './model/contractsCollection';
 import { errorToDiagnostic } from './compilerErrors';
-// import * as path from 'path';
+import * as compiler from './compiler';
 
+// import * as path from 'path';
 // Create a connection for the server
 const connection: IConnection = createConnection(
     new IPCMessageReader(process),
@@ -55,8 +57,8 @@ export function compilationErrors(filePath, documentText) {
         filePath,
         documentText,
         projService.initialiseProject(rootPath));
-    
-    const output = solc.compile({sources: contracts.getContractsForCompilation()}, 1);
+
+    const output = compiler.solcCompile({sources: contracts.getContractsForCompilation()});
 
     if (output.errors) {
         return output.errors.map((error) => errorToDiagnostic(error).diagnostic);
@@ -65,12 +67,25 @@ export function compilationErrors(filePath, documentText) {
     return [];
 }
 
+interface Settings {
+    solidity: SoliditySettings;
+}
+
+interface SoliditySettings {
+    enabledSolium: boolean;
+    enabledAsYouTypeErrorCheck: boolean;
+    compileUsingLocalVersion: string;
+    compileUsingRemoteVersion: string;
+}
+
+let enabledSolium = false;
+let enabledAsYouTypeErrorCheck = false;
+let compileUsingRemoteVersion = '';
+let compileUsingLocalVersion = '';
+
+
 function solium(filePath, documentText) {
-    // const fileDirectory = path.dirname(filePath);
-    // const fileName = path.basename(filePath);
-
     let items = [];
-
     try {
         items = Solium.lint(documentText, {
             // TODO climb up the filesystem until we find a .soliumrc.json and use that
@@ -129,20 +144,35 @@ function solium(filePath, documentText) {
 function validate(document) {
     const filePath = Files.uriToFilePath(document.uri);
     const documentText = document.getText();
+    let soliumDiagnostics: Diagnostic[] = [];
+    let compileErrorDiagnostics: Diagnostic[] = [];
 
-    const soliumDiagnostics = solium(filePath, documentText);
-    const solcDiagnostics = compilationErrors(filePath, documentText);
+    if (enabledSolium) {
+        soliumDiagnostics = solium(filePath, documentText);
+    }
 
-    const diagnostics = soliumDiagnostics.concat(solcDiagnostics);
+    if (enabledAsYouTypeErrorCheck) {
+        compileErrorDiagnostics = compilationErrors(filePath, documentText);
+    }
+
+    const diagnostics = soliumDiagnostics.concat(compileErrorDiagnostics);
 
     connection.sendDiagnostics({
-        uri: document.uri,
         diagnostics,
+        uri: document.uri,
     });
 }
 
-function validateAll() {
-    return documents.all().forEach(document => validate(document));
+function startValidation() {
+
+    let initialisedAlready = compiler.initialiseLocalSolc(compileUsingLocalVersion, rootPath);
+    if (!initialisedAlready && (typeof compileUsingRemoteVersion !== 'undefined' || compileUsingRemoteVersion !== null)) {
+        solc.loadRemoteVersion(compileUsingRemoteVersion, function(err, solcSnapshot) {
+             return documents.all().forEach(document => validate(document));
+        });
+    } else {
+        return documents.all().forEach(document => validate(document));
+    }
 }
 
 documents.onDidChangeContent(event => validate(event.document));
@@ -157,8 +187,7 @@ documents.listen(connection);
 
 connection.onInitialize((result): InitializeResult => {
     rootPath = result.rootPath;
-
-    validateAll();
+    // startValidation();
 
     return {
         capabilities: {
@@ -167,6 +196,15 @@ connection.onInitialize((result): InitializeResult => {
     };
 });
 
-connection.onDidChangeConfiguration(() => validateAll());
+connection.onDidChangeConfiguration((change) => {
+    let settings = <Settings>change.settings;
+    enabledAsYouTypeErrorCheck = settings.solidity.enabledAsYouTypeErrorCheck;
+    enabledSolium = settings.solidity.enabledSolium;
+    compileUsingLocalVersion = settings.solidity.compileUsingLocalVersion;
+    compileUsingRemoteVersion = settings.solidity.compileUsingRemoteVersion;
+
+    startValidation();
+},
+);
 
 connection.listen();

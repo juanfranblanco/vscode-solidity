@@ -14,7 +14,7 @@ export function initDiagnosticCollection(diagnostics: vscode.DiagnosticCollectio
 
 export function compileActiveContract() {
     let editor = vscode.window.activeTextEditor;
-    
+
     if (!editor) {
         return; // We need something open
     }
@@ -40,6 +40,7 @@ export function compileActiveContract() {
     compile(contractsCollection.getContractsForCompilation(),
             diagnosticCollection,
             project.projectPackage.build_dir,
+            project.projectPackage.absoluletPath,
             null,
             packagesPath,
             contract.absolutePath);
