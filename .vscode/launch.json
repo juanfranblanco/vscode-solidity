@@ -23,6 +23,15 @@
             "sourceMaps": true,
             "outFiles": ["${workspaceRoot}/out/test"],
             "preLaunchTask": "npm"
+        },
+        {
+            "name": "Attach",
+            "type": "node",
+            "request": "attach",
+            "port": 6009,
+            "sourceMaps": true,
+            "outFiles": [ "${workspaceRoot}/out/src/**/*.js" ],
+            "protocol": "legacy"
         }
-    ]
+        ]
 }

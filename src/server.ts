@@ -1,7 +1,7 @@
 'use strict';
 
 import * as projService from './projectService';
-import * as solc from 'solc';
+import * as solc from './solcLoader';
 import * as Solium from 'solium';
 import * as vscode from  'vscode';
 import {
@@ -58,7 +58,7 @@ export function compilationErrors(filePath, documentText) {
         documentText,
         projService.initialiseProject(rootPath));
 
-    const output = compiler.solcCompile({sources: contracts.getContractsForCompilation()});
+    const output = solc.compile({sources: contracts.getContractsForCompilation()});
 
     if (output.errors) {
         return output.errors.map((error) => errorToDiagnostic(error).diagnostic);
@@ -165,7 +165,7 @@ function validate(document) {
 
 function startValidation() {
 
-    let initialisedAlready = compiler.initialiseLocalSolc(compileUsingLocalVersion, rootPath);
+    let initialisedAlready = solc.initialiseLocalSolc(compileUsingLocalVersion, rootPath);
     if (!initialisedAlready && (typeof compileUsingRemoteVersion !== 'undefined' || compileUsingRemoteVersion !== null)) {
         solc.loadRemoteVersion(compileUsingRemoteVersion, function(err, solcSnapshot) {
              return documents.all().forEach(document => validate(document));
