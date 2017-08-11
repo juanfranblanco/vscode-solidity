@@ -80,13 +80,13 @@ export function compile(contracts: any,
                 vscode.window.showWarningMessage('There was an error loading the remote version: ' + remoteCompiler);
                 return;
             } else {
-                let output = this.solcCompile({ sources: contracts });
+                let output = solc.compile({ sources: contracts });
                 processCompilationOuput(output, outputChannel, diagnosticCollection, buildDir,
                                             sourceDir, excludePath, singleContractFilePath);
             }
         });
     } else {
-         let output = this.solcCompile({ sources: contracts });
+         let output = solc.compile({ sources: contracts });
         processCompilationOuput(output, outputChannel, diagnosticCollection, buildDir, sourceDir, excludePath, singleContractFilePath);
     }
  }

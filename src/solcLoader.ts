@@ -30,7 +30,7 @@ export function initialiseLocalSolc(compileUsingLocalVersion: string, rootPath: 
 }
 
 export function compile(contracts: any) {
-    return solc.compile({ sources: contracts }, 1);
+    return solc.compile(contracts, 1);
 }
 
 export function loadRemoteVersion(remoteCompiler: any, cb: any) {
