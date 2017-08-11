@@ -91,12 +91,12 @@ function solium(filePath, documentText) {
             // TODO climb up the filesystem until we find a .soliumrc.json and use that
             rules: {
                 'array-declarations': true,
-                'blank-lines': true,
+                'blank-lines': false,
                 camelcase: true,
                 'deprecated-suicide': true,
                 'double-quotes': true,
                 'imports-on-top': true,
-                indentation: true,
+                indentation: false,
                 lbrace: true,
                 mixedcase: true,
                 'no-empty-blocks': true,
@@ -202,7 +202,7 @@ connection.onDidChangeConfiguration((change) => {
     enabledSolium = settings.solidity.enabledSolium;
     compileUsingLocalVersion = settings.solidity.compileUsingLocalVersion;
     compileUsingRemoteVersion = settings.solidity.compileUsingRemoteVersion;
-
+    connection.window.showErrorMessage(enabledSolium.toString());
     startValidation();
 },
 );

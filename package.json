@@ -76,7 +76,7 @@
           "default": null,
           "description": "Compile using a local version instead of the current one, for example: 'C://v0.4.3+commit.2353da71.js'"
         },
-        "solidity.enableSolium": {
+        "solidity.enabledSolium": {
           "type": [
             "boolean"
           ],
