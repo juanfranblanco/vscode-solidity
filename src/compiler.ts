@@ -5,9 +5,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as fsex from 'fs-extra';
 import * as artifactor from 'truffle-artifactor';
-import { errorToDiagnostic } from './compilerErrors';
+import * as solidyErrorsConvertor from './solErrorsToDiaganosticsClient';
 import { DiagnosticSeverity } from 'vscode';
-import * as solc from './solcLoader';
+import {SolcCompiler}  from './solcCompiler';
 
 function outputErrorsToChannel(outputChannel: vscode.OutputChannel, errors: any) {
     errors.forEach(error => {
@@ -15,45 +15,6 @@ function outputErrorsToChannel(outputChannel: vscode.OutputChannel, errors: any)
     });
     outputChannel.show();
 }
-
-interface ErrorWarningCounts {
-    errors: number;
-    warnings: number;
-}
-
-function outputErrorsToDiagnostics(diagnosticCollection: vscode.DiagnosticCollection, errors: any): ErrorWarningCounts {
-    let errorWarningCounts: ErrorWarningCounts = {errors: 0, warnings: 0};
-    let diagnosticMap: Map<vscode.Uri, vscode.Diagnostic[]> = new Map();
-
-    errors.forEach(error => {
-        let {diagnostic, fileName} = errorToDiagnostic(error);
-
-        let targetUri = vscode.Uri.file(fileName);
-        let diagnostics = diagnosticMap.get(targetUri);
-
-        if (!diagnostics) {
-            diagnostics = [];
-        }
-
-        diagnostics.push(diagnostic);
-        diagnosticMap.set(targetUri, diagnostics);
-    });
-
-    let entries: [vscode.Uri, vscode.Diagnostic[]][] = [];
-
-    diagnosticMap.forEach((diags, uri) => {
-        errorWarningCounts.errors += diags.filter((diagnostic) => diagnostic.severity === DiagnosticSeverity.Error).length;
-        errorWarningCounts.warnings += diags.filter((diagnostic) => diagnostic.severity === DiagnosticSeverity.Warning).length;
-
-        entries.push([uri, diags]);
-    });
-
-    diagnosticCollection.set(entries);
-
-    return errorWarningCounts;
-}
-
-
 
 export function compile(contracts: any,
                         diagnosticCollection: vscode.DiagnosticCollection,
@@ -63,37 +24,29 @@ export function compile(contracts: any,
         vscode.window.showWarningMessage('No solidity files (*.sol) found');
         return;
     }
-
+    const solc = new SolcCompiler(buildDir);
     let outputChannel = vscode.window.createOutputChannel('solidity compilation');
     outputChannel.clear();
     outputChannel.show();
 
     vscode.window.setStatusBarMessage('Compilation started');
 
-    let remoteCompiler = vscode.workspace.getConfiguration('solidity').get('compileUsingRemoteVersion');
+    let remoteCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingRemoteVersion');
     let localCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingLocalVersion');
-    let initialisedAlready = solc.initialiseLocalSolc(localCompiler, rootDir);
 
-    if (!initialisedAlready && (typeof remoteCompiler !== 'undefined' || remoteCompiler !== null)) {
-        solc.loadRemoteVersion(remoteCompiler, function(err, solcSnapshot) {
-            if (err) {
-                vscode.window.showWarningMessage('There was an error loading the remote version: ' + remoteCompiler);
-                return;
-            } else {
-                let output = solc.compile({ sources: contracts });
-                processCompilationOuput(output, outputChannel, diagnosticCollection, buildDir,
-                                            sourceDir, excludePath, singleContractFilePath);
-            }
-        });
-    } else {
-         let output = solc.compile({ sources: contracts });
-        processCompilationOuput(output, outputChannel, diagnosticCollection, buildDir, sourceDir, excludePath, singleContractFilePath);
-    }
+    solc.intialiseCompiler(localCompiler, remoteCompiler).then(() => {
+        let output = solc.compile({ sources: contracts });
+       // vscode.window.showInformationMessage('Compiling using:' +
+       //                                     solc.currentCompilerType.toString() + ' settings' + solc.currentCompilerSetting);
+        processCompilationOuput(output, outputChannel, diagnosticCollection, buildDir,
+            sourceDir, excludePath, singleContractFilePath);
+    }).catch( (reason: any) => {
+        vscode.window.showWarningMessage(reason);
+    });
  }
 
 function processCompilationOuput(output: any, outputChannel: vscode.OutputChannel, diagnosticCollection: vscode.DiagnosticCollection,
                     buildDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string) {
-    vscode.window.setStatusBarMessage('Compilation completed');
 
     if (Object.keys(output).length === 0) {
         vscode.window.showWarningMessage('No output by the compiler');
@@ -103,7 +56,7 @@ function processCompilationOuput(output: any, outputChannel: vscode.OutputChanne
     diagnosticCollection.clear();
 
     if (output.errors) {
-        const errorWarningCounts = outputErrorsToDiagnostics(diagnosticCollection, output.errors);
+        const errorWarningCounts = solidyErrorsConvertor.errorsToDiagnostics(diagnosticCollection, output.errors);
         outputErrorsToChannel(outputChannel, output.errors);
 
         if (errorWarningCounts.errors > 0) {

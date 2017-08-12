@@ -1,18 +1,15 @@
 'use strict';
 
-import * as projService from './projectService';
-import * as solc from './solcLoader';
-import * as Solium from 'solium';
-import * as vscode from  'vscode';
+import {SolcCompiler} from './solcCompiler';
+import {SoliumService} from './solium';
+
 import {
     createConnection, IConnection,
     IPCMessageReader, IPCMessageWriter,
     TextDocuments, InitializeResult,
     Files, DiagnosticSeverity, Diagnostic, TextDocumentChangeEvent,
 } from 'vscode-languageserver';
-import { ContractCollection } from './model/contractsCollection';
-import { errorToDiagnostic } from './compilerErrors';
-import * as compiler from './compiler';
+
 
 // import * as path from 'path';
 // Create a connection for the server
@@ -25,47 +22,9 @@ console.error = connection.console.error.bind(connection.console);
 
 const documents: TextDocuments = new TextDocuments();
 
-let rootPath;
-
-function itemToDiagnostic(item) {
-    const severity = item.type === 'warning' ?
-        DiagnosticSeverity.Warning :
-        DiagnosticSeverity.Error;
-
-    const line = item.line - 1;
-
-    return {
-        message: `${item.ruleName}: ${item.message}`,
-        range: {
-            end: {
-                character: item.node.end,
-                line: line,
-            },
-            start: {
-                character: item.column,
-                line: line,
-            },
-        },
-        severity: severity,
-    };
-}
-
-export function compilationErrors(filePath, documentText) {
-    const contracts = new ContractCollection();
-
-    contracts.addContractAndResolveImports(
-        filePath,
-        documentText,
-        projService.initialiseProject(rootPath));
-
-    const output = solc.compile({sources: contracts.getContractsForCompilation()});
-
-    if (output.errors) {
-        return output.errors.map((error) => errorToDiagnostic(error).diagnostic);
-    }
-
-    return [];
-}
+let rootPath: string;
+let solcCompiler: SolcCompiler;
+let soliumService: SoliumService;
 
 interface Settings {
     solidity: SoliditySettings;
@@ -76,70 +35,15 @@ interface SoliditySettings {
     enabledAsYouTypeErrorCheck: boolean;
     compileUsingLocalVersion: string;
     compileUsingRemoteVersion: string;
+    soliumRules: any;
 }
 
 let enabledSolium = false;
 let enabledAsYouTypeErrorCheck = false;
 let compileUsingRemoteVersion = '';
 let compileUsingLocalVersion = '';
+let soliumRules = null;
 
-
-function solium(filePath, documentText) {
-    let items = [];
-    try {
-        items = Solium.lint(documentText, {
-            // TODO climb up the filesystem until we find a .soliumrc.json and use that
-            rules: {
-                'array-declarations': true,
-                'blank-lines': false,
-                camelcase: true,
-                'deprecated-suicide': true,
-                'double-quotes': true,
-                'imports-on-top': true,
-                indentation: false,
-                lbrace: true,
-                mixedcase: true,
-                'no-empty-blocks': true,
-                'no-unused-vars': true,
-                'no-with': true,
-                'operator-whitespace': true,
-                'pragma-on-top': true,
-                uppercase: true,
-                'variable-declarations': true,
-                whitespace: true,
-            },
-        });
-    } catch (err) {
-        let match = /An error .*?\nSyntaxError: (.*?) Line: (\d+), Column: (\d+)/.exec(err.message);
-
-        if (match) {
-            let line = parseInt(match[2], 10) - 1;
-            let character = parseInt(match[3], 10) - 1;
-
-            return [
-                {
-                    message: `Syntax error: ${match[1]}`,
-                    range: {
-                        end: {
-                            character: character,
-                            line: line,
-                        },
-                        start: {
-                            character: character,
-                            line: line,
-                        },
-                    },
-                    severity: DiagnosticSeverity.Error,
-                },
-            ];
-        } else {
-            connection.window.showErrorMessage('solium error: ' + err);
-            console.error('solium error: ' + err);
-        }
-    }
-
-    return items.map(itemToDiagnostic);
-}
 
 function validate(document) {
     const filePath = Files.uriToFilePath(document.uri);
@@ -148,11 +52,11 @@ function validate(document) {
     let compileErrorDiagnostics: Diagnostic[] = [];
 
     if (enabledSolium) {
-        soliumDiagnostics = solium(filePath, documentText);
+        soliumDiagnostics = soliumService.solium(filePath, documentText);
     }
 
     if (enabledAsYouTypeErrorCheck) {
-        compileErrorDiagnostics = compilationErrors(filePath, documentText);
+        compileErrorDiagnostics = solcCompiler.compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText);
     }
 
     const diagnostics = soliumDiagnostics.concat(compileErrorDiagnostics);
@@ -164,11 +68,9 @@ function validate(document) {
 }
 
 function startValidation() {
-
-    let initialisedAlready = solc.initialiseLocalSolc(compileUsingLocalVersion, rootPath);
-    if (!initialisedAlready && (typeof compileUsingRemoteVersion !== 'undefined' || compileUsingRemoteVersion !== null)) {
-        solc.loadRemoteVersion(compileUsingRemoteVersion, function(err, solcSnapshot) {
-             return documents.all().forEach(document => validate(document));
+    if (enabledAsYouTypeErrorCheck) {
+        solcCompiler.intialiseCompiler(compileUsingLocalVersion, compileUsingRemoteVersion).then(() => {
+            return documents.all().forEach(document => validate(document));
         });
     } else {
         return documents.all().forEach(document => validate(document));
@@ -187,8 +89,9 @@ documents.listen(connection);
 
 connection.onInitialize((result): InitializeResult => {
     rootPath = result.rootPath;
-    // startValidation();
-
+    solcCompiler = new SolcCompiler(rootPath);
+    soliumService = new SoliumService(null, connection);
+    startValidation();
     return {
         capabilities: {
             textDocumentSync: documents.syncKind,
@@ -202,7 +105,10 @@ connection.onDidChangeConfiguration((change) => {
     enabledSolium = settings.solidity.enabledSolium;
     compileUsingLocalVersion = settings.solidity.compileUsingLocalVersion;
     compileUsingRemoteVersion = settings.solidity.compileUsingRemoteVersion;
-    connection.window.showErrorMessage(enabledSolium.toString());
+    soliumRules = settings.solidity.soliumRules;
+    if (soliumRules !== null ) {
+        soliumService.InitSoliumRules(soliumRules);
+    }
     startValidation();
 },
 );

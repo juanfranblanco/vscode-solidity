@@ -7,7 +7,6 @@ import {ContractCollection} from './model/contractsCollection';
 import * as projService from './projectService';
 import * as util from './util';
 
-
 export function compileAllContracts(diagnosticCollection: vscode.DiagnosticCollection) {
 
     // Check if is folder, if not stop we need to output to a bin folder on rootPath
