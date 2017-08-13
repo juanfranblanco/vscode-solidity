@@ -47,7 +47,8 @@
     "solium": "^0.5.5",
     "truffle-artifactor": "^2.1.4",
     "vscode-languageclient": "^3.3.0",
-    "vscode-languageserver": "^3.3.0"
+    "vscode-languageserver": "^3.3.0",
+    "solparse":"^1.2.2"
   },
   "devDependencies": {
     "@types/node": "^8.0.14",
@@ -108,12 +109,19 @@
           },
           "description": "Solium linting rules"
         },
-        "solidity.enabledAsYouTypeErrorCheck": {
+        "solidity.enabledAsYouTypeCompilationErrorCheck": {
           "type": [
             "boolean"
           ],
           "default": false,
-          "description": "Enables as you type compilation and error highlighting"
+          "description": "Enables as you type compilation of the document and error highlighting"
+        },
+        "solidity.validationDelay": {
+          "type": [
+            "number"
+          ],
+          "default": 3000,
+          "description": "Delay to trigger the validation of the changes of the current document (compilation, solium)"
         }
       }
     },
