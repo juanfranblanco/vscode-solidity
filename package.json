@@ -113,14 +113,14 @@
           "type": [
             "boolean"
           ],
-          "default": false,
+          "default": true,
           "description": "Enables as you type compilation of the document and error highlighting"
         },
         "solidity.validationDelay": {
           "type": [
             "number"
           ],
-          "default": 3000,
+          "default": 1500,
           "description": "Delay to trigger the validation of the changes of the current document (compilation, solium)"
         }
       }
