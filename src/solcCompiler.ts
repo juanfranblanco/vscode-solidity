@@ -68,7 +68,7 @@ export class SolcCompiler {
                     // local file
                     if (typeof localInstallationPath !== 'undefined' && localInstallationPath !== null) {
                         solidityfile = require(localInstallationPath);
-                        solc.setupMethods(solidityfile);
+                        this.solc.setupMethods(solidityfile);
                         this.currentCompilerType = compilerType.localFile;
                         this.currentCompilerSetting = localInstallationPath;
                         resolve();

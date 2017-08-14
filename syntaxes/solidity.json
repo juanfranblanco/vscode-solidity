@@ -33,7 +33,7 @@
                 }
             },
             "comment": "Main keywords",
-            "match": "\\b(pragma|contract|struct|library|function|modifier)\\s+([A-Za-z_]\\w*)(?:\\s+is\\s+((?:[A-Za-z_][\\,\\s]*)*))?\\b",
+            "match": "\\b(pragma|contract|interface|struct|library|function|modifier|enum|assembly)\\s+([A-Za-z_]\\w*)(?:\\s+is\\s+((?:[A-Za-z_][\\,\\s]*)*))?\\b",
             "name": "keyword.control"
         },
         {
@@ -73,7 +73,7 @@
         },
         {
             "comment": "Langauge keywords",
-            "match": "\\b(var|import|function|constant|if|else|for|while|do|break|continue|throw|returns?|private|public|external|inherited|this|suicide|new|is|\\_)\\b",
+            "match": "\\b(var|import|function|enum|constant|if|else|for|while|do|break|continue|throw|returns?|private|public|external|inherited|storage|delete|memory|this|suicide|let|new|is|\\_)\\b",
             "name": "keyword.control"
         },
         {

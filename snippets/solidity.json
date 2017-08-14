@@ -10,7 +10,19 @@
 		},
         "contract declaration": {
 			"prefix": "con",
-			"body": "contract ${1:name} {\n\t$0\n}"
+			"body": "contract ${1:Name} {\n\t$0\n}"
+		},
+		"library declaration": {
+			"prefix": "lib",
+			"body": "library ${1:Name} {\n\t$0\n}"
+		},
+		"interface declaration": {
+			"prefix": "interf",
+			"body": "interface ${1:Name} {\n\t$0\n}"
+		},
+		"enum declaration": {
+			"prefix": "enum",
+			"body": "enum ${1:Name} {${2:item1}, ${3:item2} }"
 		},
         "mapping declaration":{
             "prefix": "map",

@@ -2,7 +2,7 @@
 
 import {SolcCompiler} from './solcCompiler';
 import {SoliumService} from './solium';
-import * as solparse from 'solparse';
+import {CompletionService} from './completionService';
 
 import {
     createConnection, IConnection,
@@ -79,80 +79,29 @@ function validate(document) {
     }
 }
 
+
 connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
     // The pass parameter contains the position of the text document in
     // which code complete got requested. For the example we ignore this
     // info and always provide the same completion items.
-    let document = documents.get(textDocumentPosition.textDocument.uri);
-    const filePath = Files.uriToFilePath(textDocumentPosition.textDocument.uri);
-    const documentText = document.getText();
-    let completionItems = [];
-    let result = solparse.parse(documentText);
-    // console.log(JSON.stringify(result));
-    result.body.forEach(element => {
-        if (element.type === 'ContractStatement') {
-            let contractName = element.name;
-            element.body.forEach(contractElement => {
-                if (contractElement.type === 'FunctionDeclaration') {
-                    // ignore the constructor
-                    if (contractElement.name !== contractName) {
-                        let completionItem =  CompletionItem.create(contractElement.name);
-                        completionItem.kind = CompletionItemKind.Function;
-                        let paramsInfo = null;
-                        contractElement.params.forEach( parameterElement => {
-                            if (paramsInfo === null) {
-                                paramsInfo = parameterElement.literal.literal + ' ' + parameterElement.id;
-                            }else {
-                                paramsInfo = paramsInfo + ',' + parameterElement.literal.literal + ' ' + parameterElement.id;
-                            }
-                        });
-                        completionItem.detail = '(function in ' + contractName + ') ' + contractElement.name + '(' + paramsInfo + ')';
-                        completionItems.push(completionItem);
-                    }
-                }
-                if (contractElement.type === 'EventDeclaration') {
-                    let completionItem =  CompletionItem.create(contractElement.name);
-                    completionItem.kind = CompletionItemKind.Function;
-                    let paramsInfo = null;
-                    contractElement.params.forEach( parameterElement => {
-                        if (paramsInfo === null) {
-                            paramsInfo = parameterElement.literal.literal + ' ' + parameterElement.id;
-                        }else {
-                            paramsInfo = paramsInfo + ',' + parameterElement.literal.literal + ' ' + parameterElement.id;
-                        }
-                    });
-                    completionItem.detail = '(event in ' + contractName + ') ' + contractElement.name + '(' + paramsInfo + ')';
-                    completionItems.push(completionItem);
-                }
-                if (contractElement.type === 'StateVariableDeclaration') {
-                    let completionItem =  CompletionItem.create(contractElement.name);
-                    completionItem.kind = CompletionItemKind.Field;
-                    let typeName = contractElement.literal.literal;
-                    completionItem.detail = '(state variable in ' + contractName + ') ' + typeName + ' ' + contractElement.name;
-                    completionItems.push(completionItem);
-                }
-            });
-        }
-    });
-
-    return completionItems;
+    try {
+        let document = documents.get(textDocumentPosition.textDocument.uri);
+        const documentPath = Files.uriToFilePath(textDocumentPosition.textDocument.uri);
+        const documentText = document.getText();
+        const service = new CompletionService(rootPath);
+        let completionItems = service.getAllCompletionItems(documentText, documentPath);
+        return completionItems;
+    } catch (error) {
+        // graceful catch
+        // console.log(error);
+    }
 });
 
 // This handler resolve additional information for the item selected in
 // the completion list.
-connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-    /*
-    if (item.data === 1) {
-        item.detail = 'TypeScript details';
-        item.documentation = 'TypeScript documentation';
-    } else if (item.data === 2) {
-        item.detail = 'JavaScript details';
-        item.documentation = 'JavaScript documentation';
-    }
-    return item;
-    */
-    return null;
-});
+ // connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
+ //   return item;
+ // });
 
 function validateAllDocuments() {
     if (!validatingAllDocuments) {
@@ -199,7 +148,7 @@ connection.onInitialize((result): InitializeResult => {
     return {
         capabilities: {
             completionProvider: {
-                resolveProvider: true,
+                resolveProvider: false,
             },
             textDocumentSync: documents.syncKind,
         },
