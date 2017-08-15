@@ -5,14 +5,14 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
 * Snippets
 * Compilation of the current contract (Press F1 Solidity : Compile Current Solidity Contract), or F5 
 * Compilation of all the contracts (Press F1 Solidity : Compile all Solidity Contracts), or Ctrl+F5 / Cmd+F5
+* Code completion for all contracts / libraries in the current file and all referenced imports
+* Default project structure (solidity files needs to be in the 'src' directory, and libraries in the 'lib' directory). Libraries will follow the same structure.
 * Compilation supporting EIP82 (dappfile and dependency packages)
-* Default project structure (just pust your code in 'src' and libraries in 'lib')
 * Support for different solidity versions (Remote and local)
 * Code generation using https://github.com/Nethereum/abi-code-gen, it includes currently the default template for Nethereum service, dtos generation. 
   (Open 'contractName.json' after compilation from the bin folder. Press F1 and press Solidity: Code generate from compilation output..)
   Please contribute more templates.
 * Linting using Solium
-* Code completion for all contracts / libraries in the current file and all referenced imports
 
 # Instructions
 
@@ -26,6 +26,9 @@ Currently we support three ways supported to use a different version of the soli
 
 To compile using a remote version, you need to change the following user setting, with the version required, for example 'latest' or 'v0.4.3+commit.2353da71'
 
+```
+"solidity.compileUsingRemoteVersion" : "latest"
+```
 ### Using Local file
 
 If you don't have an internet connection, you can download the compiler and change your user settings to use this.
@@ -43,17 +46,19 @@ npm install solc
 ```
 
 ## Default project structure
+
 A default project  / library dependency structure is supported as follows:
 ![Screenshot](screenshots/simpleProjectStructure.PNG)
 
 Libraries will have the same name as their folder they are included.
 Solidity files will be in the 'src' folder.
 Libraries will be included in the 'lib' folder.
+
 Currently there is no name conflicting resolution, so the first library found matching a name, will be the first one used.
 
 ## Code completion
 
-Just press Ctlr + Space or Command + Space to autocomplete statements, currently are supported autocomplete of all the storage variables, functions and events (with snippets) included in the current document and every document in the import chain.
+Just press Ctlr + Space or Command + Space to autocomplete statements, currently supported all the storage variables, functions and events (with snippets) included in the current document and every document in the import chain. Also supported all the global variables, global functions, types and units.
 
 ![Screenshot](screenshots/autocompletedemo.gif)
 
