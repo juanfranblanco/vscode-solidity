@@ -3,6 +3,15 @@ import * as projectService from './projectService';
 import {ContractCollection} from './model/contractsCollection';
 import { CompletionItem, CompletionItemKind, Command } from 'vscode-languageserver';
 
+// TODO implement caching, dirty on document change, reload, etc.
+// store
+// export class CompletionFile {
+//    public path: string;
+//    public imports: string[]
+//    public inspectionResult : any
+// }
+
+
 export class CompletionService {
 
     public rootPath: string;
@@ -35,31 +44,58 @@ export class CompletionService {
         return literalType + suffixType;
     }
 
-    public createFunctionEventCompletionItem(contractElement: any, type: string, contractName: string): CompletionItem {
-        let completionItem =  CompletionItem.create(contractElement.name);
-        completionItem.kind = CompletionItemKind.Function;
-        let paramsInfo = '';
+    public createFunctionParamsSnippet(params: any): string {
         let paramsSnippet = '';
         let counter = 0;
-        if (typeof contractElement.params !== 'undefined' && contractElement.params !== null) {
-            contractElement.params.forEach( parameterElement => {
-                counter = counter + 1;
-                let currentParamSnippet = '${' + counter + ':' + parameterElement.id + '}';
-                const typeString = this.getTypeString(parameterElement.literal);
-
-                let currentParamInfo = typeString + ' ' + parameterElement.id;
-                if (paramsInfo === '') {
-                    paramsInfo = currentParamInfo;
-                    paramsSnippet =  currentParamSnippet;
+        if (typeof params !== 'undefined' && params !== null) {
+            params.forEach( parameterElement => {
+               const typeString = this.getTypeString(parameterElement.literal);
+               counter = counter + 1;
+               let currentParamSnippet = '${' + counter + ':' + parameterElement.id + '}';
+                if (paramsSnippet === '') {
+                    paramsSnippet = currentParamSnippet;
                 }else {
-                    paramsInfo = paramsInfo + ', ' + currentParamInfo;
                     paramsSnippet = paramsSnippet + ', ' + currentParamSnippet;
                 }
             });
         }
+        return paramsSnippet;
+    }
+
+    public createParamsInfo(params: any): string {
+        let paramsInfo = '';
+        if (typeof params !== 'undefined' && params !== null) {
+            params.forEach( parameterElement => {
+               const typeString = this.getTypeString(parameterElement.literal);
+                let currentParamInfo = '';
+                if (typeof parameterElement.id !== 'undefined' && parameterElement.id !== null ) { // no name on return parameters
+                    currentParamInfo = typeString + ' ' + parameterElement.id;
+                } else {
+                    currentParamInfo = typeString;
+                }
+                if (paramsInfo === '') {
+                    paramsInfo = currentParamInfo;
+                }else {
+                    paramsInfo = paramsInfo + ', ' + currentParamInfo;
+                }
+            });
+        }
+        return paramsInfo;
+    }
+
+    public createFunctionEventCompletionItem(contractElement: any, type: string, contractName: string): CompletionItem {
+
+        let completionItem =  CompletionItem.create(contractElement.name);
+        completionItem.kind = CompletionItemKind.Function;
+        let paramsInfo = this.createParamsInfo(contractElement.params);
+        let paramsSnippet = this.createFunctionParamsSnippet(contractElement.params);
+        let returnParamsInfo = this.createParamsInfo(contractElement.returnParams);
+        if (returnParamsInfo !== '') {
+            returnParamsInfo = ' returns (' + returnParamsInfo + ')';
+        }
         completionItem.insertTextFormat = 2;
         completionItem.insertText = contractElement.name + '(' + paramsSnippet + ');';
-        const info = '(' + type + ' in ' + contractName + ') ' + contractElement.name + '(' + paramsInfo + ')';
+        const info = '(' + type + ' in ' + contractName + ') ' + contractElement.name + '(' + paramsInfo + ')' + returnParamsInfo;
         completionItem.documentation = info;
         completionItem.detail = info;
         return completionItem;
@@ -67,36 +103,43 @@ export class CompletionService {
 
     public getDocumentCompletionItems(documentText: string): CompletionItem[] {
         let completionItems = [];
-        let result = solparse.parse(documentText);
-        // console.log(JSON.stringify(result));
-        // TODO struct, modifier
-        result.body.forEach(element => {
-            if (element.type === 'ContractStatement' ||  element.type === 'LibraryStatement') {
-                let contractName = element.name;
-                if (typeof element.body !== 'undefined' && element.body !== null) {
-                    element.body.forEach(contractElement => {
-                        if (contractElement.type === 'FunctionDeclaration') {
-                            // ignore the constructor TODO add to contract initialiasation
-                            if (contractElement.name !== contractName) {
-                                completionItems.push(this.createFunctionEventCompletionItem(contractElement, 'function', contractName ));
+        try {
+            let result = solparse.parse(documentText);
+            // console.log(JSON.stringify(result));
+            // TODO struct, modifier
+            result.body.forEach(element => {
+                if (element.type === 'ContractStatement' ||  element.type === 'LibraryStatement') {
+                    let contractName = element.name;
+                    if (typeof element.body !== 'undefined' && element.body !== null) {
+                        element.body.forEach(contractElement => {
+                            if (contractElement.type === 'FunctionDeclaration') {
+                                // ignore the constructor TODO add to contract initialiasation
+                                if (contractElement.name !== contractName) {
+                                    completionItems.push(
+                                            this.createFunctionEventCompletionItem(contractElement, 'function', contractName ));
+                                }
                             }
-                        }
 
-                        if (contractElement.type === 'EventDeclaration') {
-                            completionItems.push(this.createFunctionEventCompletionItem(contractElement, 'event', contractName ));
-                        }
+                            if (contractElement.type === 'EventDeclaration') {
+                                completionItems.push(this.createFunctionEventCompletionItem(contractElement, 'event', contractName ));
+                            }
 
-                        if (contractElement.type === 'StateVariableDeclaration') {
-                            let completionItem =  CompletionItem.create(contractElement.name);
-                            completionItem.kind = CompletionItemKind.Field;
-                            const typeString = this.getTypeString(contractElement.literal);
-                            completionItem.detail = '(state variable in ' + contractName + ') ' + typeString + ' ' + contractElement.name;
-                            completionItems.push(completionItem);
-                        }
-                    });
+                            if (contractElement.type === 'StateVariableDeclaration') {
+                                let completionItem =  CompletionItem.create(contractElement.name);
+                                completionItem.kind = CompletionItemKind.Field;
+                                const typeString = this.getTypeString(contractElement.literal);
+                                completionItem.detail = '(state variable in ' + contractName + ') '
+                                                                    + typeString + ' ' + contractElement.name;
+                                completionItems.push(completionItem);
+                            }
+                        });
+                    }
                 }
-            }
-        });
+            });
+        } catch (error) {
+          // gracefule catch
+          // console.log(error.message);
+        }
         // console.log('file completion items' + completionItems.length);
         return completionItems;
     }

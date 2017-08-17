@@ -19,12 +19,26 @@ function createPackage(rootPath: string) {
         projectPackage.absoluletPath = rootPath;
         if (packageConfig) {
             if (packageConfig.layout !== undefined) {
+                if (projectPackage.build_dir !== undefined) {
                 projectPackage.build_dir = packageConfig.layout.build_dir;
+                }
+                if (projectPackage.sol_sources !== undefined) {
                 projectPackage.sol_sources = packageConfig.layout.sol_sources;
+                }
             }
-            projectPackage.name = packageConfig.name;
-            projectPackage.version = packageConfig.version;
-            projectPackage.dependencies = packageConfig.dependencies;
+            if (projectPackage.name !== undefined) {
+                projectPackage.name = packageConfig.name;
+            }else {
+                projectPackage.name = path.basename(rootPath);
+            }
+
+            if (projectPackage.version !== undefined) {
+                projectPackage.version = packageConfig.name;
+            }
+
+            if (projectPackage.dependencies !== undefined) {
+                projectPackage.dependencies = packageConfig.dependencies;
+            }
         }
         return projectPackage;
     }

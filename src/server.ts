@@ -13,7 +13,7 @@ import {
     Files, DiagnosticSeverity, Diagnostic,
     TextDocumentChangeEvent, TextDocumentPositionParams,
     CompletionItem, CompletionItemKind,
-    Range, Position, Location,
+    Range, Position, Location, SignatureHelp,
 } from 'vscode-languageserver';
 
 interface Settings {
@@ -82,6 +82,9 @@ function validate(document) {
     }
 }
 
+connection.onSignatureHelp((textDocumentPosition: TextDocumentPositionParams): SignatureHelp => {
+    return null;
+});
 
 connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
     // The pass parameter contains the position of the text document in
