@@ -27,11 +27,18 @@ export class SolcCompiler {
         this.currentCompilerType = compilerType.default;
     }
 
+    public isRootPathSet(): boolean {
+        return typeof this.rootPath !== 'undefined' && this.rootPath !== null;
+    }
+
     // simple validation to match our settings with the ones passed
     public initialisedAlready(localInstallationPath: string, remoteInstallationVersion: string): boolean {
-        let installedNodeLocally = this.isInstalledSolcUsingNode(this.rootPath);
-        if (this.currentCompilerType === compilerType.localNode && installedNodeLocally) {
-            return true;
+        let installedNodeLocally = false;
+        if (this.isRootPathSet()) {
+            installedNodeLocally = this.isInstalledSolcUsingNode(this.rootPath);
+            if (this.currentCompilerType === compilerType.localNode && installedNodeLocally) {
+                return true;
+            }
         }
 
         if (this.currentCompilerType === compilerType.localFile && localInstallationPath === this.currentCompilerSetting) {
@@ -118,20 +125,28 @@ export class SolcCompiler {
     }
 
     public compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText) {
-        const contracts = new ContractCollection();
-        contracts.addContractAndResolveImports(
-            filePath,
-            documentText,
-            projectService.initialiseProject(this.rootPath));
+        if (this.isRootPathSet()) {
+            const contracts = new ContractCollection();
+            contracts.addContractAndResolveImports(
+                filePath,
+                documentText,
+                projectService.initialiseProject(this.rootPath));
 
-        const output = this.compile({sources: contracts.getContractsForCompilation()});
+            const output = this.compile({sources: contracts.getContractsForCompilation()});
 
-        if (output.errors) {
-            return output.errors.map((error) => solidityErrorsConvertor.errorToDiagnostic(error).diagnostic);
+            if (output.errors) {
+                return output.errors.map((error) => solidityErrorsConvertor.errorToDiagnostic(error).diagnostic);
+            }
+        } else {
+            let contract = {};
+            contract[filePath] = documentText;
+            const output = this.compile({sources: contract });
+            if (output.errors) {
+                return output.errors.map((error) => solidityErrorsConvertor.errorToDiagnostic(error).diagnostic);
+            }
         }
         return [];
     }
-
 }
 
 

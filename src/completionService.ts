@@ -145,17 +145,22 @@ export class CompletionService {
     }
 
     public getAllCompletionItems(documentText: string, documentPath: string): CompletionItem[] {
-        const contracts = new ContractCollection();
-        contracts.addContractAndResolveImports(
-            documentPath,
-            documentText,
-            projectService.initialiseProject(this.rootPath));
-        let completionItems = [];
-        contracts.contracts.forEach(contract => {
-            completionItems = completionItems.concat(this.getDocumentCompletionItems(contract.code));
-        });
-        // console.log('total completion items' + completionItems.length);
-        return completionItems;
+
+        if (this.rootPath !== 'undefined' && this.rootPath !== null) {
+            const contracts = new ContractCollection();
+            contracts.addContractAndResolveImports(
+                documentPath,
+                documentText,
+                projectService.initialiseProject(this.rootPath));
+            let completionItems = [];
+            contracts.contracts.forEach(contract => {
+                completionItems = completionItems.concat(this.getDocumentCompletionItems(contract.code));
+            });
+            // console.log('total completion items' + completionItems.length);
+            return completionItems;
+        } else {
+            return this.getDocumentCompletionItems(documentText);
+        }
     }
 }
 
