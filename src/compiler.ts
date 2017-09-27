@@ -24,13 +24,13 @@ export function compile(contracts: any,
         vscode.window.showWarningMessage('No solidity files (*.sol) found');
         return;
     }
-    const solc = new SolcCompiler(buildDir);
+    const solc = new SolcCompiler(vscode.workspace.rootPath);
     let outputChannel = vscode.window.createOutputChannel('solidity compilation');
     outputChannel.clear();
     outputChannel.show();
 
     vscode.window.setStatusBarMessage('Compilation started');
-
+    
     let remoteCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingRemoteVersion');
     let localCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingLocalVersion');
 
