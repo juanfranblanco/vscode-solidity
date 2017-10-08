@@ -34,13 +34,16 @@ export function activate(context: vscode.ExtensionContext) {
         debug: {
             module: serverModule,
             options: {
-                execArgv: ['--nolazy', '--debug=6004'],
+                execArgv: ['--nolazy', '--inspect=6009'],
             },
             transport: TransportKind.ipc,
         },
         run: {
             module: serverModule,
             transport: TransportKind.ipc,
+            options: {
+                execArgv: ['--nolazy', '--inspect=6009'],
+            },
         },
     };
 
@@ -49,7 +52,7 @@ export function activate(context: vscode.ExtensionContext) {
         synchronize: {
                     // Synchronize the setting section 'solidity' to the server
                     configurationSection: 'solidity',
-                    // Notify the server about file changes to '.sol.js files contain in the workspace (TODO node, solium)
+                    // Notify the server about file changes to '.sol.js files contain in the workspace (TODO node, validate)
                     // fileEvents: vscode.workspace.createFileSystemWatcher('**/.sol.js'),
                 },
     };

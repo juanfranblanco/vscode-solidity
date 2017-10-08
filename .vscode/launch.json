@@ -31,7 +31,7 @@
             "port": 6009,
             "sourceMaps": true,
             "outFiles": [ "${workspaceRoot}/out/src/**/*.js" ],
-            "protocol": "legacy"
-        }
+            "protocol": "inspector"
+        } 
         ]
 }

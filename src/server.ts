@@ -1,7 +1,7 @@
 'use strict';
 
 import {SolcCompiler} from './solcCompiler';
-import {SoliumService} from './solium';
+import {SolhintService} from './solhint';
 import {CompletionService, GetCompletionTypes,
         GetContextualAutoCompleteByGlobalVariable, GeCompletionUnits,
         GetGlobalFunctions, GetGlobalVariables} from './completionService';
@@ -21,11 +21,11 @@ interface Settings {
 }
 
 interface SoliditySettings {
-    enabledSolium: boolean;
+    enabledSolhint: boolean;
     enabledAsYouTypeCompilationErrorCheck: boolean;
     compileUsingLocalVersion: string;
     compileUsingRemoteVersion: string;
-    soliumRules: any;
+    solhintRules: any;
     validationDelay: number;
 }
 
@@ -42,13 +42,13 @@ const documents: TextDocuments = new TextDocuments();
 
 let rootPath: string;
 let solcCompiler: SolcCompiler;
-let soliumService: SoliumService;
+let solhintService: SolhintService;
 
-let enabledSolium = false;
+let enabledSolhint = false;
 let enabledAsYouTypeErrorCheck = false;
 let compileUsingRemoteVersion = '';
 let compileUsingLocalVersion = '';
-let soliumRules = null;
+let solhintRules = null;
 let validationDelay = 3000;
 
 // flags to avoid trigger concurrent validations (compiling is slow)
@@ -60,18 +60,18 @@ function validate(document) {
         validatingDocument = true;
         const filePath = Files.uriToFilePath(document.uri);
         const documentText = document.getText();
-        let soliumDiagnostics: Diagnostic[] = [];
+        let solhintDiagnostics: Diagnostic[] = [];
         let compileErrorDiagnostics: Diagnostic[] = [];
 
-        if (enabledSolium) {
-            soliumDiagnostics = soliumService.solium(filePath, documentText);
+        if (enabledSolhint) {
+            solhintDiagnostics = solhintService.validate(filePath, documentText);
         }
 
         if (enabledAsYouTypeErrorCheck) {
             compileErrorDiagnostics = solcCompiler.compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText);
         }
 
-        const diagnostics = soliumDiagnostics.concat(compileErrorDiagnostics);
+        const diagnostics = solhintDiagnostics.concat(compileErrorDiagnostics);
 
         connection.sendDiagnostics({
             diagnostics,
@@ -186,8 +186,8 @@ documents.listen(connection);
 connection.onInitialize((result): InitializeResult => {
     rootPath = result.rootPath;
     solcCompiler = new SolcCompiler(rootPath);
-    if (soliumService == null) {
-        soliumService = new SoliumService(null, connection);
+    if (solhintService == null) {
+        solhintService = new SolhintService(null, connection);
     }
     return {
         capabilities: {
@@ -203,13 +203,13 @@ connection.onInitialize((result): InitializeResult => {
 connection.onDidChangeConfiguration((change) => {
     let settings = <Settings>change.settings;
     enabledAsYouTypeErrorCheck = settings.solidity.enabledAsYouTypeCompilationErrorCheck;
-    enabledSolium = settings.solidity.enabledSolium;
+    enabledSolhint = settings.solidity.enabledSolhint;
     compileUsingLocalVersion = settings.solidity.compileUsingLocalVersion;
     compileUsingRemoteVersion = settings.solidity.compileUsingRemoteVersion;
-    soliumRules = settings.solidity.soliumRules;
+    solhintRules = settings.solidity.solhintRules;
     validationDelay = settings.solidity.validationDelay;
-    if (soliumRules !== null ) {
-        soliumService.InitSoliumRules(soliumRules);
+    if (solhintRules !== null ) {
+        solhintService.InitSolhintRules(solhintRules);
     }
 
     startValidation();
