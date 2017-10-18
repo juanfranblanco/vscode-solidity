@@ -135,7 +135,11 @@ export class SolcCompiler {
             const output = this.compile({sources: contracts.getContractsForCompilation()});
 
             if (output.errors) {
-                return output.errors.map((error) => solidityErrorsConvertor.errorToDiagnostic(error).diagnostic);
+                return output
+                    .errors
+                    .map(error => solidityErrorsConvertor.errorToDiagnostic(error))
+                    .filter(error => error.fileName === filePath)
+                    .map(error => error.diagnostic);
             }
         } else {
             let contract = {};

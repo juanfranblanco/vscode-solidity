@@ -1,7 +1,9 @@
 'use strict';
 
 import {SolcCompiler} from './solcCompiler';
-import {SolhintService} from './solhint';
+import Linter from './linter/linter';
+import SolhintService from './linter/solhint';
+import SoliumService from './linter/solium';
 import {CompletionService, GetCompletionTypes,
         GetContextualAutoCompleteByGlobalVariable, GeCompletionUnits,
         GetGlobalFunctions, GetGlobalVariables} from './completionService';
@@ -21,11 +23,11 @@ interface Settings {
 }
 
 interface SoliditySettings {
-    enabledSolhint: boolean;
+    linter: boolean | string;
     enabledAsYouTypeCompilationErrorCheck: boolean;
     compileUsingLocalVersion: string;
     compileUsingRemoteVersion: string;
-    solhintRules: any;
+    linterDefaultRules: any;
     validationDelay: number;
 }
 
@@ -42,14 +44,14 @@ const documents: TextDocuments = new TextDocuments();
 
 let rootPath: string;
 let solcCompiler: SolcCompiler;
-let solhintService: SolhintService;
+let linter: Linter = null;
 
-let enabledSolhint = false;
 let enabledAsYouTypeErrorCheck = false;
 let compileUsingRemoteVersion = '';
 let compileUsingLocalVersion = '';
-let solhintRules = null;
-let validationDelay = 3000;
+let linterOption: boolean | string = false;
+let linterDefaultRules = {};
+let validationDelay = 1500;
 
 // flags to avoid trigger concurrent validations (compiling is slow)
 let validatingDocument = false;
@@ -60,26 +62,28 @@ function validate(document) {
         validatingDocument = true;
         const filePath = Files.uriToFilePath(document.uri);
         const documentText = document.getText();
-        let solhintDiagnostics: Diagnostic[] = [];
+        let linterDiagnostics: Diagnostic[] = [];
         let compileErrorDiagnostics: Diagnostic[] = [];
 
-        if (enabledSolhint) {
-            solhintDiagnostics = solhintService.validate(filePath, documentText);
+        if (linter !== null) {
+            linterDiagnostics = linter.validate(filePath, documentText);
+            sendDiagnostics(linterDiagnostics, document.uri);
         }
 
         if (enabledAsYouTypeErrorCheck) {
-            compileErrorDiagnostics = solcCompiler.compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText);
+            compileErrorDiagnostics = solcCompiler
+                .compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText);
         }
 
-        const diagnostics = solhintDiagnostics.concat(compileErrorDiagnostics);
-
-        connection.sendDiagnostics({
-            diagnostics,
-            uri: document.uri,
-        });
+        const diagnostics = linterDiagnostics.concat(compileErrorDiagnostics);
+        sendDiagnostics(diagnostics, document.uri);
     } finally {
         validatingDocument = false;
     }
+}
+
+function sendDiagnostics(diagnostics, uri) {
+    connection.sendDiagnostics({ diagnostics, uri });
 }
 
 connection.onSignatureHelp((textDocumentPosition: TextDocumentPositionParams): SignatureHelp => {
@@ -168,10 +172,12 @@ function startValidation() {
 }
 
 documents.onDidChangeContent(event => {
+    const document = event.document;
+
     if (!validatingDocument && !validatingAllDocuments) {
         validatingDocument = true; // control the flag at a higher level
         // slow down, give enough time to type (1.5 seconds?)
-        setTimeout( () =>  validate(event.document), validationDelay);
+        setTimeout(() =>  validate(document), validationDelay);
     }
 });
 
@@ -186,9 +192,11 @@ documents.listen(connection);
 connection.onInitialize((result): InitializeResult => {
     rootPath = result.rootPath;
     solcCompiler = new SolcCompiler(rootPath);
-    if (solhintService == null) {
-        solhintService = new SolhintService(null, connection);
+
+    if (linter === null) {
+        linter = new SolhintService(rootPath, null);
     }
+
     return {
         capabilities: {
             completionProvider: {
@@ -203,17 +211,31 @@ connection.onInitialize((result): InitializeResult => {
 connection.onDidChangeConfiguration((change) => {
     let settings = <Settings>change.settings;
     enabledAsYouTypeErrorCheck = settings.solidity.enabledAsYouTypeCompilationErrorCheck;
-    enabledSolhint = settings.solidity.enabledSolhint;
+    linterOption = settings.solidity.linter;
     compileUsingLocalVersion = settings.solidity.compileUsingLocalVersion;
     compileUsingRemoteVersion = settings.solidity.compileUsingRemoteVersion;
-    solhintRules = settings.solidity.solhintRules;
+    linterDefaultRules = settings.solidity.linterDefaultRules;
     validationDelay = settings.solidity.validationDelay;
-    if (solhintRules !== null ) {
-        solhintService.InitSolhintRules(solhintRules);
+
+    switch (linterOption) {
+        case 'solhint': {
+            linter = new SolhintService(rootPath, linterDefaultRules);
+            break;
+        }
+        case 'solium': {
+            linter = new SoliumService(linterDefaultRules, connection);
+            break;
+        }
+        default: {
+            linter = null;
+        }
+    }
+
+    if (linter !== null) {
+        linter.setIdeRules(linterDefaultRules);
     }
 
     startValidation();
-},
-);
+});
 
 connection.listen();
