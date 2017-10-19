@@ -47,7 +47,9 @@ export default class SolhintService implements Linter {
 
 
 class ValidationConfig {
-    public static DEFAULT_RULES = {"func-visibility": false};
+    public static readonly DEFAULT_RULES = {"func-visibility": false};
+    public static readonly EMPTY_CONFIG = {rules:{}};
+
     private ideRules: any;
     private fileConfig: any;
 
@@ -79,10 +81,12 @@ class ValidationConfig {
     }
 
     private readFileConfig(filePath: string) {
+        this.fileConfig = ValidationConfig.EMPTY_CONFIG;
+        
         fs.readFile(filePath, 'utf-8', this.onConfigLoaded.bind(this));
     }
 
     private onConfigLoaded(err: any, data: string) {
-        this.fileConfig = (!err) ? JSON.parse(data) : {rules: {}};
+        this.fileConfig = (!err) && JSON.parse(data);
     }
 }

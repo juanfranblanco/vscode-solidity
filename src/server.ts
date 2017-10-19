@@ -4,6 +4,7 @@ import {SolcCompiler} from './solcCompiler';
 import Linter from './linter/linter';
 import SolhintService from './linter/solhint';
 import SoliumService from './linter/solium';
+import {throttle} from './util';
 import {CompletionService, GetCompletionTypes,
         GetContextualAutoCompleteByGlobalVariable, GeCompletionUnits,
         GetGlobalFunctions, GetGlobalVariables} from './completionService';
@@ -45,6 +46,7 @@ const documents: TextDocuments = new TextDocuments();
 let rootPath: string;
 let solcCompiler: SolcCompiler;
 let linter: Linter = null;
+let lastCompileErrorsForDocument = {};
 
 let enabledAsYouTypeErrorCheck = false;
 let compileUsingRemoteVersion = '';
@@ -57,30 +59,40 @@ let validationDelay = 1500;
 let validatingDocument = false;
 let validatingAllDocuments = false;
 
-function validate(document) {
-    try {
+function validateCompilation(document): Promise<boolean> {
+    const filePath = Files.uriToFilePath(document.uri);
+    const documentText = document.getText();
+    const validateFlagToFalse = () => validatingDocument = false;
+
+    if (enabledAsYouTypeErrorCheck) {
         validatingDocument = true;
-        const filePath = Files.uriToFilePath(document.uri);
-        const documentText = document.getText();
-        let linterDiagnostics: Diagnostic[] = [];
-        let compileErrorDiagnostics: Diagnostic[] = [];
 
-        if (linter !== null) {
-            linterDiagnostics = linter.validate(filePath, documentText);
-            sendDiagnostics(linterDiagnostics, document.uri);
-        }
+        return solcCompiler
+            .compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText)
+            .then(function (errors: Diagnostic[]) {
+                lastCompileErrorsForDocument[filePath] = errors;
 
-        if (enabledAsYouTypeErrorCheck) {
-            compileErrorDiagnostics = solcCompiler
-                .compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText);
-        }
-
-        const diagnostics = linterDiagnostics.concat(compileErrorDiagnostics);
-        sendDiagnostics(diagnostics, document.uri);
-    } finally {
-        validatingDocument = false;
+                const linterDiagnostics = linter && linter.validate(filePath, documentText);
+                const diagnostics = errors.concat(linterDiagnostics || []);
+                sendDiagnostics(diagnostics, document.uri);
+            })
+            .then(validateFlagToFalse, validateFlagToFalse);
+    } else {
+        return Promise.resolve(false);
     }
 }
+
+const lintAndSendDiagnostics = throttle(document => {
+    const filePath = Files.uriToFilePath(document.uri);
+    const documentText = document.getText();
+
+    if (linter !== null) {
+        const errors = linter.validate(filePath, documentText);
+
+        const curCompileErrors = lastCompileErrorsForDocument[filePath] || [];
+        sendDiagnostics(errors.concat(curCompileErrors), document.uri);
+    }
+}, 100);
 
 function sendDiagnostics(diagnostics, uri) {
     connection.sendDiagnostics({ diagnostics, uri });
@@ -152,12 +164,15 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
 
 function validateAllDocuments() {
     if (!validatingAllDocuments) {
-        try {
-            validatingAllDocuments = true;
-            documents.all().forEach(document => validate(document));
-        } finally {
-            validatingAllDocuments = false;
-        }
+        validatingAllDocuments = true;
+
+        const compileResults = 
+            documents
+                .all()
+                .map(document => validateCompilation(document));
+
+        const validateAllFlagToFalse = (() => validatingAllDocuments = false);
+        Promise.all(compileResults).then(validateAllFlagToFalse, validateAllFlagToFalse);
     }
 }
 
@@ -177,8 +192,10 @@ documents.onDidChangeContent(event => {
     if (!validatingDocument && !validatingAllDocuments) {
         validatingDocument = true; // control the flag at a higher level
         // slow down, give enough time to type (1.5 seconds?)
-        setTimeout(() =>  validate(document), validationDelay);
+        setTimeout(() =>  validateCompilation(document), validationDelay);
     }
+
+    lintAndSendDiagnostics(document);
 });
 
 // remove diagnostics from the Problems panel when we close the file
