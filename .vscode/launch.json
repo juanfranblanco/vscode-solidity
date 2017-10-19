@@ -2,7 +2,6 @@
 {
     "version": "0.1.0",
     "configurations": [
-        
         {
             "name": "Launch Extension",
             "type": "extensionHost",
@@ -33,6 +32,6 @@
             "sourceMaps": true,
             "outFiles": [ "${workspaceRoot}/out/src/**/*.js" ],
             "protocol": "legacy"
-        } 
+        }
         ]
 }
