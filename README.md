@@ -77,11 +77,11 @@ Auto compilation of files and error highlighting can be enabled or disabled usin
 
 To lint Solidity code it is used Solhint linter https://github.com/tokenhouse/solhint, you can configure it using the following user settings:
 
-```
+```json
 "solidity.linter": "solhint",
 "solidity.linterDefaultRules": {
   "avoid-sha3": "warn"
-},
+}
 ```
 
 This extension supports `.solhint.json` configuration file. It must be placed to project root 
@@ -94,7 +94,7 @@ Solhint linter is used by default.
 
 Linting support is provided thanks to Solium https://github.com/duaraghav8/Solium, you can configure it using the following user settings:
 
-```
+```json
 "solidity.linter": "solium",
 "solidity.linterDefaultRules": {
     "array-declarations": true,
