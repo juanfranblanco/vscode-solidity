@@ -41,9 +41,6 @@ export function activate(context: vscode.ExtensionContext) {
         run: {
             module: serverModule,
             transport: TransportKind.ipc,
-            options: {
-                execArgv: ['--nolazy', '--inspect=6009'],
-            },
         },
     };
 
