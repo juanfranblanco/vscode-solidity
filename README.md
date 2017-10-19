@@ -128,11 +128,13 @@ and send a message on gitter at https://gitter.im/vscode-solidity/Lobby or https
 
 Many thanks to:
 
-Christian Reitwiessner and the Ethereum team for Solidity https://github.com/ethereum/solidity 
+Christian Reitwiessner and the Ethereum team for Solidity https://github.com/ethereum/solidity
 
 Raghav Dua and everyone that contributed to Solium, the solidity linter, and the solidity parser.  
 
 Nexus team for the original creation of the dappfile to structure contracts in projects https://github.com/nexusdev/dapple.
+
+Beau Gunderson for contributing the initial integration of solium  https://github.com/juanfranblanco/vscode-solidity/issues/24, the initial server and error mappings.
 
 Nick Addison, Elazar Gershuni, Joe Whittles for their contributions.
 
