@@ -130,6 +130,8 @@ Many thanks to:
 
 Christian Reitwiessner and the Ethereum team for Solidity https://github.com/ethereum/solidity  
 
+Raghav Dua and everyone that contributed to Solium, the solidity linter, and the solidity parser.  
+
 Nexus team for the original creation of the dappfile to structure contracts in projects https://github.com/nexusdev/dapple.
 
 Nick Addison, Elazar Gershuni, Joe Whittles for their contributions.
