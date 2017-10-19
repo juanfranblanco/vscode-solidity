@@ -128,7 +128,7 @@ and send a message on gitter at https://gitter.im/vscode-solidity/Lobby or https
 
 Many thanks to:
 
-Christian Reitwiessner and the Ethereum team for Solidity https://github.com/ethereum/solidity  
+Christian Reitwiessner and the Ethereum team for Solidity https://github.com/ethereum/solidity 
 
 Raghav Dua and everyone that contributed to Solium, the solidity linter, and the solidity parser.  
 
