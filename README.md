@@ -12,7 +12,7 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
 * Code generation using https://github.com/Nethereum/abi-code-gen, it includes currently the default template for Nethereum service, dtos generation. 
   (Open 'contractName.json' after compilation from the bin folder. Press F1 and press Solidity: Code generate from compilation output..)
   Please contribute more templates.
-* Linting using Solhint
+* Linting using Solhint or Solium
 
 # Instructions
 
