@@ -75,7 +75,7 @@ Auto compilation of files and error highlighting can be enabled or disabled usin
 
 ### Solhint
 
-Linting support is provided thanks to Solhint https://github.com/tokenhouse/solhint, you can configure it using the following user settings:
+To lint Solidity code it is used Solhint linter https://github.com/tokenhouse/solhint, you can configure it using the following user settings:
 
 ```
 "solidity.linter": "solhint",
@@ -84,9 +84,9 @@ Linting support is provided thanks to Solhint https://github.com/tokenhouse/solh
 },
 ```
 
-`.solhint.json` configuration file also supports by this extensions. After any changes in 
-`.solhint.json` its will be synchronized with current IDE configuration. `.solhint.json` must be
-placed to project root folder. 
+This extension supports `.solhint.json` configuration file. It must be placed to project root 
+directory. After any changes in `.solhint.json` it will be synchronized with current IDE 
+configuration. 
 
 Solhint linter is used by default.
 
