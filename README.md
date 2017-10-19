@@ -71,18 +71,53 @@ Auto compilation of files and error highlighting can be enabled or disabled usin
 "solidity.validationDelay": 1500
 ```
 
-## Solhint linting
+## Linting
+
+### Solhint
 
 Linting support is provided thanks to Solhint https://github.com/tokenhouse/solhint, you can configure it using the following user settings:
 
 ```
-"solidity.enabledSolhint": true,
-"solidity.validationDelay": 1500
-"solidity.solhintRules": {
+"solidity.linter": "solhint",
+"solidity.linterDefaultRules": {
+  "avoid-sha3": "warn"
 },
 ```
 
-.solhint.json support will be included in the near future, for specific project linting requirements. 
+`.solhint.json` configuration file also supports by this extensions. After any changes in 
+`.solhint.json` its will be synchronized with current IDE configuration. `.solhint.json` must be
+placed to project root folder. 
+
+Solhint linter is used by default.
+
+### Solium
+
+Linting support is provided thanks to Solium https://github.com/duaraghav8/Solium, you can configure it using the following user settings:
+
+```
+"solidity.linter": "solium",
+"solidity.linterDefaultRules": {
+    "array-declarations": true,
+    "blank-lines": false,
+    "camelcase": true,
+    "deprecated-suicide": true,
+    "double-quotes": true,
+    "imports-on-top": true,
+    "indentation": false,
+    "lbrace": true,
+    "mixedcase": true,
+    "no-empty-blocks": true,
+    "no-unused-vars": true,
+    "no-with": true,
+    "operator-whitespace": true,
+    "pragma-on-top": true,
+    "uppercase": true,
+    "variable-declarations": true,
+    "whitespace": true
+},
+```
+
+soliumrc.json support will be included in the near future, for specific project linting requirements.
 
 ## Contributing / Issues / Requests
 
