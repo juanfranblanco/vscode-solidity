@@ -7,7 +7,7 @@ import * as path from 'path';
 import * as fsex from 'fs-extra';
 import {ContractCollection} from './model/contractsCollection';
 
-enum compilerType {
+export enum compilerType {
     localNode,
     Remote,
     localFile,
@@ -19,11 +19,15 @@ export class SolcCompiler {
     public rootPath: string;
     public currentCompilerType: compilerType;
     public currentCompilerSetting: string;
-    private solc: any;
+    private localSolc: any;
+
+    public getVersion(): string {
+        return this.localSolc.version();
+    }
 
     constructor(rootPath: string) {
         this.rootPath = rootPath;
-        this.solc = solc;
+        this.localSolc = null;
         this.currentCompilerType = compilerType.default;
     }
 
@@ -33,6 +37,8 @@ export class SolcCompiler {
 
     // simple validation to match our settings with the ones passed
     public initialisedAlready(localInstallationPath: string, remoteInstallationVersion: string): boolean {
+        if(this.localSolc === null) return false;
+
         let installedNodeLocally = false;
         if (this.isRootPathSet()) {
             installedNodeLocally = this.isInstalledSolcUsingNode(this.rootPath);
@@ -67,7 +73,7 @@ export class SolcCompiler {
                 let solidityfile = '';
                 if (this.isInstalledSolcUsingNode(this.rootPath)) {
                     solidityfile = require(this.getLocalSolcNodeInstallation());
-                    this.solc.setupMethods(solidityfile);
+                    this.localSolc = solc.setupMethods(solidityfile);
                     this.currentCompilerType = compilerType.localNode;
                     this.currentCompilerSetting = null;
                     resolve();
@@ -75,7 +81,7 @@ export class SolcCompiler {
                     // local file
                     if (typeof localInstallationPath !== 'undefined' && localInstallationPath !== null) {
                         solidityfile = require(localInstallationPath);
-                        this.solc.setupMethods(solidityfile);
+                        this.localSolc = solc.setupMethods(solidityfile);
                         this.currentCompilerType = compilerType.localFile;
                         this.currentCompilerSetting = localInstallationPath;
                         resolve();
@@ -83,18 +89,19 @@ export class SolcCompiler {
                         // remote
                         if (typeof remoteInstallationVersion !== 'undefined' && remoteInstallationVersion !== null) {
                             let solcService = this;
-                            this.solc.loadRemoteVersion(remoteInstallationVersion, function(err, solcSnapshot) {
+                            solc.loadRemoteVersion(remoteInstallationVersion, function(err, solcSnapshot) {
                                 if (err) {
                                         reject('There was an error loading the remote version: ' + remoteInstallationVersion);
                                 } else {
                                     solcService.currentCompilerType = compilerType.Remote;
                                     solcService.currentCompilerSetting = remoteInstallationVersion;
+                                    solcService.localSolc = solcSnapshot;
                                     resolve();
                                 }
                             });
                         // default
                         } else {
-                            this.solc = require('solc');
+                            this.localSolc = require('solc');
                             this.currentCompilerType = compilerType.default;
                             this.currentCompilerSetting = null;
                             resolve();
@@ -117,7 +124,7 @@ export class SolcCompiler {
 
 
     public compile(contracts: any) {
-        return this.solc.compile(contracts, 1);
+        return this.localSolc.compile(contracts, 1);
     }
 
     public loadRemoteVersion(remoteCompiler: any, cb: any) {
