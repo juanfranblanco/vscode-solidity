@@ -42,21 +42,21 @@
   },
   "dependencies": {
     "abi-code-gen": "0.0.3",
-    "fs-extra": "^4.0.0",
+    "fs-extra": "^4.0.2",
     "read-yaml": "^1.1.0",
-    "solc": "^0.4.13",
+    "solc": "^0.4.18",
     "solhint": "^1.1.6",
     "solium": "^0.5.5",
     "truffle-artifactor": "^2.1.4",
     "vscode-languageclient": "^3.3.0",
     "vscode-languageserver": "^3.3.0",
-    "solparse":"^1.2.2"
+    "solparse":"^1.3.0"
   },
   "devDependencies": {
-    "@types/node": "^8.0.14",
-    "tslint": "^5.6.0",
-    "typescript": "^2.4.2",
-    "vscode": "^1.1.4"
+    "@types/node": "^8.0.46",
+    "tslint": "^5.7.0",
+    "typescript": "^2.5.3",
+    "vscode": "^1.1.6"
   },
   "contributes": {
     "configuration": {
