@@ -73,7 +73,7 @@
         },
         {
             "comment": "Langauge keywords",
-            "match": "\\b(var|import|function|enum|constant|if|else|for|while|do|break|continue|throw|returns?|private|public|external|inherited|storage|delete|memory|this|suicide|let|new|is|ether|wei|finney|szabo|seconds|minutes|hours|days|weeks|years\\_)\\b",
+            "match": "\\b(var|import|function|enum|constant|pure|view|payable|if|else|for|while|do|break|continue|throw|returns?|private|public|external|inherited|storage|delete|memory|this|suicide|let|new|is|ether|wei|finney|szabo|seconds|minutes|hours|days|weeks|years\\_)\\b",
             "name": "keyword.control"
         },
         {
