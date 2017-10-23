@@ -6,8 +6,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as fsex from 'fs-extra';
 import {ContractCollection} from './model/contractsCollection';
-import * as child_process from 'child_process';
-
 
 enum compilerType {
     localNode,
@@ -117,27 +115,9 @@ export class SolcCompiler {
         return fs.existsSync(this.getLocalSolcNodeInstallation());
     }
 
+
     public compile(contracts: any) {
         return this.solc.compile(contracts, 1);
-    }
-
-    public validationCompile(filePath: string, sources: any) {
-        const childFilePath = __dirname + '/solcCompilerChild.js';
-        const child = child_process.fork(childFilePath);
-        child.send(sources);
-
-        return new Promise((res, rej) => {
-            child.on('message', ({ error, output }) => {
-                if (output) {
-                    const diagnostics = this.listToDiagnostics(filePath, output.errors);
-                    res(diagnostics);
-                } else {
-                    rej(error);
-                }
-            });
-
-            setTimeout(() => rej('Timeout Error'), 60000);
-        });
     }
 
     public loadRemoteVersion(remoteCompiler: any, cb: any) {
@@ -145,39 +125,30 @@ export class SolcCompiler {
     }
 
     public compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText) {
-        let sources;
-
         if (this.isRootPathSet()) {
             const contracts = new ContractCollection();
+            contracts.addContractAndResolveImports(
+                filePath,
+                documentText,
+                projectService.initialiseProject(this.rootPath));
 
-            contracts
-                .addContractAndResolveImports(
-                    filePath,
-                    documentText,
-                    projectService.initialiseProject(this.rootPath)
-                );
+            const output = this.compile({sources: contracts.getContractsForCompilation()});
 
-            sources = contracts.getContractsForCompilation();
+            if (output.errors) {
+                return output
+                    .errors
+                    .map(error => solidityErrorsConvertor.errorToDiagnostic(error))
+                    .filter(error => error.fileName === filePath)
+                    .map(error => error.diagnostic);
+            }
         } else {
             let contract = {};
             contract[filePath] = documentText;
-            sources = contract;
+            const output = this.compile({sources: contract });
+            if (output.errors) {
+                return output.errors.map((error) => solidityErrorsConvertor.errorToDiagnostic(error).diagnostic);
+            }
         }
-
-        return this.validationCompile(filePath, sources);
-    }
-
-    private errorToDiagnostic(error) {
-        return solidityErrorsConvertor.errorToDiagnostic(error);
-    }
-
-    private listToDiagnostics(filePath: string, errorList: any[]) {
-        return (errorList || [])
-            .map(error => this.errorToDiagnostic(error))
-            .filter(error => error.fileName === filePath)
-            .map(error => error.diagnostic);
+        return [];
     }
 }
-
-
-
