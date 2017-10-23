@@ -94,6 +94,20 @@
           "default": null,
           "description": "Solium or Solhint validation rules"
         },
+        "solidity.enabledSolium": {
+            "type": [
+                "boolean"
+            ],
+           "default": false,
+           "description": "Enables solium linting. DEPRECATED: Use \"linterDefaultRules\" instead"
+        },
+        "solidity.soliumRules": {
+            "type": [
+              "object"
+            ],
+            "default": null,
+            "description": "Solium linting rules. DEPRECATED: Use \"linter\" option instead"
+        },
         "solidity.enabledAsYouTypeCompilationErrorCheck": {
           "type": [
             "boolean"

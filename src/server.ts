@@ -23,10 +23,14 @@ interface Settings {
 }
 
 interface SoliditySettings {
+    // option for backward compatibilities, please use "linter" option instead
+    enabledSolium: boolean; 
     linter: boolean | string;
     enabledAsYouTypeCompilationErrorCheck: boolean;
     compileUsingLocalVersion: string;
     compileUsingRemoteVersion: string;
+    // option for backward compatibilities, please use "linterDefaultRules" option instead
+    soliumRules: any; 
     linterDefaultRules: any;
     validationDelay: number;
 }
@@ -216,7 +220,7 @@ connection.onDidChangeConfiguration((change) => {
     linterDefaultRules = settings.solidity.linterDefaultRules;
     validationDelay = settings.solidity.validationDelay;
 
-    switch (linterOption) {
+    switch (linterName(settings.solidity)) {
         case 'solhint': {
             linter = new SolhintService(rootPath, linterDefaultRules);
             break;
@@ -231,10 +235,33 @@ connection.onDidChangeConfiguration((change) => {
     }
 
     if (linter !== null) {
-        linter.setIdeRules(linterDefaultRules);
+        linter.setIdeRules(linterRules(settings.solidity));
     }
 
     startValidation();
 });
+
+function linterName(settings: SoliditySettings) {
+    const linter = settings.linter;
+    const enabledSolium = settings.enabledSolium;
+
+    if (enabledSolium) {
+        return 'solium';
+    } else {
+        return linter;
+    }
+}
+
+function linterRules(settings: SoliditySettings) {
+    const linterDefaultRules = settings.linterDefaultRules;
+    const soliumRules = settings.soliumRules;
+    const _linterName = linterName(settings);
+
+    if (_linterName === 'solium') {
+        return soliumRules || linterDefaultRules;
+    } else {
+        return linterDefaultRules;
+    }
+}
 
 connection.listen();
