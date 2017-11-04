@@ -37,7 +37,8 @@ export class SolcCompiler {
 
     // simple validation to match our settings with the ones passed
     public initialisedAlready(localInstallationPath: string, remoteInstallationVersion: string): boolean {
-        if(this.localSolc === null) return false;
+        // tslint:disable-next-line:curly
+        if (this.localSolc === null) return false;
 
         let installedNodeLocally = false;
         if (this.isRootPathSet()) {
@@ -144,9 +145,7 @@ export class SolcCompiler {
             if (output.errors) {
                 return output
                     .errors
-                    .map(error => solidityErrorsConvertor.errorToDiagnostic(error))
-                    .filter(error => error.fileName === filePath)
-                    .map(error => error.diagnostic);
+                    .map(error => solidityErrorsConvertor.errorToDiagnostic(error).diagnostic);
             }
         } else {
             let contract = {};

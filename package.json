@@ -8,7 +8,7 @@
     "compiler",
     "solhint"
   ],
-  "version": "0.0.30",
+  "version": "0.0.31",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.15.0"
@@ -84,29 +84,47 @@
             "boolean",
             "string"
           ],
-          "default": "solhint",
+          "default": "solium",
           "description": "Enables solhint linting. Possible options 'solhint' and 'solium'"
         },
-        "solidity.linterDefaultRules": {
+        "solidity.solhintRules": {
           "type": [
             "object"
           ],
           "default": null,
-          "description": "Solium or Solhint validation rules"
+          "description": "Solhint linting validation rules"
         },
         "solidity.enabledSolium": {
-            "type": [
-                "boolean"
-            ],
-           "default": false,
-           "description": "Enables solium linting. DEPRECATED: Use \"linterDefaultRules\" instead"
+          "type": [
+            "boolean"
+          ],
+          "default": false,
+          "description": "Enables solium linting. DEPRECATED: Use \"linter\" instead"
         },
         "solidity.soliumRules": {
-            "type": [
-              "object"
-            ],
-            "default": null,
-            "description": "Solium linting rules. DEPRECATED: Use \"linter\" option instead"
+          "type": [
+            "object"
+          ],
+          "default":{
+            "array-declarations": true,
+            "blank-lines": false,
+            "camelcase": true,
+            "deprecated-suicide": true,
+            "double-quotes": true,
+            "imports-on-top": true,
+            "indentation": false,
+            "lbrace": true,
+            "mixedcase": true,
+            "no-empty-blocks": true,
+            "no-unused-vars": true,
+            "no-with": true,
+            "operator-whitespace": true,
+            "pragma-on-top": true,
+            "uppercase": true,
+            "variable-declarations": true,
+            "whitespace": true
+          },
+          "description": "Solium linting validation rules"
         },
         "solidity.enabledAsYouTypeCompilationErrorCheck": {
           "type": [

@@ -75,11 +75,11 @@ Auto compilation of files and error highlighting can be enabled or disabled usin
 
 ### Solhint
 
-To lint Solidity code it is used Solhint linter https://github.com/tokenhouse/solhint, you can configure it using the following user settings:
+To lint Solidity code you can use the Solhint linter https://github.com/protofire/solhint, the linter can be configured it using the following user settings:
 
 ```json
 "solidity.linter": "solhint",
-"solidity.linterDefaultRules": {
+"solidity.solhintRules": {
   "avoid-sha3": "warn"
 }
 ```
@@ -88,15 +88,13 @@ This extension supports `.solhint.json` configuration file. It must be placed to
 directory. After any changes in `.solhint.json` it will be synchronized with current IDE 
 configuration. 
 
-Solhint linter is used by default.
-
 ### Solium
 
-Linting support is provided thanks to Solium https://github.com/duaraghav8/Solium, you can configure it using the following user settings:
+Solium is the other linter supported (default one) https://github.com/duaraghav8/Solium, you can configure it using the following user settings:
 
 ```json
 "solidity.linter": "solium",
-"solidity.linterDefaultRules": {
+"solidity.soliumRules": {
     "array-declarations": true,
     "blank-lines": false,
     "camelcase": true,
@@ -131,6 +129,8 @@ Many thanks to:
 Christian Reitwiessner and the Ethereum team for Solidity https://github.com/ethereum/solidity
 
 Raghav Dua and everyone that contributed to Solium, the solidity linter, and the solidity parser.
+
+Ilya Drabenia for creating the Solhint linter and the integration into the extension.
 
 Nexus team for the original creation of the dappfile to structure contracts in projects https://github.com/nexusdev/dapple.
 

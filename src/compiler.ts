@@ -31,27 +31,27 @@ export function compile(contracts: any,
     outputChannel.show();
 
     vscode.window.setStatusBarMessage('Compilation started');
-    
+
     let remoteCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingRemoteVersion');
     let localCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingLocalVersion');
 
     solc.intialiseCompiler(localCompiler, remoteCompiler).then(() => {
         let output = solc.compile({ sources: contracts });
 
-        if(solc.currentCompilerType === compilerType.localFile) {
+        if (solc.currentCompilerType === compilerType.localFile) {
             outputChannel.appendLine("Compiling using local file: '" + solc.currentCompilerSetting + "', solidity version: " + solc.getVersion() );
         }
 
-        if(solc.currentCompilerType === compilerType.localNode) {
-            outputChannel.appendLine("Compiling using solidity from node_modules, solidity version: " + solc.getVersion());
+        if (solc.currentCompilerType === compilerType.localNode) {
+            outputChannel.appendLine('Compiling using solidity from node_modules, solidity version: ' + solc.getVersion());
         }
 
-        if(solc.currentCompilerType === compilerType.Remote) {
+        if (solc.currentCompilerType === compilerType.Remote) {
             outputChannel.appendLine("Compiling using remote version: '" + solc.currentCompilerSetting  + "', solidity version: " + solc.getVersion() );
         }
 
-        if(solc.currentCompilerType === compilerType.default) {
-            outputChannel.appendLine("Compiling using default compiler, solidity version: " + solc.getVersion() );
+        if (solc.currentCompilerType === compilerType.default) {
+            outputChannel.appendLine('Compiling using default compiler, solidity version: ' + solc.getVersion() );
         }
 
         processCompilationOuput(output, outputChannel, diagnosticCollection, buildDir,
@@ -87,7 +87,7 @@ function processCompilationOuput(output: any, outputChannel: vscode.OutputChanne
         }
     } else {
         writeCompilationOutputToBuildDirectory(output, buildDir, sourceDir, excludePath, singleContractFilePath);
-        //outputChannel.hide();
+        // outputChannel.hide();
         vscode.window.showInformationMessage('Compilation completed succesfully!');
     }
 }

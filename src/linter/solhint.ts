@@ -25,8 +25,8 @@ export default class SolhintService implements Linter {
     private toDiagnostic(error) {
         return {
             message: `${error.message} [${error.ruleId}]`,
+            range: this.rangeOf(error),
             severity: this.severity(error),
-            range: this.rangeOf(error)
         };
     }
 
@@ -40,15 +40,16 @@ export default class SolhintService implements Linter {
 
         return {
             start: { line, character },
-            end: { line, character: character + 1 }
+            // tslint:disable-next-line:object-literal-sort-keys
+            end: { line, character: character + 1 },
         };
     }
 }
 
 
 class ValidationConfig {
-    public static readonly DEFAULT_RULES = {"func-visibility": false};
-    public static readonly EMPTY_CONFIG = {rules:{}};
+    public static readonly DEFAULT_RULES = {'func-visibility': false};
+    public static readonly EMPTY_CONFIG = {rules: {}};
 
     private ideRules: any;
     private fileConfig: any;
@@ -65,10 +66,10 @@ class ValidationConfig {
     public build() {
         return {
             rules: Object.assign(
-                ValidationConfig.DEFAULT_RULES, 
-                this.ideRules, 
-                this.fileConfig.rules
-            )
+                ValidationConfig.DEFAULT_RULES,
+                this.ideRules,
+                this.fileConfig.rules,
+            ),
         };
     }
 
@@ -82,7 +83,6 @@ class ValidationConfig {
 
     private readFileConfig(filePath: string) {
         this.fileConfig = ValidationConfig.EMPTY_CONFIG;
-        
         fs.readFile(filePath, 'utf-8', this.onConfigLoaded.bind(this));
     }
 

@@ -24,14 +24,13 @@ interface Settings {
 
 interface SoliditySettings {
     // option for backward compatibilities, please use "linter" option instead
-    enabledSolium: boolean; 
+    enabledSolium: boolean;
     linter: boolean | string;
     enabledAsYouTypeCompilationErrorCheck: boolean;
     compileUsingLocalVersion: string;
     compileUsingRemoteVersion: string;
-    // option for backward compatibilities, please use "linterDefaultRules" option instead
-    soliumRules: any; 
-    linterDefaultRules: any;
+    soliumRules: any;
+    solhintRules: any;
     validationDelay: number;
 }
 
@@ -54,7 +53,8 @@ let enabledAsYouTypeErrorCheck = false;
 let compileUsingRemoteVersion = '';
 let compileUsingLocalVersion = '';
 let linterOption: boolean | string = false;
-let linterDefaultRules = {};
+let solhintDefaultRules = {};
+let soliumDefaultRules = {};
 let validationDelay = 1500;
 
 // flags to avoid trigger concurrent validations (compiling is slow)
@@ -69,25 +69,29 @@ function validate(document) {
         let linterDiagnostics: Diagnostic[] = [];
         let compileErrorDiagnostics: Diagnostic[] = [];
 
-        if (linter !== null) {
-            linterDiagnostics = linter.validate(filePath, documentText);
-            sendDiagnostics(linterDiagnostics, document.uri);
+        try {
+            if (linter !== null) {
+                linterDiagnostics = linter.validate(filePath, documentText);
+            }
+        } catch {
+            // gracefull catch
         }
 
-        if (enabledAsYouTypeErrorCheck) {
-            compileErrorDiagnostics = solcCompiler
-                .compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText);
+        try {
+            if (enabledAsYouTypeErrorCheck) {
+                compileErrorDiagnostics = solcCompiler
+                    .compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText);
+            }
+        }catch {
+            // gracefull catch
         }
 
         const diagnostics = linterDiagnostics.concat(compileErrorDiagnostics);
-        sendDiagnostics(diagnostics, document.uri);
+        const uri = document.uri;
+        connection.sendDiagnostics({diagnostics, uri});
     } finally {
         validatingDocument = false;
     }
-}
-
-function sendDiagnostics(diagnostics, uri) {
-    connection.sendDiagnostics({ diagnostics, uri });
 }
 
 connection.onSignatureHelp((textDocumentPosition: TextDocumentPositionParams): SignatureHelp => {
@@ -217,16 +221,17 @@ connection.onDidChangeConfiguration((change) => {
     linterOption = settings.solidity.linter;
     compileUsingLocalVersion = settings.solidity.compileUsingLocalVersion;
     compileUsingRemoteVersion = settings.solidity.compileUsingRemoteVersion;
-    linterDefaultRules = settings.solidity.linterDefaultRules;
+    solhintDefaultRules = settings.solidity.solhintRules;
+    soliumDefaultRules = settings.solidity.soliumRules;
     validationDelay = settings.solidity.validationDelay;
 
     switch (linterName(settings.solidity)) {
         case 'solhint': {
-            linter = new SolhintService(rootPath, linterDefaultRules);
+            linter = new SolhintService(rootPath, solhintDefaultRules);
             break;
         }
         case 'solium': {
-            linter = new SoliumService(linterDefaultRules, connection);
+            linter = new SoliumService(soliumDefaultRules, connection);
             break;
         }
         default: {
@@ -242,25 +247,21 @@ connection.onDidChangeConfiguration((change) => {
 });
 
 function linterName(settings: SoliditySettings) {
-    const linter = settings.linter;
     const enabledSolium = settings.enabledSolium;
 
     if (enabledSolium) {
         return 'solium';
     } else {
-        return linter;
+        return settings.linter;
     }
 }
 
 function linterRules(settings: SoliditySettings) {
-    const linterDefaultRules = settings.linterDefaultRules;
-    const soliumRules = settings.soliumRules;
     const _linterName = linterName(settings);
-
     if (_linterName === 'solium') {
-        return soliumRules || linterDefaultRules;
+        return settings.soliumRules;
     } else {
-        return linterDefaultRules;
+        return settings.solhintRules;
     }
 }
 
