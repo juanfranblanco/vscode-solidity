@@ -1,6 +1,8 @@
 import * as Solium from 'solium';
 import { DiagnosticSeverity, Diagnostic, IConnection,
 } from 'vscode-languageserver';
+import Linter from './linter';
+
 
 export const defaultSoliumRules = {
     'array-declarations': true,
@@ -22,16 +24,16 @@ export const defaultSoliumRules = {
     'whitespace': true,
 };
 
-export class SoliumService {
+export default class SoliumService implements Linter {
 
     private soliumRules;
     private vsConnection: IConnection;
 
     constructor(soliumRules: any, vsConnection: IConnection) {
-      this.InitSoliumRules(soliumRules);
+      this.setIdeRules(soliumRules);
     }
 
-    public InitSoliumRules(soliumRules: any) {
+    public setIdeRules(soliumRules: any) {
         if (typeof soliumRules === 'undefined' || soliumRules === null) {
             this.soliumRules = defaultSoliumRules;
         } else {
@@ -39,7 +41,7 @@ export class SoliumService {
         }
     }
 
-    public solium(filePath, documentText) {
+    public validate(filePath, documentText) {
         let items = [];
         try {
             items = Solium.lint(documentText, {

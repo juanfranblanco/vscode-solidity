@@ -1,7 +1,9 @@
 'use strict';
 
 import {SolcCompiler} from './solcCompiler';
-import {SoliumService} from './solium';
+import Linter from './linter/linter';
+import SolhintService from './linter/solhint';
+import SoliumService from './linter/solium';
 import {CompletionService, GetCompletionTypes,
         GetContextualAutoCompleteByGlobalVariable, GeCompletionUnits,
         GetGlobalFunctions, GetGlobalVariables} from './completionService';
@@ -21,11 +23,15 @@ interface Settings {
 }
 
 interface SoliditySettings {
-    enabledSolium: boolean;
+    // option for backward compatibilities, please use "linter" option instead
+    enabledSolium: boolean; 
+    linter: boolean | string;
     enabledAsYouTypeCompilationErrorCheck: boolean;
     compileUsingLocalVersion: string;
     compileUsingRemoteVersion: string;
-    soliumRules: any;
+    // option for backward compatibilities, please use "linterDefaultRules" option instead
+    soliumRules: any; 
+    linterDefaultRules: any;
     validationDelay: number;
 }
 
@@ -42,14 +48,14 @@ const documents: TextDocuments = new TextDocuments();
 
 let rootPath: string;
 let solcCompiler: SolcCompiler;
-let soliumService: SoliumService;
+let linter: Linter = null;
 
-let enabledSolium = false;
 let enabledAsYouTypeErrorCheck = false;
 let compileUsingRemoteVersion = '';
 let compileUsingLocalVersion = '';
-let soliumRules = null;
-let validationDelay = 3000;
+let linterOption: boolean | string = false;
+let linterDefaultRules = {};
+let validationDelay = 1500;
 
 // flags to avoid trigger concurrent validations (compiling is slow)
 let validatingDocument = false;
@@ -60,26 +66,28 @@ function validate(document) {
         validatingDocument = true;
         const filePath = Files.uriToFilePath(document.uri);
         const documentText = document.getText();
-        let soliumDiagnostics: Diagnostic[] = [];
+        let linterDiagnostics: Diagnostic[] = [];
         let compileErrorDiagnostics: Diagnostic[] = [];
 
-        if (enabledSolium) {
-            soliumDiagnostics = soliumService.solium(filePath, documentText);
+        if (linter !== null) {
+            linterDiagnostics = linter.validate(filePath, documentText);
+            sendDiagnostics(linterDiagnostics, document.uri);
         }
 
         if (enabledAsYouTypeErrorCheck) {
-            compileErrorDiagnostics = solcCompiler.compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText);
+            compileErrorDiagnostics = solcCompiler
+                .compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText);
         }
 
-        const diagnostics = soliumDiagnostics.concat(compileErrorDiagnostics);
-
-        connection.sendDiagnostics({
-            diagnostics,
-            uri: document.uri,
-        });
+        const diagnostics = linterDiagnostics.concat(compileErrorDiagnostics);
+        sendDiagnostics(diagnostics, document.uri);
     } finally {
         validatingDocument = false;
     }
+}
+
+function sendDiagnostics(diagnostics, uri) {
+    connection.sendDiagnostics({ diagnostics, uri });
 }
 
 connection.onSignatureHelp((textDocumentPosition: TextDocumentPositionParams): SignatureHelp => {
@@ -145,7 +153,6 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
  // connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
  //   item.
  // });
-
 function validateAllDocuments() {
     if (!validatingAllDocuments) {
         try {
@@ -168,10 +175,12 @@ function startValidation() {
 }
 
 documents.onDidChangeContent(event => {
+    const document = event.document;
+
     if (!validatingDocument && !validatingAllDocuments) {
         validatingDocument = true; // control the flag at a higher level
         // slow down, give enough time to type (1.5 seconds?)
-        setTimeout( () =>  validate(event.document), validationDelay);
+        setTimeout(() =>  validate(document), validationDelay);
     }
 });
 
@@ -186,9 +195,11 @@ documents.listen(connection);
 connection.onInitialize((result): InitializeResult => {
     rootPath = result.rootPath;
     solcCompiler = new SolcCompiler(rootPath);
-    if (soliumService == null) {
-        soliumService = new SoliumService(null, connection);
+
+    if (linter === null) {
+        linter = new SolhintService(rootPath, null);
     }
+
     return {
         capabilities: {
             completionProvider: {
@@ -203,17 +214,54 @@ connection.onInitialize((result): InitializeResult => {
 connection.onDidChangeConfiguration((change) => {
     let settings = <Settings>change.settings;
     enabledAsYouTypeErrorCheck = settings.solidity.enabledAsYouTypeCompilationErrorCheck;
-    enabledSolium = settings.solidity.enabledSolium;
+    linterOption = settings.solidity.linter;
     compileUsingLocalVersion = settings.solidity.compileUsingLocalVersion;
     compileUsingRemoteVersion = settings.solidity.compileUsingRemoteVersion;
-    soliumRules = settings.solidity.soliumRules;
+    linterDefaultRules = settings.solidity.linterDefaultRules;
     validationDelay = settings.solidity.validationDelay;
-    if (soliumRules !== null ) {
-        soliumService.InitSoliumRules(soliumRules);
+
+    switch (linterName(settings.solidity)) {
+        case 'solhint': {
+            linter = new SolhintService(rootPath, linterDefaultRules);
+            break;
+        }
+        case 'solium': {
+            linter = new SoliumService(linterDefaultRules, connection);
+            break;
+        }
+        default: {
+            linter = null;
+        }
+    }
+
+    if (linter !== null) {
+        linter.setIdeRules(linterRules(settings.solidity));
     }
 
     startValidation();
-},
-);
+});
+
+function linterName(settings: SoliditySettings) {
+    const linter = settings.linter;
+    const enabledSolium = settings.enabledSolium;
+
+    if (enabledSolium) {
+        return 'solium';
+    } else {
+        return linter;
+    }
+}
+
+function linterRules(settings: SoliditySettings) {
+    const linterDefaultRules = settings.linterDefaultRules;
+    const soliumRules = settings.soliumRules;
+    const _linterName = linterName(settings);
+
+    if (_linterName === 'solium') {
+        return soliumRules || linterDefaultRules;
+    } else {
+        return linterDefaultRules;
+    }
+}
 
 connection.listen();

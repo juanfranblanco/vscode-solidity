@@ -12,7 +12,7 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
 * Code generation using https://github.com/Nethereum/abi-code-gen, it includes currently the default template for Nethereum service, dtos generation. 
   (Open 'contractName.json' after compilation from the bin folder. Press F1 and press Solidity: Code generate from compilation output..)
   Please contribute more templates.
-* Linting using Solium
+* Linting using Solhint or Solium
 
 # Instructions
 
@@ -71,14 +71,32 @@ Auto compilation of files and error highlighting can be enabled or disabled usin
 "solidity.validationDelay": 1500
 ```
 
-## Solium linting
+## Linting
+
+### Solhint
+
+To lint Solidity code it is used Solhint linter https://github.com/tokenhouse/solhint, you can configure it using the following user settings:
+
+```json
+"solidity.linter": "solhint",
+"solidity.linterDefaultRules": {
+  "avoid-sha3": "warn"
+}
+```
+
+This extension supports `.solhint.json` configuration file. It must be placed to project root 
+directory. After any changes in `.solhint.json` it will be synchronized with current IDE 
+configuration. 
+
+Solhint linter is used by default.
+
+### Solium
 
 Linting support is provided thanks to Solium https://github.com/duaraghav8/Solium, you can configure it using the following user settings:
 
-```
-"solidity.enabledSolium": true,
-"solidity.validationDelay": 1500
-"solidity.soliumRules": {
+```json
+"solidity.linter": "solium",
+"solidity.linterDefaultRules": {
     "array-declarations": true,
     "blank-lines": false,
     "camelcase": true,
@@ -99,7 +117,7 @@ Linting support is provided thanks to Solium https://github.com/duaraghav8/Soliu
 },
 ```
 
-soliumrc.json support will be included in the near future, for specific project linting requirements. 
+soliumrc.json support will be included in the near future, for specific project linting requirements.
 
 ## Contributing / Issues / Requests
 
@@ -112,7 +130,7 @@ Many thanks to:
 
 Christian Reitwiessner and the Ethereum team for Solidity https://github.com/ethereum/solidity
 
-Raghav Dua and everyone that contributed to Solium, the solidity linter, and the solidity parser.  
+Raghav Dua and everyone that contributed to Solium, the solidity linter, and the solidity parser.
 
 Nexus team for the original creation of the dappfile to structure contracts in projects https://github.com/nexusdev/dapple.
 

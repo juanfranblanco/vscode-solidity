@@ -49,7 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
         synchronize: {
                     // Synchronize the setting section 'solidity' to the server
                     configurationSection: 'solidity',
-                    // Notify the server about file changes to '.sol.js files contain in the workspace (TODO node, solium)
+                    // Notify the server about file changes to '.sol.js files contain in the workspace (TODO node, linter)
                     // fileEvents: vscode.workspace.createFileSystemWatcher('**/.sol.js'),
                 },
     };

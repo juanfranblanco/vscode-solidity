@@ -2,10 +2,11 @@
   "name": "solidity",
   "description": "Ethereum Solidity Language for Visual Studio Code",
   "keywords": [
-    "soliity",
+    "solidity",
     "ethereum",
     "blockchain",
-    "compiler"
+    "compiler",
+    "solhint"
   ],
   "version": "0.0.30",
   "publisher": "JuanBlanco",
@@ -43,7 +44,8 @@
     "abi-code-gen": "0.0.3",
     "fs-extra": "^4.0.2",
     "read-yaml": "^1.1.0",
-    "solc": "0.4.18",
+    "solc": "^0.4.18",
+    "solhint": "^1.1.6",
     "solium": "^0.5.5",
     "truffle-artifactor": "^2.1.4",
     "vscode-languageclient": "^3.3.0",
@@ -77,37 +79,34 @@
           "default": null,
           "description": "Compile using a local version instead of the current one, for example: 'C://v0.4.3+commit.2353da71.js'"
         },
-        "solidity.enabledSolium": {
+        "solidity.linter": {
           "type": [
-            "boolean"
+            "boolean",
+            "string"
           ],
-          "default": true,
-          "description": "Enables solium linting"
+          "default": "solhint",
+          "description": "Enables solhint linting. Possible options 'solhint' and 'solium'"
         },
-        "solidity.soliumRules": {
+        "solidity.linterDefaultRules": {
           "type": [
             "object"
           ],
-          "default": {
-            "array-declarations": true,
-            "blank-lines": false,
-            "camelcase": true,
-            "deprecated-suicide": true,
-            "double-quotes": true,
-            "imports-on-top": true,
-            "indentation": false,
-            "lbrace": true,
-            "mixedcase": true,
-            "no-empty-blocks": true,
-            "no-unused-vars": true,
-            "no-with": true,
-            "operator-whitespace": true,
-            "pragma-on-top": true,
-            "uppercase": true,
-            "variable-declarations": true,
-            "whitespace": true
-          },
-          "description": "Solium linting rules"
+          "default": null,
+          "description": "Solium or Solhint validation rules"
+        },
+        "solidity.enabledSolium": {
+            "type": [
+                "boolean"
+            ],
+           "default": false,
+           "description": "Enables solium linting. DEPRECATED: Use \"linterDefaultRules\" instead"
+        },
+        "solidity.soliumRules": {
+            "type": [
+              "object"
+            ],
+            "default": null,
+            "description": "Solium linting rules. DEPRECATED: Use \"linter\" option instead"
         },
         "solidity.enabledAsYouTypeCompilationErrorCheck": {
           "type": [
