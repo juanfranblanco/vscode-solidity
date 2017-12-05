@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import {compileAllContracts} from './compileAll';
 import {compileActiveContract, initDiagnosticCollection} from './compileActive';
 import {codeGenerate} from './codegen';
-import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind} from 'vscode-languageclient';
+import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn} from 'vscode-languageclient';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
@@ -52,6 +52,7 @@ export function activate(context: vscode.ExtensionContext) {
                     // Notify the server about file changes to '.sol.js files contain in the workspace (TODO node, linter)
                     // fileEvents: vscode.workspace.createFileSystemWatcher('**/.sol.js'),
                 },
+        revealOutputChannelOn: RevealOutputChannelOn.Never
     };
 
     const clientDisposible = new LanguageClient(
