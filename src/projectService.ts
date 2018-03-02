@@ -7,7 +7,7 @@ import {Project} from  './model/project';
 
 // TODO: These are temporary constants until standard agreed
 const packageConfigFileName = 'dappFile';
-const packageDependenciesDirectory = 'lib';
+const packageDependenciesDirectory = 'node_modules';
 
 function createPackage(rootPath: string) {
     let projectPackageFile = path.join(rootPath, packageConfigFileName);
@@ -75,6 +75,19 @@ function loadDependencies(rootPath: string, projectPackage: Package, depPackages
         let depPackagesDirectories = getDirectories(depPackagePath);
         depPackagesDirectories.forEach(depPackageDir => {
             let fullPath = path.join(depPackagePath, depPackageDir);
+            let depPackage = createPackage(fullPath);
+            if (depPackage == null) {
+                depPackage = createDefaultPackage(fullPath);
+            }
+            if (!depPackages.some((existingDepPack: Package) => existingDepPack.name === depPackage.name)) {
+                depPackages.push(depPackage);
+                    loadDependencies(rootPath, depPackage, depPackages);
+            }
+        });
+    } else if (fs.existsSync(projectPackage.absoluletPath)) {
+        let depPackagesDirectories = getDirectories(projectPackage.absoluletPath);
+        depPackagesDirectories.forEach(depPackageDir => {
+            let fullPath = path.join(projectPackage.absoluletPath, depPackageDir);
             let depPackage = createPackage(fullPath);
             if (depPackage == null) {
                 depPackage = createDefaultPackage(fullPath);

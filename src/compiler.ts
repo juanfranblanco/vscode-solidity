@@ -30,12 +30,14 @@ export function compile(contracts: any,
     outputChannel.clear();
     outputChannel.show();
 
+
     vscode.window.setStatusBarMessage('Compilation started');
 
     let remoteCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingRemoteVersion');
     let localCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingLocalVersion');
 
     solc.intialiseCompiler(localCompiler, remoteCompiler).then(() => {
+        console.log(contracts);
         let output = solc.compile({ sources: contracts });
 
         if (solc.currentCompilerType === compilerType.localFile) {

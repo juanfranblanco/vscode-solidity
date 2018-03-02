@@ -9,12 +9,13 @@
     "solhint"
   ],
   "version": "0.0.31",
-  "publisher": "JuanBlanco",
+  "publisher": "BramHoven",
   "engines": {
     "vscode": "^1.15.0"
   },
   "contributors": [
-    "Juan Blanco"
+    "Juan Blanco",
+    "Bram Hoven"
   ],
   "bugs": {
     "url": "https://github.com/juanfranblanco/vscode-solidity/issues"
@@ -105,7 +106,7 @@
           "type": [
             "object"
           ],
-          "default":{
+          "default": {
             "array-declarations": true,
             "blank-lines": false,
             "camelcase": true,
