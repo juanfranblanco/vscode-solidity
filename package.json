@@ -9,7 +9,7 @@
     "solhint"
   ],
   "version": "0.0.31",
-  "publisher": "BramHoven",
+  "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.15.0"
   },
