@@ -42,7 +42,7 @@ export class Package {
                 return importPath;
             }
 
-            return null;
+            return importPath;
         }
         return null;
     }
