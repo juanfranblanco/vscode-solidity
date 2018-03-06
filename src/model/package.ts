@@ -12,7 +12,14 @@ export class Package {
 
     constructor() {
         this.build_dir = 'bin';
+    }
+
+    public checkSolSources() {
         this.sol_sources = 'contracts';
+        let pathToCheck = path.join(this.absoluletPath, this.sol_sources);
+        if(!fs.existsSync(pathToCheck)) {
+            this.sol_sources = 'src';
+        }
     }
 
     public getSolSourcesAbsolutePath() {

@@ -7,7 +7,8 @@ import {Project} from  './model/project';
 
 // TODO: These are temporary constants until standard agreed
 const packageConfigFileName = 'dappFile';
-const packageDependenciesDirectory = 'node_modules';
+const packageDependenciesDirectoryLib = 'lib';
+const packageDependenciesDirectoryNode = 'node_modules';
 
 function createPackage(rootPath: string) {
     let projectPackageFile = path.join(rootPath, packageConfigFileName);
@@ -17,10 +18,11 @@ function createPackage(rootPath: string) {
         // TODO: throw expection / warn user of invalid package file
         let projectPackage = new Package();
         projectPackage.absoluletPath = rootPath;
+        projectPackage.checkSolSources();
         if (packageConfig) {
             if (packageConfig.layout !== undefined) {
                 if (projectPackage.build_dir !== undefined) {
-                projectPackage.build_dir = packageConfig.layout.build_dir;
+                    projectPackage.build_dir = packageConfig.layout.build_dir;
                 }
                 if (projectPackage.sol_sources !== undefined) {
                 projectPackage.sol_sources = packageConfig.layout.sol_sources;
@@ -48,15 +50,23 @@ function createPackage(rootPath: string) {
 export function initialiseProject(rootPath) {
     let projectPackage = createProjectPackage(rootPath);
     let dependencies = loadDependencies(rootPath, projectPackage);
-    let packagesDirAbsolutePath = path.join(rootPath, packageDependenciesDirectory);
+    let packagesDirAbsolutePath = path.join(rootPath, packageDependenciesDirectoryLib);
+    if(!fs.existsSync(packagesDirAbsolutePath)) {
+        packagesDirAbsolutePath = path.join(rootPath, packageDependenciesDirectoryNode);
+    }
     return new Project(projectPackage, dependencies, packagesDirAbsolutePath);
 }
 
 function loadDependencies(rootPath: string, projectPackage: Package, depPackages: Array<Package> = new Array<Package>()) {
+    let packagesDepDir = packageDependenciesDirectoryLib;
+    if(!fs.existsSync(path.join(rootPath, packagesDepDir))) {
+        packagesDepDir = packageDependenciesDirectoryNode;
+    }
+
     if (projectPackage.dependencies !== undefined) {
         Object.keys(projectPackage.dependencies).forEach(dependency => {
             if (!depPackages.some((existingDepPack: Package) => existingDepPack.name === dependency)) {
-                let depPackageDependencyPath = path.join(rootPath, packageDependenciesDirectory, dependency);
+                let depPackageDependencyPath = path.join(rootPath, packagesDepDir, dependency);
                 let depPackage = createPackage(depPackageDependencyPath);
 
                 if (depPackage !== null) {
@@ -70,7 +80,7 @@ function loadDependencies(rootPath: string, projectPackage: Package, depPackages
         });
     }
     // lets not skip packages in lib
-    let depPackagePath = path.join(projectPackage.absoluletPath, packageDependenciesDirectory);
+    let depPackagePath = path.join(projectPackage.absoluletPath, packagesDepDir);
     if (fs.existsSync(depPackagePath)) {
         let depPackagesDirectories = getDirectories(depPackagePath);
         depPackagesDirectories.forEach(depPackageDir => {
@@ -111,6 +121,7 @@ function getDirectories(dirPath: string): string[] {
 function createDefaultPackage(packagePath: string): Package {
     let defaultPackage = new Package();
     defaultPackage.absoluletPath = packagePath;
+    defaultPackage.checkSolSources();
     defaultPackage.name = path.basename(packagePath);
     return defaultPackage;
 }
