@@ -2,8 +2,8 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import {compile} from './compiler';
-import {ContractCollection} from './model/contractsCollection';
+import { compile } from './compiler';
+import { ContractCollection } from './model/contractsCollection';
 import * as projService from './projectService';
 import * as util from './util';
 
@@ -55,11 +55,11 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
         let sourceDirPath = util.formatPath(project.projectPackage.getSolSourcesAbsolutePath());
         let packagesPath = util.formatPath(project.packagesDir);
         compile(contractsCollection.getContractsForCompilation(),
-                diagnosticCollection,
-                project.projectPackage.build_dir,
-                 project.projectPackage.absoluletPath,
-                sourceDirPath,
-                packagesPath);
+            diagnosticCollection,
+            project.projectPackage.build_dir,
+            project.projectPackage.absoluletPath,
+            sourceDirPath,
+            packagesPath);
 
     });
 }

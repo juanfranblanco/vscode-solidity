@@ -1,5 +1,6 @@
 'use strict';
 import * as path from 'path';
+import * as fs from 'fs';
 
 export class Package {
     public name: string;
@@ -11,7 +12,14 @@ export class Package {
 
     constructor() {
         this.build_dir = 'bin';
-        this.sol_sources = 'src';
+    }
+
+    public checkSolSources() {
+        this.sol_sources = 'contracts';
+        let pathToCheck = path.join(this.absoluletPath, this.sol_sources);
+        if(!fs.existsSync(pathToCheck)) {
+            this.sol_sources = 'src';
+        }
     }
 
     public getSolSourcesAbsolutePath() {
@@ -21,7 +29,7 @@ export class Package {
         return this.absoluletPath;
     }
 
-    public isImportForThis(contractDependencyImport: string) {
+    public  isImportForThis(contractDependencyImport: string) {
        let splitDirectories = contractDependencyImport.split('/');
         if (splitDirectories.length === 1) {
             return false;
@@ -31,7 +39,17 @@ export class Package {
 
     public resolveImport(contractDependencyImport: string) {
         if (this.isImportForThis(contractDependencyImport)) {
-            return path.join(this.absoluletPath, this.sol_sources, contractDependencyImport.substring(this.name.length));
+            let importPath = path.join(this.absoluletPath, this.sol_sources, contractDependencyImport.substring(this.name.length));
+            if(fs.existsSync(importPath)) {
+                return importPath;
+            }
+            
+            importPath = path.join(this.absoluletPath, contractDependencyImport.substring(this.name.length));
+            if(fs.existsSync(importPath)) {
+                return importPath;
+            }
+
+            return importPath;
         }
         return null;
     }
