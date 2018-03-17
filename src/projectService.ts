@@ -28,7 +28,7 @@ function createPackage(rootPath: string) {
             }
             if (projectPackage.name !== undefined) {
                 projectPackage.name = packageConfig.name;
-            }else {
+            } else {
                 projectPackage.name = path.basename(rootPath);
             }
 

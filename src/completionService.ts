@@ -54,7 +54,7 @@ export class CompletionService {
                let currentParamSnippet = '${' + counter + ':' + parameterElement.id + '}';
                 if (paramsSnippet === '') {
                     paramsSnippet = currentParamSnippet;
-                }else {
+                } else {
                     paramsSnippet = paramsSnippet + ', ' + currentParamSnippet;
                 }
             });
@@ -75,7 +75,7 @@ export class CompletionService {
                 }
                 if (paramsInfo === '') {
                     paramsInfo = currentParamInfo;
-                }else {
+                } else {
                     paramsInfo = paramsInfo + ', ' + currentParamInfo;
                 }
             });

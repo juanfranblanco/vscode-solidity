@@ -82,7 +82,7 @@ function validate(document) {
                 compileErrorDiagnostics = solcCompiler
                     .compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText);
             }
-        }catch {
+        } catch {
             // gracefull catch
         }
 
