@@ -64,7 +64,7 @@
                 }
             },
             "comment": "Mapping definition",
-            "match": "\\b(mapping)\\s*\\((.*)\\s+=>\\s+(.*)\\)(\\s+(?:private|public|external|inherited))?\\s+([A-Za-z_]\\w*)\\b"
+            "match": "\\b(mapping)\\s*\\((.*)\\s+=>\\s+(.*)\\)(\\s+(?:private|public|external|internal|inherited))?\\s+([A-Za-z_]\\w*)\\b"
         },
         {
             "comment": "True and false keywords",
@@ -73,7 +73,7 @@
         },
         {
             "comment": "Langauge keywords",
-            "match": "\\b(emit|var|import|function|enum|constant|pure|view|payable|nonpayable|if|else|for|while|do|break|continue|throw|returns?|private|public|external|inherited|storage|delete|memory|this|suicide|let|new|is|ether|wei|finney|szabo|seconds|minutes|hours|days|weeks|years\\_)\\b",
+            "match": "\\b(emit|var|import|function|enum|constant|pure|view|payable|nonpayable|if|else|for|while|do|break|continue|throw|returns?|private|public|external|internal|inherited|storage|delete|memory|this|suicide|let|new|is|ether|wei|finney|szabo|seconds|minutes|hours|days|weeks|years\\_)\\b",
             "name": "keyword.control"
         },
         {
@@ -86,7 +86,7 @@
                 }
             },
             "comment": "Variable definitions",
-            "match": "\\b([A-Za-z_]\\w+)(\\s+(?:private|public|external|inherited))?\\s+([A-Za-z_]\\w*)\\;"
+            "match": "\\b([A-Za-z_]\\w+)(\\s+(?:private|public|internal|external|inherited))?\\s+([A-Za-z_]\\w*)\\;"
         },
         {
             "comment": "Operators",
