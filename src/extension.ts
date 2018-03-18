@@ -6,6 +6,7 @@ import {compileAllContracts} from './compileAll';
 import {compileActiveContract, initDiagnosticCollection} from './compileActive';
 import {codeGenerate} from './codegen';
 import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn} from 'vscode-languageclient';
+import {lintAndfixCurrentDocument} from './linter/soliumClientFixer';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
@@ -27,6 +28,11 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegen', (args: any[]) => {
         codeGenerate(args, diagnosticCollection);
     }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.fixDocument', () => {
+        lintAndfixCurrentDocument();
+    }));
+
 
     const serverModule = path.join(__dirname, 'server.js');
 

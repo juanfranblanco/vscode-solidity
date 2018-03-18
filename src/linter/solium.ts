@@ -3,25 +3,7 @@ import { DiagnosticSeverity, Diagnostic, IConnection,
 } from 'vscode-languageserver';
 import Linter from './linter';
 
-
 export const defaultSoliumRules = {
-    'array-declarations': true,
-    'blank-lines': false,
-    'camelcase': true,
-    'deprecated-suicide': true,
-    'double-quotes': true,
-    'imports-on-top': true,
-    'indentation': false,
-    'lbrace': true,
-    'mixedcase': true,
-    'no-empty-blocks': true,
-    'no-unused-vars': true,
-    'no-with': true,
-    'operator-whitespace': true,
-    'pragma-on-top': true,
-    'uppercase': true,
-    'variable-declarations': true,
-    'whitespace': true,
 };
 
 export default class SoliumService implements Linter {
@@ -30,6 +12,7 @@ export default class SoliumService implements Linter {
     private vsConnection: IConnection;
 
     constructor(soliumRules: any, vsConnection: IConnection) {
+      this.vsConnection = vsConnection;
       this.setIdeRules(soliumRules);
     }
 
@@ -41,12 +24,23 @@ export default class SoliumService implements Linter {
         }
     }
 
+    public lintAndFix(documentText) {
+        return Solium.lintAndFix(documentText, this.getAllSettings());
+    }
+
+    public getAllSettings() {
+        return {
+            'extends': 'solium:recommended',
+            'options': { 'returnInternalIssues': true },
+            'plugins': ['security'],
+            'rules': this.soliumRules,
+        };
+    }
+
     public validate(filePath, documentText) {
         let items = [];
         try {
-            items = Solium.lint(documentText, {
-                rules: this.soliumRules,
-            });
+            items = Solium.lint(documentText, this.getAllSettings());
         } catch (err) {
             let match = /An error .*?\nSyntaxError: (.*?) Line: (\d+), Column: (\d+)/.exec(err.message);
 
@@ -75,7 +69,6 @@ export default class SoliumService implements Linter {
                 console.error('solium error: ' + err);
             }
         }
-
         return items.map(this.soliumLintResultToDiagnostic);
     }
 

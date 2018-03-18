@@ -8,7 +8,7 @@
     "compiler",
     "solhint"
   ],
-  "version": "0.0.32",
+  "version": "0.0.33",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.21.0"
@@ -32,7 +32,8 @@
     "onLanguage:solidity",
     "onCommand:solidity.compile",
     "onCommand:solidity.compile.active",
-    "onCommand:solidity.codegen"
+    "onCommand:solidity.codegen",
+    "onCommand:solidity.fixDocument"
   ],
   "main": "./out/src/extension",
   "scripts": {
@@ -107,23 +108,10 @@
             "object"
           ],
           "default": {
-            "array-declarations": true,
-            "blank-lines": false,
-            "camelcase": true,
-            "deprecated-suicide": true,
-            "double-quotes": true,
-            "imports-on-top": true,
-            "indentation": false,
-            "lbrace": true,
-            "mixedcase": true,
-            "no-empty-blocks": true,
-            "no-unused-vars": true,
-            "no-with": true,
-            "operator-whitespace": true,
-            "pragma-on-top": true,
-            "uppercase": true,
-            "variable-declarations": true,
-            "whitespace": true
+            "imports-on-top": 0,
+            "variable-declarations": 0,
+            "indentation": ["error", 4],
+            "quotes": ["error", "double"]
           },
           "description": "Solium linting validation rules"
         },
@@ -168,6 +156,10 @@
       {
         "command": "solidity.codegen",
         "title": "Solidity: Code generate from compilation output 'contract.json'"
+      },
+      {
+        "command": "solidity.fixDocument",
+        "title": "Solidity: Fix document rules using Solium"
       }
     ],
     "keybindings": [
