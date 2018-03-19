@@ -132,13 +132,14 @@ export class SolcCompiler {
         solc.loadRemoteVersion(remoteCompiler, cb);
     }
 
-    public compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText) {
+    public compileSolidityDocumentAndGetDiagnosticErrors(filePath: string, documentText: string,
+                packageDefaultDependenciesDirectory: string, packageDefaultDependenciesContractsDirectory: string ) {
         if (this.isRootPathSet()) {
             const contracts = new ContractCollection();
             contracts.addContractAndResolveImports(
                 filePath,
                 documentText,
-                projectService.initialiseProject(this.rootPath));
+                projectService.initialiseProject(this.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory));
 
             const output = this.compile({sources: contracts.getContractsForCompilation()});
 

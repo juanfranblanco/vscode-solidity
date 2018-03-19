@@ -144,14 +144,17 @@ export class CompletionService {
         return completionItems;
     }
 
-    public getAllCompletionItems(documentText: string, documentPath: string): CompletionItem[] {
+    public getAllCompletionItems(documentText: string,
+                                documentPath: string,
+                                packageDefaultDependenciesDirectory: string,
+                                packageDefaultDependenciesContractsDirectory: string): CompletionItem[] {
 
         if (this.rootPath !== 'undefined' && this.rootPath !== null) {
             const contracts = new ContractCollection();
             contracts.addContractAndResolveImports(
                 documentPath,
                 documentText,
-                projectService.initialiseProject(this.rootPath));
+                projectService.initialiseProject(this.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory));
             let completionItems = [];
             contracts.contracts.forEach(contract => {
                 completionItems = completionItems.concat(this.getDocumentCompletionItems(contract.code));

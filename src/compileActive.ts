@@ -33,7 +33,11 @@ export function compileActiveContract() {
     let contractsCollection = new ContractCollection();
     let contractCode = editor.document.getText();
     let contractPath = editor.document.fileName;
-    let project = projService.initialiseProject(vscode.workspace.rootPath);
+
+    let packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
+    let packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
+
+    let project = projService.initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
     let contract = contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
     let packagesPath = util.formatPath(project.packagesDir);
 

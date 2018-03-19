@@ -14,9 +14,11 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
         vscode.window.showWarningMessage('Please open a folder in Visual Studio Code as a workspace');
         return;
     }
+    let packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
+    let packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
 
     let contractsCollection = new ContractCollection();
-    let project = projService.initialiseProject(vscode.workspace.rootPath);
+    let project = projService.initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
     let solidityPath = '**/*.sol';
     if (project.projectPackage.sol_sources !== undefined || project.projectPackage.sol_sources === '') {
         solidityPath = project.projectPackage.sol_sources + '/' + solidityPath;

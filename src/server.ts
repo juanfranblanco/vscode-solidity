@@ -32,6 +32,8 @@ interface SoliditySettings {
     soliumRules: any;
     solhintRules: any;
     validationDelay: number;
+    packageDefaultDependenciesDirectory: string;
+    packageDefaultDependenciesContractsDirectory: string;
 }
 
 // import * as path from 'path';
@@ -60,6 +62,8 @@ let validationDelay = 1500;
 // flags to avoid trigger concurrent validations (compiling is slow)
 let validatingDocument = false;
 let validatingAllDocuments = false;
+let packageDefaultDependenciesDirectory = 'lib';
+let packageDefaultDependenciesContractsDirectory = 'src';
 
 function validate(document) {
     try {
@@ -80,7 +84,9 @@ function validate(document) {
         try {
             if (enabledAsYouTypeErrorCheck) {
                 compileErrorDiagnostics = solcCompiler
-                    .compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText);
+                    .compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText,
+                                                packageDefaultDependenciesDirectory,
+                                                packageDefaultDependenciesContractsDirectory);
             }
         } catch {
             // gracefull catch
@@ -134,7 +140,11 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
         }
 
         const service = new CompletionService(rootPath);
-        completionItems = completionItems.concat(service.getAllCompletionItems(documentText, documentPath));
+        completionItems = completionItems.concat(
+                service.getAllCompletionItems(documentText,
+                                             documentPath,
+                                             packageDefaultDependenciesDirectory,
+                                             packageDefaultDependenciesContractsDirectory));
 
     } catch (error) {
         // graceful catch
@@ -224,6 +234,8 @@ connection.onDidChangeConfiguration((change) => {
     solhintDefaultRules = settings.solidity.solhintRules;
     soliumDefaultRules = settings.solidity.soliumRules;
     validationDelay = settings.solidity.validationDelay;
+    packageDefaultDependenciesContractsDirectory = settings.solidity.packageDefaultDependenciesContractsDirectory;
+    packageDefaultDependenciesDirectory = settings.solidity.packageDefaultDependenciesDirectory;
 
     switch (linterName(settings.solidity)) {
         case 'solhint': {

@@ -8,7 +8,7 @@
     "compiler",
     "solhint"
   ],
-  "version": "0.0.33",
+  "version": "0.0.34",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.21.0"
@@ -43,8 +43,8 @@
   },
   "dependencies": {
     "abi-code-gen": "0.0.3",
-    "ajv": "^6.2.1",
-    "fs-extra": "^4.0.2",
+    "ajv": "^6.3.0",
+    "fs-extra": "^4.0.3",
     "read-yaml": "^1.1.0",
     "solc": "^0.4.21",
     "solhint": "^1.1.10",
@@ -110,8 +110,14 @@
           "default": {
             "imports-on-top": 0,
             "variable-declarations": 0,
-            "indentation": ["error", 4],
-            "quotes": ["error", "double"]
+            "indentation": [
+              "error",
+              4
+            ],
+            "quotes": [
+              "error",
+              "double"
+            ]
           },
           "description": "Solium linting validation rules"
         },
@@ -128,6 +134,20 @@
           ],
           "default": 1500,
           "description": "Delay to trigger the validation of the changes of the current document (compilation, solium)"
+        },
+        "solidity.packageDefaultDependenciesDirectory": {
+          "type": [
+            "string"
+          ],
+          "default": "node_modules",
+          "description": "Default directory for Packages Dependencies, i.e: 'node_modules', 'lib'"
+        },
+        "solidity.packageDefaultDependenciesContractsDirectory": {
+          "type": [
+            "string"
+          ],
+          "default": "contracts",
+          "description": "Default directory where the Package Dependency store its contracts, i.e: 'src', 'contracts', ''"
         }
       }
     },
