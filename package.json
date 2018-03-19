@@ -8,7 +8,7 @@
     "compiler",
     "solhint"
   ],
-  "version": "0.0.34",
+  "version": "0.0.35",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.21.0"
