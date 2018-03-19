@@ -90,28 +90,13 @@ configuration.
 
 ### Solium
 
-Solium is the other linter supported (default one) https://github.com/duaraghav8/Solium, you can configure it using the following user settings:
+Solium is the default linter of supported by the extesion https://github.com/duaraghav8/Solium, you can configure it using the following user settings:
 
 ```json
 "solidity.linter": "solium",
 "solidity.soliumRules": {
-    "array-declarations": true,
-    "blank-lines": false,
-    "camelcase": true,
-    "deprecated-suicide": true,
-    "double-quotes": true,
-    "imports-on-top": true,
-    "indentation": false,
-    "lbrace": true,
-    "mixedcase": true,
-    "no-empty-blocks": true,
-    "no-unused-vars": true,
-    "no-with": true,
-    "operator-whitespace": true,
-    "pragma-on-top": true,
-    "uppercase": true,
-    "variable-declarations": true,
-    "whitespace": true
+    "quotes": ["error", "double"],
+    "indentation": ["error", 4]
 },
 ```
 
