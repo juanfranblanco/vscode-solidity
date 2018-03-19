@@ -147,7 +147,7 @@
             "string"
           ],
           "default": "contracts",
-          "description": "Default directory where the Package Dependency store its contracts, i.e: 'src', 'contracts', ''"
+          "description": "Default directory where the Package Dependency store its contracts, i.e: 'src', 'contracts', or just a blank string ''"
         }
       }
     },
