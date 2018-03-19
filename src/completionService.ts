@@ -355,7 +355,7 @@ function getBlockCompletionItems(): CompletionItem[] {
         {
             detail: '(uint): current block gaslimit',
             kind: CompletionItemKind.Property,
-            label: 'gasLimit',
+            label: 'gaslimit',
         },
         {
             detail: '(uint): current block number',

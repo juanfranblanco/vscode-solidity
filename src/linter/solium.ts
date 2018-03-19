@@ -65,8 +65,8 @@ export default class SoliumService implements Linter {
                     },
                 ];
             } else {
-                this.vsConnection.window.showErrorMessage('solium error: ' + err);
-                console.error('solium error: ' + err);
+                // this.vsConnection.window.showErrorMessage('solium error: ' + err);
+                this.vsConnection.console.error('solium error: ' + err);
             }
         }
         return items.map(this.soliumLintResultToDiagnostic);
