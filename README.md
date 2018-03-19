@@ -136,6 +136,8 @@ Nexus team for the original creation of the dappfile to structure contracts in p
 
 Beau Gunderson for contributing the initial integration of solium  https://github.com/juanfranblanco/vscode-solidity/issues/24, the initial server and error mappings.
 
+Bram Hoven for starting the multiple package dependency support for different environments (node_modules, lib)
+
 Nick Addison, Elazar Gershuni, Joe Whittles for their contributions.
 
 Sebastian Bürgel for keeping reminding me of the offline installation suppport
