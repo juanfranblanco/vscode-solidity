@@ -14,7 +14,8 @@
         { "include": "#global" },
         { "include": "#declaration" },
         { "include": "#function-call" },
-        { "include": "#assembly" }
+        { "include": "#assembly" },
+        { "include": "#punctuation" }
     ],
     "repository": {
         "comment": {
@@ -63,10 +64,11 @@
         },
         "control": {
             "patterns": [
-                { "import": "#control-flow" },
-                { "import": "#control-import" },
-                { "import": "#control-pragma" },
-                { "import": "#control-other" }
+                { "include": "#control-flow" },
+                { "include": "#control-import" },
+                { "include": "#control-pragma" },
+                { "include": "#control-underscore" },
+                { "include": "#control-other" }
             ]
         },
         "control-flow": {
@@ -84,6 +86,10 @@
                 "2": { "name": "entity.name.tag.pragma.solidity" },
                 "3": { "name": "constant.other.pragma.solidity" }
             }
+        },
+        "control-underscore": {
+            "match": "\\b(_)\\b",
+            "name": "constant.other.underscore.solidity"
         },
         "control-other": {
             "match": "\\b(new|delete|emit)\\b",
@@ -286,6 +292,22 @@
                 {
                     "match": "\\b(let)\\b",
                     "name": "storage.type.assembly.solidity"
+                }
+            ]
+        },
+        "punctuation": {
+            "patterns": [
+                {
+                    "match": ";",
+                    "name": "punctuation.terminator.statement.solidity"
+                },
+                {
+                    "match": "\\.",
+                    "name": "punctuation.accessor.solidity"
+                },
+                {
+                    "match": ",",
+                    "name": "punctuation.separator.solidity"
                 }
             ]
         }
