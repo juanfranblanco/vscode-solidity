@@ -5,93 +5,17 @@
     "name": "Solidity",
     "patterns": [
         { "include": "#comment" },
+        { "include": "#pragma" },
+        { "include": "#operator" },
+        { "include": "#constant" },
         { "include": "#number" },
         { "include": "#string" },
-        { "include": "#function" },
-        { "include": "#event" },
-        { "include": "#enum" },
-        {
-            "captures": {
-                "2": {
-                    "name": "entity.name.function"
-                },
-                "3": {
-                    "name": "entity.name.function"
-                }
-            },
-            "comment": "Main keywords",
-            "match": "\\b(pragma|contract|interface|struct|library|enum|assembly)\\s+([A-Za-z_]\\w*)(?:\\s+is\\s+((?:[A-Za-z_][\\,\\s]*)*))?\\b",
-            "name": "keyword.control"
-        },
-        {
-            "captures": {
-                "1": {
-                    "name": "constant.language"
-                },
-                "2": {
-                    "name": "variable.parameter"
-                }
-            },
-            "comment": "Built-in types",
-            "match": "\\b(address|string\\d*|bytes\\d*|int\\d*|uint\\d*|bool|hash\\d*)(?:\\s+(?:indexed\\s+)?([A-Za-z_]\\w*)\\s*[,\\)])?\\b"
-        },
-        {
-            "captures": {
-                "1": {
-                    "name": "constant.language"
-                },
-                "2": {
-                    "name": "constant.language"
-                },
-                "3": {
-                    "name": "constant.language"
-                },
-                "4": {
-                    "name": "keyword.control"
-                }
-            },
-            "comment": "Mapping definition",
-            "match": "\\b(mapping)\\s*\\((.*)\\s+=>\\s+(.*)\\)(\\s+(?:private|public|external|internal|inherited))?\\s+([A-Za-z_]\\w*)\\b"
-        },
-        {
-            "comment": "True and false keywords",
-            "match": "\\b(true|false)\\b",
-            "name": "constant.language"
-        },
-        {
-            "comment": "Langauge keywords",
-            "match": "\\b(emit|var|import|function|enum|constant|pure|view|payable|nonpayable|if|else|for|while|do|break|continue|throw|returns?|private|public|external|internal|inherited|storage|delete|memory|this|suicide|let|new|is|ether|wei|finney|szabo|seconds|minutes|hours|days|weeks|years\\_)\\b",
-            "name": "keyword.control"
-        },
-        {
-            "captures": {
-                "1": {
-                    "name": "constant.language"
-                },
-                "2": {
-                    "name": "keyword.control"
-                }
-            },
-            "comment": "Variable definitions",
-            "match": "\\b([A-Za-z_]\\w+)(\\s+(?:private|public|internal|external|inherited))?\\s+([A-Za-z_]\\w*)\\;"
-        },
-        {
-            "comment": "Operators",
-            "match": "(=|!|>|<|\\||&)",
-            "name": "keyword.control"
-        },
-        {
-            "captures": {
-                "1": {
-                    "name": "constant.language"
-                },
-                "2": {
-                    "name": "constant.language"
-                }
-            },
-            "comment": "msg and block special usage",
-            "match": "\\b(msg|block|tx)\\.([A-Za-z_]\\w*)\\b"
-        }
+        { "include": "#control" },
+        { "include": "#declaration" },
+        { "include": "#type" },
+        { "include": "#global" },
+        { "include": "#assembly" },
+        { "include": "#function-call" }
     ],
     "repository": {
         "comment": {
@@ -109,6 +33,159 @@
             "end": "\\*/",
             "name": "comment.block.solidity"
         },
+        "declaration": {
+            "patterns": [
+                { "include": "#declaration-contract" },
+                { "include": "#declaration-interface" },
+                { "include": "#declaration-library" },
+                { "include": "#declaration-struct" },
+                { "include": "#declaration-event" },
+                { "include": "#declaration-enum" },
+                { "include": "#declaration-function" },
+                { "include": "#declaration-modifier" },
+                { "include": "#declaration-mapping" }
+            ]
+        },
+        "control": {
+            "patterns": [
+                {
+                    "match": "\\b(if|else|for|while|do|break|continue|throw|returns?)\\b",
+                    "name": "keyword.control.flow.solidity"
+                },
+                {
+                    "match": "\\b(import)\\b",
+                    "name": "keyword.control.import.solidity"
+                },
+                {
+                    "match": "\\b(new|delete|emit)\\b",
+                    "name": "keyword.control.solidity"
+                }
+            ]
+        },
+        "declaration-contract": {
+            "patterns": [
+                {
+                    "match": "\\b(contract)\\s+([A-Za-z_]\\w*)\\b",
+                    "captures": {
+                        "1": { "name": "storage.type.contract.solidity" },
+                        "2": { "name": "entity.name.type.contract.solidity" }
+                    }
+                },
+                {
+                    "match": "\\b(is)\\b",
+                    "name": "storage.modifier.is.solidity"
+                }
+            ]
+        },
+        "declaration-interface": {
+            "match": "\\b(interface)\\s+([A-Za-z_]\\w*)\\b",
+            "captures": {
+                "1": { "name": "storage.type.interface.solidity" },
+                "2": { "name": "entity.name.type.interface.solidity" }
+            }
+        },
+        "declaration-library": {
+            "match": "\\b(library)\\s+([A-Za-z_]\\w*)\\b",
+            "captures": {
+                "1": { "name": "storage.type.library.solidity" },
+                "2": { "name": "entity.name.type.library.solidity" }
+            }
+        },
+        "declaration-struct": {
+            "match": "\\b(struct)(\\s+([A-Za-z_]\\w*))?\\b",
+            "captures": {
+                "1": { "name": "storage.type.struct.solidity" },
+                "2": { "name": "entity.name.type.struct.solidity" }
+            }
+        },
+        "declaration-event": {
+            "match": "\\b(event)(\\s+([A-Za-z_]\\w*))?\\b",
+            "captures": {
+                "1": { "name": "storage.type.event.solidity" },
+                "2": { "name": "entity.name.type.event.solidity" }
+            }
+        },
+        "declaration-enum": {
+            "match": "\\b(enum)(\\s+([A-Za-z_]\\w*))?\\b",
+            "captures": {
+                "1": { "name": "storage.type.enum.solidity" },
+                "2": { "name": "entity.name.type.enum.solidity" }
+            }
+        },
+        "declaration-function": {
+            "match": "\\b(function)(\\s+([A-Za-z_]\\w*))?\\b",
+            "captures": {
+                "1": { "name": "storage.type.function.solidity" },
+                "2": { "name": "entity.name.function.solidity" }
+            }
+        },
+        "declaration-modifier": {
+            "match": "\\b(modifier)(\\s+([A-Za-z_]\\w*))?\\b",
+            "captures": {
+                "1": { "name": "storage.type.modifier.solidity" },
+                "2": { "name": "entity.name.function.solidity" }
+            }
+        },
+        "declaration-mapping": {
+            "match": "\\b(mapping)\\b",
+            "name": "storage.type.mapping.solidity"
+        },
+        "pragma": {
+            "match": "\\b(pragma)(?:\\s+([A-Za-z_]\\w+)\\s+([^\\s]+))?\\b",
+            "captures": {
+                "1": { "name": "keyword.other.pragma.solidity" },
+                "2": { "name": "entity.name.tag.pragma.solidity" },
+                "3": { "name": "constant.other.pragma.solidity" }
+            }
+        },
+        "constant": {
+            "patterns": [
+                { "include": "#constant-boolean" },
+                { "include": "#constant-time" },
+                { "include": "#constant-currency" }
+            ]
+        },
+        "constant-boolean": {
+            "match": "\\b(true|false)\\b",
+            "name": "constant.language.boolean.solidity"            
+        },
+        "constant-time": {
+            "match": "\\b(seconds|minutes|hours|days|weeks|years)\\b",
+            "name": "constant.language.time.solidity"   
+        },
+        "constant-currency": {
+            "match": "\\b(ether|wei|finney|szabo)\\b",
+            "name": "constant.language.currency.solidity"  
+        },
+        "operator": {
+            "patterns": [
+                { "include": "#operator-logic" },
+                { "include": "#operator-mapping" },
+                { "include": "#operator-arithmetic" },
+                { "include": "#operator-binary" },
+                { "include": "#operator-assignment" }
+            ]
+        },
+        "operator-logic": {
+            "match": "(==|<(?!<)|<=|>(?!>)|>=|\\&\\&|\\|\\|)",
+            "name": "keyword.operator.logic.solidity"
+        },
+        "operator-mapping": {
+            "match": "(=>)",
+            "name": "keyword.operator.mapping.solidity"
+        },
+        "operator-arithmetic": {
+            "match": "(\\+|\\-|\\/|\\*)",
+            "name": "keyword.operator.arithmetic.solidity"
+        },
+        "operator-binary": {
+            "match": "(\\^|\\&|\\||<<|>>)",
+            "name": "keyword.operator.binary.solidity"
+        },
+        "operator-assignment": {
+            "match": "(\\:?=)",
+            "name": "keyword.operator.assignment.solidity"
+        },
         "number": {
             "patterns": [
                 { "include": "#number-decimal" },
@@ -116,7 +193,7 @@
             ]
         },
         "number-decimal": {
-            "match": "\\b(\\d+)\\b",
+            "match": "\\b(\\d+(\\.\\d+)?)\\b",
             "name": "constant.numeric.decimal.solidity"
         },
         "number-hex": {
@@ -135,44 +212,78 @@
                 }
             ]
         },
-        "function": {
+        "type": {
             "patterns": [
-                { "include": "#function-definition" },
-                { "include": "#function-call" }
+                { "include": "#type-primitive" },
+                { "include": "#type-modifier" }
             ]
         },
-        "function-definition": {
-            "match": "\\b(function|modifier)\\s+([A-Za-z_]\\w+)\\s*\\(",
-            "captures": {
-                "1": { "name": "storage.type.function.solidity" },
-                "2": { "name": "entity.name.function.solidity" }
-            }
+        "type-primitive": {
+            "match": "\\b(address|string\\d*|bytes\\d*|int\\d*|uint\\d*|bool|hash\\d*)\\b",
+            "name": "support.type.primitive.solidity"
         },
-        "function-call": {
+        "type-modifier": {
+            "match": "\\b(private|public|internal|external|constant|pure|view|payable|nonpayable|inherited|indexed|storage|memory)\\b",
+            "name": "support.type.modifier.solidity"
+        },
+        "global": {
+            "patterns": [
+                { "include": "#global-variables" },
+                { "include": "#global-functions" }
+            ]
+        },
+        "global-variables": {
+            "patterns": [
+                {
+                    "match": "\\b(msg|block|tx|now)\\b",
+                    "name": "variable.language.transaction.solidity"
+                },
+                {
+                    "match": "\\b(this)\\b",
+                    "name": "variable.language.this.solidity"
+                },
+                {
+                    "match": "\\b(super)\\b",
+                    "name": "variable.language.super.solidity"
+                }
+            ]
+        },
+        "global-functions": {
+            "patterns": [
+                {
+                    "match": "\\b(require|assert|revert)\\b",
+                    "name": "keyword.control.exceptions.solidity"
+                },
+                {
+                    "match": "\\b(selfdestruct|suicide)\\b",
+                    "name": "keyword.control.contract.solidity"
+                },
+                {
+                    "match": "\\b(addmod|mulmod|keccak256|sha256|sha3|ripemd160|ecrecover)\\b",
+                    "name": "support.function.math.solidity"
+                },
+                {
+                    "match": "\\b(blockhash|gasleft)\\b",
+                    "name": "variable.language.transaction.solidity"
+                }
+            ]
+        },
+        "assembly": {
+            "patterns": [
+                {
+                    "match": "\\b(assembly)\\b",
+                    "name": "keyword.control.assembly.solidity"
+                },
+                {
+                    "match": "\\b(let)\\b",
+                    "name": "storage.type.assembly.solidity"
+                }
+            ]
+        },
+        "function-call": { 
             "match": "\\b([A-Za-z_]\\w*)\\s*\\(",
             "captures": {
                 "1": { "name": "entity.name.function.solidity" }
-            }
-        },
-        "event": {
-            "patterns": [
-                { "include": "#keyword-event" },
-                { "include": "#keyword-emit" }
-            ]
-        },
-        "keyword-event": {
-            "match": "\\b(event)\\b",
-            "name": "storage.type.event.solidity"
-        },
-        "keyword-emit": {
-            "match": "\\b(emit)\\b",
-            "name": "keyword.control.emit.solidity"
-        },
-        "enum": {
-            "match": "\\b(enum)(?:\\s+([A-Za-z_]\\w*))?\\b",
-            "captures": {
-                "1": { "name": "storage.type.enum.solidity" },
-                "2": { "name": "entity.name.type.enum.solidity" }
             }
         }
     },
