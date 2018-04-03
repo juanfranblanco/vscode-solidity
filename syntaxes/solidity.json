@@ -65,6 +65,7 @@
         "control": {
             "patterns": [
                 { "include": "#control-flow" },
+                { "include": "#control-using" },
                 { "include": "#control-import" },
                 { "include": "#control-pragma" },
                 { "include": "#control-underscore" },
@@ -74,6 +75,10 @@
         "control-flow": {
             "match": "\\b(if|else|for|while|do|break|continue|throw|returns?)\\b",
             "name": "keyword.control.flow.solidity"
+        },
+        "control-using": {
+            "match": "\\b(using)\\b",
+            "name": "keyword.control.using.solidity"
         },
         "control-import": {
             "match": "\\b(import)\\b",
