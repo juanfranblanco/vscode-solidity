@@ -4,25 +4,12 @@
     ],
     "name": "Solidity",
     "patterns": [
-        {
-            "name": "comment.line.solidity",
-            "match": "(?<!tp:)//.*?$"
-        },
-        {
-            "name": "comment.block.solidity",
-            "begin": "/\\*",
-            "end": "\\*/"
-        },
-        {
-            "captures": {
-                "2": {
-                    "name": "support.function"
-                }
-            },
-            "comment": "Events",
-            "match": "\\b(event|enum)\\s+([A-Za-z_]\\w*)\\b",
-            "name": "keyword.control"
-        },
+        { "include": "#comment" },
+        { "include": "#number" },
+        { "include": "#string" },
+        { "include": "#function" },
+        { "include": "#event" },
+        { "include": "#enum" },
         {
             "captures": {
                 "2": {
@@ -33,7 +20,7 @@
                 }
             },
             "comment": "Main keywords",
-            "match": "\\b(pragma|contract|interface|struct|library|function|modifier|enum|assembly)\\s+([A-Za-z_]\\w*)(?:\\s+is\\s+((?:[A-Za-z_][\\,\\s]*)*))?\\b",
+            "match": "\\b(pragma|contract|interface|struct|library|enum|assembly)\\s+([A-Za-z_]\\w*)(?:\\s+is\\s+((?:[A-Za-z_][\\,\\s]*)*))?\\b",
             "name": "keyword.control"
         },
         {
@@ -104,43 +91,91 @@
             },
             "comment": "msg and block special usage",
             "match": "\\b(msg|block|tx)\\.([A-Za-z_]\\w*)\\b"
-        },
-        {
-            "captures": {
-                "1": {
-                    "name": "support.type"
-                }
-            },
-            "comment": "Function call",
-            "match": "\\b([A-Za-z_]\\w*)\\s*\\("
-        },
-        {
-            "comment": "Strings",
-            "match": "([\\\"\\'].*[\\\"\\'])",
-            "name": "string.quoted"
-        },
-        {
-            "comment": "Numbers",
-            "match": "\\b(\\d+)\\b",
-            "name": "constant.numeric"
-        },
-        {
-            "comment": "Hexadecimal",
-            "match": "\\b(0[xX][a-fA-F0-9]+)\\b",
-            "name": "constant.numeric"
-        },
-        {
-            "comment": "Comments",
-            "match": "\\/\\/.*",
-            "name": "comment"
-        },
-        {
-            "begin": "(\\/\\*)",
-            "comment": "Multiline comments",
-            "end": "(\\*\\/)",
-            "name": "comment"
         }
     ],
+    "repository": {
+        "comment": {
+            "patterns": [
+                { "include": "#comment-line" },
+                { "include": "#comment-block" }
+            ]
+        },
+        "comment-line": {
+            "match": "(?<!tp:)//.*?$",
+            "name": "comment.line.solidity"
+        },
+        "comment-block": {
+            "begin": "/\\*",
+            "end": "\\*/",
+            "name": "comment.block.solidity"
+        },
+        "number": {
+            "patterns": [
+                { "include": "#number-decimal" },
+                { "include": "#number-hex" }
+            ]
+        },
+        "number-decimal": {
+            "match": "\\b(\\d+)\\b",
+            "name": "constant.numeric.decimal.solidity"
+        },
+        "number-hex": {
+            "match": "\\b(0[xX][a-fA-F0-9]+)\\b",
+            "name": "constant.numeric.hexadecimal.solidity"
+        },
+        "string": {
+            "patterns": [
+                {
+                    "match": "\\\".*\\\"",
+                    "name": "string.quoted.double.solidity"
+                },
+                {
+                    "match": "\\'.*\\'",
+                    "name": "string.quoted.single.solidity"
+                }
+            ]
+        },
+        "function": {
+            "patterns": [
+                { "include": "#function-definition" },
+                { "include": "#function-call" }
+            ]
+        },
+        "function-definition": {
+            "match": "\\b(function|modifier)\\s+([A-Za-z_]\\w+)\\s*\\(",
+            "captures": {
+                "1": { "name": "storage.type.function.solidity" },
+                "2": { "name": "entity.name.function.solidity" }
+            }
+        },
+        "function-call": {
+            "match": "\\b([A-Za-z_]\\w*)\\s*\\(",
+            "captures": {
+                "1": { "name": "entity.name.function.solidity" }
+            }
+        },
+        "event": {
+            "patterns": [
+                { "include": "#keyword-event" },
+                { "include": "#keyword-emit" }
+            ]
+        },
+        "keyword-event": {
+            "match": "\\b(event)\\b",
+            "name": "storage.type.event.solidity"
+        },
+        "keyword-emit": {
+            "match": "\\b(emit)\\b",
+            "name": "keyword.control.emit.solidity"
+        },
+        "enum": {
+            "match": "\\b(enum)(?:\\s+([A-Za-z_]\\w*))?\\b",
+            "captures": {
+                "1": { "name": "storage.type.enum.solidity" },
+                "2": { "name": "entity.name.type.enum.solidity" }
+            }
+        }
+    },
     "scopeName": "source.solidity",
     "uuid": "ad87d2cd-8575-4afe-984e-9421a3788933"
 }
