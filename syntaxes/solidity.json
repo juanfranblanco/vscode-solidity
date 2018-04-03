@@ -43,7 +43,7 @@
             ]
         },
         "operator-logic": {
-            "match": "(==|<(?!<)|<=|>(?!>)|>=|\\&\\&|\\|\\|)",
+            "match": "(==|<(?!<)|<=|>(?!>)|>=|\\&\\&|\\|\\||\\:(?!=)|\\?)",
             "name": "keyword.operator.logic.solidity"
         },
         "operator-mapping": {
