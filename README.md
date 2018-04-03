@@ -123,6 +123,8 @@ Beau Gunderson for contributing the initial integration of solium  https://githu
 
 Bram Hoven for starting the multiple package dependency support for different environments (node_modules, lib)
 
+Piotr Szlachciak for refactoring the syntaxes
+
 Nick Addison, Elazar Gershuni, Joe Whittles for their contributions.
 
 Sebastian Bürgel for keeping reminding me of the offline installation suppport
