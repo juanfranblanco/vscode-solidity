@@ -8,7 +8,7 @@
     "compiler",
     "solhint"
   ],
-  "version": "0.0.37",
+  "version": "0.0.38",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.21.0"
@@ -33,6 +33,9 @@
     "onCommand:solidity.compile",
     "onCommand:solidity.compile.active",
     "onCommand:solidity.codegen",
+    "onCommand:solidity.codegenCSharpProject",
+    "onCommand:solidity.codegenVbNetProject",
+    "onCommand:solidity.codegenFSharpProject",
     "onCommand:solidity.fixDocument"
   ],
   "main": "./out/src/extension",
@@ -52,13 +55,14 @@
     "solparse": "^2.2.4",
     "truffle-artifactor": "^2.1.4",
     "vscode-languageclient": "^4.0.0",
-    "vscode-languageserver": "^4.0.0"
+    "vscode-languageserver": "^4.0.0",
+    "nethereum-codegen": "^1.0.1"
   },
   "devDependencies": {
     "@types/node": "^9.6.1",
     "tslint": "^5.9.1",
-    "typescript": "^2.7.2",
-    "vscode": "^1.1.13"
+    "typescript": "^2.8.1",
+    "vscode": "^1.1.14"
   },
   "contributes": {
     "configuration": {
@@ -176,6 +180,18 @@
       {
         "command": "solidity.codegen",
         "title": "Solidity: Code generate from compilation output 'contract.json'"
+      },
+      {
+        "command": "solidity.codegenCSharpProject",
+        "title": "Solidity: Code generate CSharp Project from compilation output 'contract.json'"
+      },
+      {
+        "command": "solidity.codegenVbNetProject",
+        "title": "Solidity: Code generate VB.Net Project from compilation output 'contract.json'"
+      },
+      {
+        "command": "solidity.codegenFSharpProject",
+        "title": "Solidity: Code generate FSharp Project from compilation output 'contract.json'"
       },
       {
         "command": "solidity.fixDocument",
