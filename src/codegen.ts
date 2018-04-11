@@ -35,7 +35,8 @@ export function codeGenerateNethereumCQSFSharp(args: any, diagnostics: vscode.Di
     let lang = 3;
     codeGenerateCQS(extension, lang, args, diagnostics);
 }
-    function codeGenerateCQS(extension: string, lang: number, args: any, diagnostics: vscode.DiagnosticCollection) {
+
+function codeGenerateCQS(extension: string, lang: number, args: any, diagnostics: vscode.DiagnosticCollection) {
         try {
 
             let editor = vscode.window.activeTextEditor;
@@ -75,4 +76,4 @@ export function codeGenerateNethereumCQSFSharp(args: any, diagnostics: vscode.Di
             return part.charAt(0).toUpperCase() + part.slice(1);
         }).join('');
     }
-}
+

@@ -65,7 +65,7 @@ export function activate(context: vscode.ExtensionContext) {
     const clientOptions: LanguageClientOptions = {
         documentSelector: [
             { language: 'solidity', scheme: 'file' },
-            { language: 'solidity', scheme: 'untitled' }
+            { language: 'solidity', scheme: 'untitled' },
         ],
         revealOutputChannelOn: RevealOutputChannelOn.Never,
         synchronize: {
