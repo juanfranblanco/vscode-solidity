@@ -45,6 +45,14 @@ If you need to use an specific version for a project, you can also install solc 
 npm install solc 
 ```
 
+**Note:** The order of preference when using these settings are: Local node installation will be use first, Local file second and finally remote. 
+
+So if you just want to use the latest version of solidity for all the projects and have online connectivity all the time, use the setting:
+```"solidity.compileUsingRemoteVersion" : "latest"```
+
+But if you are working on an specific project using an older version, you can use npm install locally to target that specefic version, without affecting the global setting.
+
+
 ## Default project structure
 
 A default project  / library dependency structure is supported as follows:
