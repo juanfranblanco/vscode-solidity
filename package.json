@@ -48,6 +48,7 @@
     "abi-code-gen": "0.0.3",
     "ajv": "^6.3.0",
     "fs-extra": "^4.0.3",
+    "nethereum-codegen": "^1.0.1",
     "read-yaml": "^1.1.0",
     "solc": "^0.4.23",
     "solhint": "^1.1.10",
@@ -56,8 +57,7 @@
     "truffle-artifactor": "^2.1.4",
     "vscode-languageclient": "^4.0.0",
     "vscode-languageserver": "^4.0.0",
-    "vscode-uri": "^1.0.3",
-    "nethereum-codegen": "^1.0.1"
+    "vscode-uri": "^1.0.3"
   },
   "devDependencies": {
     "@types/node": "^9.6.1",
