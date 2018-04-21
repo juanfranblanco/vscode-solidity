@@ -8,7 +8,7 @@
     "compiler",
     "solhint"
   ],
-  "version": "0.0.38",
+  "version": "0.0.40",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.21.0"
@@ -49,13 +49,14 @@
     "ajv": "^6.3.0",
     "fs-extra": "^4.0.3",
     "read-yaml": "^1.1.0",
-    "solc": "^0.4.21",
+    "solc": "^0.4.23",
     "solhint": "^1.1.10",
     "solium": "^1.1.6",
     "solparse": "^2.2.4",
     "truffle-artifactor": "^2.1.4",
     "vscode-languageclient": "^4.0.0",
     "vscode-languageserver": "^4.0.0",
+    "vscode-uri": "^1.0.3",
     "nethereum-codegen": "^1.0.1"
   },
   "devDependencies": {

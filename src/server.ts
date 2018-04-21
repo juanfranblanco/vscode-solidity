@@ -4,10 +4,10 @@ import {SolcCompiler} from './solcCompiler';
 import Linter from './linter/linter';
 import SolhintService from './linter/solhint';
 import SoliumService from './linter/solium';
+import {CompilerError} from './solErrorsToDiagnostics';
 import {CompletionService, GetCompletionTypes,
         GetContextualAutoCompleteByGlobalVariable, GeCompletionUnits,
         GetGlobalFunctions, GetGlobalVariables} from './completionService';
-
 import {
     createConnection, IConnection,
     IPCMessageReader, IPCMessageWriter,
@@ -17,6 +17,7 @@ import {
     CompletionItem, CompletionItemKind,
     Range, Position, Location, SignatureHelp,
 } from 'vscode-languageserver';
+import Uri from 'vscode-uri';
 
 interface Settings {
     solidity: SoliditySettings;
@@ -68,11 +69,12 @@ let packageDefaultDependenciesContractsDirectory = 'src';
 function validate(document) {
     try {
         validatingDocument = true;
-        const filePath = Files.uriToFilePath(document.uri);
+        const uri = document.uri;
+        const filePath = Files.uriToFilePath(uri);
+
         const documentText = document.getText();
         let linterDiagnostics: Diagnostic[] = [];
         let compileErrorDiagnostics: Diagnostic[] = [];
-
         try {
             if (linter !== null) {
                 linterDiagnostics = linter.validate(filePath, documentText);
@@ -83,17 +85,25 @@ function validate(document) {
 
         try {
             if (enabledAsYouTypeErrorCheck) {
-                compileErrorDiagnostics = solcCompiler
+                let errors: CompilerError[] = solcCompiler
                     .compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText,
                                                 packageDefaultDependenciesDirectory,
                                                 packageDefaultDependenciesContractsDirectory);
+                errors.forEach(errorItem => {
+                    let diagnosticCompileError: Diagnostic[] = [errorItem.diagnostic];
+                    let uriCompileError = Uri.file(errorItem.fileName);
+                    if (uriCompileError.toString() === uri) {
+                        compileErrorDiagnostics.push(errorItem.diagnostic);
+                    }
+                });
             }
         } catch {
             // gracefull catch
         }
 
         const diagnostics = linterDiagnostics.concat(compileErrorDiagnostics);
-        const uri = document.uri;
+
+        console.log(uri);
         connection.sendDiagnostics({diagnostics, uri});
     } finally {
         validatingDocument = false;

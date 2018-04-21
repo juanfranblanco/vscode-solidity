@@ -146,14 +146,14 @@ export class SolcCompiler {
             if (output.errors) {
                 return output
                     .errors
-                    .map(error => solidityErrorsConvertor.errorToDiagnostic(error).diagnostic);
+                    .map(error => solidityErrorsConvertor.errorToDiagnostic(error));
             }
         } else {
             let contract = {};
             contract[filePath] = documentText;
             const output = this.compile({sources: contract });
             if (output.errors) {
-                return output.errors.map((error) => solidityErrorsConvertor.errorToDiagnostic(error).diagnostic);
+                return output.errors.map((error) => solidityErrorsConvertor.errorToDiagnostic(error));
             }
         }
         return [];

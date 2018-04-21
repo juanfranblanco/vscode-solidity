@@ -1,6 +1,6 @@
 import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver';
 
-interface CompilerError {
+export interface CompilerError {
     diagnostic: any;
     fileName: string;
 }
@@ -32,10 +32,10 @@ interface CompilerError {
         // tslint:disable-next-line:radix
         let column = parseInt(errorSplit[index + 1]);
         let severity = this.getDiagnosticSeverity(errorSplit[index + 2]);
-
+        let errorMessage = errorSplit[index + 3];
         return {
             diagnostic: {
-                message: error,
+                message: errorMessage,
                 range: {
                     end: {
                         character: column,
