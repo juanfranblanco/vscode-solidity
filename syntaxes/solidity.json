@@ -370,9 +370,6 @@
                 "captures": {
                     "1": {
                         "name": "storage.type.constructor.solidity"
-                    },
-                    "2": {
-                        "name": "entity.name.constructor.solidity"
                     }
                 }
         },

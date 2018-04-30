@@ -8,7 +8,7 @@
     "compiler",
     "solhint"
   ],
-  "version": "0.0.41",
+  "version": "0.0.42",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.21.0"
@@ -48,7 +48,6 @@
     "abi-code-gen": "0.0.3",
     "ajv": "^6.4.0",
     "fs-extra": "^4.0.3",
-    "minipass": "^2.2.4",
     "nethereum-codegen": "^1.0.1",
     "read-yaml": "^1.1.0",
     "solc": "^0.4.23",
