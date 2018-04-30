@@ -292,6 +292,9 @@
                     "include": "#declaration-function"
                 },
                 {
+                    "include": "#declaration-constructor"
+                },
+                {
                     "include": "#declaration-modifier"
                 },
                 {
@@ -361,6 +364,17 @@
                     "name": "entity.name.type.event.solidity"
                 }
             }
+        },
+        "declaration-constructor": {
+                "match": "\\b(constructor)(\\s+([A-Za-z_]\\w*))?\\b",
+                "captures": {
+                    "1": {
+                        "name": "storage.type.constructor.solidity"
+                    },
+                    "2": {
+                        "name": "entity.name.constructor.solidity"
+                    }
+                }
         },
         "declaration-enum": {
             "match": "\\b(enum)(\\s+([A-Za-z_]\\w*))?\\b",

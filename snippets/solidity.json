@@ -27,7 +27,11 @@
         "mapping declaration":{
             "prefix": "map",
 			"body": "mapping (${1:type1}=>${2:type2}) ${3:name};"
-        },
+		},
+		"constructor declaration": {
+			"prefix": "const",
+			"body": "constructor (${1:type} ${2:name}) public {\n\t$0\n}"
+		},
         "function declaration": {
 			"prefix": "func",
 			"body": "function ${1:name}(${2:type} ${3:name}) {\n\t$0\n}"
@@ -37,9 +41,9 @@
 			"body": "function ${1:name}(${2:type} ${3:name}) returns (${4:type} ${5:name}) {\n\t$0\n}"
 		}
         ,
-        "function constant declaration": {
-			"prefix": "funcrc",
-			"body": "function ${1:name}(${2:type} ${3:name}) constant returns (${4:type} ${5:name}) {\n\t$0\n}"
+        "function view declaration": {
+			"prefix": "funcrview",
+			"body": "function ${1:name}(${2:type} ${3:name}) view public returns (${4:type} ${5:name}) {\n\t$0\n}"
         },
         "event declaration": {
 			"prefix": "ev",
