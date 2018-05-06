@@ -170,6 +170,10 @@ export class CompletionService {
 export function GetCompletionTypes(): CompletionItem[] {
     let completionItems = [];
     let types = ['address', 'string', 'bytes', 'byte', 'int', 'uint', 'bool', 'hash'];
+    for (let index = 8; index <= 256; index += 8) {
+        types.push('int' + index);
+        types.push('uint' + index);
+    }
     types.forEach(type => {
         let completionItem =  CompletionItem.create(type);
         completionItem.kind = CompletionItemKind.Keyword;
