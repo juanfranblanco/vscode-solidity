@@ -66,7 +66,7 @@ Currently there is no name conflicting resolution, so the first library found ma
 
 ## Code completion
 
-Just press Ctlr + Space or Command + Space to autocomplete statements, currently supported all the storage variables, functions and events (with snippets) included in the current document and every document in the import chain. Also supported all the global variables, global functions, types and units.
+Just press Ctrl + Space or Command + Space to autocomplete statements, currently supported all the storage variables, functions and events (with snippets) included in the current document and every document in the import chain. Also supported all the global variables, global functions, types and units.
 
 ![Screenshot](screenshots/autocompletedemo.gif)
 
