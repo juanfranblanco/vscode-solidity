@@ -5,6 +5,9 @@
     "name": "Solidity",
     "patterns": [
         {
+            "include": "#natspec"
+        },
+        {
             "include": "#comment"
         },
         {
@@ -42,6 +45,83 @@
         }
     ],
     "repository": {
+        "natspec": {
+            "patterns": [
+                {
+                    "begin": "/\\*\\*",
+                    "end": "\\*/",
+                    "name": "comment.block.documentation.solidity",
+                    "patterns": [
+                        {
+                            "include": "#natspec-tags"
+                        }
+                    ]
+                },
+                {
+                    "begin": "///",
+                    "end": "$",
+                    "name": "comment.block.documentation.solidity",
+                    "patterns": [
+                        {
+                            "include": "#natspec-tags"
+                        }
+                    ]
+                }
+            ]
+        },
+        "natspec-tags": {
+            "patterns": [
+                {
+                    "include": "#natspec-tag-title"
+                },
+                {
+                    "include": "#natspec-tag-author"
+                },
+                {
+                    "include": "#natspec-tag-notice"
+                },
+                {
+                    "include": "#natspec-tag-dev"
+                },
+                {
+                    "include": "#natspec-tag-param"
+                },
+                {
+                    "include": "#natspec-tag-return"
+                }
+            ]
+        },
+        "natspec-tag-title": {
+            "match": "(@title)\\b",
+            "name": "storage.type.title.natspec"
+        },
+        "natspec-tag-author": {
+            "match": "(@author)\\b",
+            "name": "storage.type.author.natspec"
+        },
+        "natspec-tag-notice": {
+            "match": "(@notice)\\b",
+            "name": "storage.type.dev.natspec"
+        },
+        "natspec-tag-dev": {
+            "match": "(@dev)\\b",
+            "name": "storage.type.dev.natspec"
+        },
+        "natspec-tag-param": {
+            "match": "(@param)(\\s+([A-Za-z_]\\w*))?\\b",
+            "captures": {
+                "1": {
+                    "name": "storage.type.param.natspec"
+                },
+                "3": {
+                    "name": "variable.other.natspec"
+                }
+            }
+        },
+        "natspec-tag-return": {
+            "match": "(@return)\\b",
+            "name": "storage.type.return.natspec"
+        },
         "comment": {
             "patterns": [
                 {
