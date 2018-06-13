@@ -305,12 +305,12 @@
         "declaration-contract": {
             "patterns": [
                 {
-                    "match": "\\b(contract)\\s+([A-Za-z_]\\w*)\\b",
+                    "match": "\\b(contract)(\\s+([A-Za-z_]\\w*))?\\b",
                     "captures": {
                         "1": {
                             "name": "storage.type.contract.solidity"
                         },
-                        "2": {
+                        "3": {
                             "name": "entity.name.type.contract.solidity"
                         }
                     }
@@ -322,23 +322,23 @@
             ]
         },
         "declaration-interface": {
-            "match": "\\b(interface)\\s+([A-Za-z_]\\w*)\\b",
+            "match": "\\b(interface)(\\s+([A-Za-z_]\\w*))?\\b",
             "captures": {
                 "1": {
                     "name": "storage.type.interface.solidity"
                 },
-                "2": {
+                "3": {
                     "name": "entity.name.type.interface.solidity"
                 }
             }
         },
         "declaration-library": {
-            "match": "\\b(library)\\s+([A-Za-z_]\\w*)\\b",
+            "match": "\\b(library)(\\s+([A-Za-z_]\\w*))?\\b",
             "captures": {
                 "1": {
                     "name": "storage.type.library.solidity"
                 },
-                "2": {
+                "3": {
                     "name": "entity.name.type.library.solidity"
                 }
             }
@@ -349,7 +349,7 @@
                 "1": {
                     "name": "storage.type.struct.solidity"
                 },
-                "2": {
+                "3": {
                     "name": "entity.name.type.struct.solidity"
                 }
             }
@@ -360,18 +360,18 @@
                 "1": {
                     "name": "storage.type.event.solidity"
                 },
-                "2": {
+                "3": {
                     "name": "entity.name.type.event.solidity"
                 }
             }
         },
         "declaration-constructor": {
-                "match": "\\b(constructor)(\\s+([A-Za-z_]\\w*))?\\b",
-                "captures": {
-                    "1": {
-                        "name": "storage.type.constructor.solidity"
-                    }
+            "match": "\\b(constructor)\\b",
+            "captures": {
+                "1": {
+                    "name": "storage.type.constructor.solidity"
                 }
+            }
         },
         "declaration-enum": {
             "match": "\\b(enum)(\\s+([A-Za-z_]\\w*))?\\b",
@@ -379,7 +379,7 @@
                 "1": {
                     "name": "storage.type.enum.solidity"
                 },
-                "2": {
+                "3": {
                     "name": "entity.name.type.enum.solidity"
                 }
             }
@@ -387,7 +387,7 @@
         "declaration-function": {
             "patterns": [
                 {
-                    "match": "\\b(function)(\\s+([A-Za-z_]\\w*))?\\b",
+                    "match": "\\b(function)\\s+([A-Za-z_]\\w*)\\b",
                     "captures": {
                         "1": {
                             "name": "storage.type.function.solidity"
@@ -399,7 +399,7 @@
                 },
                 {
                     "match": "\\b(private|public|internal|external|constant|pure|view|payable|nonpayable|inherited|indexed|storage|memory)\\b",
-                    "name": "storage.type.function.solidity"
+                    "name": "storage.type.mofifier.solidity"
                 }
             ]
         },
@@ -409,7 +409,7 @@
                 "1": {
                     "name": "storage.type.modifier.solidity"
                 },
-                "2": {
+                "3": {
                     "name": "entity.name.function.solidity"
                 }
             }
