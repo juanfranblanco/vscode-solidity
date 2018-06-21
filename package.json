@@ -51,7 +51,7 @@
     "nethereum-codegen": "^1.0.1",
     "read-yaml": "^1.1.0",
     "solc": "^0.4.23",
-    "solhint": "^1.1.10",
+    "solhint": "^1.2.1",
     "solium": "^1.1.7",
     "solparse": "^2.2.5",
     "truffle-artifactor": "^2.1.4",
