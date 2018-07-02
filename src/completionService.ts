@@ -65,6 +65,9 @@ export class CompletionService {
     public createParamsInfo(params: any): string {
         let paramsInfo = '';
         if (typeof params !== 'undefined' && params !== null) {
+            if (params.hasOwnProperty('params')) {
+                params = params.params;
+            }
             params.forEach( parameterElement => {
                const typeString = this.getTypeString(parameterElement.literal);
                 let currentParamInfo = '';
