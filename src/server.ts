@@ -8,6 +8,7 @@ import {CompilerError} from './solErrorsToDiagnostics';
 import {CompletionService, GetCompletionTypes,
         GetContextualAutoCompleteByGlobalVariable, GeCompletionUnits,
         GetGlobalFunctions, GetGlobalVariables} from './completionService';
+import {SolidityDefinitionProvider} from './definitionProvider';
 import {
     createConnection, IConnection,
     IPCMessageReader, IPCMessageWriter,
@@ -169,7 +170,14 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
     return completionItems;
 });
 
-
+connection.onDefinition((handler: TextDocumentPositionParams): Thenable<Location | Location[]> => {
+    const provider = new SolidityDefinitionProvider(
+        rootPath,
+        packageDefaultDependenciesDirectory,
+        packageDefaultDependenciesContractsDirectory,
+    );
+    return provider.provideDefinition(documents.get(handler.textDocument.uri), handler.position);
+});
 
 
 // This handler resolve additional information for the item selected in
@@ -230,6 +238,7 @@ connection.onInitialize((result): InitializeResult => {
                 resolveProvider: false,
                 triggerCharacters: [ '.' ],
             },
+            definitionProvider: true,
             textDocumentSync: documents.syncKind,
         },
     };
