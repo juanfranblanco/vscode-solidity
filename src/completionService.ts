@@ -202,7 +202,12 @@ export function GeCompletionUnits(): CompletionItem[] {
     timeUnits.forEach(unit => {
         let completionItem =  CompletionItem.create(unit);
         completionItem.kind = CompletionItemKind.Unit;
-        completionItem.detail = unit + ': time unit';
+
+        if (unit !== 'years') {
+            completionItem.detail = unit + ': time unit';
+        } else {
+            completionItem.detail = 'DEPRICATED: ' + unit + ': time unit';
+        }
         completionItems.push(completionItem);
     });
 
@@ -231,6 +236,11 @@ export function GetGlobalVariables(): CompletionItem[] {
             kind: CompletionItemKind.Variable,
             label: 'tx',
         },
+        {
+            detail: 'ABI encoding / decoding',
+            kind: CompletionItemKind.Variable,
+            label: 'abi',
+        },
     ];
 }
 
@@ -244,8 +254,30 @@ export function GetGlobalFunctions(): CompletionItem[] {
             label: 'assert',
         },
         {
-            detail: 'require(bool condition): throws if the condition is not met - to be used for errors in inputs or external components.',
+            detail: 'gasleft(): returns the remaining gas',
+            insertText: 'gasleft();',
+            insertTextFormat: 2,
+            kind: CompletionItemKind.Function,
+            label: 'gasleft',
+        },
+        {
+            detail: 'blockhash(uint blockNumber): hash of the given block - only works for 256 most recent, excluding current, blocks',
+            insertText: 'blockhash(${1:blockNumber});',
+            insertTextFormat: 2,
+            kind: CompletionItemKind.Function,
+            label: 'blockhash',
+        },
+        {
+            detail: 'require(bool condition): reverts if the condition is not met - to be used for errors in inputs or external components.',
             insertText: 'require(${1:condition});',
+            insertTextFormat: 2,
+            kind: CompletionItemKind.Method,
+            label: 'require',
+        },
+        {
+            // tslint:disable-next-line:max-line-length
+            detail: 'require(bool condition, string message): reverts if the condition is not met - to be used for errors in inputs or external components. Also provides an error message.',
+            insertText: 'require(${1:condition}, ${2:message});',
             insertTextFormat: 2,
             kind: CompletionItemKind.Method,
             label: 'require',
@@ -260,7 +292,7 @@ export function GetGlobalFunctions(): CompletionItem[] {
         {
             detail: 'addmod(uint x, uint y, uint k) returns (uint):' +
                     'compute (x + y) % k where the addition is performed with arbitrary precision and does not wrap around at 2**256',
-            insertText: 'addmod(${1:x},${2:y},${3:k})',
+            insertText: 'addmod(${1:x}, ${2:y}, ${3:k})',
             insertTextFormat: 2,
             kind: CompletionItemKind.Method,
             label: 'addmod',
@@ -268,7 +300,7 @@ export function GetGlobalFunctions(): CompletionItem[] {
         {
             detail: 'mulmod(uint x, uint y, uint k) returns (uint):' +
                     'compute (x * y) % k where the multiplication is performed with arbitrary precision and does not wrap around at 2**256',
-            insertText: 'mulmod(${1:x},${2:y},${3:k})',
+            insertText: 'mulmod(${1:x}, ${2:y}, ${3:k})',
             insertTextFormat: 2,
             kind: CompletionItemKind.Method,
             label: 'mulmod',
@@ -308,7 +340,7 @@ export function GetGlobalFunctions(): CompletionItem[] {
         {
             detail: 'ecrecover(bytes32 hash, uint8 v, bytes32 r, bytes32 s) returns (address):' +
                     'recover the address associated with the public key from elliptic curve signature or return zero on error',
-            insertText: 'ecrecover(${1:hash},${2:v},${3:r},${4:s})',
+            insertText: 'ecrecover(${1:hash}, ${2:v}, ${3:r}, ${4:s})',
             insertTextFormat: 2,
             kind: CompletionItemKind.Method,
             label: 'ecrecover',
@@ -326,6 +358,9 @@ export function GetContextualAutoCompleteByGlobalVariable(lineText: string, word
     }
     if (isAutocompleteTrigeredByVariableName('tx', lineText, wordEndPosition)) {
         return getTxCompletionItems();
+    }
+    if (isAutocompleteTrigeredByVariableName('abi', lineText, wordEndPosition)) {
+        return getAbiCompletionItems();
     }
     return null;
 }
@@ -348,7 +383,7 @@ function getBlockCompletionItems(): CompletionItem[] {
             label: 'coinbase',
         },
         {
-            detail: '(bytes32): Hash of the given block - only works for 256 most recent blocks excluding current',
+            detail: '(bytes32): DEPRICATED In 0.4.22 use blockhash(uint) instead. Hash of the given block - only works for 256 most recent blocks excluding current',
             insertText: 'blockhash(${1:blockNumber});',
             insertTextFormat: 2,
             kind: CompletionItemKind.Method,
@@ -400,7 +435,7 @@ function getMsgCompletionItems(): CompletionItem[] {
             label: 'data',
         },
         {
-            detail: '(uint): remaining gas',
+            detail: '(uint): remaining gas DEPRICATED in 0.4.21 use gasleft()',
             kind: CompletionItemKind.Property,
             label: 'gas',
         },
@@ -418,6 +453,39 @@ function getMsgCompletionItems(): CompletionItem[] {
             detail: '(uint): number of wei sent with the message',
             kind: CompletionItemKind.Property,
             label: 'value',
+        },
+    ];
+}
+
+function getAbiCompletionItems(): CompletionItem[] {
+    return [
+        {
+            detail: 'encode(..) returs (bytes): ABI-encodes the given arguments',
+            insertText: 'encode(${1:arg});',
+            insertTextFormat: 2,
+            kind: CompletionItemKind.Method,
+            label: 'encode',
+        },
+        {
+            detail: 'encodePacked(..) returns (bytes): Performes packed encoding of the given arguments',
+            insertText: 'encodePacked(${1:arg});',
+            insertTextFormat: 2,
+            kind: CompletionItemKind.Method,
+            label: 'encodePacked',
+        },
+        {
+            detail: 'encodeWithSelector(bytes4,...) returns (bytes): ABI-encodes the given arguments starting from the second and prepends the given four-byte selector',
+            insertText: 'encodeWithSelector(${1:bytes4}, ${2:arg});',
+            insertTextFormat: 2,
+            kind: CompletionItemKind.Method,
+            label: 'encodeWithSelector',
+        },
+        {
+            detail: 'encodeWithSignature(string,...) returns (bytes): Equivalent to abi.encodeWithSelector(bytes4(keccak256(signature), ...)`',
+            insertText: 'encodeWithSignature(${1:signatureString}, ${2:arg});',
+            insertTextFormat: 2,
+            kind: CompletionItemKind.Method,
+            label: 'encodeWithSignature',
         },
     ];
 }

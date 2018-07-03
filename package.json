@@ -8,7 +8,7 @@
     "compiler",
     "solhint"
   ],
-  "version": "0.0.43",
+  "version": "0.0.44",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.21.0"
@@ -50,7 +50,7 @@
     "fs-extra": "^4.0.3",
     "nethereum-codegen": "^1.0.1",
     "read-yaml": "^1.1.0",
-    "solc": "^0.4.23",
+    "solc": "^0.4.24",
     "solhint": "^1.2.1",
     "solium": "^1.1.7",
     "solparse": "^2.2.5",
