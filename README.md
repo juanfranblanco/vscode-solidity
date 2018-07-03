@@ -133,7 +133,9 @@ Bram Hoven for starting the multiple package dependency support for different en
 
 Piotr Szlachciak for refactoring the syntaxes
 
-Nick Addison, Elazar Gershuni, Joe Whittles for their contributions.
+Forest Fang for providing the implementation of the "Go to definition", allowing you to navigate to structs, contracts, functions calls, etc
+
+Nick Addison, Elazar Gershuni, Joe Whittles, Iñigo Villalba, Thien Toan, Jonathan Carter, Stefan Lew, Nikita Savchenko for their contributions.
 
 Sebastian Bürgel for keeping reminding me of the offline installation suppport
 
