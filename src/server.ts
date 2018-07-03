@@ -7,7 +7,7 @@ import SoliumService from './linter/solium';
 import {CompilerError} from './solErrorsToDiagnostics';
 import {CompletionService, GetCompletionTypes,
         GetContextualAutoCompleteByGlobalVariable, GeCompletionUnits,
-        GetGlobalFunctions, GetGlobalVariables} from './completionService';
+        GetGlobalFunctions, GetGlobalVariables, GetCompletionKeywords} from './completionService';
 import {SolidityDefinitionProvider} from './definitionProvider';
 import {
     createConnection, IConnection,
@@ -163,6 +163,7 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
     } finally {
 
         completionItems = completionItems.concat(GetCompletionTypes());
+        completionItems = completionItems.concat(GetCompletionKeywords());
         completionItems = completionItems.concat(GeCompletionUnits());
         completionItems = completionItems.concat(GetGlobalFunctions());
         completionItems = completionItems.concat(GetGlobalVariables());

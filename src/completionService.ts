@@ -176,6 +176,7 @@ export function GetCompletionTypes(): CompletionItem[] {
     for (let index = 8; index <= 256; index += 8) {
         types.push('int' + index);
         types.push('uint' + index);
+        types.push('bytes' + index / 8);
     }
     types.forEach(type => {
         let completionItem =  CompletionItem.create(type);
@@ -184,6 +185,41 @@ export function GetCompletionTypes(): CompletionItem[] {
         completionItems.push(completionItem);
     });
     // add mapping
+    return completionItems;
+}
+
+function CreateCompletionItem(label: string, kind: CompletionItemKind, detail: string) {
+    let completionItem = CompletionItem.create(label);
+    completionItem.kind = kind;
+    completionItem.detail = detail;
+    return completionItem;
+}
+
+export function GetCompletionKeywords(): CompletionItem[] {
+    let completionItems = [];
+    let keywords = [ 'modifier', 'mapping', 'break', 'continue', 'delete', 'else', 'for',
+    'if', 'new', 'return', 'returns', 'while', 'using',
+    'private', 'public', 'external', 'internal', 'payable', 'view', 'pure', 'case', 'do', 'else', 'finally',
+    'in', 'instanceof', 'return', 'throw', 'try', 'typeof', 'yield', 'void'] ;
+    keywords.forEach(unit => {
+        let completionItem =  CompletionItem.create(unit);
+        completionItem.kind = CompletionItemKind.Keyword;
+        completionItems.push(completionItem);
+    });
+
+    completionItems.push(CreateCompletionItem('contract', CompletionItemKind.Class, null));
+    completionItems.push(CreateCompletionItem('library', CompletionItemKind.Class, null));
+    completionItems.push(CreateCompletionItem('storage', CompletionItemKind.Field, null));
+    completionItems.push(CreateCompletionItem('memory', CompletionItemKind.Field, null));
+    completionItems.push(CreateCompletionItem('var', CompletionItemKind.Field, null));
+    completionItems.push(CreateCompletionItem('constant', CompletionItemKind.Constant, null));
+    completionItems.push(CreateCompletionItem('constructor', CompletionItemKind.Constructor, null));
+    completionItems.push(CreateCompletionItem('event', CompletionItemKind.Event, null));
+    completionItems.push(CreateCompletionItem('import', CompletionItemKind.Module, null));
+    completionItems.push(CreateCompletionItem('enum', CompletionItemKind.Enum, null));
+    completionItems.push(CreateCompletionItem('struct', CompletionItemKind.Struct, null));
+    completionItems.push(CreateCompletionItem('function', CompletionItemKind.Function, null));
+
     return completionItems;
 }
 
