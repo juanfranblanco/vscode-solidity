@@ -20,7 +20,7 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
     let contractsCollection = new ContractCollection();
     let project = projService.initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
     let solidityPath = '**/*.sol';
-    if (project.projectPackage.sol_sources !== undefined || project.projectPackage.sol_sources === '') {
+    if (project.projectPackage.sol_sources !== undefined && project.projectPackage.sol_sources !== '') {
         solidityPath = project.projectPackage.sol_sources + '/' + solidityPath;
     }
 
@@ -59,7 +59,7 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
         compile(contractsCollection.getContractsForCompilation(),
                 diagnosticCollection,
                 project.projectPackage.build_dir,
-                 project.projectPackage.absoluletPath,
+                project.projectPackage.absoluletPath,
                 sourceDirPath,
                 packagesPath);
 
