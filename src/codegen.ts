@@ -75,8 +75,8 @@ function codeGenerateAllFiles(extension: string, lang: number, args: any, diagno
     let files = vscode.workspace.findFiles(outputPath, null, 1000);
     files.then(documents => {
         documents.forEach(document => {
-            if(document.fsPath.startsWith(buildPath)){
-            codeGenerateCQS(document.fsPath, extension, lang, args, diagnostics);
+            if (document.fsPath.startsWith(buildPath)) {
+             codeGenerateCQS(document.fsPath, extension, lang, args, diagnostics);
             }
         });
     });
@@ -96,7 +96,6 @@ function codeGenerateCQS(fileName: string, extension: string, lang: number, args
                    baseNamespace = settings.namespace;
                 }
             }
-            
             let outputPathInfo = path.parse(fileName);
             let contractName = outputPathInfo.name;
 
