@@ -1,5 +1,5 @@
 'use strict';
-import {Package} from './package';
+import { Package } from './package';
 
 export class Project {
     public projectPackage: Package;
@@ -12,7 +12,7 @@ export class Project {
         this.packagesDir = packagesDir;
     }
     // This will need to add the current package as a parameter to resolve version dependencies
-    public findPackage(contractDependencyImport: string) {
+    public findPackage(contractDependencyImport: string): Package {
         return this.dependencies.find((depPack: Package) => depPack.isImportForThis(contractDependencyImport));
     }
 }

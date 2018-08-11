@@ -1,9 +1,9 @@
 'use strict';
-import * as fs from 'fs';
-import * as path from 'path';
+import { existsSync, readdirSync, statSync } from 'fs';
+import { join, basename } from 'path';
 import * as readyaml from 'read-yaml';
-import {Package} from './model/package';
-import {Project} from  './model/project';
+import { Package } from './model/package';
+import { Project } from './model/project';
 
 // TODO: These are temporary constants until standard agreed
 // A project standard is needed so each project can define where it store its project dependencies
@@ -15,27 +15,28 @@ const packageConfigFileName = 'dappFile';
 let packageDependenciesDirectory = 'lib';
 let packageDependenciesContractsDirectory = 'src';
 
-function createPackage(rootPath: string) {
-    let projectPackageFile = path.join(rootPath, packageConfigFileName);
-    if (fs.existsSync(projectPackageFile)) {
+function createPackage(rootPath: string): Package {
+    const projectPackageFile = join(rootPath, packageConfigFileName);
+
+    if (existsSync(projectPackageFile)) {
         // TODO: automapper
-        let packageConfig = readyaml.sync(projectPackageFile);
+        const packageConfig = readyaml.sync(projectPackageFile);
         // TODO: throw expection / warn user of invalid package file
-        let projectPackage = new Package(packageDependenciesContractsDirectory);
+        const projectPackage = new Package(packageDependenciesContractsDirectory);
         projectPackage.absoluletPath = rootPath;
         if (packageConfig) {
             if (packageConfig.layout !== undefined) {
                 if (projectPackage.build_dir !== undefined) {
-                projectPackage.build_dir = packageConfig.layout.build_dir;
+                    projectPackage.build_dir = packageConfig.layout.build_dir;
                 }
                 if (projectPackage.sol_sources !== undefined) {
-                projectPackage.sol_sources = packageConfig.layout.sol_sources;
+                    projectPackage.sol_sources = packageConfig.layout.sol_sources;
                 }
             }
             if (projectPackage.name !== undefined) {
                 projectPackage.name = packageConfig.name;
             } else {
-                projectPackage.name = path.basename(rootPath);
+                projectPackage.name = basename(rootPath);
             }
 
             if (projectPackage.version !== undefined) {
@@ -51,21 +52,23 @@ function createPackage(rootPath: string) {
     return null;
 }
 
-export function initialiseProject(rootPath: string, packageDefaultDependenciesDirectory: string, packageDefaultDependenciesContractsDirectory: string) {
+export function initialiseProject(rootPath: string, packageDefaultDependenciesDirectory: string, packageDefaultDependenciesContractsDirectory: string): Project {
     packageDependenciesDirectory = packageDefaultDependenciesDirectory;
     packageDependenciesContractsDirectory = packageDefaultDependenciesContractsDirectory;
-    let projectPackage = createProjectPackage(rootPath);
-    let dependencies = loadDependencies(rootPath, projectPackage);
-    let packagesDirAbsolutePath = path.join(rootPath, packageDependenciesDirectory);
+
+    const projectPackage = createProjectPackage(rootPath);
+    const dependencies = loadDependencies(rootPath, projectPackage);
+    const packagesDirAbsolutePath = join(rootPath, packageDependenciesDirectory);
+
     return new Project(projectPackage, dependencies, packagesDirAbsolutePath);
 }
 
-function loadDependencies(rootPath: string, projectPackage: Package, depPackages: Array<Package> = new Array<Package>()) {
+function loadDependencies(rootPath: string, projectPackage: Package, depPackages: Array<Package> = new Array<Package>()): Package[] {
     if (projectPackage.dependencies !== undefined) {
         Object.keys(projectPackage.dependencies).forEach(dependency => {
             if (!depPackages.some((existingDepPack: Package) => existingDepPack.name === dependency)) {
-                let depPackageDependencyPath = path.join(rootPath, packageDependenciesDirectory, dependency);
-                let depPackage = createPackage(depPackageDependencyPath);
+                const depPackageDependencyPath = join(rootPath, packageDependenciesDirectory, dependency);
+                const depPackage = createPackage(depPackageDependencyPath);
 
                 if (depPackage !== null) {
                     depPackages.push(depPackage);
@@ -78,18 +81,18 @@ function loadDependencies(rootPath: string, projectPackage: Package, depPackages
         });
     }
     // lets not skip packages in lib
-    let depPackagePath = path.join(projectPackage.absoluletPath, packageDependenciesDirectory);
-    if (fs.existsSync(depPackagePath)) {
+    const depPackagePath = join(projectPackage.absoluletPath, packageDependenciesDirectory);
+    if (existsSync(depPackagePath)) {
         let depPackagesDirectories = getDirectories(depPackagePath);
         depPackagesDirectories.forEach(depPackageDir => {
-            let fullPath = path.join(depPackagePath, depPackageDir);
+            let fullPath = join(depPackagePath, depPackageDir);
             let depPackage = createPackage(fullPath);
             if (depPackage == null) {
                 depPackage = createDefaultPackage(fullPath);
             }
             if (!depPackages.some((existingDepPack: Package) => existingDepPack.name === depPackage.name)) {
                 depPackages.push(depPackage);
-                    loadDependencies(rootPath, depPackage, depPackages);
+                loadDependencies(rootPath, depPackage, depPackages);
             }
         });
     }
@@ -97,16 +100,16 @@ function loadDependencies(rootPath: string, projectPackage: Package, depPackages
 }
 
 function getDirectories(dirPath: string): string[] {
-  return fs.readdirSync(dirPath).filter(function (file) {
-    const subdirPath = path.join(dirPath, file);
-    return fs.statSync(subdirPath).isDirectory();
-  });
+    return readdirSync(dirPath).filter(function (file) {
+        const subdirPath = join(dirPath, file);
+        return statSync(subdirPath).isDirectory();
+    });
 }
 
 function createDefaultPackage(packagePath: string): Package {
     let defaultPackage = new Package(packageDependenciesContractsDirectory);
     defaultPackage.absoluletPath = packagePath;
-    defaultPackage.name = path.basename(packagePath);
+    defaultPackage.name = basename(packagePath);
     return defaultPackage;
 }
 

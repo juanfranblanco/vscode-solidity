@@ -1,5 +1,5 @@
 'use strict';
-import * as path from 'path';
+import { join } from 'path';
 
 export class Package {
     public name: string;
@@ -14,24 +14,24 @@ export class Package {
         this.sol_sources = solidityDirectory;
     }
 
-    public getSolSourcesAbsolutePath() {
+    public getSolSourcesAbsolutePath(): string {
         if (this.sol_sources !== undefined || this.sol_sources === '') {
-            return path.join(this.absoluletPath, this.sol_sources);
+            return join(this.absoluletPath, this.sol_sources);
         }
         return this.absoluletPath;
     }
 
-    public isImportForThis(contractDependencyImport: string) {
-       let splitDirectories = contractDependencyImport.split('/');
+    public isImportForThis(contractDependencyImport: string): boolean {
+        const splitDirectories = contractDependencyImport.split('/');
         if (splitDirectories.length === 1) {
             return false;
         }
         return splitDirectories[0] === this.name;
     }
 
-    public resolveImport(contractDependencyImport: string) {
+    public resolveImport(contractDependencyImport: string): string {
         if (this.isImportForThis(contractDependencyImport)) {
-            return path.join(this.getSolSourcesAbsolutePath(), contractDependencyImport.substring(this.name.length));
+            return join(this.getSolSourcesAbsolutePath(), contractDependencyImport.substring(this.name.length));
         }
         return null;
     }
