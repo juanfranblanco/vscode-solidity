@@ -1,24 +1,24 @@
 'use strict';
 
-import {SolcCompiler} from './solcCompiler';
+import { SolcCompiler } from './solc-compiler';
 import Linter from './linter/linter';
 import SolhintService from './linter/solhint';
 import SoliumService from './linter/solium';
-import {CompilerError} from './solErrorsToDiagnostics';
-import {CompletionService, GetCompletionTypes,
-        GetContextualAutoCompleteByGlobalVariable, GeCompletionUnits,
-        GetGlobalFunctions, GetGlobalVariables, GetCompletionKeywords} from './completionService';
-import {SolidityDefinitionProvider} from './definitionProvider';
+import { CompilerError } from './sol-errors-to-diagnostics';
+import {
+    CompletionService, GetCompletionTypes,
+    GetContextualAutoCompleteByGlobalVariable, GeCompletionUnits,
+    GetGlobalFunctions, GetGlobalVariables, GetCompletionKeywords,
+} from './completion-service';
+import { SolidityDefinitionProvider } from './definition-provider';
 import {
     createConnection, IConnection,
     IPCMessageReader, IPCMessageWriter,
     TextDocuments, InitializeResult,
-    Files, DiagnosticSeverity, Diagnostic,
-    TextDocumentChangeEvent, TextDocumentPositionParams,
-    CompletionItem, CompletionItemKind,
-    Range, Position, Location, SignatureHelp,
-} from 'vscode-languageserver';
-import Uri from 'vscode-uri';
+    Files, Diagnostic, TextDocumentPositionParams,
+    CompletionItem, Location, SignatureHelp,
+} from 'vscode-languageserver/lib/main';
+import Uri from 'vscode-uri/lib/umd';
 
 interface Settings {
     solidity: SoliditySettings;
@@ -67,7 +67,7 @@ let validatingAllDocuments = false;
 let packageDefaultDependenciesDirectory = 'lib';
 let packageDefaultDependenciesContractsDirectory = 'src';
 
-function validate(document) {
+function validate(document): void {
     try {
         validatingDocument = true;
         const uri = document.uri;
@@ -88,8 +88,8 @@ function validate(document) {
             if (enabledAsYouTypeErrorCheck) {
                 let errors: CompilerError[] = solcCompiler
                     .compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText,
-                                                packageDefaultDependenciesDirectory,
-                                                packageDefaultDependenciesContractsDirectory);
+                        packageDefaultDependenciesDirectory,
+                        packageDefaultDependenciesContractsDirectory);
                 errors.forEach(errorItem => {
                     let diagnosticCompileError: Diagnostic[] = [errorItem.diagnostic];
                     let uriCompileError = Uri.file(errorItem.fileName);
@@ -105,7 +105,7 @@ function validate(document) {
         const diagnostics = linterDiagnostics.concat(compileErrorDiagnostics);
 
         console.log(uri);
-        connection.sendDiagnostics({diagnostics, uri});
+        connection.sendDiagnostics({ diagnostics, uri });
     } finally {
         validatingDocument = false;
     }
@@ -121,11 +121,11 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
     // info and always provide the same completion items
     let completionItems = [];
     try {
-        let document = documents.get(textDocumentPosition.textDocument.uri);
+        const document = documents.get(textDocumentPosition.textDocument.uri);
         const documentPath = Files.uriToFilePath(textDocumentPosition.textDocument.uri);
         const documentText = document.getText();
-        let lines = documentText.split(/\r?\n/g);
-        let position = textDocumentPosition.position;
+        const lines = documentText.split(/\r?\n/g);
+        const position = textDocumentPosition.position;
 
         let start = 0;
         let triggeredByDot = false;
@@ -143,7 +143,7 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
         }
 
         if (triggeredByDot) {
-            let globalVariableContext = GetContextualAutoCompleteByGlobalVariable(lines[position.line], start);
+            const globalVariableContext = GetContextualAutoCompleteByGlobalVariable(lines[position.line], start);
             if (globalVariableContext != null) {
                 completionItems = completionItems.concat(globalVariableContext);
             }
@@ -152,14 +152,14 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
 
         const service = new CompletionService(rootPath);
         completionItems = completionItems.concat(
-                service.getAllCompletionItems(documentText,
-                                             documentPath,
-                                             packageDefaultDependenciesDirectory,
-                                             packageDefaultDependenciesContractsDirectory));
+            service.getAllCompletionItems(documentText,
+                documentPath,
+                packageDefaultDependenciesDirectory,
+                packageDefaultDependenciesContractsDirectory));
 
     } catch (error) {
         // graceful catch
-       // console.log(error);
+        // console.log(error);
     } finally {
 
         completionItems = completionItems.concat(GetCompletionTypes());
@@ -183,10 +183,10 @@ connection.onDefinition((handler: TextDocumentPositionParams): Thenable<Location
 
 // This handler resolve additional information for the item selected in
 // the completion list.
- // connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
- //   item.
- // });
-function validateAllDocuments() {
+// connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
+//   item.
+// });
+function validateAllDocuments(): void {
     if (!validatingAllDocuments) {
         try {
             validatingAllDocuments = true;
@@ -197,7 +197,7 @@ function validateAllDocuments() {
     }
 }
 
-function startValidation() {
+function startValidation(): void {
     if (enabledAsYouTypeErrorCheck) {
         solcCompiler.intialiseCompiler(compileUsingLocalVersion, compileUsingRemoteVersion).then(() => {
             validateAllDocuments();
@@ -213,7 +213,7 @@ documents.onDidChangeContent(event => {
     if (!validatingDocument && !validatingAllDocuments) {
         validatingDocument = true; // control the flag at a higher level
         // slow down, give enough time to type (1.5 seconds?)
-        setTimeout(() =>  validate(document), validationDelay);
+        setTimeout(() => validate(document), validationDelay);
     }
 });
 
@@ -237,7 +237,7 @@ connection.onInitialize((result): InitializeResult => {
         capabilities: {
             completionProvider: {
                 resolveProvider: false,
-                triggerCharacters: [ '.' ],
+                triggerCharacters: ['.'],
             },
             definitionProvider: true,
             textDocumentSync: documents.syncKind,
@@ -246,7 +246,8 @@ connection.onInitialize((result): InitializeResult => {
 });
 
 connection.onDidChangeConfiguration((change) => {
-    let settings = <Settings>change.settings;
+    const settings = <Settings>change.settings;
+
     enabledAsYouTypeErrorCheck = settings.solidity.enabledAsYouTypeCompilationErrorCheck;
     linterOption = settings.solidity.linter;
     compileUsingLocalVersion = settings.solidity.compileUsingLocalVersion;
@@ -278,7 +279,7 @@ connection.onDidChangeConfiguration((change) => {
     startValidation();
 });
 
-function linterName(settings: SoliditySettings) {
+function linterName(settings: SoliditySettings): string | boolean {
     const enabledSolium = settings.enabledSolium;
 
     if (enabledSolium) {

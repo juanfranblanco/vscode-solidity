@@ -1,45 +1,45 @@
 'use strict';
 
-import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as fsex from 'fs-extra';
-import * as artifactor from 'truffle-artifactor';
-import * as solidyErrorsConvertor from './solErrorsToDiaganosticsClient';
-import { DiagnosticSeverity } from 'vscode';
-import {SolcCompiler, compilerType}  from './solcCompiler';
+import { OutputChannel, DiagnosticCollection, window, workspace } from 'vscode';
+import { existsSync, mkdirSync, unlinkSync, writeFileSync } from 'fs';
+import { join, dirname, relative } from 'path';
+import { mkdirsSync } from 'fs-extra';
+import { errorsToDiagnostics } from './sol-errors-to-diaganostics-client';
+import { SolcCompiler, compilerType } from './solc-compiler';
+import { Extensions } from './enums/extensions';
 
-
-function outputErrorsToChannel(outputChannel: vscode.OutputChannel, errors: any) {
+function outputErrorsToChannel(outputChannel: OutputChannel, errors: any): void {
     errors.forEach(error => {
         outputChannel.appendLine(error);
     });
     outputChannel.show();
 }
 
-export function compile(contracts: any,
-                        diagnosticCollection: vscode.DiagnosticCollection,
-                        buildDir: string, rootDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string) {
+export function compile(contracts: any, diagnosticCollection: DiagnosticCollection,
+    buildDir: string, rootDir: string, sourceDir: string, excludePath?: string,
+    singleContractFilePath?: string): void {
+
     // Did we find any sol files after all?
     if (Object.keys(contracts).length === 0) {
-        vscode.window.showWarningMessage('No solidity files (*.sol) found');
+        window.showWarningMessage('No solidity files (*.sol) found');
         return;
     }
-    const solc = new SolcCompiler(vscode.workspace.rootPath);
-    let outputChannel = vscode.window.createOutputChannel('solidity compilation');
+    const solc = new SolcCompiler(workspace.rootPath);
+
+    const outputChannel = window.createOutputChannel('solidity compilation');
     outputChannel.clear();
     outputChannel.show();
 
-    vscode.window.setStatusBarMessage('Compilation started');
+    window.setStatusBarMessage('Compilation started');
 
-    let remoteCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingRemoteVersion');
-    let localCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingLocalVersion');
+    const remoteCompiler = workspace.getConfiguration('solidity').get<string>('compileUsingRemoteVersion');
+    const localCompiler = workspace.getConfiguration('solidity').get<string>('compileUsingLocalVersion');
 
     solc.intialiseCompiler(localCompiler, remoteCompiler).then(() => {
         let output = solc.compile({ sources: contracts });
 
         if (solc.currentCompilerType === compilerType.localFile) {
-            outputChannel.appendLine("Compiling using local file: '" + solc.currentCompilerSetting + "', solidity version: " + solc.getVersion() );
+            outputChannel.appendLine("Compiling using local file: '" + solc.currentCompilerSetting + "', solidity version: " + solc.getVersion());
         }
 
         if (solc.currentCompilerType === compilerType.localNode) {
@@ -47,57 +47,57 @@ export function compile(contracts: any,
         }
 
         if (solc.currentCompilerType === compilerType.Remote) {
-            outputChannel.appendLine("Compiling using remote version: '" + solc.currentCompilerSetting  + "', solidity version: " + solc.getVersion() );
+            outputChannel.appendLine("Compiling using remote version: '" + solc.currentCompilerSetting + "', solidity version: " + solc.getVersion());
         }
 
         if (solc.currentCompilerType === compilerType.default) {
-            outputChannel.appendLine('Compiling using default compiler, solidity version: ' + solc.getVersion() );
+            outputChannel.appendLine('Compiling using default compiler, solidity version: ' + solc.getVersion());
         }
 
-        processCompilationOuput(output, outputChannel, diagnosticCollection, buildDir,
-            sourceDir, excludePath, singleContractFilePath);
-    }).catch( (reason: any) => {
-        vscode.window.showWarningMessage(reason);
+        processCompilationOuput(output, outputChannel, diagnosticCollection, buildDir, sourceDir, excludePath, singleContractFilePath);
+    }).catch((reason: any) => {
+        window.showWarningMessage(reason);
     });
- }
+}
 
-function processCompilationOuput(output: any, outputChannel: vscode.OutputChannel, diagnosticCollection: vscode.DiagnosticCollection,
-                    buildDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string) {
+function processCompilationOuput(output: any, outputChannel: OutputChannel, diagnosticCollection: DiagnosticCollection,
+    buildDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string): void {
 
     if (Object.keys(output).length === 0) {
-        vscode.window.showWarningMessage('No output by the compiler');
+        window.showWarningMessage('No output by the compiler');
         return;
     }
 
     diagnosticCollection.clear();
 
     if (output.errors) {
-        const errorWarningCounts = solidyErrorsConvertor.errorsToDiagnostics(diagnosticCollection, output.errors);
+        const errorWarningCounts = errorsToDiagnostics(diagnosticCollection, output.errors);
         outputErrorsToChannel(outputChannel, output.errors);
 
         if (errorWarningCounts.errors > 0) {
-            vscode.window.showErrorMessage(`Compilation failed with ${errorWarningCounts.errors} errors`);
+            window.showErrorMessage(`Compilation failed with ${errorWarningCounts.errors} errors`);
             if (errorWarningCounts.warnings > 0) {
-                vscode.window.showWarningMessage(`Compilation had ${errorWarningCounts.warnings} warnings`);
+                window.showWarningMessage(`Compilation had ${errorWarningCounts.warnings} warnings`);
             }
         } else if (errorWarningCounts.warnings > 0) {
             writeCompilationOutputToBuildDirectory(output, buildDir, sourceDir, excludePath, singleContractFilePath);
-            vscode.window.showWarningMessage(`Compilation had ${errorWarningCounts.warnings} warnings`);
-            vscode.window.showInformationMessage('Compilation completed succesfully!');
+            window.showWarningMessage(`Compilation had ${errorWarningCounts.warnings} warnings`);
+            window.showInformationMessage('Compilation completed succesfully!');
         }
     } else {
         writeCompilationOutputToBuildDirectory(output, buildDir, sourceDir, excludePath, singleContractFilePath);
         // outputChannel.hide();
-        vscode.window.showInformationMessage('Compilation completed succesfully!');
+        window.showInformationMessage('Compilation completed succesfully!');
     }
 }
 
 function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, sourceDir: string,
-                                                    excludePath?: string, singleContractFilePath?: string) {
-    const binPath = path.join(vscode.workspace.rootPath, buildDir);
+    excludePath?: string, singleContractFilePath?: string): void {
 
-    if (!fs.existsSync(binPath)) {
-        fs.mkdirSync(binPath);
+    const binPath = join(workspace.rootPath, buildDir);
+
+    if (!existsSync(binPath)) {
+        mkdirSync(binPath);
     }
 
     // iterate through all the sources,
@@ -118,56 +118,47 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
                         if (child.name === 'Contract' || child.name === 'ContractDefinition') {
                             const contractName = child.attributes.name;
 
-                            const relativePath = path.relative(vscode.workspace.rootPath, source);
+                            const relativePath = relative(workspace.rootPath, source);
 
-                            const dirName = path.dirname(path.join(binPath, relativePath));
+                            const dirName = dirname(join(binPath, relativePath));
 
-                            if (!fs.existsSync(dirName)) {
-                                fsex.mkdirsSync(dirName);
+                            if (!existsSync(dirName)) {
+                                mkdirsSync(dirName);
                             }
 
-                            const contractAbiPath = path.join(dirName, contractName + '.abi');
-                            const contractBinPath = path.join(dirName, contractName + '.bin');
-                            const contractJsonPath = path.join(dirName, contractName + '.json');
-                            const truffleArtifactPath = path.join(dirName, contractName + '.sol.js');
+                            const contractAbiPath = join(dirName, contractName + Extensions.abi);
+                            const contractBinPath = join(dirName, contractName + Extensions.bin);
+                            const contractJsonPath = join(dirName, contractName + Extensions.json);
+                            const truffleArtifactPath = join(dirName, contractName + Extensions.soljs);
 
-                            if (fs.existsSync(contractAbiPath)) {
-                                fs.unlinkSync(contractAbiPath);
+                            if (existsSync(contractAbiPath)) {
+                                unlinkSync(contractAbiPath);
                             }
 
-                            if (fs.existsSync(contractBinPath)) {
-                                fs.unlinkSync(contractBinPath);
+                            if (existsSync(contractBinPath)) {
+                                unlinkSync(contractBinPath);
                             }
 
-                            if (fs.existsSync(contractJsonPath)) {
-                                fs.unlinkSync(contractJsonPath);
+                            if (existsSync(contractJsonPath)) {
+                                unlinkSync(contractJsonPath);
                             }
 
-                            if (fs.existsSync(truffleArtifactPath)) {
-                                fs.unlinkSync(truffleArtifactPath);
+                            if (existsSync(truffleArtifactPath)) {
+                                unlinkSync(truffleArtifactPath);
                             }
 
-                            fs.writeFileSync(contractBinPath, output.contracts[source + ':' + contractName].bytecode);
-                            fs.writeFileSync(contractAbiPath, output.contracts[source + ':' + contractName].interface);
+                            writeFileSync(contractBinPath, output.contracts[source + ':' + contractName].bytecode);
+                            writeFileSync(contractAbiPath, output.contracts[source + ':' + contractName].interface);
 
                             const shortJsonOutput = {
-                                abi : output.contracts[source + ':' + contractName].interface,
-                                bytecode : output.contracts[source + ':' + contractName].bytecode,
-                                functionHashes : output.contracts[source + ':' + contractName].functionHashes,
-                                gasEstimates : output.contracts[source + ':' + contractName].gasEstimates,
-                                runtimeBytecode : output.contracts[source + ':' + contractName].runtimeBytecode,
+                                abi: output.contracts[source + ':' + contractName].interface,
+                                bytecode: output.contracts[source + ':' + contractName].bytecode,
+                                functionHashes: output.contracts[source + ':' + contractName].functionHashes,
+                                gasEstimates: output.contracts[source + ':' + contractName].gasEstimates,
+                                runtimeBytecode: output.contracts[source + ':' + contractName].runtimeBytecode,
                             };
 
-                            fs.writeFileSync(contractJsonPath, JSON.stringify(shortJsonOutput, null, 4));
-                            /*
-                            let contract_data = {
-                                contract_name: contractName,
-                                abi: output.contracts[source + ':' + contractName].interface,
-                                unlinked_binary: output.contracts[source + ':' + contractName].bytecode,
-                                };
-
-                            artifactor.save(contract_data, truffleArtifactPath);
-                            */
+                            writeFileSync(contractJsonPath, JSON.stringify(shortJsonOutput, null, 4));
                         }
                     });
                 }

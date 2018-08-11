@@ -1,6 +1,6 @@
 'use strict';
-import * as path from 'path';
-import * as util from '../util';
+import { resolve, dirname } from 'path';
+import { formatPath as utilFormatPath } from '../util';
 
 export class Contract {
     public code: string;
@@ -9,15 +9,16 @@ export class Contract {
     public absolutePath: string;
     public packagePath: string;
     public abi: string;
+
     constructor(absoulePath: string, code: string) {
         this.absolutePath = this.formatPath(absoulePath);
         this.code = code;
         this.imports = new Array<string>();
     }
 
-    public getAllImportFromPackages() {
-        let importsFromPackages = new Array<string>();
-        this.imports.forEach(importElement => {
+    public getAllImportFromPackages(): string[] {
+        const importsFromPackages = new Array<string>();
+        this.imports.forEach((importElement: string) => {
             if (!this.isImportLocal(importElement)) {
                 importsFromPackages.push(importElement);
             }
@@ -25,33 +26,33 @@ export class Contract {
         return importsFromPackages;
     }
 
-    public isImportLocal(importPath: string) {
+    public isImportLocal(importPath: string): boolean {
         return importPath.startsWith('.');
     }
 
-    public formatPath(contractPath: string) {
-        return util.formatPath(contractPath);
+    public formatPath(contractPath: string): string {
+        return utilFormatPath(contractPath);
     }
 
-    public replaceDependencyPath(importPath: string, depImportAbsolutePath: string) {
-        let importRegEx = /(^\s?import\s+[^'"]*['"])(.*)(['"]\s*)/gm;
-        this.code = this.code.replace(importRegEx, (match, p1, p2, p3) => {
+    public replaceDependencyPath(importPath: string, depImportAbsolutePath: string): void {
+        const importRegEx = /(^\s?import\s+[^'"]*['"])(.*)(['"]\s*)/gm;
+        this.code = this.code.replace(importRegEx, (match: string, p1: string, p2: string, p3: string) => {
             if (p2 === importPath) {
-                return p1 + depImportAbsolutePath + p3;
+                return `${p1}${depImportAbsolutePath}${p3}`;
             } else {
                 return match;
             }
         });
     }
 
-    public resolveImports() {
-        let importRegEx = /^\s?import\s+[^'"]*['"](.*)['"]\s*/gm;
+    public resolveImports(): void {
+        const importRegEx = /^\s?import\s+[^'"]*['"](.*)['"]\s*/gm;
         let foundImport = importRegEx.exec(this.code);
-        while (foundImport != null) {
-            let importPath = foundImport[1];
+        while (foundImport !== null) {
+            const importPath = foundImport[1];
 
             if (this.isImportLocal(importPath)) {
-                let importFullPath = this.formatPath(path.resolve(path.dirname(this.absolutePath), foundImport[1]));
+                const importFullPath = this.formatPath(resolve(dirname(this.absolutePath), foundImport[1]));
                 this.imports.push(importFullPath);
             } else {
                 this.imports.push(importPath);

@@ -1,10 +1,8 @@
 import * as Solium from 'solium';
-import { DiagnosticSeverity, Diagnostic, IConnection,
-} from 'vscode-languageserver';
+import { DiagnosticSeverity, IConnection } from 'vscode-languageserver/lib/main';
 import Linter from './linter';
 
-export const defaultSoliumRules = {
-};
+export const defaultSoliumRules = {};
 
 export default class SoliumService implements Linter {
 
@@ -12,12 +10,12 @@ export default class SoliumService implements Linter {
     private vsConnection: IConnection;
 
     constructor(soliumRules: any, vsConnection: IConnection) {
-      this.vsConnection = vsConnection;
-      this.setIdeRules(soliumRules);
+        this.vsConnection = vsConnection;
+        this.setIdeRules(soliumRules);
     }
 
-    public setIdeRules(soliumRules: any) {
-        if (typeof soliumRules === 'undefined' || soliumRules === null) {
+    public setIdeRules(soliumRules: any): void {
+        if (!soliumRules) {
             this.soliumRules = defaultSoliumRules;
         } else {
             this.soliumRules = soliumRules;
@@ -37,28 +35,28 @@ export default class SoliumService implements Linter {
         };
     }
 
-    public validate(filePath, documentText) {
+    public validate(documentText) {
         let items = [];
         try {
             items = Solium.lint(documentText, this.getAllSettings());
         } catch (err) {
-            let match = /An error .*?\nSyntaxError: (.*?) Line: (\d+), Column: (\d+)/.exec(err.message);
+            const match = /An error .*?\nSyntaxError: (.*?) Line: (\d+), Column: (\d+)/.exec(err.message);
 
             if (match) {
-                let line = parseInt(match[2], 10) - 1;
-                let character = parseInt(match[3], 10) - 1;
+                const line = parseInt(match[2], 10) - 1;
+                const character = parseInt(match[3], 10) - 1;
 
                 return [
                     {
                         message: `Syntax error: ${match[1]}`,
                         range: {
                             end: {
-                                character: character,
-                                line: line,
+                                character,
+                                line,
                             },
                             start: {
-                                character: character,
-                                line: line,
+                                character,
+                                line,
                             },
                         },
                         severity: DiagnosticSeverity.Error,
@@ -84,14 +82,14 @@ export default class SoliumService implements Linter {
             range: {
                 end: {
                     character: lintResult.node.end,
-                    line: line,
+                    line,
                 },
                 start: {
                     character: lintResult.column,
-                    line: line,
+                    line,
                 },
             },
-            severity: severity,
+            severity,
         };
     }
 }

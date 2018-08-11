@@ -1,8 +1,8 @@
 import * as linter from 'solhint/lib/index';
-import { DiagnosticSeverity as Severity, Diagnostic, Range, IConnection } from 'vscode-languageserver';
+import { DiagnosticSeverity as Severity, Diagnostic, Range } from 'vscode-languageserver/lib/main';
 import Linter from './linter';
-import * as fs from 'fs';
-
+import { watchFile, readFile } from 'fs';
+import { IDiagnostic } from '../model/idiagnostic';
 
 export default class SolhintService implements Linter {
     private config: ValidationConfig;
@@ -11,23 +11,23 @@ export default class SolhintService implements Linter {
         this.config = new ValidationConfig(rootPath, rules);
     }
 
-    public setIdeRules(rules: any) {
+    public setIdeRules(rules: any): void {
         this.config.setIdeRules(rules);
     }
 
-    public validate(filePath: string, documentText: string): Diagnostic[] {
+    public validate(documentText: string): Diagnostic[] {
         return linter
             .processStr(documentText, this.config.build())
             .messages
             .map(e => this.toDiagnostic(e));
     }
 
-    private toDiagnostic(error) {
+    private toDiagnostic(error): IDiagnostic {
         return {
             message: `${error.message} [${error.ruleId}]`,
             range: this.rangeOf(error),
             severity: this.severity(error),
-        };
+        } as IDiagnostic;
     }
 
     private severity(error: any): Severity {
@@ -42,14 +42,13 @@ export default class SolhintService implements Linter {
             start: { line, character },
             // tslint:disable-next-line:object-literal-sort-keys
             end: { line, character: character + 1 },
-        };
+        } as Range;
     }
 }
 
-
 class ValidationConfig {
-    public static readonly DEFAULT_RULES = {'func-visibility': false};
-    public static readonly EMPTY_CONFIG = {rules: {}};
+    public static readonly DEFAULT_RULES = { 'func-visibility': false };
+    public static readonly EMPTY_CONFIG = { rules: {} };
 
     private ideRules: any;
     private fileConfig: any;
@@ -59,7 +58,7 @@ class ValidationConfig {
         this.loadFileConfig(rootPath);
     }
 
-    public setIdeRules(rules: any) {
+    public setIdeRules(rules: any): void {
         this.ideRules = rules || {};
     }
 
@@ -73,20 +72,20 @@ class ValidationConfig {
         };
     }
 
-    private loadFileConfig(rootPath: string) {
+    private loadFileConfig(rootPath: string): void {
         const filePath = `${rootPath}/.solhint.json`;
         const readConfig = this.readFileConfig.bind(this, filePath);
 
         readConfig();
-        fs.watchFile(filePath, {persistent: false}, readConfig);
+        watchFile(filePath, { persistent: false }, readConfig);
     }
 
-    private readFileConfig(filePath: string) {
+    private readFileConfig(filePath: string): void {
         this.fileConfig = ValidationConfig.EMPTY_CONFIG;
-        fs.readFile(filePath, 'utf-8', this.onConfigLoaded.bind(this));
+        readFile(filePath, 'utf-8', this.onConfigLoaded.bind(this));
     }
 
-    private onConfigLoaded(err: any, data: string) {
+    private onConfigLoaded(err: any, data: string): void {
         this.fileConfig = (!err) && JSON.parse(data);
     }
 }

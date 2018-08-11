@@ -1,65 +1,67 @@
 'use strict';
 
-import * as path from 'path';
-import * as vscode from 'vscode';
-import {compileAllContracts} from './compileAll';
-import {compileActiveContract, initDiagnosticCollection} from './compileActive';
-import {codeGenerate, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
-    codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll} from './codegen';
-import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn} from 'vscode-languageclient';
-import {lintAndfixCurrentDocument} from './linter/soliumClientFixer';
+import { join } from 'path';
+import { DiagnosticCollection, ExtensionContext, languages, commands } from 'vscode';
+import { compileAllContracts } from './compile-all';
+import { compileActiveContract, initDiagnosticCollection } from './compile-active';
+import {
+    codeGenerate, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
+    codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll,
+} from './codegen';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn } from 'vscode-languageclient/lib/main';
+import { lintAndfixCurrentDocument } from './linter/solium-client-fixer';
 
-let diagnosticCollection: vscode.DiagnosticCollection;
+let diagnosticCollection: DiagnosticCollection;
 
-export function activate(context: vscode.ExtensionContext) {
-    diagnosticCollection = vscode.languages.createDiagnosticCollection('solidity');
+export function activate(context: ExtensionContext): void {
+    diagnosticCollection = languages.createDiagnosticCollection('solidity');
 
     context.subscriptions.push(diagnosticCollection);
 
     initDiagnosticCollection(diagnosticCollection);
 
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.active', () => {
+    context.subscriptions.push(commands.registerCommand('solidity.compile.active', () => {
         compileActiveContract();
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.compile', () => {
+    context.subscriptions.push(commands.registerCommand('solidity.compile', () => {
         compileAllContracts(diagnosticCollection);
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.codegen', (args: any[]) => {
+    context.subscriptions.push(commands.registerCommand('solidity.codegen', (args: any[]) => {
         codeGenerate(args, diagnosticCollection);
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenCSharpProject', (args: any[]) => {
+    context.subscriptions.push(commands.registerCommand('solidity.codegenCSharpProject', (args: any[]) => {
         codeGenerateNethereumCQSCsharp(args, diagnosticCollection);
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenVbNetProject', (args: any[]) => {
+    context.subscriptions.push(commands.registerCommand('solidity.codegenVbNetProject', (args: any[]) => {
         codeGenerateNethereumCQSVbNet(args, diagnosticCollection);
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenFSharpProject', (args: any[]) => {
+    context.subscriptions.push(commands.registerCommand('solidity.codegenFSharpProject', (args: any[]) => {
         codeGenerateNethereumCQSFSharp(args, diagnosticCollection);
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenCSharpProjectAll', (args: any[]) => {
+    context.subscriptions.push(commands.registerCommand('solidity.codegenCSharpProjectAll', (args: any[]) => {
         codeGenerateNethereumCQSCSharpAll(args, diagnosticCollection);
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenVbNetProjectAll', (args: any[]) => {
+    context.subscriptions.push(commands.registerCommand('solidity.codegenVbNetProjectAll', (args: any[]) => {
         codeGenerateNethereumCQSVbAll(args, diagnosticCollection);
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenFSharpProjectAll', (args: any[]) => {
+    context.subscriptions.push(commands.registerCommand('solidity.codegenFSharpProjectAll', (args: any[]) => {
         codeGenerateNethereumCQSFSharpAll(args, diagnosticCollection);
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.fixDocument', () => {
+    context.subscriptions.push(commands.registerCommand('solidity.fixDocument', () => {
         lintAndfixCurrentDocument();
     }));
 
 
-    const serverModule = path.join(__dirname, 'server.js');
+    const serverModule = join(__dirname, 'server.js');
 
     const serverOptions: ServerOptions = {
         debug: {
@@ -82,18 +84,19 @@ export function activate(context: vscode.ExtensionContext) {
         ],
         revealOutputChannelOn: RevealOutputChannelOn.Never,
         synchronize: {
-                    // Synchronize the setting section 'solidity' to the server
-                    configurationSection: 'solidity',
-                    // Notify the server about file changes to '.sol.js files contain in the workspace (TODO node, linter)
-                    // fileEvents: vscode.workspace.createFileSystemWatcher('**/.sol.js'),
-                },
+            // Synchronize the setting section 'solidity' to the server
+            configurationSection: 'solidity',
+            // Notify the server about file changes to '.sol.js files contain in the workspace (TODO node, linter)
+            // fileEvents: workspace.createFileSystemWatcher('**/.sol.js'),
+        },
     };
 
     const clientDisposible = new LanguageClient(
         'solidity',
         'Solidity Language Server',
         serverOptions,
-        clientOptions).start();
+        clientOptions,
+    ).start();
 
     // Push the disposable to the context's subscriptions so that the
     // client can be deactivated on extension deactivation

@@ -1,11 +1,9 @@
-import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver';
-import * as projectService from './projectService';
-import * as solidityErrorsConvertor from './solErrorsToDiagnostics';
+import { initialiseProject } from './project-service';
+import { errorToDiagnostic } from './sol-errors-to-diagnostics';
 import * as solc from 'solc';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as fsex from 'fs-extra';
-import {ContractCollection} from './model/contractsCollection';
+import { existsSync } from 'fs';
+import { join } from 'path';
+import { ContractCollection } from './model/contracts-collection';
 
 export enum compilerType {
     localNode,
@@ -59,14 +57,14 @@ export class SolcCompiler {
         if (this.currentCompilerType === compilerType.default && !installedNodeLocally &&
             (typeof localInstallationPath === 'undefined' || localInstallationPath === null) &&
             (typeof remoteInstallationVersion === 'undefined' || remoteInstallationVersion === null)) {
-                return true;
+            return true;
         }
 
         return false;
     }
 
     public intialiseCompiler(localInstallationPath: string, remoteInstallationVersion: string): Promise<void> {
-            return new Promise<void> ((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             try {
                 if (this.initialisedAlready(localInstallationPath, remoteInstallationVersion)) {
                     resolve();
@@ -90,9 +88,9 @@ export class SolcCompiler {
                         // remote
                         if (typeof remoteInstallationVersion !== 'undefined' && remoteInstallationVersion !== null) {
                             let solcService = this;
-                            solc.loadRemoteVersion(remoteInstallationVersion, function(err, solcSnapshot) {
+                            solc.loadRemoteVersion(remoteInstallationVersion, function (err, solcSnapshot) {
                                 if (err) {
-                                        reject('There was an error loading the remote version: ' + remoteInstallationVersion);
+                                    reject('There was an error loading the remote version: ' + remoteInstallationVersion);
                                 } else {
                                     solcService.currentCompilerType = compilerType.Remote;
                                     solcService.currentCompilerSetting = remoteInstallationVersion;
@@ -100,7 +98,7 @@ export class SolcCompiler {
                                     resolve();
                                 }
                             });
-                        // default
+                            // default
                         } else {
                             this.localSolc = require('solc');
                             this.currentCompilerType = compilerType.default;
@@ -112,15 +110,15 @@ export class SolcCompiler {
             } catch (error) {
                 reject(error);
             }
-            } );
+        });
     }
 
-    public getLocalSolcNodeInstallation() {
-        return path.join(this.rootPath, 'node_modules', 'solc', 'soljson.js');
+    public getLocalSolcNodeInstallation(): string {
+        return join(this.rootPath, 'node_modules', 'solc', 'soljson.js');
     }
 
     public isInstalledSolcUsingNode(rootPath: string): boolean {
-        return fs.existsSync(this.getLocalSolcNodeInstallation());
+        return existsSync(this.getLocalSolcNodeInstallation());
     }
 
 
@@ -128,32 +126,32 @@ export class SolcCompiler {
         return this.localSolc.compile(contracts, 1);
     }
 
-    public loadRemoteVersion(remoteCompiler: any, cb: any) {
+    public loadRemoteVersion(remoteCompiler: any, cb: any): void {
         solc.loadRemoteVersion(remoteCompiler, cb);
     }
 
     public compileSolidityDocumentAndGetDiagnosticErrors(filePath: string, documentText: string,
-                packageDefaultDependenciesDirectory: string, packageDefaultDependenciesContractsDirectory: string ) {
+        packageDefaultDependenciesDirectory: string, packageDefaultDependenciesContractsDirectory: string) {
         if (this.isRootPathSet()) {
             const contracts = new ContractCollection();
             contracts.addContractAndResolveImports(
                 filePath,
                 documentText,
-                projectService.initialiseProject(this.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory));
+                initialiseProject(this.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory));
 
-            const output = this.compile({sources: contracts.getContractsForCompilation()});
+            const output = this.compile({ sources: contracts.getContractsForCompilation() });
 
             if (output.errors) {
                 return output
                     .errors
-                    .map(error => solidityErrorsConvertor.errorToDiagnostic(error));
+                    .map(error => errorToDiagnostic(error));
             }
         } else {
             let contract = {};
             contract[filePath] = documentText;
-            const output = this.compile({sources: contract });
+            const output = this.compile({ sources: contract });
             if (output.errors) {
-                return output.errors.map((error) => solidityErrorsConvertor.errorToDiagnostic(error));
+                return output.errors.map((error) => errorToDiagnostic(error));
             }
         }
         return [];
