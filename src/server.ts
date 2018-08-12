@@ -75,7 +75,7 @@ function validate(document) {
 
         const documentText = document.getText();
         let linterDiagnostics: Diagnostic[] = [];
-        let compileErrorDiagnostics: Diagnostic[] = [];
+        const compileErrorDiagnostics: Diagnostic[] = [];
         try {
             if (linter !== null) {
                 linterDiagnostics = linter.validate(filePath, documentText);
@@ -86,13 +86,13 @@ function validate(document) {
 
         try {
             if (enabledAsYouTypeErrorCheck) {
-                let errors: CompilerError[] = solcCompiler
+                const errors: CompilerError[] = solcCompiler
                     .compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText,
                                                 packageDefaultDependenciesDirectory,
                                                 packageDefaultDependenciesContractsDirectory);
                 errors.forEach(errorItem => {
-                    let diagnosticCompileError: Diagnostic[] = [errorItem.diagnostic];
-                    let uriCompileError = Uri.file(errorItem.fileName);
+                    const diagnosticCompileError: Diagnostic[] = [errorItem.diagnostic];
+                    const uriCompileError = Uri.file(errorItem.fileName);
                     if (uriCompileError.toString() === uri) {
                         compileErrorDiagnostics.push(errorItem.diagnostic);
                     }
@@ -121,11 +121,11 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
     // info and always provide the same completion items
     let completionItems = [];
     try {
-        let document = documents.get(textDocumentPosition.textDocument.uri);
+        const document = documents.get(textDocumentPosition.textDocument.uri);
         const documentPath = Files.uriToFilePath(textDocumentPosition.textDocument.uri);
         const documentText = document.getText();
-        let lines = documentText.split(/\r?\n/g);
-        let position = textDocumentPosition.position;
+        const lines = documentText.split(/\r?\n/g);
+        const position = textDocumentPosition.position;
 
         let start = 0;
         let triggeredByDot = false;
@@ -143,7 +143,7 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
         }
 
         if (triggeredByDot) {
-            let globalVariableContext = GetContextualAutoCompleteByGlobalVariable(lines[position.line], start);
+            const globalVariableContext = GetContextualAutoCompleteByGlobalVariable(lines[position.line], start);
             if (globalVariableContext != null) {
                 completionItems = completionItems.concat(globalVariableContext);
             }
@@ -246,7 +246,7 @@ connection.onInitialize((result): InitializeResult => {
 });
 
 connection.onDidChangeConfiguration((change) => {
-    let settings = <Settings>change.settings;
+    const settings = <Settings>change.settings;
     enabledAsYouTypeErrorCheck = settings.solidity.enabledAsYouTypeCompilationErrorCheck;
     linterOption = settings.solidity.linter;
     compileUsingLocalVersion = settings.solidity.compileUsingLocalVersion;

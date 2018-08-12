@@ -8,13 +8,13 @@ interface ErrorWarningCounts {
 }
 
 export function errorsToDiagnostics(diagnosticCollection: vscode.DiagnosticCollection, errors: any): ErrorWarningCounts {
-        let errorWarningCounts: ErrorWarningCounts = {errors: 0, warnings: 0};
-        let diagnosticMap: Map<vscode.Uri, vscode.Diagnostic[]> = new Map();
+        const errorWarningCounts: ErrorWarningCounts = {errors: 0, warnings: 0};
+        const diagnosticMap: Map<vscode.Uri, vscode.Diagnostic[]> = new Map();
 
         errors.forEach(error => {
-            let {diagnostic, fileName} = solErrorToDiagnostics.errorToDiagnostic(error);
+            const {diagnostic, fileName} = solErrorToDiagnostics.errorToDiagnostic(error);
 
-            let targetUri = vscode.Uri.file(fileName);
+            const targetUri = vscode.Uri.file(fileName);
             let diagnostics = diagnosticMap.get(targetUri);
 
             if (!diagnostics) {
@@ -25,7 +25,7 @@ export function errorsToDiagnostics(diagnosticCollection: vscode.DiagnosticColle
             diagnosticMap.set(targetUri, diagnostics);
         });
 
-        let entries: [vscode.Uri, vscode.Diagnostic[]][] = [];
+        const entries: [vscode.Uri, vscode.Diagnostic[]][] = [];
 
         diagnosticMap.forEach((diags, uri) => {
             errorWarningCounts.errors += diags.filter((diagnostic) => diagnostic.severity === DiagnosticSeverity.Error).length;
