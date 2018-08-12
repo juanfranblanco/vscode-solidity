@@ -16,12 +16,12 @@ let packageDependenciesDirectory = 'lib';
 let packageDependenciesContractsDirectory = 'src';
 
 function createPackage(rootPath: string) {
-    let projectPackageFile = path.join(rootPath, packageConfigFileName);
+    const projectPackageFile = path.join(rootPath, packageConfigFileName);
     if (fs.existsSync(projectPackageFile)) {
         // TODO: automapper
-        let packageConfig = readyaml.sync(projectPackageFile);
+        const packageConfig = readyaml.sync(projectPackageFile);
         // TODO: throw expection / warn user of invalid package file
-        let projectPackage = new Package(packageDependenciesContractsDirectory);
+        const projectPackage = new Package(packageDependenciesContractsDirectory);
         projectPackage.absoluletPath = rootPath;
         if (packageConfig) {
             if (packageConfig.layout !== undefined) {
@@ -54,9 +54,9 @@ function createPackage(rootPath: string) {
 export function initialiseProject(rootPath: string, packageDefaultDependenciesDirectory: string, packageDefaultDependenciesContractsDirectory: string) {
     packageDependenciesDirectory = packageDefaultDependenciesDirectory;
     packageDependenciesContractsDirectory = packageDefaultDependenciesContractsDirectory;
-    let projectPackage = createProjectPackage(rootPath);
-    let dependencies = loadDependencies(rootPath, projectPackage);
-    let packagesDirAbsolutePath = path.join(rootPath, packageDependenciesDirectory);
+    const projectPackage = createProjectPackage(rootPath);
+    const dependencies = loadDependencies(rootPath, projectPackage);
+    const packagesDirAbsolutePath = path.join(rootPath, packageDependenciesDirectory);
     return new Project(projectPackage, dependencies, packagesDirAbsolutePath);
 }
 
@@ -64,8 +64,8 @@ function loadDependencies(rootPath: string, projectPackage: Package, depPackages
     if (projectPackage.dependencies !== undefined) {
         Object.keys(projectPackage.dependencies).forEach(dependency => {
             if (!depPackages.some((existingDepPack: Package) => existingDepPack.name === dependency)) {
-                let depPackageDependencyPath = path.join(rootPath, packageDependenciesDirectory, dependency);
-                let depPackage = createPackage(depPackageDependencyPath);
+                const depPackageDependencyPath = path.join(rootPath, packageDependenciesDirectory, dependency);
+                const depPackage = createPackage(depPackageDependencyPath);
 
                 if (depPackage !== null) {
                     depPackages.push(depPackage);
@@ -78,11 +78,11 @@ function loadDependencies(rootPath: string, projectPackage: Package, depPackages
         });
     }
     // lets not skip packages in lib
-    let depPackagePath = path.join(projectPackage.absoluletPath, packageDependenciesDirectory);
+    const depPackagePath = path.join(projectPackage.absoluletPath, packageDependenciesDirectory);
     if (fs.existsSync(depPackagePath)) {
-        let depPackagesDirectories = getDirectories(depPackagePath);
+        const depPackagesDirectories = getDirectories(depPackagePath);
         depPackagesDirectories.forEach(depPackageDir => {
-            let fullPath = path.join(depPackagePath, depPackageDir);
+            const fullPath = path.join(depPackagePath, depPackageDir);
             let depPackage = createPackage(fullPath);
             if (depPackage == null) {
                 depPackage = createDefaultPackage(fullPath);
@@ -104,7 +104,7 @@ function getDirectories(dirPath: string): string[] {
 }
 
 function createDefaultPackage(packagePath: string): Package {
-    let defaultPackage = new Package(packageDependenciesContractsDirectory);
+    const defaultPackage = new Package(packageDependenciesContractsDirectory);
     defaultPackage.absoluletPath = packagePath;
     defaultPackage.name = path.basename(packagePath);
     return defaultPackage;

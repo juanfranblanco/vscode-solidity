@@ -28,13 +28,13 @@ export class ContractCollection {
     }
 
     public addContractAndResolveImports(contractPath: string, code: string, project: Project) {
-        let contract = this.addContract(contractPath, code);
+        const contract = this.addContract(contractPath, code);
         if (contract !== null) {
             contract.resolveImports();
             contract.imports.forEach(foundImport => {
                 if (fs.existsSync(foundImport)) {
                     if (!this.containsContract(foundImport)) {
-                        let importContractCode = this.readContractCode(foundImport);
+                        const importContractCode = this.readContractCode(foundImport);
                         if (importContractCode != null) {
                             this.addContractAndResolveImports(foundImport, importContractCode, project);
                         }
@@ -49,7 +49,7 @@ export class ContractCollection {
 
     private addContract(contractPath: string, code: string) {
         if (!this.containsContract(contractPath)) {
-            let contract = new Contract(contractPath, code);
+            const contract = new Contract(contractPath, code);
             this.contracts.push(contract);
             return contract;
         }
@@ -61,9 +61,9 @@ export class ContractCollection {
     }
 
     private getAllImportFromPackages() {
-        let importsFromPackages = new Array<string>();
+        const importsFromPackages = new Array<string>();
         this.contracts.forEach(contract => {
-            let contractImports = contract.getAllImportFromPackages();
+            const contractImports = contract.getAllImportFromPackages();
             contractImports.forEach(contractImport => {
                 if (importsFromPackages.indexOf(contractImport) < 0) {
                     importsFromPackages.push(contractImport);
@@ -81,11 +81,11 @@ export class ContractCollection {
     }
 
     private addContractAndResolveDependencyImport(dependencyImport: string, contract: Contract, project: Project) {
-        let depPack = project.findPackage(dependencyImport);
+        const depPack = project.findPackage(dependencyImport);
         if (depPack !== undefined) {
-            let depImportPath = this.formatPath(depPack.resolveImport(dependencyImport));
+            const depImportPath = this.formatPath(depPack.resolveImport(dependencyImport));
             if (!this.containsContract(depImportPath)) {
-                let importContractCode = this.readContractCode(depImportPath);
+                const importContractCode = this.readContractCode(depImportPath);
                 if (importContractCode != null) {
                     this.addContractAndResolveImports(depImportPath, importContractCode, project);
                     contract.replaceDependencyPath(dependencyImport, depImportPath);

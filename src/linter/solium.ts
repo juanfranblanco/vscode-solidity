@@ -42,11 +42,11 @@ export default class SoliumService implements Linter {
         try {
             items = Solium.lint(documentText, this.getAllSettings());
         } catch (err) {
-            let match = /An error .*?\nSyntaxError: (.*?) Line: (\d+), Column: (\d+)/.exec(err.message);
+            const match = /An error .*?\nSyntaxError: (.*?) Line: (\d+), Column: (\d+)/.exec(err.message);
 
             if (match) {
-                let line = parseInt(match[2], 10) - 1;
-                let character = parseInt(match[3], 10) - 1;
+                const line = parseInt(match[2], 10) - 1;
+                const character = parseInt(match[3], 10) - 1;
 
                 return [
                     {

@@ -8,10 +8,10 @@ import * as projService from './projectService';
 
 export function codeGenerate(args: any, diagnostics: vscode.DiagnosticCollection) {
     try {
-        let editor = vscode.window.activeTextEditor;
+        const editor = vscode.window.activeTextEditor;
         abicodegen.generateCode(editor.document.fileName, 'cs-service');
     } catch (e) {
-        let outputChannel = vscode.window.createOutputChannel('solidity code generation');
+        const outputChannel = vscode.window.createOutputChannel('solidity code generation');
         outputChannel.clear();
         outputChannel.appendLine('Error generating code:');
         outputChannel.appendLine(e.message);
@@ -62,17 +62,17 @@ export function codeGenerateNethereumCQSCSharpAll(args: any, diagnostics: vscode
 }
 
 function getBuildPath() {
-    let packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
-    let packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
+    const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
+    const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
 
-    let project = projService.initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
+    const project = projService.initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
     return path.join(vscode.workspace.rootPath, project.projectPackage.build_dir);
 }
 
 function codeGenerateAllFiles(extension: string, lang: number, args: any, diagnostics: vscode.DiagnosticCollection) {
-    let buildPath = getBuildPath();
-    let outputPath = '**/*.json';
-    let files = vscode.workspace.findFiles(outputPath, null, 1000);
+    const buildPath = getBuildPath();
+    const outputPath = '**/*.json';
+    const files = vscode.workspace.findFiles(outputPath, null, 1000);
     files.then(documents => {
         documents.forEach(document => {
             if (document.fsPath.startsWith(buildPath)) {
@@ -84,9 +84,10 @@ function codeGenerateAllFiles(extension: string, lang: number, args: any, diagno
 
 function codeGenerateCQS(fileName: string, extension: string, lang: number, args: any, diagnostics: vscode.DiagnosticCollection) {
         try {
-            let root = vscode.workspace.workspaceFolders[0];
-            let settingsFile = path.join(root.uri.fsPath, 'nethereum-gen.settings');
-            let prettyRootName = prettifyRootNameAsNamespace(root.name);
+            const root = vscode.workspace.workspaceFolders[0];
+            const settingsFile = path.join(root.uri.fsPath, 'nethereum-gen.settings');
+            const prettyRootName = prettifyRootNameAsNamespace(root.name);
+
             let baseNamespace = prettyRootName + '.Contracts';
             let projectName = baseNamespace + extension;
             if (fs.existsSync(settingsFile)) {
@@ -96,13 +97,14 @@ function codeGenerateCQS(fileName: string, extension: string, lang: number, args
                    baseNamespace = settings.namespace;
                 }
             }
-            let outputPathInfo = path.parse(fileName);
-            let contractName = outputPathInfo.name;
+            const outputPathInfo = path.parse(fileName);
+            const contractName = outputPathInfo.name;
 
-            let projectPath = path.join(root.uri.fsPath, baseNamespace);
-            let compilationOutput = JSON.parse(fs.readFileSync(fileName, 'utf8'));
-            let abi = compilationOutput.abi;
-            let contractByteCode = compilationOutput.bytecode;
+            const projectPath = path.join(root.uri.fsPath, baseNamespace);
+            const compilationOutput = JSON.parse(fs.readFileSync(fileName, 'utf8'));
+            const abi = compilationOutput.abi;
+            const contractByteCode = compilationOutput.bytecode;
+
             codegen.generateNetStandardClassLibrary(projectName, projectPath, lang);
 
             codegen.generateAllClasses(abi,
@@ -112,7 +114,7 @@ function codeGenerateCQS(fileName: string, extension: string, lang: number, args
                 projectPath,
                 lang);
         } catch (e) {
-            let outputChannel = vscode.window.createOutputChannel('solidity code generation');
+            const outputChannel = vscode.window.createOutputChannel('solidity code generation');
             outputChannel.clear();
             outputChannel.appendLine('Error generating code:');
             outputChannel.appendLine(e.message);

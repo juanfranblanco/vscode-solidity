@@ -14,11 +14,11 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
         vscode.window.showWarningMessage('Please open a folder in Visual Studio Code as a workspace');
         return;
     }
-    let packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
-    let packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
+    const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
+    const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
 
-    let contractsCollection = new ContractCollection();
-    let project = projService.initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
+    const contractsCollection = new ContractCollection();
+    const project = projService.initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
     let solidityPath = '**/*.sol';
     if (project.projectPackage.sol_sources !== undefined && project.projectPackage.sol_sources !== '') {
         solidityPath = project.projectPackage.sol_sources + '/' + solidityPath;
@@ -34,28 +34,28 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
     vscode.workspace.textDocuments.forEach(document => {
 
         if (path.extname(document.fileName) === '.sol') {
-            let contractPath = document.fileName;
-            let contractCode = document.getText();
+            const contractPath = document.fileName;
+            const contractCode = document.getText();
             contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
         }
     });
 
     // Find all the other sol files, to compile them (1000 maximum should be enough for now)
-    let files = vscode.workspace.findFiles(solidityPath, excludePath, 1000);
+    const files = vscode.workspace.findFiles(solidityPath, excludePath, 1000);
 
     return files.then(documents => {
 
         documents.forEach(document => {
-            let contractPath = document.fsPath;
+            const contractPath = document.fsPath;
 
             // have we got this already opened? used those instead
             if (!contractsCollection.containsContract(contractPath)) {
-                let contractCode = fs.readFileSync(document.fsPath, 'utf8');
+                const contractCode = fs.readFileSync(document.fsPath, 'utf8');
                 contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
             }
         });
-        let sourceDirPath = util.formatPath(project.projectPackage.getSolSourcesAbsolutePath());
-        let packagesPath = util.formatPath(project.packagesDir);
+        const sourceDirPath = util.formatPath(project.projectPackage.getSolSourcesAbsolutePath());
+        const packagesPath = util.formatPath(project.packagesDir);
         compile(contractsCollection.getContractsForCompilation(),
                 diagnosticCollection,
                 project.projectPackage.build_dir,

@@ -142,4 +142,7 @@ Sebastian Bürgel for keeping reminding me of the offline installation suppport
 David Krmpotic and Ralph Pichler for the original Sublime extension
 https://github.com/davidhq/SublimeEthereum
 
+Josh Stevens for refactoring and improving the codebase
+https://github.com/joshstevens19
+
 Everyone for their support and feedback!
