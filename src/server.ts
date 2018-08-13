@@ -1,23 +1,15 @@
 'use strict';
 
-import {SolcCompiler} from './solcCompiler';
+import { SolcCompiler } from './solcCompiler';
 import Linter from './linter/linter';
 import SolhintService from './linter/solhint';
 import SoliumService from './linter/solium';
-import {CompilerError} from './solErrorsToDiagnostics';
-import {CompletionService, GetCompletionTypes,
+import { CompilerError } from './solErrorsToDiagnostics';
+import { CompletionService, GetCompletionTypes,
         GetContextualAutoCompleteByGlobalVariable, GeCompletionUnits,
-        GetGlobalFunctions, GetGlobalVariables, GetCompletionKeywords} from './completionService';
-import {SolidityDefinitionProvider} from './definitionProvider';
-import {
-    createConnection, IConnection,
-    IPCMessageReader, IPCMessageWriter,
-    TextDocuments, InitializeResult,
-    Files, DiagnosticSeverity, Diagnostic,
-    TextDocumentChangeEvent, TextDocumentPositionParams,
-    CompletionItem, CompletionItemKind,
-    Range, Position, Location, SignatureHelp,
-} from 'vscode-languageserver';
+        GetGlobalFunctions, GetGlobalVariables, GetCompletionKeywords } from './completionService';
+import { SolidityDefinitionProvider } from './definitionProvider';
+import * as vscode from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
 interface Settings {
@@ -40,14 +32,14 @@ interface SoliditySettings {
 
 // import * as path from 'path';
 // Create a connection for the server
-const connection: IConnection = createConnection(
-    new IPCMessageReader(process),
-    new IPCMessageWriter(process));
+const connection: vscode.IConnection = vscode.createConnection(
+    new vscode.IPCMessageReader(process),
+    new vscode.IPCMessageWriter(process));
 
 console.log = connection.console.log.bind(connection.console);
 console.error = connection.console.error.bind(connection.console);
 
-const documents: TextDocuments = new TextDocuments();
+const documents: vscode.TextDocuments = new vscode.TextDocuments();
 
 let rootPath: string;
 let solcCompiler: SolcCompiler;
@@ -71,11 +63,11 @@ function validate(document) {
     try {
         validatingDocument = true;
         const uri = document.uri;
-        const filePath = Files.uriToFilePath(uri);
+        const filePath = vscode.Files.uriToFilePath(uri);
 
         const documentText = document.getText();
-        let linterDiagnostics: Diagnostic[] = [];
-        let compileErrorDiagnostics: Diagnostic[] = [];
+        let linterDiagnostics: vscode.Diagnostic[] = [];
+        let compileErrorDiagnostics: vscode.Diagnostic[] = [];
         try {
             if (linter !== null) {
                 linterDiagnostics = linter.validate(filePath, documentText);
@@ -91,7 +83,7 @@ function validate(document) {
                                                 packageDefaultDependenciesDirectory,
                                                 packageDefaultDependenciesContractsDirectory);
                 errors.forEach(errorItem => {
-                    let diagnosticCompileError: Diagnostic[] = [errorItem.diagnostic];
+                    let diagnosticCompileError: vscode.Diagnostic[] = [errorItem.diagnostic];
                     let uriCompileError = Uri.file(errorItem.fileName);
                     if (uriCompileError.toString() === uri) {
                         compileErrorDiagnostics.push(errorItem.diagnostic);
@@ -111,18 +103,18 @@ function validate(document) {
     }
 }
 
-connection.onSignatureHelp((textDocumentPosition: TextDocumentPositionParams): SignatureHelp => {
+connection.onSignatureHelp((textDocumentPosition: vscode.TextDocumentPositionParams): vscode.SignatureHelp => {
     return null;
 });
 
-connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+connection.onCompletion((textDocumentPosition: vscode.TextDocumentPositionParams): vscode.CompletionItem[] => {
     // The pass parameter contains the position of the text document in
     // which code complete got requested. For the example we ignore this
     // info and always provide the same completion items
     let completionItems = [];
     try {
         let document = documents.get(textDocumentPosition.textDocument.uri);
-        const documentPath = Files.uriToFilePath(textDocumentPosition.textDocument.uri);
+        const documentPath = vscode.Files.uriToFilePath(textDocumentPosition.textDocument.uri);
         const documentText = document.getText();
         let lines = documentText.split(/\r?\n/g);
         let position = textDocumentPosition.position;
@@ -171,7 +163,7 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
     return completionItems;
 });
 
-connection.onDefinition((handler: TextDocumentPositionParams): Thenable<Location | Location[]> => {
+connection.onDefinition((handler: vscode.TextDocumentPositionParams): Thenable<vscode.Location | vscode.Location[]> => {
     const provider = new SolidityDefinitionProvider(
         rootPath,
         packageDefaultDependenciesDirectory,
@@ -225,7 +217,7 @@ documents.onDidClose(event => connection.sendDiagnostics({
 
 documents.listen(connection);
 
-connection.onInitialize((result): InitializeResult => {
+connection.onInitialize((result): vscode.InitializeResult => {
     rootPath = result.rootPath;
     solcCompiler = new SolcCompiler(rootPath);
 

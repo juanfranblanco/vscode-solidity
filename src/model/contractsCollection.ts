@@ -1,9 +1,9 @@
 
 'use strict';
 import * as fs from 'fs';
-import {Contract} from './contract';
-import {Project} from './project';
-import * as util from '../util';
+import { Contract } from './contract';
+import { Project } from './project';
+import { formatPath } from '../util';
 
 export class ContractCollection {
     public contracts: Array<Contract>;
@@ -56,10 +56,6 @@ export class ContractCollection {
         return null;
     }
 
-    private formatPath(contractPath: string) {
-        return util.formatPath(contractPath);
-    }
-
     private getAllImportFromPackages() {
         let importsFromPackages = new Array<string>();
         this.contracts.forEach(contract => {
@@ -83,7 +79,7 @@ export class ContractCollection {
     private addContractAndResolveDependencyImport(dependencyImport: string, contract: Contract, project: Project) {
         let depPack = project.findPackage(dependencyImport);
         if (depPack !== undefined) {
-            let depImportPath = this.formatPath(depPack.resolveImport(dependencyImport));
+            let depImportPath = formatPath(depPack.resolveImport(dependencyImport));
             if (!this.containsContract(depImportPath)) {
                 let importContractCode = this.readContractCode(depImportPath);
                 if (importContractCode != null) {

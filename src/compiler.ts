@@ -4,11 +4,8 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as fsex from 'fs-extra';
-import * as artifactor from 'truffle-artifactor';
-import * as solidyErrorsConvertor from './solErrorsToDiaganosticsClient';
-import { DiagnosticSeverity } from 'vscode';
-import {SolcCompiler, compilerType}  from './solcCompiler';
-
+import { errorsToDiagnostics } from './solErrorsToDiaganosticsClient';
+import { SolcCompiler, compilerType }  from './solcCompiler';
 
 function outputErrorsToChannel(outputChannel: vscode.OutputChannel, errors: any) {
     errors.forEach(error => {
@@ -72,7 +69,7 @@ function processCompilationOuput(output: any, outputChannel: vscode.OutputChanne
     diagnosticCollection.clear();
 
     if (output.errors) {
-        const errorWarningCounts = solidyErrorsConvertor.errorsToDiagnostics(diagnosticCollection, output.errors);
+        const errorWarningCounts = errorsToDiagnostics(diagnosticCollection, output.errors);
         outputErrorsToChannel(outputChannel, output.errors);
 
         if (errorWarningCounts.errors > 0) {

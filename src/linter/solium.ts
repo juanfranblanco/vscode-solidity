@@ -1,17 +1,15 @@
 import * as Solium from 'solium';
-import { DiagnosticSeverity, Diagnostic, IConnection,
-} from 'vscode-languageserver';
+import * as vscode from 'vscode-languageserver';
 import Linter from './linter';
 
-export const defaultSoliumRules = {
-};
+export const defaultSoliumRules = { };
 
 export default class SoliumService implements Linter {
 
     private soliumRules;
-    private vsConnection: IConnection;
+    private vsConnection: vscode.IConnection;
 
-    constructor(soliumRules: any, vsConnection: IConnection) {
+    constructor(soliumRules: any, vsConnection: vscode.IConnection) {
       this.vsConnection = vsConnection;
       this.setIdeRules(soliumRules);
     }
@@ -61,7 +59,7 @@ export default class SoliumService implements Linter {
                                 line: line,
                             },
                         },
-                        severity: DiagnosticSeverity.Error,
+                        severity: vscode.DiagnosticSeverity.Error,
                     },
                 ];
             } else {
@@ -74,8 +72,8 @@ export default class SoliumService implements Linter {
 
     public soliumLintResultToDiagnostic(lintResult) {
         const severity = lintResult.type === 'warning' ?
-            DiagnosticSeverity.Warning :
-            DiagnosticSeverity.Error;
+            vscode.DiagnosticSeverity.Warning :
+            vscode.DiagnosticSeverity.Error;
 
         const line = lintResult.line - 1;
 

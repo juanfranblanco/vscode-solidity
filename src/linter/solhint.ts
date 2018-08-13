@@ -1,8 +1,7 @@
 import * as linter from 'solhint/lib/index';
-import { DiagnosticSeverity as Severity, Diagnostic, Range, IConnection } from 'vscode-languageserver';
 import Linter from './linter';
 import * as fs from 'fs';
-
+import * as vscode from 'vscode-languageserver';
 
 export default class SolhintService implements Linter {
     private config: ValidationConfig;
@@ -15,7 +14,7 @@ export default class SolhintService implements Linter {
         this.config.setIdeRules(rules);
     }
 
-    public validate(filePath: string, documentText: string): Diagnostic[] {
+    public validate(filePath: string, documentText: string): vscode.Diagnostic[] {
         return linter
             .processStr(documentText, this.config.build())
             .messages
@@ -30,11 +29,11 @@ export default class SolhintService implements Linter {
         };
     }
 
-    private severity(error: any): Severity {
-        return (error.severity === 3) ? Severity.Warning : Severity.Error;
+    private severity(error: any): vscode.DiagnosticSeverity {
+        return (error.severity === 3) ? vscode.DiagnosticSeverity.Warning : vscode.DiagnosticSeverity.Error;
     }
 
-    private rangeOf(error: any): Range {
+    private rangeOf(error: any): vscode.Range {
         const line = error.line - 1;
         const character = error.column - 1;
 

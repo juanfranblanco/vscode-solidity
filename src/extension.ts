@@ -2,12 +2,12 @@
 
 import * as path from 'path';
 import * as vscode from 'vscode';
-import {compileAllContracts} from './compileAll';
-import {compileActiveContract, initDiagnosticCollection} from './compileActive';
-import {codeGenerate, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
-    codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll} from './codegen';
-import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn} from 'vscode-languageclient';
-import {lintAndfixCurrentDocument} from './linter/soliumClientFixer';
+import { compileAllContracts } from './compileAll';
+import { compileActiveContract, initDiagnosticCollection } from './compileActive';
+import { codeGenerate, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
+    codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll } from './codegen';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn } from 'vscode-languageclient';
+import { lintAndfixCurrentDocument } from './linter/soliumClientFixer';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 

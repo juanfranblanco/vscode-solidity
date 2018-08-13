@@ -1,5 +1,5 @@
 'use strict';
-import {Package} from './package';
+import { Package } from './package';
 
 export class Project {
     public projectPackage: Package;

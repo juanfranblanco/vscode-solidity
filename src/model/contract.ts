@@ -1,6 +1,6 @@
 'use strict';
 import * as path from 'path';
-import * as util from '../util';
+import { formatPath } from '../util';
 
 export class Contract {
     public code: string;
@@ -10,7 +10,7 @@ export class Contract {
     public packagePath: string;
     public abi: string;
     constructor(absoulePath: string, code: string) {
-        this.absolutePath = this.formatPath(absoulePath);
+        this.absolutePath = formatPath(absoulePath);
         this.code = code;
         this.imports = new Array<string>();
     }
@@ -27,10 +27,6 @@ export class Contract {
 
     public isImportLocal(importPath: string) {
         return importPath.startsWith('.');
-    }
-
-    public formatPath(contractPath: string) {
-        return util.formatPath(contractPath);
     }
 
     public replaceDependencyPath(importPath: string, depImportAbsolutePath: string) {
@@ -51,7 +47,7 @@ export class Contract {
             let importPath = foundImport[1];
 
             if (this.isImportLocal(importPath)) {
-                let importFullPath = this.formatPath(path.resolve(path.dirname(this.absolutePath), foundImport[1]));
+                let importFullPath = formatPath(path.resolve(path.dirname(this.absolutePath), foundImport[1]));
                 this.imports.push(importFullPath);
             } else {
                 this.imports.push(importPath);
