@@ -4,8 +4,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {compile} from './compiler';
 import {ContractCollection} from './model/contractsCollection';
-import * as projService from './projectService';
-import * as util from './util';
+import { initialiseProject } from './projectService';
+import { formatPath } from './util';
 
 export function compileAllContracts(diagnosticCollection: vscode.DiagnosticCollection) {
 
@@ -18,7 +18,7 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
     const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
 
     const contractsCollection = new ContractCollection();
-    const project = projService.initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
+    const project = initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
     let solidityPath = '**/*.sol';
     if (project.projectPackage.sol_sources !== undefined && project.projectPackage.sol_sources !== '') {
         solidityPath = project.projectPackage.sol_sources + '/' + solidityPath;
@@ -54,8 +54,8 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
                 contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
             }
         });
-        const sourceDirPath = util.formatPath(project.projectPackage.getSolSourcesAbsolutePath());
-        const packagesPath = util.formatPath(project.packagesDir);
+        const sourceDirPath = formatPath(project.projectPackage.getSolSourcesAbsolutePath());
+        const packagesPath = formatPath(project.packagesDir);
         compile(contractsCollection.getContractsForCompilation(),
                 diagnosticCollection,
                 project.projectPackage.build_dir,

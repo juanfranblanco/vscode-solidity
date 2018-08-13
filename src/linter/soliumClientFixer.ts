@@ -1,3 +1,4 @@
+'use strict';
 import SoliumService from './solium';
 import * as vscode from 'vscode';
 

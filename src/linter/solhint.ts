@@ -1,8 +1,7 @@
 import * as linter from 'solhint/lib/index';
-import { DiagnosticSeverity as Severity, Diagnostic, Range, IConnection } from 'vscode-languageserver';
+import { DiagnosticSeverity as Severity, Diagnostic, Range } from 'vscode-languageserver';
 import Linter from './linter';
 import * as fs from 'fs';
-
 
 export default class SolhintService implements Linter {
     private config: ValidationConfig;

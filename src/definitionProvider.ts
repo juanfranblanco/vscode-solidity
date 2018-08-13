@@ -6,7 +6,7 @@ import Uri from 'vscode-uri';
 import { Contract } from './model/contract';
 import { ContractCollection } from './model/contractsCollection';
 import { Project } from './model/project';
-import * as projectService from './projectService';
+import { initialiseProject } from './projectService';
 
 export class SolidityDefinitionProvider {
   private rootPath: string;
@@ -24,7 +24,7 @@ export class SolidityDefinitionProvider {
     this.packageDefaultDependenciesContractsDirectory = packageDefaultDependenciesContractsDirectory;
 
     if (this.rootPath !== 'undefined' && this.rootPath !== null) {
-      this.project = projectService.initialiseProject(
+      this.project = initialiseProject(
         this.rootPath,
         this.packageDefaultDependenciesDirectory,
         this.packageDefaultDependenciesContractsDirectory,
@@ -350,7 +350,7 @@ export class SolidityDefinitionProvider {
     const locations = [];
     for (const contract of contracts.contracts) {
 
-      let result = solparse.parse(contract.code);
+      const result = solparse.parse(contract.code);
       const elements =  Array.prototype.concat.apply([],
         result.body.map(element => {
           if (element.type === 'ContractStatement' ||  element.type === 'LibraryStatement') {
@@ -534,11 +534,11 @@ export class SolidityDefinitionProvider {
    */
   private resolveImportPath(importPath: string, contract: Contract): string {
     if (contract.isImportLocal(importPath)) {
-      return contract.formatPath(path.resolve(path.dirname(contract.absolutePath), importPath));
+      return contract.formatContractPath(path.resolve(path.dirname(contract.absolutePath), importPath));
     } else if (this.project !== undefined) {
       const depPack = this.project.findPackage(importPath);
       if (depPack !== undefined) {
-        return contract.formatPath(depPack.resolveImport(importPath));
+        return contract.formatContractPath(depPack.resolveImport(importPath));
       }
     }
     return importPath;

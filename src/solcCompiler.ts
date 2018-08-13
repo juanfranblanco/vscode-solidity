@@ -1,11 +1,10 @@
-import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver';
-import * as projectService from './projectService';
-import * as solidityErrorsConvertor from './solErrorsToDiagnostics';
+'use strict';
+import {errorToDiagnostic} from './solErrorsToDiagnostics';
 import * as solc from 'solc';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as fsex from 'fs-extra';
 import {ContractCollection} from './model/contractsCollection';
+import { initialiseProject } from './projectService';
 
 export enum compilerType {
     localNode,
@@ -139,21 +138,21 @@ export class SolcCompiler {
             contracts.addContractAndResolveImports(
                 filePath,
                 documentText,
-                projectService.initialiseProject(this.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory));
+                initialiseProject(this.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory));
 
             const output = this.compile({sources: contracts.getContractsForCompilation()});
 
             if (output.errors) {
                 return output
                     .errors
-                    .map(error => solidityErrorsConvertor.errorToDiagnostic(error));
+                    .map(error => errorToDiagnostic(error));
             }
         } else {
             const contract = {};
             contract[filePath] = documentText;
             const output = this.compile({sources: contract });
             if (output.errors) {
-                return output.errors.map((error) => solidityErrorsConvertor.errorToDiagnostic(error));
+                return output.errors.map((error) => errorToDiagnostic(error));
             }
         }
         return [];

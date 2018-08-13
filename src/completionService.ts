@@ -1,7 +1,8 @@
+'use strict';
 import * as solparse from 'solparse';
-import * as projectService from './projectService';
 import {ContractCollection} from './model/contractsCollection';
-import { CompletionItem, CompletionItemKind, Command } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { initialiseProject } from './projectService';
 
 // TODO implement caching, dirty on document change, reload, etc.
 // store
@@ -157,7 +158,7 @@ export class CompletionService {
             contracts.addContractAndResolveImports(
                 documentPath,
                 documentText,
-                projectService.initialiseProject(this.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory));
+                initialiseProject(this.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory));
             let completionItems = [];
             contracts.contracts.forEach(contract => {
                 completionItems = completionItems.concat(this.getDocumentCompletionItems(contract.code));

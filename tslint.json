@@ -5,6 +5,8 @@
     "curly": true,
     "eofline": true,
     "forin": true,
+    "no-duplicate-imports":true,
+    "import-spacing":true,
     "indent": [true, "spaces"],
     "label-position": true,
     "label-undefined": true,

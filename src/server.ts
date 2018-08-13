@@ -1,5 +1,4 @@
 'use strict';
-
 import {SolcCompiler} from './solcCompiler';
 import Linter from './linter/linter';
 import SolhintService from './linter/solhint';
@@ -13,10 +12,9 @@ import {
     createConnection, IConnection,
     IPCMessageReader, IPCMessageWriter,
     TextDocuments, InitializeResult,
-    Files, DiagnosticSeverity, Diagnostic,
-    TextDocumentChangeEvent, TextDocumentPositionParams,
-    CompletionItem, CompletionItemKind,
-    Range, Position, Location, SignatureHelp,
+    Files, Diagnostic,
+    TextDocumentPositionParams,
+    CompletionItem, Location, SignatureHelp,
 } from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
@@ -56,7 +54,6 @@ let linter: Linter = null;
 let enabledAsYouTypeErrorCheck = false;
 let compileUsingRemoteVersion = '';
 let compileUsingLocalVersion = '';
-let linterOption: boolean | string = false;
 let solhintDefaultRules = {};
 let soliumDefaultRules = {};
 let validationDelay = 1500;
@@ -91,7 +88,6 @@ function validate(document) {
                                                 packageDefaultDependenciesDirectory,
                                                 packageDefaultDependenciesContractsDirectory);
                 errors.forEach(errorItem => {
-                    const diagnosticCompileError: Diagnostic[] = [errorItem.diagnostic];
                     const uriCompileError = Uri.file(errorItem.fileName);
                     if (uriCompileError.toString() === uri) {
                         compileErrorDiagnostics.push(errorItem.diagnostic);
@@ -111,7 +107,7 @@ function validate(document) {
     }
 }
 
-connection.onSignatureHelp((textDocumentPosition: TextDocumentPositionParams): SignatureHelp => {
+connection.onSignatureHelp((): SignatureHelp => {
     return null;
 });
 
@@ -248,7 +244,6 @@ connection.onInitialize((result): InitializeResult => {
 connection.onDidChangeConfiguration((change) => {
     const settings = <Settings>change.settings;
     enabledAsYouTypeErrorCheck = settings.solidity.enabledAsYouTypeCompilationErrorCheck;
-    linterOption = settings.solidity.linter;
     compileUsingLocalVersion = settings.solidity.compileUsingLocalVersion;
     compileUsingRemoteVersion = settings.solidity.compileUsingRemoteVersion;
     solhintDefaultRules = settings.solidity.solhintRules;

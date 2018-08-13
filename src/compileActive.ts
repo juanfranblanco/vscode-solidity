@@ -3,8 +3,9 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import {compile} from './compiler';
 import {ContractCollection} from './model/contractsCollection';
-import * as projService from './projectService';
-import * as util from './util';
+import { initialiseProject } from './projectService';
+import { formatPath } from './util';
+
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
@@ -37,9 +38,9 @@ export function compileActiveContract() {
     const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
     const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
 
-    const project = projService.initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
+    const project = initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
     const contract = contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
-    const packagesPath = util.formatPath(project.packagesDir);
+    const packagesPath = formatPath(project.packagesDir);
 
     compile(contractsCollection.getContractsForCompilation(),
             diagnosticCollection,
