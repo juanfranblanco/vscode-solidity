@@ -1,18 +1,18 @@
-import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver';
+import * as vscode from 'vscode-languageserver';
 
 export interface CompilerError {
     diagnostic: any;
     fileName: string;
 }
 
-    export function getDiagnosticSeverity(severity: string): DiagnosticSeverity {
+    export function getDiagnosticSeverity(severity: string): vscode.DiagnosticSeverity {
         switch (severity) {
             case ' Error':
-                return DiagnosticSeverity.Error;
+                return vscode.DiagnosticSeverity.Error;
             case ' Warning':
-                return DiagnosticSeverity.Warning;
+                return vscode.DiagnosticSeverity.Warning;
             default:
-                return DiagnosticSeverity.Error;
+                return vscode.DiagnosticSeverity.Error;
         }
     }
 

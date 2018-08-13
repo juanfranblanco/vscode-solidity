@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import * as solErrorToDiagnostics from './solErrorsToDiagnostics';
-import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver';
+import { errorToDiagnostic } from './solErrorsToDiagnostics';
+import * as vscodeserver from 'vscode-languageserver';
 
 interface ErrorWarningCounts {
     errors: number;
@@ -12,7 +12,7 @@ export function errorsToDiagnostics(diagnosticCollection: vscode.DiagnosticColle
         let diagnosticMap: Map<vscode.Uri, vscode.Diagnostic[]> = new Map();
 
         errors.forEach(error => {
-            let {diagnostic, fileName} = solErrorToDiagnostics.errorToDiagnostic(error);
+            let {diagnostic, fileName} = errorToDiagnostic(error);
 
             let targetUri = vscode.Uri.file(fileName);
             let diagnostics = diagnosticMap.get(targetUri);
@@ -28,8 +28,8 @@ export function errorsToDiagnostics(diagnosticCollection: vscode.DiagnosticColle
         let entries: [vscode.Uri, vscode.Diagnostic[]][] = [];
 
         diagnosticMap.forEach((diags, uri) => {
-            errorWarningCounts.errors += diags.filter((diagnostic) => diagnostic.severity === DiagnosticSeverity.Error).length;
-            errorWarningCounts.warnings += diags.filter((diagnostic) => diagnostic.severity === DiagnosticSeverity.Warning).length;
+            errorWarningCounts.errors += diags.filter((diagnostic) => diagnostic.severity === vscodeserver.DiagnosticSeverity.Error).length;
+            errorWarningCounts.warnings += diags.filter((diagnostic) => diagnostic.severity === vscodeserver.DiagnosticSeverity.Warning).length;
 
             entries.push([uri, diags]);
         });

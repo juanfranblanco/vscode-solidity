@@ -1,7 +1,7 @@
 import * as solparse from 'solparse';
-import * as projectService from './projectService';
-import {ContractCollection} from './model/contractsCollection';
-import { CompletionItem, CompletionItemKind, Command } from 'vscode-languageserver';
+import { initialiseProject } from './projectService';
+import { ContractCollection } from './model/contractsCollection';
+import * as vscode from 'vscode-languageserver';
 
 // TODO implement caching, dirty on document change, reload, etc.
 // store
@@ -86,10 +86,10 @@ export class CompletionService {
         return paramsInfo;
     }
 
-    public createFunctionEventCompletionItem(contractElement: any, type: string, contractName: string): CompletionItem {
+    public createFunctionEventCompletionItem(contractElement: any, type: string, contractName: string): vscode.CompletionItem {
 
-        let completionItem =  CompletionItem.create(contractElement.name);
-        completionItem.kind = CompletionItemKind.Function;
+        let completionItem =  vscode.CompletionItem.create(contractElement.name);
+        completionItem.kind = vscode.CompletionItemKind.Function;
         let paramsInfo = this.createParamsInfo(contractElement.params);
         let paramsSnippet = this.createFunctionParamsSnippet(contractElement.params);
         let returnParamsInfo = this.createParamsInfo(contractElement.returnParams);
@@ -104,7 +104,7 @@ export class CompletionService {
         return completionItem;
     }
 
-    public getDocumentCompletionItems(documentText: string): CompletionItem[] {
+    public getDocumentCompletionItems(documentText: string): vscode.CompletionItem[] {
         let completionItems = [];
         try {
             let result = solparse.parse(documentText);
@@ -128,8 +128,8 @@ export class CompletionService {
                             }
 
                             if (contractElement.type === 'StateVariableDeclaration') {
-                                let completionItem =  CompletionItem.create(contractElement.name);
-                                completionItem.kind = CompletionItemKind.Field;
+                                let completionItem =  vscode.CompletionItem.create(contractElement.name);
+                                completionItem.kind = vscode.CompletionItemKind.Field;
                                 const typeString = this.getTypeString(contractElement.literal);
                                 completionItem.detail = '(state variable in ' + contractName + ') '
                                                                     + typeString + ' ' + contractElement.name;
@@ -150,14 +150,14 @@ export class CompletionService {
     public getAllCompletionItems(documentText: string,
                                 documentPath: string,
                                 packageDefaultDependenciesDirectory: string,
-                                packageDefaultDependenciesContractsDirectory: string): CompletionItem[] {
+                                packageDefaultDependenciesContractsDirectory: string): vscode.CompletionItem[] {
 
         if (this.rootPath !== 'undefined' && this.rootPath !== null) {
             const contracts = new ContractCollection();
             contracts.addContractAndResolveImports(
                 documentPath,
                 documentText,
-                projectService.initialiseProject(this.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory));
+                initialiseProject(this.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory));
             let completionItems = [];
             contracts.contracts.forEach(contract => {
                 completionItems = completionItems.concat(this.getDocumentCompletionItems(contract.code));
@@ -170,7 +170,7 @@ export class CompletionService {
     }
 }
 
-export function GetCompletionTypes(): CompletionItem[] {
+export function GetCompletionTypes(): vscode.CompletionItem[] {
     let completionItems = [];
     let types = ['address', 'string', 'bytes', 'byte', 'int', 'uint', 'bool', 'hash'];
     for (let index = 8; index <= 256; index += 8) {
@@ -179,8 +179,8 @@ export function GetCompletionTypes(): CompletionItem[] {
         types.push('bytes' + index / 8);
     }
     types.forEach(type => {
-        let completionItem =  CompletionItem.create(type);
-        completionItem.kind = CompletionItemKind.Keyword;
+        let completionItem =  vscode.CompletionItem.create(type);
+        completionItem.kind = vscode.CompletionItemKind.Keyword;
         completionItem.detail = type + ' type';
         completionItems.push(completionItem);
     });
@@ -188,56 +188,56 @@ export function GetCompletionTypes(): CompletionItem[] {
     return completionItems;
 }
 
-function CreateCompletionItem(label: string, kind: CompletionItemKind, detail: string) {
-    let completionItem = CompletionItem.create(label);
+function CreateCompletionItem(label: string, kind: vscode.CompletionItemKind, detail: string) {
+    let completionItem = vscode.CompletionItem.create(label);
     completionItem.kind = kind;
     completionItem.detail = detail;
     return completionItem;
 }
 
-export function GetCompletionKeywords(): CompletionItem[] {
+export function GetCompletionKeywords(): vscode.CompletionItem[] {
     let completionItems = [];
     let keywords = [ 'modifier', 'mapping', 'break', 'continue', 'delete', 'else', 'for',
     'if', 'new', 'return', 'returns', 'while', 'using',
     'private', 'public', 'external', 'internal', 'payable', 'view', 'pure', 'case', 'do', 'else', 'finally',
     'in', 'instanceof', 'return', 'throw', 'try', 'typeof', 'yield', 'void'] ;
     keywords.forEach(unit => {
-        let completionItem =  CompletionItem.create(unit);
-        completionItem.kind = CompletionItemKind.Keyword;
+        let completionItem =  vscode.CompletionItem.create(unit);
+        completionItem.kind = vscode.CompletionItemKind.Keyword;
         completionItems.push(completionItem);
     });
 
-    completionItems.push(CreateCompletionItem('contract', CompletionItemKind.Class, null));
-    completionItems.push(CreateCompletionItem('library', CompletionItemKind.Class, null));
-    completionItems.push(CreateCompletionItem('storage', CompletionItemKind.Field, null));
-    completionItems.push(CreateCompletionItem('memory', CompletionItemKind.Field, null));
-    completionItems.push(CreateCompletionItem('var', CompletionItemKind.Field, null));
-    completionItems.push(CreateCompletionItem('constant', CompletionItemKind.Constant, null));
-    completionItems.push(CreateCompletionItem('constructor', CompletionItemKind.Constructor, null));
-    completionItems.push(CreateCompletionItem('event', CompletionItemKind.Event, null));
-    completionItems.push(CreateCompletionItem('import', CompletionItemKind.Module, null));
-    completionItems.push(CreateCompletionItem('enum', CompletionItemKind.Enum, null));
-    completionItems.push(CreateCompletionItem('struct', CompletionItemKind.Struct, null));
-    completionItems.push(CreateCompletionItem('function', CompletionItemKind.Function, null));
+    completionItems.push(CreateCompletionItem('contract', vscode.CompletionItemKind.Class, null));
+    completionItems.push(CreateCompletionItem('library', vscode.CompletionItemKind.Class, null));
+    completionItems.push(CreateCompletionItem('storage', vscode.CompletionItemKind.Field, null));
+    completionItems.push(CreateCompletionItem('memory', vscode.CompletionItemKind.Field, null));
+    completionItems.push(CreateCompletionItem('var', vscode.CompletionItemKind.Field, null));
+    completionItems.push(CreateCompletionItem('constant', vscode.CompletionItemKind.Constant, null));
+    completionItems.push(CreateCompletionItem('constructor', vscode.CompletionItemKind.Constructor, null));
+    completionItems.push(CreateCompletionItem('event', vscode.CompletionItemKind.Event, null));
+    completionItems.push(CreateCompletionItem('import', vscode.CompletionItemKind.Module, null));
+    completionItems.push(CreateCompletionItem('enum', vscode.CompletionItemKind.Enum, null));
+    completionItems.push(CreateCompletionItem('struct', vscode.CompletionItemKind.Struct, null));
+    completionItems.push(CreateCompletionItem('function', vscode.CompletionItemKind.Function, null));
 
     return completionItems;
 }
 
 
-export function GeCompletionUnits(): CompletionItem[] {
+export function GeCompletionUnits(): vscode.CompletionItem[] {
     let completionItems = [];
     let etherUnits = ['wei', 'finney', 'szabo', 'ether'] ;
     etherUnits.forEach(unit => {
-        let completionItem =  CompletionItem.create(unit);
-        completionItem.kind = CompletionItemKind.Unit;
+        let completionItem =  vscode.CompletionItem.create(unit);
+        completionItem.kind = vscode.CompletionItemKind.Unit;
         completionItem.detail = unit + ': ether unit';
         completionItems.push(completionItem);
     });
 
     let timeUnits = ['seconds', 'minutes', 'hours', 'days', 'weeks', 'years'];
     timeUnits.forEach(unit => {
-        let completionItem =  CompletionItem.create(unit);
-        completionItem.kind = CompletionItemKind.Unit;
+        let completionItem =  vscode.CompletionItem.create(unit);
+        completionItem.kind = vscode.CompletionItemKind.Unit;
 
         if (unit !== 'years') {
             completionItem.detail = unit + ': time unit';
@@ -250,64 +250,64 @@ export function GeCompletionUnits(): CompletionItem[] {
     return completionItems;
 }
 
-export function GetGlobalVariables(): CompletionItem[] {
+export function GetGlobalVariables(): vscode.CompletionItem[] {
     return [
         {
             detail: 'Current block',
-            kind: CompletionItemKind.Variable,
+            kind: vscode.CompletionItemKind.Variable,
             label: 'block',
         },
         {
             detail: 'Current Message',
-            kind: CompletionItemKind.Variable,
+            kind: vscode.CompletionItemKind.Variable,
             label: 'msg',
         },
         {
             detail: '(uint): current block timestamp (alias for block.timestamp)',
-            kind: CompletionItemKind.Variable,
+            kind: vscode.CompletionItemKind.Variable,
             label: 'now',
         },
         {
             detail: 'Current transaction',
-            kind: CompletionItemKind.Variable,
+            kind: vscode.CompletionItemKind.Variable,
             label: 'tx',
         },
         {
             detail: 'ABI encoding / decoding',
-            kind: CompletionItemKind.Variable,
+            kind: vscode.CompletionItemKind.Variable,
             label: 'abi',
         },
     ];
 }
 
-export function GetGlobalFunctions(): CompletionItem[] {
+export function GetGlobalFunctions(): vscode.CompletionItem[] {
     return [
         {
             detail: 'assert(bool condition): throws if the condition is not met - to be used for internal errors.',
             insertText: 'assert(${1:condition});',
             insertTextFormat: 2,
-            kind: CompletionItemKind.Function,
+            kind: vscode.CompletionItemKind.Function,
             label: 'assert',
         },
         {
             detail: 'gasleft(): returns the remaining gas',
             insertText: 'gasleft();',
             insertTextFormat: 2,
-            kind: CompletionItemKind.Function,
+            kind: vscode.CompletionItemKind.Function,
             label: 'gasleft',
         },
         {
             detail: 'blockhash(uint blockNumber): hash of the given block - only works for 256 most recent, excluding current, blocks',
             insertText: 'blockhash(${1:blockNumber});',
             insertTextFormat: 2,
-            kind: CompletionItemKind.Function,
+            kind: vscode.CompletionItemKind.Function,
             label: 'blockhash',
         },
         {
             detail: 'require(bool condition): reverts if the condition is not met - to be used for errors in inputs or external components.',
             insertText: 'require(${1:condition});',
             insertTextFormat: 2,
-            kind: CompletionItemKind.Method,
+            kind: vscode.CompletionItemKind.Method,
             label: 'require',
         },
         {
@@ -315,14 +315,14 @@ export function GetGlobalFunctions(): CompletionItem[] {
             detail: 'require(bool condition, string message): reverts if the condition is not met - to be used for errors in inputs or external components. Also provides an error message.',
             insertText: 'require(${1:condition}, ${2:message});',
             insertTextFormat: 2,
-            kind: CompletionItemKind.Method,
+            kind: vscode.CompletionItemKind.Method,
             label: 'require',
         },
         {
             detail: 'revert(): abort execution and revert state changes',
             insertText: 'revert();',
             insertTextFormat: 2,
-            kind: CompletionItemKind.Method,
+            kind: vscode.CompletionItemKind.Method,
             label: 'revert',
         },
         {
@@ -330,7 +330,7 @@ export function GetGlobalFunctions(): CompletionItem[] {
                     'compute (x + y) % k where the addition is performed with arbitrary precision and does not wrap around at 2**256',
             insertText: 'addmod(${1:x}, ${2:y}, ${3:k})',
             insertTextFormat: 2,
-            kind: CompletionItemKind.Method,
+            kind: vscode.CompletionItemKind.Method,
             label: 'addmod',
         },
         {
@@ -338,7 +338,7 @@ export function GetGlobalFunctions(): CompletionItem[] {
                     'compute (x * y) % k where the multiplication is performed with arbitrary precision and does not wrap around at 2**256',
             insertText: 'mulmod(${1:x}, ${2:y}, ${3:k})',
             insertTextFormat: 2,
-            kind: CompletionItemKind.Method,
+            kind: vscode.CompletionItemKind.Method,
             label: 'mulmod',
         },
         {
@@ -346,7 +346,7 @@ export function GetGlobalFunctions(): CompletionItem[] {
                     'compute the Ethereum-SHA-3 (Keccak-256) hash of the (tightly packed) arguments',
             insertText: 'keccak256(${1:x})',
             insertTextFormat: 2,
-            kind: CompletionItemKind.Method,
+            kind: vscode.CompletionItemKind.Method,
             label: 'keccak256',
         },
         {
@@ -354,7 +354,7 @@ export function GetGlobalFunctions(): CompletionItem[] {
                     'compute the SHA-256 hash of the (tightly packed) arguments',
             insertText: 'sha256(${1:x})',
             insertTextFormat: 2,
-            kind: CompletionItemKind.Method,
+            kind: vscode.CompletionItemKind.Method,
             label: 'sha256',
         },
         {
@@ -362,7 +362,7 @@ export function GetGlobalFunctions(): CompletionItem[] {
                     'alias to keccak256',
             insertText: 'sha3(${1:x})',
             insertTextFormat: 2,
-            kind: CompletionItemKind.Method,
+            kind: vscode.CompletionItemKind.Method,
             label: 'sha3',
         },
         {
@@ -370,7 +370,7 @@ export function GetGlobalFunctions(): CompletionItem[] {
                     'compute RIPEMD-160 hash of the (tightly packed) arguments',
             insertText: 'ripemd160(${1:x})',
             insertTextFormat: 2,
-            kind: CompletionItemKind.Method,
+            kind: vscode.CompletionItemKind.Method,
             label: 'ripemd160',
         },
         {
@@ -378,14 +378,14 @@ export function GetGlobalFunctions(): CompletionItem[] {
                     'recover the address associated with the public key from elliptic curve signature or return zero on error',
             insertText: 'ecrecover(${1:hash}, ${2:v}, ${3:r}, ${4:s})',
             insertTextFormat: 2,
-            kind: CompletionItemKind.Method,
+            kind: vscode.CompletionItemKind.Method,
             label: 'ecrecover',
         },
 
     ];
 }
 
-export function GetContextualAutoCompleteByGlobalVariable(lineText: string, wordEndPosition: number): CompletionItem[] {
+export function GetContextualAutoCompleteByGlobalVariable(lineText: string, wordEndPosition: number): vscode.CompletionItem[] {
     if (isAutocompleteTrigeredByVariableName('block', lineText, wordEndPosition)) {
         return getBlockCompletionItems();
     }
@@ -411,116 +411,116 @@ function isAutocompleteTrigeredByVariableName(variableName: string, lineText: st
     return false;
 }
 
-function getBlockCompletionItems(): CompletionItem[] {
+function getBlockCompletionItems(): vscode.CompletionItem[] {
     return [
         {
             detail: '(address): Current block miner’s address',
-            kind: CompletionItemKind.Property,
+            kind: vscode.CompletionItemKind.Property,
             label: 'coinbase',
         },
         {
             detail: '(bytes32): DEPRICATED In 0.4.22 use blockhash(uint) instead. Hash of the given block - only works for 256 most recent blocks excluding current',
             insertText: 'blockhash(${1:blockNumber});',
             insertTextFormat: 2,
-            kind: CompletionItemKind.Method,
+            kind: vscode.CompletionItemKind.Method,
             label: 'blockhash',
         },
         {
             detail: '(uint): current block difficulty',
-            kind: CompletionItemKind.Property,
+            kind: vscode.CompletionItemKind.Property,
             label: 'difficulty',
         },
         {
             detail: '(uint): current block gaslimit',
-            kind: CompletionItemKind.Property,
+            kind: vscode.CompletionItemKind.Property,
             label: 'gaslimit',
         },
         {
             detail: '(uint): current block number',
-            kind: CompletionItemKind.Property,
+            kind: vscode.CompletionItemKind.Property,
             label: 'number',
         },
         {
             detail: '(uint): current block timestamp as seconds since unix epoch',
-            kind: CompletionItemKind.Property,
+            kind: vscode.CompletionItemKind.Property,
             label: 'timestamp',
         },
     ];
 }
 
-function getTxCompletionItems(): CompletionItem[] {
+function getTxCompletionItems(): vscode.CompletionItem[] {
     return [
         {
             detail: '(uint): gas price of the transaction',
-            kind: CompletionItemKind.Property,
+            kind: vscode.CompletionItemKind.Property,
             label: 'gas',
         },
         {
             detail: '(address): sender of the transaction (full call chain)',
-            kind: CompletionItemKind.Property,
+            kind: vscode.CompletionItemKind.Property,
             label: 'origin',
         },
     ];
 }
 
-function getMsgCompletionItems(): CompletionItem[] {
+function getMsgCompletionItems(): vscode.CompletionItem[] {
     return [
         {
             detail: '(bytes): complete calldata',
-            kind: CompletionItemKind.Property,
+            kind: vscode.CompletionItemKind.Property,
             label: 'data',
         },
         {
             detail: '(uint): remaining gas DEPRICATED in 0.4.21 use gasleft()',
-            kind: CompletionItemKind.Property,
+            kind: vscode.CompletionItemKind.Property,
             label: 'gas',
         },
         {
             detail: '(address): sender of the message (current call)',
-            kind: CompletionItemKind.Property,
+            kind: vscode.CompletionItemKind.Property,
             label: 'sender',
         },
         {
             detail: '(bytes4): first four bytes of the calldata (i.e. function identifier)',
-            kind: CompletionItemKind.Property,
+            kind: vscode.CompletionItemKind.Property,
             label: 'sig',
         },
         {
             detail: '(uint): number of wei sent with the message',
-            kind: CompletionItemKind.Property,
+            kind: vscode.CompletionItemKind.Property,
             label: 'value',
         },
     ];
 }
 
-function getAbiCompletionItems(): CompletionItem[] {
+function getAbiCompletionItems(): vscode.CompletionItem[] {
     return [
         {
             detail: 'encode(..) returs (bytes): ABI-encodes the given arguments',
             insertText: 'encode(${1:arg});',
             insertTextFormat: 2,
-            kind: CompletionItemKind.Method,
+            kind: vscode.CompletionItemKind.Method,
             label: 'encode',
         },
         {
             detail: 'encodePacked(..) returns (bytes): Performes packed encoding of the given arguments',
             insertText: 'encodePacked(${1:arg});',
             insertTextFormat: 2,
-            kind: CompletionItemKind.Method,
+            kind: vscode.CompletionItemKind.Method,
             label: 'encodePacked',
         },
         {
             detail: 'encodeWithSelector(bytes4,...) returns (bytes): ABI-encodes the given arguments starting from the second and prepends the given four-byte selector',
             insertText: 'encodeWithSelector(${1:bytes4}, ${2:arg});',
             insertTextFormat: 2,
-            kind: CompletionItemKind.Method,
+            kind: vscode.CompletionItemKind.Method,
             label: 'encodeWithSelector',
         },
         {
             detail: 'encodeWithSignature(string,...) returns (bytes): Equivalent to abi.encodeWithSelector(bytes4(keccak256(signature), ...)`',
             insertText: 'encodeWithSignature(${1:signatureString}, ${2:arg});',
             insertTextFormat: 2,
-            kind: CompletionItemKind.Method,
+            kind: vscode.CompletionItemKind.Method,
             label: 'encodeWithSignature',
         },
     ];

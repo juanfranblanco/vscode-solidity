@@ -2,8 +2,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as readyaml from 'read-yaml';
-import {Package} from './model/package';
-import {Project} from  './model/project';
+import { Package } from './model/package';
+import { Project } from  './model/project';
 
 // TODO: These are temporary constants until standard agreed
 // A project standard is needed so each project can define where it store its project dependencies

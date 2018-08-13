@@ -2,10 +2,10 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import {compile} from './compiler';
-import {ContractCollection} from './model/contractsCollection';
-import * as projService from './projectService';
-import * as util from './util';
+import { compile } from './compiler';
+import { ContractCollection } from './model/contractsCollection';
+import { initialiseProject } from './projectService';
+import { formatPath } from './util';
 
 export function compileAllContracts(diagnosticCollection: vscode.DiagnosticCollection) {
 
@@ -18,7 +18,7 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
     let packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
 
     let contractsCollection = new ContractCollection();
-    let project = projService.initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
+    let project = initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
     let solidityPath = '**/*.sol';
     if (project.projectPackage.sol_sources !== undefined && project.projectPackage.sol_sources !== '') {
         solidityPath = project.projectPackage.sol_sources + '/' + solidityPath;
@@ -54,8 +54,8 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
                 contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
             }
         });
-        let sourceDirPath = util.formatPath(project.projectPackage.getSolSourcesAbsolutePath());
-        let packagesPath = util.formatPath(project.packagesDir);
+        let sourceDirPath = formatPath(project.projectPackage.getSolSourcesAbsolutePath());
+        let packagesPath = formatPath(project.packagesDir);
         compile(contractsCollection.getContractsForCompilation(),
                 diagnosticCollection,
                 project.projectPackage.build_dir,

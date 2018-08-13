@@ -4,7 +4,7 @@ import * as abicodegen from 'abi-code-gen';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as codegen from 'nethereum-codegen';
-import * as projService from './projectService';
+import { initialiseProject } from './projectService';
 
 export function codeGenerate(args: any, diagnostics: vscode.DiagnosticCollection) {
     try {
@@ -65,7 +65,7 @@ function getBuildPath() {
     let packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
     let packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
 
-    let project = projService.initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
+    let project = initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
     return path.join(vscode.workspace.rootPath, project.projectPackage.build_dir);
 }
 
