@@ -135,11 +135,14 @@ Piotr Szlachciak for refactoring the syntaxes
 
 Forest Fang for providing the implementation of the "Go to definition", allowing you to navigate to structs, contracts, functions calls, etc
 
-Nick Addison, Elazar Gershuni, Joe Whittles, Iñigo Villalba, Thien Toan, Jonathan Carter, Stefan Lew, Nikita Savchenko for their contributions.
+Nick Addison, Elazar Gershuni, Joe Whittles, Iñigo Villalba, Thien Toan, Jonathan Carter, Stefan Lew, Nikita Savchenko, Josh Stevens for their contributions.
 
 Sebastian Bürgel for keeping reminding me of the offline installation suppport
 
 David Krmpotic and Ralph Pichler for the original Sublime extension
 https://github.com/davidhq/SublimeEthereum
+
+
+
 
 Everyone for their support and feedback!
