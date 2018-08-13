@@ -26,17 +26,17 @@ export function compile(contracts: any,
         return;
     }
     const solc = new SolcCompiler(vscode.workspace.rootPath);
-    let outputChannel = vscode.window.createOutputChannel('solidity compilation');
+    const outputChannel = vscode.window.createOutputChannel('solidity compilation');
     outputChannel.clear();
     outputChannel.show();
 
     vscode.window.setStatusBarMessage('Compilation started');
 
-    let remoteCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingRemoteVersion');
-    let localCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingLocalVersion');
+    const remoteCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingRemoteVersion');
+    const localCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingLocalVersion');
 
     solc.intialiseCompiler(localCompiler, remoteCompiler).then(() => {
-        let output = solc.compile({ sources: contracts });
+        const output = solc.compile({ sources: contracts });
 
         if (solc.currentCompilerType === compilerType.localFile) {
             outputChannel.appendLine("Compiling using local file: '" + solc.currentCompilerSetting + "', solidity version: " + solc.getVersion() );
@@ -102,7 +102,7 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
 
     // iterate through all the sources,
     // find contracts and output them into the same folder structure to avoid collisions, named as the contract
-    for (let source in output.sources) {
+    for (const source in output.sources) {
 
         // TODO: ALL this validation to a method
 

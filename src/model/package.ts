@@ -22,7 +22,7 @@ export class Package {
     }
 
     public isImportForThis(contractDependencyImport: string) {
-       let splitDirectories = contractDependencyImport.split('/');
+       const splitDirectories = contractDependencyImport.split('/');
         if (splitDirectories.length === 1) {
             return false;
         }

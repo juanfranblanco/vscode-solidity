@@ -13,7 +13,7 @@ export function initDiagnosticCollection(diagnostics: vscode.DiagnosticCollectio
 }
 
 export function compileActiveContract() {
-    let editor = vscode.window.activeTextEditor;
+    const editor = vscode.window.activeTextEditor;
 
     if (!editor) {
         return; // We need something open
@@ -30,16 +30,16 @@ export function compileActiveContract() {
         return;
     }
 
-    let contractsCollection = new ContractCollection();
-    let contractCode = editor.document.getText();
-    let contractPath = editor.document.fileName;
+    const contractsCollection = new ContractCollection();
+    const contractCode = editor.document.getText();
+    const contractPath = editor.document.fileName;
 
-    let packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
-    let packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
+    const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
+    const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
 
-    let project = projService.initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
-    let contract = contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
-    let packagesPath = util.formatPath(project.packagesDir);
+    const project = projService.initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
+    const contract = contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
+    const packagesPath = util.formatPath(project.packagesDir);
 
     compile(contractsCollection.getContractsForCompilation(),
             diagnosticCollection,

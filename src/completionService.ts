@@ -51,7 +51,7 @@ export class CompletionService {
             params.forEach( parameterElement => {
                const typeString = this.getTypeString(parameterElement.literal);
                counter = counter + 1;
-               let currentParamSnippet = '${' + counter + ':' + parameterElement.id + '}';
+               const currentParamSnippet = '${' + counter + ':' + parameterElement.id + '}';
                 if (paramsSnippet === '') {
                     paramsSnippet = currentParamSnippet;
                 } else {
@@ -88,10 +88,10 @@ export class CompletionService {
 
     public createFunctionEventCompletionItem(contractElement: any, type: string, contractName: string): CompletionItem {
 
-        let completionItem =  CompletionItem.create(contractElement.name);
+        const completionItem =  CompletionItem.create(contractElement.name);
         completionItem.kind = CompletionItemKind.Function;
-        let paramsInfo = this.createParamsInfo(contractElement.params);
-        let paramsSnippet = this.createFunctionParamsSnippet(contractElement.params);
+        const paramsInfo = this.createParamsInfo(contractElement.params);
+        const paramsSnippet = this.createFunctionParamsSnippet(contractElement.params);
         let returnParamsInfo = this.createParamsInfo(contractElement.returnParams);
         if (returnParamsInfo !== '') {
             returnParamsInfo = ' returns (' + returnParamsInfo + ')';
@@ -105,14 +105,14 @@ export class CompletionService {
     }
 
     public getDocumentCompletionItems(documentText: string): CompletionItem[] {
-        let completionItems = [];
+        const completionItems = [];
         try {
-            let result = solparse.parse(documentText);
+            const result = solparse.parse(documentText);
             // console.log(JSON.stringify(result));
             // TODO struct, modifier
             result.body.forEach(element => {
                 if (element.type === 'ContractStatement' ||  element.type === 'LibraryStatement') {
-                    let contractName = element.name;
+                    const contractName = element.name;
                     if (typeof element.body !== 'undefined' && element.body !== null) {
                         element.body.forEach(contractElement => {
                             if (contractElement.type === 'FunctionDeclaration') {
@@ -128,7 +128,7 @@ export class CompletionService {
                             }
 
                             if (contractElement.type === 'StateVariableDeclaration') {
-                                let completionItem =  CompletionItem.create(contractElement.name);
+                                const completionItem =  CompletionItem.create(contractElement.name);
                                 completionItem.kind = CompletionItemKind.Field;
                                 const typeString = this.getTypeString(contractElement.literal);
                                 completionItem.detail = '(state variable in ' + contractName + ') '
@@ -171,15 +171,15 @@ export class CompletionService {
 }
 
 export function GetCompletionTypes(): CompletionItem[] {
-    let completionItems = [];
-    let types = ['address', 'string', 'bytes', 'byte', 'int', 'uint', 'bool', 'hash'];
+    const completionItems = [];
+    const types = ['address', 'string', 'bytes', 'byte', 'int', 'uint', 'bool', 'hash'];
     for (let index = 8; index <= 256; index += 8) {
         types.push('int' + index);
         types.push('uint' + index);
         types.push('bytes' + index / 8);
     }
     types.forEach(type => {
-        let completionItem =  CompletionItem.create(type);
+        const completionItem =  CompletionItem.create(type);
         completionItem.kind = CompletionItemKind.Keyword;
         completionItem.detail = type + ' type';
         completionItems.push(completionItem);
@@ -189,20 +189,20 @@ export function GetCompletionTypes(): CompletionItem[] {
 }
 
 function CreateCompletionItem(label: string, kind: CompletionItemKind, detail: string) {
-    let completionItem = CompletionItem.create(label);
+    const completionItem = CompletionItem.create(label);
     completionItem.kind = kind;
     completionItem.detail = detail;
     return completionItem;
 }
 
 export function GetCompletionKeywords(): CompletionItem[] {
-    let completionItems = [];
-    let keywords = [ 'modifier', 'mapping', 'break', 'continue', 'delete', 'else', 'for',
+    const completionItems = [];
+    const keywords = [ 'modifier', 'mapping', 'break', 'continue', 'delete', 'else', 'for',
     'if', 'new', 'return', 'returns', 'while', 'using',
     'private', 'public', 'external', 'internal', 'payable', 'view', 'pure', 'case', 'do', 'else', 'finally',
     'in', 'instanceof', 'return', 'throw', 'try', 'typeof', 'yield', 'void'] ;
     keywords.forEach(unit => {
-        let completionItem =  CompletionItem.create(unit);
+        const completionItem =  CompletionItem.create(unit);
         completionItem.kind = CompletionItemKind.Keyword;
         completionItems.push(completionItem);
     });
@@ -225,18 +225,18 @@ export function GetCompletionKeywords(): CompletionItem[] {
 
 
 export function GeCompletionUnits(): CompletionItem[] {
-    let completionItems = [];
-    let etherUnits = ['wei', 'finney', 'szabo', 'ether'] ;
+    const completionItems = [];
+    const etherUnits = ['wei', 'finney', 'szabo', 'ether'] ;
     etherUnits.forEach(unit => {
-        let completionItem =  CompletionItem.create(unit);
+        const completionItem =  CompletionItem.create(unit);
         completionItem.kind = CompletionItemKind.Unit;
         completionItem.detail = unit + ': ether unit';
         completionItems.push(completionItem);
     });
 
-    let timeUnits = ['seconds', 'minutes', 'hours', 'days', 'weeks', 'years'];
+    const timeUnits = ['seconds', 'minutes', 'hours', 'days', 'weeks', 'years'];
     timeUnits.forEach(unit => {
-        let completionItem =  CompletionItem.create(unit);
+        const completionItem =  CompletionItem.create(unit);
         completionItem.kind = CompletionItemKind.Unit;
 
         if (unit !== 'years') {

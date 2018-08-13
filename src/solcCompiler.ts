@@ -89,7 +89,7 @@ export class SolcCompiler {
                     } else {
                         // remote
                         if (typeof remoteInstallationVersion !== 'undefined' && remoteInstallationVersion !== null) {
-                            let solcService = this;
+                            const solcService = this;
                             solc.loadRemoteVersion(remoteInstallationVersion, function(err, solcSnapshot) {
                                 if (err) {
                                         reject('There was an error loading the remote version: ' + remoteInstallationVersion);
@@ -149,7 +149,7 @@ export class SolcCompiler {
                     .map(error => solidityErrorsConvertor.errorToDiagnostic(error));
             }
         } else {
-            let contract = {};
+            const contract = {};
             contract[filePath] = documentText;
             const output = this.compile({sources: contract });
             if (output.errors) {

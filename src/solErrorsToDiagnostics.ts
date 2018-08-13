@@ -17,7 +17,7 @@ export interface CompilerError {
     }
 
     export function errorToDiagnostic(error: any): CompilerError {
-        let errorSplit = error.split(':');
+        const errorSplit = error.split(':');
         let fileName = errorSplit[0];
         let index = 1;
 
@@ -28,11 +28,11 @@ export interface CompilerError {
         }
 
         // tslint:disable-next-line:radix
-        let line = parseInt(errorSplit[index]);
+        const line = parseInt(errorSplit[index]);
         // tslint:disable-next-line:radix
-        let column = parseInt(errorSplit[index + 1]);
-        let severity = this.getDiagnosticSeverity(errorSplit[index + 2]);
-        let errorMessage = errorSplit[index + 3];
+        const column = parseInt(errorSplit[index + 1]);
+        const severity = this.getDiagnosticSeverity(errorSplit[index + 2]);
+        const errorMessage = errorSplit[index + 3];
         return {
             diagnostic: {
                 message: errorMessage,
