@@ -282,11 +282,11 @@
         "string": {
             "patterns": [
                 {
-                    "match": "\\\".*\\\"",
+                    "match": "\\\".*?\\\"",
                     "name": "string.quoted.double.solidity"
                 },
                 {
-                    "match": "\\'.*\\'",
+                    "match": "\\'.*?\\'",
                     "name": "string.quoted.single.solidity"
                 }
             ]
