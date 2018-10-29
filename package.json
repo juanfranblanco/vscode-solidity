@@ -11,7 +11,7 @@
   "version": "0.0.46",
   "publisher": "JuanBlanco",
   "engines": {
-    "vscode": "^1.25.0"
+    "vscode": "^1.28.0"
   },
   "contributors": [
     "Juan Blanco"
@@ -43,8 +43,9 @@
   ],
   "main": "./out/src/extension",
   "scripts": {
-    "vscode:prepublish": "tsc -p ./",
-    "compile": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
     "postinstall": "node ./node_modules/vscode/bin/install"
   },
   "dependencies": {
@@ -67,7 +68,7 @@
     "@types/node": "^10.5.5",
     "tslint": "^5.11.0",
     "typescript": "^3.0.1",
-    "vscode": "^1.1.18"
+    "vscode": "^1.1.21"
   },
   "contributes": {
     "configuration": {

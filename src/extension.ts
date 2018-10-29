@@ -64,7 +64,7 @@ export function activate(context: vscode.ExtensionContext) {
         debug: {
             module: serverModule,
             options: {
-                execArgv: ['--nolazy', '--debug=6004'],
+                execArgv: ['--nolazy', '--inspect=6009'],
             },
             transport: TransportKind.ipc,
         },
