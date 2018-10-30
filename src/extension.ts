@@ -88,7 +88,7 @@ export function activate(context: vscode.ExtensionContext) {
                 },
     };
 
-    const clientDisposible = new LanguageClient(
+    const clientDisposable = new LanguageClient(
         'solidity',
         'Solidity Language Server',
         serverOptions,
@@ -96,5 +96,5 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Push the disposable to the context's subscriptions so that the
     // client can be deactivated on extension deactivation
-    context.subscriptions.push(clientDisposible);
+    context.subscriptions.push(clientDisposable);
 }

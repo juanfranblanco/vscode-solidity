@@ -14,7 +14,7 @@ import {
     TextDocuments, InitializeResult,
     Files, Diagnostic,
     TextDocumentPositionParams,
-    CompletionItem, Location, SignatureHelp,
+    CompletionItem, Location, SignatureHelp, ConnectionStrategy,
 } from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
@@ -35,6 +35,7 @@ interface SoliditySettings {
     packageDefaultDependenciesDirectory: string;
     packageDefaultDependenciesContractsDirectory: string;
 }
+
 
 // import * as path from 'path';
 // Create a connection for the server
@@ -228,15 +229,14 @@ connection.onInitialize((result): InitializeResult => {
     if (linter === null) {
         linter = new SolhintService(rootPath, null);
     }
-
     return {
         capabilities: {
             completionProvider: {
                 resolveProvider: false,
                 triggerCharacters: [ '.' ],
             },
-            definitionProvider: true,
-            textDocumentSync: documents.syncKind,
+           definitionProvider: true,
+           textDocumentSync: documents.syncKind,
         },
     };
 });

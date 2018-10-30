@@ -13,10 +13,22 @@
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}"
             ],
+            "sourceMaps": true,
             "outFiles": [
-                "${workspaceFolder}/out/**/*.js"
-            ],
-            "preLaunchTask": "npm: watch"
+                "${workspaceFolder}/out/src/**/*.js"
+            ],        
+            "preLaunchTask": "npm: watch",
+            "stopOnEntry": true
+        },
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Attach to Server",
+            "port": 6009,
+            "restart": true,
+            "outFiles": [
+                "${workspaceRoot}/out/src/**/*.js"
+            ]
         }
     ]
 }

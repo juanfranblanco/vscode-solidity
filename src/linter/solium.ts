@@ -19,10 +19,17 @@ export default class SoliumService implements Linter {
 
     public setIdeRules(soliumRules: any) {
         if (typeof soliumRules === 'undefined' || soliumRules === null) {
-            this.soliumRules = defaultSoliumRules;
+                this.soliumRules = defaultSoliumRules;
         } else {
             this.soliumRules = soliumRules;
         }
+        /*
+        if (process.platform === 'win32') {
+            if (typeof  this.soliumRules['linebreak-style'] === 'undefined' ||  this.soliumRules['linebreak-style'] === null) {
+                this.soliumRules['linebreak-style'] = 'windows';
+            }
+        }
+        */
     }
 
     public lintAndFix(documentText) {
