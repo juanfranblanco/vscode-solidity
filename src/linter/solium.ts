@@ -3,23 +3,28 @@ import * as Solium from 'solium';
 import { DiagnosticSeverity, IConnection,
 } from 'vscode-languageserver';
 import Linter from './linter';
+import * as fs from 'fs';
 
 export const defaultSoliumRules = {
 };
 
 export default class SoliumService implements Linter {
 
+    public static readonly EMPTY_CONFIG = {rules: {}};
+
+    private fileConfig: any;
     private soliumRules;
     private vsConnection: IConnection;
 
-    constructor(soliumRules: any, vsConnection: IConnection) {
+    constructor(rootPath: string, soliumRules: any, vsConnection: IConnection) {
       this.vsConnection = vsConnection;
+      this.loadFileConfig(rootPath);
       this.setIdeRules(soliumRules);
     }
 
     public setIdeRules(soliumRules: any) {
         if (typeof soliumRules === 'undefined' || soliumRules === null) {
-                this.soliumRules = defaultSoliumRules;
+            this.soliumRules = defaultSoliumRules;
         } else {
             this.soliumRules = soliumRules;
         }
@@ -37,6 +42,9 @@ export default class SoliumService implements Linter {
     }
 
     public getAllSettings() {
+        if (this.fileConfig !== SoliumService.EMPTY_CONFIG) {
+            return this.fileConfig;
+        }
         return {
             'extends': 'solium:recommended',
             'options': { 'returnInternalIssues': true },
@@ -101,5 +109,22 @@ export default class SoliumService implements Linter {
             },
             severity: severity,
         };
+    }
+
+    private loadFileConfig(rootPath: string) {
+        const filePath = `${rootPath}/.soliumrc.json`;
+        const readConfig = this.readFileConfig.bind(this, filePath);
+
+        readConfig();
+        fs.watchFile(filePath, {persistent: false}, readConfig);
+    }
+
+    private readFileConfig(filePath: string) {
+        this.fileConfig = SoliumService.EMPTY_CONFIG;
+        fs.readFile(filePath, 'utf-8', this.onConfigLoaded.bind(this));
+    }
+
+    private onConfigLoaded(err: any, data: string) {
+        this.fileConfig = (!err) && JSON.parse(data);
     }
 }

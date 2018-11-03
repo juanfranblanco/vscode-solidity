@@ -6,7 +6,8 @@ export function lintAndfixCurrentDocument() {
     const linterType = vscode.workspace.getConfiguration('solidity').get<string>('linter');
     if (linterType === 'solium') {
         const soliumRules = vscode.workspace.getConfiguration('solidity').get<string>('soliumRules');
-        const linter = new SoliumService(soliumRules, null);
+        const linter = new SoliumService(
+            vscode.workspace.workspaceFolders[0].uri.toString(), soliumRules, null);
         const editor = vscode.window.activeTextEditor;
         const sourceCode =  editor.document.getText();
         const fullRange = new vscode.Range(
