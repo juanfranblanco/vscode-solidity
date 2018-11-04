@@ -258,7 +258,7 @@ connection.onDidChangeConfiguration((change) => {
             break;
         }
         case 'solium': {
-            linter = new SoliumService(soliumDefaultRules, connection);
+            linter = new SoliumService(rootPath, soliumDefaultRules, connection);
             break;
         }
         default: {
