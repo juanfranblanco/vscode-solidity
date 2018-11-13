@@ -52,6 +52,7 @@
     "abi-code-gen": "0.0.3",
     "ajv": "^6.5.2",
     "ajv-keywords": "^3.2.0",
+    "armlet": ">=0.2.2",
     "fs-extra": "^4.0.3",
     "nethereum-codegen": "^1.0.6",
     "read-yaml": "^1.1.0",
@@ -217,6 +218,10 @@
       {
         "command": "solidity.fixDocument",
         "title": "Solidity: Fix document rules using Solium"
+      },
+      {
+        "command": "solidity.mythril.version",
+        "title": "Mythril: Show Platform API version information"
       }
     ],
     "keybindings": [
