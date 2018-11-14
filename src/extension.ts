@@ -7,7 +7,7 @@ import {codeGenerate, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFS
     codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll} from './codegen';
 import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn} from 'vscode-languageclient';
 import {lintAndfixCurrentDocument} from './linter/soliumClientFixer';
-import {mythrilVersion} from './mythril';
+import {mythrilVersion, mythrilAnalyze} from './mythril';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
@@ -17,6 +17,10 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(diagnosticCollection);
 
     initDiagnosticCollection(diagnosticCollection);
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.mythril.analyze', () => {
+        mythrilAnalyze();
+    }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.mythril.version', () => {
         mythrilVersion();
