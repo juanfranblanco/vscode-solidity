@@ -79,6 +79,22 @@
       "type": "object",
       "title": "Solidity configuration",
       "properties": {
+        "solidity.mythrilAPIKey": {
+          "type": [
+            "string",
+            "ace9b42d-4c97-407c-b197-a9b2e5ab6759"
+          ],
+          "default": "ace9b42d-4c97-407c-b197-a9b2e5ab6759",
+          "markdownDescription": "Mythril Platfrom API key. See https://mythril.ai to get an API key"
+        },
+        "solidity.mythrilTimeout": {
+          "type": [
+            "number",
+            30
+          ],
+          "default": 30,
+          "markdownDescription": "Maximum time in seconds to give Mythril for analysis"
+        },
         "solidity.compileUsingRemoteVersion": {
           "type": [
             "string",
@@ -218,6 +234,10 @@
       {
         "command": "solidity.fixDocument",
         "title": "Solidity: Fix document rules using Solium"
+      },
+      {
+        "command": "solidity.mythril.analyze",
+        "title": "Mythril: Run Platform analyses"
       },
       {
         "command": "solidity.mythril.version",
