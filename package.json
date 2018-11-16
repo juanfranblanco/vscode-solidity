@@ -90,9 +90,9 @@
         "solidity.mythrilTimeout": {
           "type": [
             "number",
-            30
+            120
           ],
-          "default": 30,
+          "default": 120,
           "markdownDescription": "Maximum time in seconds to give Mythril for analysis"
         },
         "solidity.compileUsingRemoteVersion": {

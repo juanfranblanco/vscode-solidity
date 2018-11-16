@@ -7,7 +7,7 @@ import {codeGenerate, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFS
     codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll} from './codegen';
 import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn} from 'vscode-languageclient';
 import {lintAndfixCurrentDocument} from './linter/soliumClientFixer';
-import {mythrilVersion, mythrilAnalyze} from './mythril';
+import {mythrilVersion, mythrilAnalyze} from './analysis/mythril';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
