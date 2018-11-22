@@ -1,5 +1,5 @@
 'use strict';
-import { DiagnosticSeverity } from 'vscode-languageserver';
+import { DiagnosticSeverity, Diagnostic } from 'vscode-languageserver';
 
 export interface CompilerError {
     diagnostic: any;
@@ -8,17 +8,19 @@ export interface CompilerError {
 
     export function getDiagnosticSeverity(severity: string): DiagnosticSeverity {
         switch (severity) {
-            case ' Error':
+            case 'error':
                 return DiagnosticSeverity.Error;
-            case ' Warning':
+            case 'warning':
                 return DiagnosticSeverity.Warning;
+            case 'info':
+                return DiagnosticSeverity.Information;
             default:
                 return DiagnosticSeverity.Error;
         }
     }
 
     export function errorToDiagnostic(error: any): CompilerError {
-        const errorSplit = error.split(':');
+        const errorSplit = error.formattedMessage.split(':');
         let fileName = errorSplit[0];
         let index = 1;
 
@@ -32,8 +34,8 @@ export interface CompilerError {
         const line = parseInt(errorSplit[index]);
         // tslint:disable-next-line:radix
         const column = parseInt(errorSplit[index + 1]);
-        const severity = this.getDiagnosticSeverity(errorSplit[index + 2]);
-        const errorMessage = errorSplit[index + 3];
+        const severity = this.getDiagnosticSeverity(error.severity);
+        const errorMessage = error.message;
         return {
             diagnostic: {
                 message: errorMessage,

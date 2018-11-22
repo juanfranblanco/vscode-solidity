@@ -124,7 +124,7 @@ export class SolcCompiler {
 
 
     public compile(contracts: any) {
-        return this.localSolc.compile(contracts, 1);
+        return this.localSolc.compile(contracts);
     }
 
     public loadRemoteVersion(remoteCompiler: any, cb: any) {
@@ -139,9 +139,10 @@ export class SolcCompiler {
                 filePath,
                 documentText,
                 initialiseProject(this.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory));
-
-            const output = this.compile({sources: contracts.getContractsForCompilation()});
-
+            const contractsForCompilation = contracts.getContractsForCompilation();
+            contractsForCompilation.settings = null;
+            const outputString = this.compile(JSON.stringify(contractsForCompilation));
+            const output = JSON.parse(outputString);
             if (output.errors) {
                 return output
                     .errors

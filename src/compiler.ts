@@ -11,7 +11,7 @@ import { errorsToDiagnostics } from './solErrorsToDiaganosticsClient';
 
 function outputErrorsToChannel(outputChannel: vscode.OutputChannel, errors: any) {
     errors.forEach(error => {
-        outputChannel.appendLine(error);
+        outputChannel.appendLine(error.formattedMessage);
     });
     outputChannel.show();
 }
@@ -35,7 +35,7 @@ export function compile(contracts: any,
     const localCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingLocalVersion');
 
     solc.intialiseCompiler(localCompiler, remoteCompiler).then(() => {
-        const output = solc.compile({ sources: contracts });
+        const output = solc.compile(JSON.stringify(contracts));
 
         if (solc.currentCompilerType === compilerType.localFile) {
             outputChannel.appendLine("Compiling using local file: '" + solc.currentCompilerSetting + "', solidity version: " + solc.getVersion() );
@@ -60,9 +60,9 @@ export function compile(contracts: any,
     });
  }
 
-function processCompilationOuput(output: any, outputChannel: vscode.OutputChannel, diagnosticCollection: vscode.DiagnosticCollection,
+function processCompilationOuput(outputString: any, outputChannel: vscode.OutputChannel, diagnosticCollection: vscode.DiagnosticCollection,
                     buildDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string) {
-
+    const output = JSON.parse(outputString);
     if (Object.keys(output).length === 0) {
         vscode.window.showWarningMessage('No output by the compiler');
         return;
@@ -99,9 +99,22 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
         fs.mkdirSync(binPath);
     }
 
+    if (typeof singleContractFilePath !== 'undefined' && singleContractFilePath !== null) {
+        const relativePath = path.relative(vscode.workspace.rootPath, singleContractFilePath);
+        const dirName = path.dirname(path.join(binPath, relativePath));
+        const outputCompilationPath = path.join(dirName, path.basename(singleContractFilePath, '.sol') + '-sol-output' + '.json');
+        fs.writeFileSync(outputCompilationPath, JSON.stringify(output, null, 4));
+    } else {
+        const dirName = binPath;
+        const outputCompilationPath = path.join(dirName, 'compile-all-output' + '.json');
+        if (fs.existsSync(outputCompilationPath)) {
+            fs.unlinkSync(outputCompilationPath);
+        }
+        fs.writeFileSync(outputCompilationPath, JSON.stringify(output, null, 4));
+    }
     // iterate through all the sources,
     // find contracts and output them into the same folder structure to avoid collisions, named as the contract
-    for (const source in output.sources) {
+    for (const source in output.contracts) {
 
         // TODO: ALL this validation to a method
 
@@ -112,13 +125,11 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
                 // Output only source directory compilation or all (this will exclude external references)
                 if (!sourceDir || source.startsWith(sourceDir)) {
 
-                    output.sources[source].AST.children.forEach((child) => {
+                    for (const contractName in output.contracts[source]) {
+                        if (output.contracts[source].hasOwnProperty(contractName)) {
 
-                        if (child.name === 'Contract' || child.name === 'ContractDefinition') {
-                            const contractName = child.attributes.name;
-
+                            const contract = output.contracts[source][contractName];
                             const relativePath = path.relative(vscode.workspace.rootPath, source);
-
                             const dirName = path.dirname(path.join(binPath, relativePath));
 
                             if (!fs.existsSync(dirName)) {
@@ -146,15 +157,14 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
                                 fs.unlinkSync(truffleArtifactPath);
                             }
 
-                            fs.writeFileSync(contractBinPath, output.contracts[source + ':' + contractName].bytecode);
-                            fs.writeFileSync(contractAbiPath, output.contracts[source + ':' + contractName].interface);
+                            fs.writeFileSync(contractBinPath, contract.evm.bytecode.object);
+                            fs.writeFileSync(contractAbiPath, JSON.stringify(contract.abi));
 
                             const shortJsonOutput = {
-                                abi : output.contracts[source + ':' + contractName].interface,
-                                bytecode : output.contracts[source + ':' + contractName].bytecode,
-                                functionHashes : output.contracts[source + ':' + contractName].functionHashes,
-                                gasEstimates : output.contracts[source + ':' + contractName].gasEstimates,
-                                runtimeBytecode : output.contracts[source + ':' + contractName].runtimeBytecode,
+                                abi : contract.abi,
+                                bytecode : contract.evm.bytecode.object,
+                                functionHashes : contract.evm.methodIdentifiers,
+                                gasEstimates : contract.evm.gasEstimates,
                             };
 
                             fs.writeFileSync(contractJsonPath, JSON.stringify(shortJsonOutput, null, 4));
@@ -168,7 +178,7 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
                             artifactor.save(contract_data, truffleArtifactPath);
                             */
                         }
-                    });
+                    }
                 }
             }
         }

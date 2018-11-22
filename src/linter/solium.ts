@@ -28,13 +28,12 @@ export default class SoliumService implements Linter {
         } else {
             this.soliumRules = soliumRules;
         }
-        /*
+
         if (process.platform === 'win32') {
             if (typeof  this.soliumRules['linebreak-style'] === 'undefined' ||  this.soliumRules['linebreak-style'] === null) {
-                this.soliumRules['linebreak-style'] = 'windows';
+                this.soliumRules['linebreak-style'] = 'off';
             }
         }
-        */
     }
 
     public lintAndFix(documentText) {
@@ -42,7 +41,7 @@ export default class SoliumService implements Linter {
     }
 
     public getAllSettings() {
-        if (this.fileConfig !== SoliumService.EMPTY_CONFIG) {
+        if (this.fileConfig !== SoliumService.EMPTY_CONFIG && this.fileConfig !== false) {
             return this.fileConfig;
         }
         return {

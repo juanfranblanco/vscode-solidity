@@ -25,7 +25,7 @@
     "url": "https://github.com/juanfranblanco/vscode-solidity"
   },
   "categories": [
-    "Languages",
+    "Programming Languages",
     "Snippets"
   ],
   "activationEvents": [
@@ -55,14 +55,17 @@
     "fs-extra": "^4.0.3",
     "nethereum-codegen": "^1.0.4",
     "read-yaml": "^1.1.0",
-    "solc": "^0.4.25",
+    "solc": "^0.5.0",
     "solhint": "^1.4.0",
     "solium": "^1.1.8",
     "solparse": "^2.2.5",
     "truffle-artifactor": "^2.1.4",
     "vscode-languageclient": "^5.1.1",
     "vscode-languageserver": "^5.1.0",
-    "vscode-uri": "^1.0.3"
+    "solidity-parser-antlr": "^0.3.2",
+    "antlr4-c3": "^1.1.8",
+    "vscode-uri": "^1.0.3",
+    "armlet": "^0.2.2"
   },
   "devDependencies": {
     "@types/node": "^10.5.5",

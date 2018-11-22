@@ -21,9 +21,22 @@ export class ContractCollection {
     public getContractsForCompilation() {
         const contractsForCompilation = {};
         this.contracts.forEach(contract => {
-            contractsForCompilation[contract.absolutePath] = contract.code;
+            contractsForCompilation[contract.absolutePath] = {content: contract.code};
         });
-        return contractsForCompilation;
+        const compilation = {
+            language: 'Solidity',
+            settings:
+            {
+                outputSelection: {
+                    '*': {
+                        '': ['ast'],
+                        '*': ['abi', 'devdoc', 'userdoc', 'metadata', 'evm.bytecode', 'evm.methodIdentifiers', 'evm.gasEstimates'],
+                    },
+                },
+            },
+            sources : contractsForCompilation,
+        };
+        return compilation;
     }
 
     public addContractAndResolveImports(contractPath: string, code: string, project: Project) {
