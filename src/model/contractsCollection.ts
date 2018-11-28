@@ -27,6 +27,13 @@ export class ContractCollection {
             language: 'Solidity',
             settings:
             {
+                optimizer: {
+                    enabled: true,
+                    // TODO: Make all settings configurable
+                    // Optimize for how many times you intend to run the code.
+                    // Lower values will optimize more for initial deployment cost, higher values will optimize more for high-frequency usage.
+                    runs: 200,
+                },
                 outputSelection: {
                     '*': {
                         '': ['ast'],
