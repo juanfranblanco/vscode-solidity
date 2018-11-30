@@ -101,16 +101,19 @@ function codeGenerateCQS(fileName: string, extension: string, lang: number, args
 
             const projectPath = path.join(root.uri.fsPath, baseNamespace);
             const compilationOutput = JSON.parse(fs.readFileSync(fileName, 'utf8'));
-            const abi = compilationOutput.abi;
-            const contractByteCode = compilationOutput.bytecode;
-            codegen.generateNetStandardClassLibrary(projectName, projectPath, lang);
+            if (compilationOutput.abi !== undefined) {
+                const abi = JSON.stringify(compilationOutput.abi);
+                const contractByteCode = compilationOutput.bytecode;
 
-            codegen.generateAllClasses(abi,
-                contractByteCode,
-                contractName,
-                baseNamespace,
-                projectPath,
-                lang);
+                codegen.generateNetStandardClassLibrary(projectName, projectPath, lang);
+
+                codegen.generateAllClasses(abi,
+                    contractByteCode,
+                    contractName,
+                    baseNamespace,
+                    projectPath,
+                    lang);
+            }
         } catch (e) {
             const outputChannel = vscode.window.createOutputChannel('solidity code generation');
             outputChannel.clear();
