@@ -3,9 +3,11 @@
 import * as path from 'path';
 import * as solc from 'solc';
 import * as vscode from 'vscode';
-import {ContractCollection} from './model/contractsCollection';
-import {ApiVersion, Client} from 'armlet';
-import { SolcCompiler } from './solcCompiler';
+import { DiagnosticSeverity as Severity, Diagnostic, Range } from 'vscode-languageserver';
+import { ContractCollection } from '../../model/contractsCollection';
+import { ApiVersion, Client } from 'armlet';
+import { SolcCompiler } from '../../solcCompiler';
+import { versionJSON2String } from './util';
 
 // What we use in a new armlet.Client()
 interface ArmletOptions {
@@ -28,33 +30,33 @@ function showMessage (mess) {
     outputChannel.appendLine(mess);
 }
 
-    // This is adapted from 'remix-lib/src/sourceMappingDecoder.js'
+// This is adapted from 'remix-lib/src/sourceMappingDecoder.js'
 function compilerInput (contracts) {
-  return JSON.stringify({
+    return JSON.stringify({
     language: 'Solidity',
     settings: {
-      optimizer: {
+        optimizer: {
         enabled: false,
         runs: 200,
-      },
-      outputSelection: {
-        '*': {
-          '': [ 'legacyAST' ],
-          '*': [ 'abi', 'metadata', 'evm.legacyAssembly', 'evm.bytecode', 'evm.deployedBytecode', 'evm.methodIdentifiers'],
         },
-      },
+        outputSelection: {
+        '*': {
+            '': [ 'legacyAST' ],
+            '*': [ 'abi', 'metadata', 'evm.legacyAssembly', 'evm.bytecode', 'evm.deployedBytecode', 'evm.methodIdentifiers'],
+            },
+        },
     },
     sources: {
-        'test.sol': {
-          content: contracts,
+            'test.sol': {
+                content: contracts,
+            },
         },
-      },
-  });
+    });
 }
 
 // Take solc's JSON output and make it compatible with the Mythril Platform API
 function solc2MythrilJSON(inputSolcJSON, contractName, sourceCode,
-    analysisMode) {
+                analysisMode) {
 
     // Add/remap some fields because the Mythril Platform API doesn't
     // align with solc's JSON.
@@ -112,9 +114,8 @@ function solidityPathAndSource() {
 export function mythrilVersion() {
     ApiVersion().then(
         result => {
-            const mess = JSON.stringify(result, null, 4);
+            const mess = versionJSON2String(result);
             vscode.window.showInformationMessage(mess);
-            showMessage(mess);
         });
 }
 
