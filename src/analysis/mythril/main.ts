@@ -7,7 +7,8 @@ import { DiagnosticSeverity as Severity, Diagnostic, Range } from 'vscode-langua
 import { ContractCollection } from '../../model/contractsCollection';
 import { ApiVersion, Client } from 'armlet';
 import { SolcCompiler } from '../../solcCompiler';
-import { versionJSON2String } from './util';
+import { versionJSON2String, getFormatter } from './util';
+import { issues2Eslint, printReport } from './es-reporter';
 
 // What we use in a new armlet.Client()
 interface ArmletOptions {
@@ -165,10 +166,13 @@ export function mythrilAnalyze() {
     };
 
     client.analyze(analyzeOptions)
-    .then(issues => {const mess = JSON.stringify(issues, null, 4);
-        showMessage(mess);
+    .then(issues => {
+            const formatter = getFormatter(solidityConfig.mythrilReportFormat);
+            const esIssues = issues2Eslint(issues, analyzeOptions);
+            printReport(esIssues, contractName, formatter, showMessage);
+            // showMessage(mess);
     }).catch(err => {
-        showMessage(err);
-        vscode.window.showWarningMessage(err);
+            showMessage(err);
+            vscode.window.showWarningMessage(err);
     });
 }

@@ -7,3 +7,16 @@
 export function versionJSON2String(jsonResponse: any): string {
     return Object.keys(jsonResponse).map((key) => `${key}: ${jsonResponse[key]}`).join(', ');
 }
+
+
+export function getFormatter(style: string): any {
+    const formatterName = style || 'stylish';
+    try {
+        return require(`eslint/lib/formatters/${formatterName}`);
+    } catch (ex) {
+        ex.message = `\nThere was a problem loading formatter option: ${style} \nError: ${
+            ex.message
+        }`;
+        throw ex;
+    }
+}

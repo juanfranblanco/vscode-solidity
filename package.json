@@ -93,6 +93,14 @@
           "default": "ace9b42d-4c97-407c-b197-a9b2e5ab6759",
           "markdownDescription": "Mythril Platfrom API key. See https://mythril.ai to get an API key"
         },
+        "solidity.mythrilReportFormat": {
+          "type": [
+            "string",
+            "stylish"
+          ],
+          "default": "stylish",
+          "markdownDescription": "Report style format for analysis results. See https://eslint.org/docs/user-guide/formatters/ for a full list."
+        },
         "solidity.mythrilTimeout": {
           "type": [
             "number",
