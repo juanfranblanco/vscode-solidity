@@ -53,21 +53,23 @@
     "abi-code-gen": "0.0.3",
     "ajv": "^6.5.2",
     "ajv-keywords": "^3.2.0",
-    "armlet": ">=0.2.2",
+    "armlet": ">=0.3.0",
     "fs-extra": "^4.0.3",
     "nethereum-codegen": "^1.0.6",
     "read-yaml": "^1.1.0",
+    "remix-lib": ">=0.4.1",
     "solc": "^0.5.0",
     "solhint": "^1.4.0",
     "solium": "^1.1.8",
     "solparse": "^2.2.5",
     "truffle-artifactor": "^2.1.4",
+    "truffle-config": "^1.1.0-beta.2",
+    "truffle-workflow-compile": "^2.0.0-beta.1",
     "vscode-languageclient": "^5.1.1",
     "vscode-languageserver": "^5.1.0",
     "solidity-parser-antlr": "^0.3.2",
     "antlr4-c3": "^1.1.8",
-    "vscode-uri": "^1.0.3",
-    "armlet": "^0.2.2"
+    "vscode-uri": "^1.0.3"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
@@ -91,7 +93,7 @@
             "ace9b42d-4c97-407c-b197-a9b2e5ab6759"
           ],
           "default": "ace9b42d-4c97-407c-b197-a9b2e5ab6759",
-          "markdownDescription": "Mythril Platfrom API key. See https://mythril.ai to get an API key"
+          "markdownDescription": "MythX API key. See https://mythril.ai to get an API key"
         },
         "solidity.mythrilReportFormat": {
           "type": [
@@ -251,11 +253,11 @@
       },
       {
         "command": "solidity.mythril.analyze",
-        "title": "Mythril: Run Platform analyses"
+        "title": "Mythril: Run MythX analyses"
       },
       {
         "command": "solidity.mythril.version",
-        "title": "Mythril: Show Platform API version information"
+        "title": "Mythril: Show MythX API version information"
       }
     ],
     "keybindings": [

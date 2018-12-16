@@ -1,19 +1,24 @@
-'use strict';
-
+import * as fs from 'fs';
 import * as path from 'path';
 import * as solc from 'solc';
 import * as vscode from 'vscode';
+import * as myth from './myth';
+import * as trufstuf from './trufstuf';
 import { DiagnosticSeverity as Severity, Diagnostic, Range } from 'vscode-languageserver';
 import { ContractCollection } from '../../model/contractsCollection';
 import { ApiVersion, Client } from 'armlet';
-import { SolcCompiler } from '../../solcCompiler';
 import { versionJSON2String, getFormatter } from './util';
-import { issues2Eslint, printReport } from './es-reporter';
+import { printReport } from './es-reporter';
+
+import * as Config from 'truffle-config';
+import { compile } from 'truffle-workflow-compile';
+
+const warnFn = vscode.window.showWarningMessage;
 
 // What we use in a new armlet.Client()
 interface ArmletOptions {
     apiKey: string;
-    userEmail: string;
+    // userEmail: string;
     platforms: Array<string>;
 }
 
@@ -31,33 +36,9 @@ function showMessage (mess) {
     outputChannel.appendLine(mess);
 }
 
-// This is adapted from 'remix-lib/src/sourceMappingDecoder.js'
-function compilerInput (contracts) {
-    return JSON.stringify({
-    language: 'Solidity',
-    settings: {
-        optimizer: {
-        enabled: false,
-        runs: 200,
-        },
-        outputSelection: {
-        '*': {
-            '': [ 'legacyAST' ],
-            '*': [ 'abi', 'metadata', 'evm.legacyAssembly', 'evm.bytecode', 'evm.deployedBytecode', 'evm.methodIdentifiers'],
-            },
-        },
-    },
-    sources: {
-            'test.sol': {
-                content: contracts,
-            },
-        },
-    });
-}
-
 // Take solc's JSON output and make it compatible with the Mythril Platform API
 function solc2MythrilJSON(inputSolcJSON, contractName, sourceCode,
-                analysisMode) {
+                          analysisMode) {
 
     // Add/remap some fields because the Mythril Platform API doesn't
     // align with solc's JSON.
@@ -87,27 +68,33 @@ function solc2MythrilJSON(inputSolcJSON, contractName, sourceCode,
 function solidityPathAndSource() {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
-        vscode.window.showWarningMessage('No file opened');
+        warnFn('No file opened');
         return null; // We need something open
     }
 
     const fileName = path.extname(editor.document.fileName);
     if (fileName !== '.sol') {
-        vscode.window.showErrorMessage(`{$fileName} not a solidity file; should match: *.sol`);
+        warnFn(`{$fileName} not a solidity file; should match: *.sol`);
         return null;
     }
 
+    let rootDir = vscode.workspace.rootPath;
     // Check if is folder, if not stop we need to output to a bin folder on rootPath
     if (vscode.workspace.rootPath === undefined) {
-        vscode.window.showWarningMessage('Please open a folder in Visual Studio Code as a workspace');
+        warnFn('Please open a folder in Visual Studio Code as a workspace');
         return null;
+    } else if (path.basename(rootDir) === 'contracts') {
+        rootDir = path.dirname(rootDir);
     }
 
     const contractCode = editor.document.getText();
     const contractPath = editor.document.fileName;
+
     return {
+        buildDir: `${rootDir}/build/contracts`,
         code: contractCode,
         path: contractPath,
+        rootDir: rootDir,
     };
 }
 
@@ -123,56 +110,128 @@ export function mythrilVersion() {
 export function mythrilAnalyze() {
     const solidityConfig = vscode.workspace.getConfiguration('solidity');
     const outputChannel = vscode.window.createOutputChannel('Mythril');
-    const options = {
-        apiKey: solidityConfig.mythrilAPIKey,
-        platforms: ['vscode-solidity'],  // client chargeback
-        userEmail: 'user@example.com',
+    const pathInfo = solidityPathAndSource();
+
+    const truffleOptions = {
+        _: [],
+        logger: {
+            debug: console.log,
+            info: console.log,
+            log: console.log,
+            warn: console.log,
+        },
+        working_directory: pathInfo.rootDir,
     };
+    const config = Config.detect(truffleOptions);
+    const buildDir = pathInfo.buildDir;
 
+    // Run Mythril Platform analyze after we have
+    // ensured via compile that JSON data is there and
+    // up to date.
+    // Parameters "config", and "done" are implicitly passed in.
+    function analyzeWithBuildDir() {
+        // FIXME: use truffle library routine
+        const contractsDir = trufstuf.getContractsDir(pathInfo.rootDir);
 
-    const pathAndCode = solidityPathAndSource();
-    if (!pathAndCode) {
-        return;
-    }
-    const output = solc.compileStandardWrapper(compilerInput(pathAndCode.code));
-    const outputJSON = JSON.parse(output);
-    if ('errors' in outputJSON) {
-        outputChannel.clear();
-        outputChannel.show();
-        outputJSON.array.forEach(element => {
-            outputChannel.appendLine(element);
-        });
-        return;
-    }
+        let solidityFileBase: string;
+        let solidityFile: string;
+        let buildJsonPath: string;
+        let buildJson;
 
-    const contractsJSON = outputJSON.contracts['test.sol'];
-    const contractNames = Object.keys(contractsJSON);
-    if (contractNames.length === 0) {
-        showMessage('No contract found');
-    return;
-    } else if (contractNames.length !== 1) {
-        vscode.window.showWarningMessage(`more than one contract found; ${contractNames[0]} used`);
-    }
-    const contractName = contractNames[0];
-    const contractData = solc2MythrilJSON(contractsJSON[contractName], contractName,
-        pathAndCode.code, 'full');
+        try {
+            if (config._.length === 0) {
+                buildJson = trufstuf.guessTruffleBuildJson(buildDir);
+            } else {
+                buildJson = path.basename(config._[0]);
+            }
+            solidityFileBase = path.basename(buildJson, '.json');
 
-    const client = new Client(options);
+            if (! solidityFileBase.endsWith('.sol')) {
+                solidityFileBase += '.sol';
+            }
 
-    const analyzeOptions = {
-    // FIXME: data: JSON.parse(fs.readFileSync(jsonPath, 'utf8')),
-    data: contractData,
-    timeout: solidityConfig.mythrilTimeout * 1000,  // convert secs to millisecs
-    };
+            solidityFile = path.join(contractsDir, solidityFileBase);
+            if (config.debug) {
+                warnFn(`Solidity file used: ${solidityFile}`);
+            }
 
-    client.analyze(analyzeOptions)
-    .then(issues => {
-            const formatter = getFormatter(solidityConfig.mythrilReportFormat);
-            const esIssues = issues2Eslint(issues, analyzeOptions);
-            printReport(esIssues, contractName, formatter, showMessage);
-            // showMessage(mess);
-    }).catch(err => {
-            showMessage(err);
+            buildJsonPath = path.join(buildDir, buildJson);
+            if (! buildJsonPath.endsWith('.json')) {
+                buildJsonPath += '.json';
+            }
+
+        } catch (err) {
             vscode.window.showWarningMessage(err);
-    });
+            return;
+        }
+
+        // console.log(`Reading ${buildJsonPath}`);
+
+        const armletOptions = {
+            apiKey: solidityConfig.mythrilAPIKey,
+            // email: 'user@example.com',
+            platforms: ['vscode-solidity'],  // client chargeback
+            // ethAddress: process.env.MYTHRIL_ETH_ADDRESS,
+            // password: process.env.MYTHRIL_PASSWORD,
+        };
+
+        let client: any;
+        try {
+            client = new Client(armletOptions);
+        } catch (err) {
+            warnFn(err);
+            return;
+        }
+
+        if (!fs.existsSync(buildJsonPath)) {
+            vscode.window.showWarningMessage("Can't read build/contract JSON file: " +
+                                             `${buildJsonPath}`);
+            return;
+        }
+
+        let buildObj: any;
+        try {
+            buildObj = JSON.parse(fs.readFileSync(buildJsonPath, 'utf8'));
+        } catch (err) {
+            warnFn(`Error parsing JSON file: ${buildJsonPath}`);
+            return;
+        }
+
+        const analyzeOpts = {
+            data: myth.truffle2MythrilJSON(buildObj),
+            mode: 'full',
+            partners: ['vscode-solidity'],
+            timeout: solidityConfig.mythrilTimeout * 1000,  // convert secs to millisecs
+
+            // FIXME: The below "partners" will change when
+            // https://github.com/ConsenSys/mythril-api/issues/59
+            // is resolved.
+            };
+
+        analyzeOpts.data.analysisMode = 'full';
+
+        const contractName: string = buildObj.contractName;
+
+        client.analyze(analyzeOpts)
+            .then(issues => {
+                const formatter = getFormatter(solidityConfig.mythrilReportFormat);
+                const esIssues = myth.issues2Eslint(issues, buildObj, analyzeOpts);
+                printReport(esIssues, contractName, formatter, showMessage);
+                // showMessage(mess);
+            }).catch(err => {
+                showMessage(err);
+                vscode.window.showWarningMessage(err);
+            });
+        }
+
+    // This can cause vyper to fail if you don't have vyper installed
+    delete config.compilers.vyper;
+    compile(config,
+         function(arg) {
+            if (arg !== null) {
+                showMessage(`compile returns ${arg}`);
+            } else {
+                analyzeWithBuildDir();
+            }
+        });
 }
