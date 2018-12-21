@@ -79,6 +79,15 @@ Auto compilation of files and error highlighting can be enabled or disabled usin
 "solidity.validationDelay": 1500
 ```
 
+## OpenZeppelin
+
+In case you're using `openzeppelin-solidity`, make sure you apply these settings, otherwise you'll get an error:
+
+```
+  "solidity.packageDefaultDependenciesContractsDirectory": "",
+  "solidity.packageDefaultDependenciesDirectory": "node_modules"
+```
+
 ## Linting
 
 ### Solhint
