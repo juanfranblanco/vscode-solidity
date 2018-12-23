@@ -91,7 +91,7 @@ function solidityPathAndSource() {
     const contractPath = editor.document.fileName;
 
     return {
-        buildDir: `${rootDir}/build/contracts`,
+        buildContractsDir: trufstuf.getBuildContractsDir(rootDir),
         code: contractCode,
         path: contractPath,
         rootDir: rootDir,
@@ -122,8 +122,41 @@ export function mythrilAnalyze() {
         },
         working_directory: pathInfo.rootDir,
     };
-    const config = Config.detect(truffleOptions);
-    const buildDir = pathInfo.buildDir;
+
+    let config: any;
+    let buildContractsDir: string = pathInfo.buildContractsDir;
+    // FIXME: Add a better test to see if we are a truffle project
+    try {
+        config = Config.detect(truffleOptions, pathInfo.rootDir);
+        buildContractsDir = pathInfo.buildContractsDir;
+    } catch (err) {
+        // FIXME: Dummy up in config whatever we need to run compile.
+        // FIXME: Pull in compiler from "compile".
+        const buildDir = `${pathInfo.rootDir}/build`;
+        if (!fs.existsSync(buildDir)) {
+            fs.mkdirSync(buildDir);
+        }
+        if (!fs.existsSync(buildContractsDir)) {
+            fs.mkdirSync(buildContractsDir);
+        }
+        config = {
+            _: [],
+            compilers: {
+                solc: {
+                    settings: {
+                        evmVersion: 'byzantium',
+                        optimizer: {
+                            enabled: false,
+                            runs: 200,
+                        },
+                    },
+                },
+            },
+            contracts_build_directory: buildContractsDir,
+            contracts_directory: pathInfo.rootDir,
+        };
+    }
+
 
     // Run Mythril Platform analyze after we have
     // ensured via compile that JSON data is there and
@@ -140,7 +173,7 @@ export function mythrilAnalyze() {
 
         try {
             if (config._.length === 0) {
-                buildJson = trufstuf.guessTruffleBuildJson(buildDir);
+                buildJson = trufstuf.guessTruffleBuildJson(buildContractsDir);
             } else {
                 buildJson = path.basename(config._[0]);
             }
@@ -155,7 +188,7 @@ export function mythrilAnalyze() {
                 warnFn(`Solidity file used: ${solidityFile}`);
             }
 
-            buildJsonPath = path.join(buildDir, buildJson);
+            buildJsonPath = path.join(buildContractsDir, buildJson);
             if (! buildJsonPath.endsWith('.json')) {
                 buildJsonPath += '.json';
             }

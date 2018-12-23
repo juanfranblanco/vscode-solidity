@@ -24,12 +24,10 @@ export function isTruffleRoot (p: string): boolean {
 }
 
 export function getBuildContractsDir(p: string): string {
-    assert(isTruffleRoot(p));
     return `${p}/build/contracts`;
 }
 
 export function getContractsDir(p: string) {
-    assert(isTruffleRoot(p));
     return `${p}/contracts`;
 }
 
