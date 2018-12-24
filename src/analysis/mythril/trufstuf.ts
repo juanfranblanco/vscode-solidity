@@ -31,6 +31,10 @@ export function getContractsDir(p: string) {
     return `${p}/contracts`;
 }
 
+export function getMythReportsDir(buildContractsDir: string) {
+    return path.normalize(path.join(buildContractsDir, '..', 'mythril'));
+}
+
 export function getTruffleBuildJsonFiles(directory): any {
     const files = fs.readdirSync(directory);
     const result = [];

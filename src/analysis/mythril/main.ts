@@ -9,6 +9,7 @@ import { ContractCollection } from '../../model/contractsCollection';
 import { ApiVersion, Client } from 'armlet';
 import { versionJSON2String, getFormatter } from './util';
 import { printReport } from './es-reporter';
+import { writeMarkdownReport } from './md-reporter';
 
 import * as Config from 'truffle-config';
 import { compile } from 'truffle-workflow-compile';
@@ -250,7 +251,19 @@ export function mythrilAnalyze() {
                 const formatter = getFormatter(solidityConfig.mythrilReportFormat);
                 const esIssues = myth.issues2Eslint(issues, buildObj, analyzeOpts);
                 printReport(esIssues, contractName, formatter, showMessage);
-                // showMessage(mess);
+                const now = new Date();
+                const reportsDir = trufstuf.getMythReportsDir(buildContractsDir);
+                const mdData = {
+                    compilerVersion: analyzeOpts.data.compiler.version,
+                    contractName: analyzeOpts.data.contractName,
+                    issues: esIssues,
+                    reportsDir: reportsDir,
+                    secsSinceEpoch: +now,
+                    sourcePath: analyzeOpts.data.sourcePath,
+                    // Add stuff like mythril version
+                };
+                const reportPath = writeMarkdownReport(mdData);
+                // FIXME edit report file.
             }).catch(err => {
                 showMessage(err);
                 vscode.window.showWarningMessage(err);

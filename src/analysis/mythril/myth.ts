@@ -47,11 +47,13 @@ const myth2Severity = {
 };
 
 const myth2EslintField = {
-    address: 'addr2lineColumn', // Not used
-    description: 'message',
-    line: 'lineNumberStart',
+    'address': 'addr2lineColumn', // Not used
+    'description': 'message',
+    'line': 'lineNumberStart',
     'swc-description': 'message',
-    type: 'severity',
+    'title': 'title',
+    'tool': 'tool',
+    'type': 'severity',
 };
 
 // FIXME figure out how to export this class.
@@ -134,20 +136,23 @@ class Info {
   */
     public issue2EsLint(issue) {
         const esIssue = {
-            column: -1,
-            endCol: -1,
-            endLine: -1,
-            fatal: false,
-            line: '',
-            ruleId: '',
-            severity: myth2Severity.Warning,
+            'column': -1,
+            'endCol': -1,
+            'endLine': -1,
+            'fatal': false,
+            'line': '',
+            'ruleId': '',
+            'severity': myth2Severity.Warning,
+            'title': '',
+            'tool': '',
+            'type': '',
 
         };
 
-        let fields = ['type', 'address', 'description'];
+        let fields = ['title', 'tool', 'type', 'address', 'description'];
         switch (issue.tool) {
         case 'maru':
-            fields = ['type', 'line', 'swc-description'];
+           fields = ['title', 'tool', 'type', 'line', 'swc-description'];
             break;
         case 'mythril':
             issue['swc-id'] = `SWC-${issue['swc-id']}`;
@@ -169,6 +174,11 @@ class Info {
                 }
             } else if (esField === 'severity' && value !== undefined) {
                 esIssue[esField] = myth2Severity[value];
+                esIssue.type = value;
+            } else if (esField === 'title' && value !== undefined) {
+                esIssue[esField] = value;
+            } else if (esField === 'tool' && value !== undefined) {
+                esIssue[esField] = value;
             } else if (esField === 'message' && value !== undefined) {
                 esIssue[esField] = massageMessage(value);
             } else if (esField === 'lineNumberStart') {
