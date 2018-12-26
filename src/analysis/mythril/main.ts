@@ -264,6 +264,15 @@ export function mythrilAnalyze() {
                 };
                 const reportPath = writeMarkdownReport(mdData);
                 // FIXME edit report file.
+                const reportUri = vscode.Uri.file(reportPath);
+                vscode.workspace.openTextDocument(reportUri).then(markdownReport => {
+                    vscode.window.showTextDocument(markdownReport,
+                                                   {preview: false})
+                        .then(textEditor => {
+                            // Render the markdown
+                            vscode.commands.executeCommand('markdown.showPreview');
+                        });
+                });
             }).catch(err => {
                 showMessage(err);
                 vscode.window.showWarningMessage(err);
