@@ -54,7 +54,7 @@ const swc_prefix = 'https://github.com/SmartContractSecurity/SWC-registry/blob/m
 
 // Return a SWC-url for a given swc-id.
 Handlebars.registerHelper('swc_url', function(swc_id: string): string {
-    return `${swc_prefix}/${swc_id}}.md`;
+    return `${swc_prefix}/${swc_id}.md`;
 });
 
 // Return a markding base filename and link file.
