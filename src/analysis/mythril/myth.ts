@@ -1,4 +1,4 @@
-import * as SourceMappingDecoder from 'remix-lib/src/sourceMappingDecoder';
+import * as smd from './sourceMappingDecoder';
 import * as srcmap from './srcmap';
 import * as vscode from 'vscode';
 
@@ -60,10 +60,13 @@ const myth2EslintField = {
 class Info {
     private ast: any;
     private buildObj: any;
+    private contractSource: string;
     private issues: any;
     private deployedSourceMap: any;
+    private sourceLocation: any;
     private sourceMappingDecoder: any;
     private lineBreakPositions: any;
+    private loc: any;
     private offset2InstNum: any;
     private sourceMap: any;
 
@@ -72,14 +75,14 @@ class Info {
         this.buildObj = buildObj;
 
         const contractName = buildObj.contractName;
-        const contractSource = buildObj.sources[contractName];
+        this.contractSource = buildObj.sources[contractName];
 
         this.ast = buildObj.ast;
         this.sourceMap = buildObj.sourceMap;
         this.deployedSourceMap = buildObj.deployedSourceMap;
-        this.sourceMappingDecoder = new SourceMappingDecoder();
+        this.sourceMappingDecoder = new smd.SourceMappingDecoder();
         this.lineBreakPositions = this.sourceMappingDecoder
-            .getLinebreakPositions(contractSource);
+            .getLinebreakPositions(this.contractSource);
         this.offset2InstNum = srcmap.makeOffset2InstNum(buildObj.deployedBytecode);
     }
 
@@ -107,22 +110,46 @@ class Info {
     */
     public byteOffset2lineColumn(bytecodeOffset) {
         const instNum = this.offset2InstNum[bytecodeOffset];
-        const sourceLocation = this.sourceMappingDecoder
+        this.sourceLocation = this.sourceMappingDecoder
             .atIndex(instNum, this.deployedSourceMap);
-        if (sourceLocation) {
-            const loc = this.sourceMappingDecoder
-                .convertOffsetToLineColumn(sourceLocation, this.lineBreakPositions);
-            // FIXME: note we are lossy in that we don't return the end location
-            if (loc.start) {
+        if (this.sourceLocation) {
+            this.loc = this.sourceMappingDecoder
+                .convertOffsetToLineColumn(this.sourceLocation, this.lineBreakPositions);
+            if (this.loc.start) {
                 // Adjust because routines starts lines at 0 rather than 1.
-                loc.start.line++;
+                this.loc.start.line++;
             }
-            if (loc.end) {
-                loc.end.line++;
+            if (this.loc.end) {
+                this.loc.end.line++;
             }
-            return [loc.start, loc.end];
+            return [this.loc.start, this.loc.end];
         }
         return [{line: -1, column: 0}, {}];
+    }
+
+    // Return at most one line of text source marked up. If the spanned region
+    // is more than one line add ... to the end of the underline.
+    // For example:
+    //    x =  a + 1 * 2
+    //         ^^^^^
+    // or if the region spans more than one line:
+    //    if (a > b) {
+    //    ^^^^^^^^^^^^...
+    //
+    public sourceLocation2markedLine(startLineCol: any, endLineCol: any) {
+        let endLine = this.contractSource.indexOf('\n', startLineCol.beginLinePos);
+        if (endLine === -1) {
+            endLine = this.contractSource.length;
+        }
+        const startText = this.contractSource.slice(startLineCol.beginLinePos, endLine);
+        let underlines = ' '.repeat(startLineCol.column);
+        if (startLineCol.beginLinePos === endLineCol.beginLinePos) {
+            // One same line, mark portion of that line.
+            underlines += '^'.repeat(endLineCol.column - startLineCol.column);
+        } else {
+            underlines += ('^'.repeat(startText.length - startLineCol.column)) + '...';
+        }
+        return `${startText}\n${underlines}`;
     }
 
     /*
@@ -132,7 +159,7 @@ class Info {
     but a Mythril JSON report has these fields:
     address, type, description, contract, function,
 
-    Convert a Mythril issue into an ESLint-style issue
+    Convert a Mythril issue into an ESLint-style issue.
   */
     public issue2EsLint(issue: any, path: string) {
         const esIssue = {
@@ -142,9 +169,11 @@ class Info {
             'endLine': -1,
             'fatal': false,
             'line': '',
+            'markedText': '',
             'path': path,
             'ruleId': '',
             'severity': myth2Severity.Warning,
+            'srcmap': '',
             'title': '',
             'tool': '',
             'type': '',
@@ -171,6 +200,7 @@ class Info {
                     esIssue.column = startLineCol.column;
                     esIssue.endLine = endLineCol.line;
                     esIssue.endCol = endLineCol.column;
+                    esIssue.markedText = this.sourceLocation2markedLine(startLineCol, endLineCol);
                 } catch (err) {
                     esIssue.line = '';
                     esIssue.column = 0;

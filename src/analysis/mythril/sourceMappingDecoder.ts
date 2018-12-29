@@ -14,8 +14,6 @@ import { AstWalker } from './astWalker';
  */
 export class SourceMappingDecoder {
 
-    // s:l:f:j
-
     /**
      * get a list of nodes that are at the given @arg position
      *
@@ -68,23 +66,23 @@ export class SourceMappingDecoder {
         }
         for (let k = index; k >= 0; k--) {
             let current = map[k];
-            if (!current.length) {
-                continue;
-            }
             current = current.split(':');
-            if (ret.start === undefined && current[0] && current[0] !== '-1' && current[0].length) {
+            if (ret.start === -1 && current[0] && current[0] !== '-1' && current[0].length) {
                 ret.start = parseInt(current[0], 10);
             }
-            if (ret.length === undefined && current[1] && current[1] !== '-1' && current[1].length) {
+            if (ret.length === 0 && current[1] && current[1] !== '-1' && current[1].length) {
                 ret.length = parseInt(current[1], 10);
             }
-            if (ret.file === undefined && current[2] && current[2] !== '-1' && current[2].length) {
+            if (ret.file === -1 && current[2] && current[2] !== '-1' && current[2].length) {
                 ret.file = parseInt(current[2], 10);
             }
             if (ret.jump === undefined && current[3] && current[3].length) {
                 ret.jump = current[3];
             }
-            if (ret.start !== undefined && ret.length !== undefined && ret.file !== undefined && ret.jump !== undefined) {
+            if (!current.length) {
+                continue;
+            }
+            if (ret.start !== -1 && ret.length !== 0 && ret.file !== -1) {
                 break;
             }
         }
@@ -185,9 +183,10 @@ export class SourceMappingDecoder {
         if (lineBreakPositions[line] !== pos) {
             line += 1;
         }
-        const beginColumn = line === 0 ? 0 : (lineBreakPositions[line - 1] + 1);
-        const column = pos - beginColumn;
+        const beginLinePos = line === 0 ? 0 : (lineBreakPositions[line - 1] + 1);
+        const column = pos - beginLinePos;
         return {
+            beginLinePos: beginLinePos,
             column: column,
             line: line,
         };

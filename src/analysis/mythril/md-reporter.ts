@@ -18,7 +18,13 @@ const theIssueTemplate = `
 ## Issue {{add1 @index}} {{type}}: {{title}} [{{ruleId}}]({{swc_url ruleId}})
 
 {{message}}
+{{#if markedText}}
 
+\`\`\`
+{{{markedText}}}
+\`\`\`
+
+{{/if}}
 {{#if address}}
 * Bytecode offset: {{address}}
 {{/if}}
@@ -56,7 +62,7 @@ Handlebars.registerHelper('swc_url', function(swc_id: string): string {
     return `${swc_prefix}/${swc_id}.md`;
 });
 
-// Return a markding base filename and link file.
+// Return a markdown base filename and link file.
 Handlebars.registerHelper('file_link', function(filePath: string): string {
     return `[${path.basename(filePath)}](file:///${filePath})`;
 });

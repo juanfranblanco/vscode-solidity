@@ -110,7 +110,7 @@
             120
           ],
           "default": 120,
-          "markdownDescription": "Maximum time in seconds to give Mythril for analysis"
+          "markdownDescription": "Maximum time in seconds to give MythX for analysis"
         },
         "solidity.compileUsingRemoteVersion": {
           "type": [
@@ -254,11 +254,11 @@
       },
       {
         "command": "solidity.mythril.analyze",
-        "title": "Mythril: Run MythX analyses"
+        "title": "MythX: Run analyses"
       },
       {
         "command": "solidity.mythril.version",
-        "title": "Mythril: Show MythX API version information"
+        "title": "MythX: ShowAPI version information"
       }
     ],
     "keybindings": [

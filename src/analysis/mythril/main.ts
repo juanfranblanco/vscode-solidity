@@ -262,6 +262,8 @@ export function mythrilAnalyze() {
                     sourcePath: analyzeOpts.data.sourcePath,
                     // Add stuff like mythril version
                 };
+                writeMarkdownReport(mdData);
+                /*
                 const reportPath = writeMarkdownReport(mdData);
                 // FIXME edit report file.
                 const reportUri = vscode.Uri.file(reportPath);
@@ -273,6 +275,7 @@ export function mythrilAnalyze() {
                             vscode.commands.executeCommand('markdown.showPreview');
                         });
                 });
+                */
             }).catch(err => {
                 showMessage(err);
                 vscode.window.showWarningMessage(err);
