@@ -90,8 +90,60 @@ export function writeMarkdownReport(mdData: any) {
         fs.mkdirSync(mythReportDir);
     }
     const now = new Date();
-    const reportPath = path.join(mythReportDir,
-                                 `${mdData.contractName}-${mdData.secsSinceEpoch}.md`);
+    const filePrefix = `${mdData.contractName}-${mdData.secsSinceEpoch}`;
+    const reportPath = path.join(mythReportDir, `${filePrefix}.md`);
     fs.writeFileSync(reportPath, theCompiledMarkdown);
+    const stringify = JSON.stringify(mdData, null, 4);
+
+    // write in JSON format in case we want in the future to look at these.
+    const reportJSONPath = path.join(mythReportDir, `${filePrefix}.json`);
+    fs.writeFileSync(reportJSONPath, stringify , 'utf-8');
+    parseMythXReport(mdData);
     return reportPath;
+}
+
+// FIXME should this vscode stuf be elsewhere
+import * as vscode from 'vscode';
+
+// Takes a reportJSON object and creates diagnostics for these
+export function parseMythXReport(reportJSON: any) {
+    // The code you place here will be executed every time your command is executed
+    const issueCollections: any = {};
+
+    for (const issue of reportJSON.issues) {
+        // Parse Report creating diagnostics and update file
+        const p = issue.path;
+        const diagnostic = {
+            code: issue.ruleId,
+            message: issue.message,
+            range: new vscode.Range(new vscode.Position(issue.line - 1, issue.column),
+                                    new vscode.Position(issue.endLine - 1, issue.endCol)),
+            relatedInformation: [],
+            severity: issue.type,
+            source: 'MythX',
+        };
+        if (!issueCollections[p]) {
+            issueCollections[p] = [];
+        }
+        issueCollections[p].push(diagnostic);
+    }
+
+    for (const p of Object.keys(issueCollections)) {
+        const uri = vscode.Uri.file(p);
+        const collection = vscode.languages.createDiagnosticCollection(`Mythril-${p}`);
+        vscode.window.showTextDocument(uri).then(textDocument => {
+            collection.clear();
+            collection.set(uri, issueCollections[p]);
+        });
+    }
+}
+
+// Read a JSON file and handle diagnostics for that.
+export function parseMythXReportFile(reportJSONPath: string) {
+    // The code you place here will be executed every time your command is executed
+    if (!fs.existsSync(reportJSONPath)) {
+        vscode.window.showInformationMessage(`MythX Report ${reportJSONPath} not found.`);
+    }
+    const reportJSON = JSON.parse(fs.readFileSync(reportJSONPath, 'utf-8'));
+    parseMythXReport(reportJSON);
 }

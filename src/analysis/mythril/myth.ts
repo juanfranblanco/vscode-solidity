@@ -134,13 +134,14 @@ class Info {
 
     Convert a Mythril issue into an ESLint-style issue
   */
-    public issue2EsLint(issue) {
+    public issue2EsLint(issue: any, path: string) {
         const esIssue = {
             'column': -1,
             'endCol': -1,
             'endLine': -1,
             'fatal': false,
             'line': '',
+            'path': path,
             'ruleId': '',
             'severity': myth2Severity.Warning,
             'title': '',
@@ -223,7 +224,7 @@ export function issues2Eslint(issues: any, buildObj: any, options: any): any {
     const info = new Info(issues, buildObj);
     for (const issue of issues) {
         if (!info.isIgnorable(issue, options)) {
-            esIssues.push(info.issue2EsLint(issue));
+            esIssues.push(info.issue2EsLint(issue, buildObj.sourcePath));
         }
     }
     return esIssues;
