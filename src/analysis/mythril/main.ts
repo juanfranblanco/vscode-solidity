@@ -16,6 +16,8 @@ import { compile } from 'truffle-workflow-compile';
 
 const warnFn = vscode.window.showWarningMessage;
 
+const outputChannel = vscode.window.createOutputChannel('MythX');
+
 // What we use in a new armlet.Client()
 interface ArmletOptions {
     apiKey: string;
@@ -31,7 +33,6 @@ interface AnalyzeOptions {
 
 // This is adapted from 'remix-lib/src/sourceMappingDecoder.js'
 function showMessage (mess) {
-    const outputChannel = vscode.window.createOutputChannel('Mythril');
     outputChannel.clear();
     outputChannel.show();
     outputChannel.appendLine(mess);
@@ -110,7 +111,6 @@ export function mythrilVersion() {
 
 export function mythrilAnalyze() {
     const solidityConfig = vscode.workspace.getConfiguration('solidity');
-    const outputChannel = vscode.window.createOutputChannel('Mythril');
     const pathInfo = solidityPathAndSource();
 
     const truffleOptions = {
