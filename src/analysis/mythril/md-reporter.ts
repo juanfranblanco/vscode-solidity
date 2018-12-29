@@ -10,18 +10,17 @@ const theIssueTemplate = `
 **Table of Contents**
 
 {{#each issues}}
-- [Issue {{add1 @index}} {{type}}: {{title}}]({{issue_markdown_link @index type title}})
+- [Issue {{add1 @index}} {{type}}: {{title}}]({{issue_markdown_link @index type title ruleId}})
 {{/each}}
 - [Analysis information](#analysis-info)
 
 {{#each issues}}
-## Issue {{add1 @index}} {{type}}: {{title}}
+## Issue {{add1 @index}} {{type}}: {{title}} [{{ruleId}}]({{swc_url ruleId}})
 
 {{message}}
 
-* [{{ruleId}}]({{swc_url ruleId}})
 {{#if address}}
-* Bytecode offset: offset {{address}}
+* Bytecode offset: {{address}}
 {{/if}}
 * Tool: {{tool}}
 {{#if function}}
@@ -63,12 +62,13 @@ Handlebars.registerHelper('file_link', function(filePath: string): string {
 });
 
 // Return an internal Markdown issue link for an issue
-Handlebars.registerHelper('issue_markdown_link', function(index: number, severity: string, title: string): string {
+Handlebars.registerHelper('issue_markdown_link', function(index: number, severity: string, title: string,
+                                                          ruleId: string): string {
     let lowerTitle: string = title.toLowerCase();
     if (lowerTitle.indexOf(' ') >= 0) {
         lowerTitle = title.split(' ').join('-');
     }
-    return `#issue-${index + 1}-${severity.toLowerCase()}-${lowerTitle}`;
+    return `#issue-${index + 1}-${severity.toLowerCase()}-${lowerTitle}-${ruleId}`;
 });
 
 // Compile the template

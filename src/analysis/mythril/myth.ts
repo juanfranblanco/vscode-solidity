@@ -136,6 +136,7 @@ class Info {
   */
     public issue2EsLint(issue: any, path: string) {
         const esIssue = {
+            'address': null,
             'column': -1,
             'endCol': -1,
             'endLine': -1,
@@ -163,6 +164,7 @@ class Info {
             const esField = myth2EslintField[field];
             const value = issue[field];
             if (field === 'address' && value !== undefined ) {
+                esIssue.address = value;
                 try {
                     const [startLineCol, endLineCol] = this.byteOffset2lineColumn(value);
                     esIssue.line = startLineCol.line;
