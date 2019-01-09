@@ -82,7 +82,6 @@ function getArmletCredentialKeys(config: SolidityMythXOption): any {
     if (!apiKey && !password) {
         errorMessage = 'You need to set either solidity.mythril.password or solidity.mythril.apiKey to run analyze.';
     } else if (apiKey) {
-        console.log('SETAPI>>>>', apiKey);
         options.apiKey = apiKey;
     } else {
         options.password = password;
@@ -227,7 +226,7 @@ export function mythrilAnalyze() {
 
             buildJsonPath = path.join(buildContractsDir, buildJson);
             if (! buildJsonPath.endsWith('.json')) {
-                buildJsonPath += '.json';
+          ''      buildJsonPath += '.json';
             }
 
         } catch (err) {
@@ -238,7 +237,6 @@ export function mythrilAnalyze() {
         // console.log(`Reading ${buildJsonPath}`);
 
         // get armlet authentication options
-        console.log('Config>>>>>', solidityConfig.mythril);
         const armletAuthOptions = getArmletCredentialKeys(solidityConfig.mythril);
         const armletOptions = {
             ...armletAuthOptions,
