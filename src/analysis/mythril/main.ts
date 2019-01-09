@@ -31,6 +31,14 @@ interface AnalyzeOptions {
     timeout: number;
 }
 
+// What we use in a new armlet analyze call
+interface SolidityMythXOption {
+    apiKey?: string;
+    password?: string;
+    ethAddress?: string;
+    email?: string;
+}
+
 // This is adapted from 'remix-lib/src/sourceMappingDecoder.js'
 function showMessage (mess) {
     outputChannel.clear();
@@ -65,6 +73,34 @@ function solc2MythrilJSON(inputSolcJSON, contractName, sourceCode,
     solcJSON.sourceMap = inputSolcJSON.evm.bytecode.sourceMap;
 
     return solcJSON;
+}
+
+function getArmletCredentialKeys(config: SolidityMythXOption): any {
+    const { apiKey, password, ethAddress, email } = config;
+    const options: any = {};
+    let errorMessage: string;
+    if (!apiKey && !password) {
+        errorMessage = 'You need to set either solidity.mythril.password or solidity.mythril.apiKey to run analyze.';
+    } else if (apiKey) {
+        console.log('SETAPI>>>>', apiKey);
+        options.apiKey = apiKey;
+    } else {
+        options.password = password;
+        if (ethAddress) {
+            options.ethAddress = ethAddress;
+        } else if (email) {
+            options.email = email;
+        } else {
+            errorMessage = 'You need to set either solidity.mythril.ethAddress or solidity.mythril.email to run analyze.';
+        }
+    }
+
+    if (errorMessage) {
+        vscode.window.showErrorMessage(errorMessage);
+        throw new Error(errorMessage);
+    }
+
+    return options;
 }
 
 function solidityPathAndSource() {
@@ -201,12 +237,12 @@ export function mythrilAnalyze() {
 
         // console.log(`Reading ${buildJsonPath}`);
 
+        // get armlet authentication options
+        console.log('Config>>>>>', solidityConfig.mythril);
+        const armletAuthOptions = getArmletCredentialKeys(solidityConfig.mythril);
         const armletOptions = {
-            apiKey: solidityConfig.mythrilAPIKey,
-            // email: 'user@example.com',
+            ...armletAuthOptions,
             platforms: ['vscode-solidity'],  // client chargeback
-            // ethAddress: process.env.MYTHRIL_ETH_ADDRESS,
-            // password: process.env.MYTHRIL_PASSWORD,
         };
 
         let client: any;
@@ -235,7 +271,7 @@ export function mythrilAnalyze() {
             data: myth.truffle2MythrilJSON(buildObj),
             mode: 'full',
             partners: ['vscode-solidity'],
-            timeout: solidityConfig.mythrilTimeout * 1000,  // convert secs to millisecs
+            timeout: solidityConfig.mythril.timeout * 1000,  // convert secs to millisecs
 
             // FIXME: The below "partners" will change when
             // https://github.com/ConsenSys/mythril-api/issues/59
@@ -248,7 +284,7 @@ export function mythrilAnalyze() {
 
         client.analyze(analyzeOpts)
             .then(issues => {
-                const formatter = getFormatter(solidityConfig.mythrilReportFormat);
+                const formatter = getFormatter(solidityConfig.mythril.reportFormat);
                 const esIssues = myth.issues2Eslint(issues, buildObj, analyzeOpts);
                 printReport(esIssues, contractName, formatter, showMessage);
                 const now = new Date();

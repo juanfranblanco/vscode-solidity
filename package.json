@@ -88,15 +88,27 @@
       "type": "object",
       "title": "Solidity configuration",
       "properties": {
-        "solidity.mythrilAPIKey": {
-          "type": [
-            "string",
-            "ace9b42d-4c97-407c-b197-a9b2e5ab6759"
-          ],
-          "default": "ace9b42d-4c97-407c-b197-a9b2e5ab6759",
-          "markdownDescription": "MythX API key. See https://mythril.ai to get an API key"
+        "solidity.mythril.apiKey": {
+          "type": [ "string" ],
+          "default": null,
+          "markdownDescription": "MythX API key. See https://mythx.io to get an API key"
         },
-        "solidity.mythrilReportFormat": {
+        "solidity.mythril.password": {
+          "type": [ "string" ],
+          "default": null,
+          "markdownDescription": "MythX Password. See https://mythx.io to get password"
+        },
+        "solidity.mythril.ethAddress": {
+          "type": [ "string" ],
+          "default": null,
+          "markdownDescription": "MetaMask ETH address used to login to MythX. See https://mythx.io"
+        },
+        "solidity.mythril.email": {
+          "type": [ "string" ],
+          "default": null,
+          "markdownDescription": "MythX email address. See https://mythx.io"
+        },
+        "solidity.mythril.reportFormat": {
           "type": [
             "string",
             "stylish"
@@ -104,7 +116,7 @@
           "default": "stylish",
           "markdownDescription": "Report style format for analysis results. See https://eslint.org/docs/user-guide/formatters/ for a full list."
         },
-        "solidity.mythrilTimeout": {
+        "solidity.mythril.timeout": {
           "type": [
             "number",
             120
