@@ -48,6 +48,9 @@ export function getTruffleBuildJsonFiles(directory): any {
 
 export function guessTruffleBuildJson(directory: string): string {
     const jsonPaths = exports.getTruffleBuildJsonFiles(directory);
+    if (!jsonPaths || jsonPaths.length < 1) {
+        throw new Error('Build contracts folder is empty, no smart contracts to analyze.');
+    }
     const jsonPathsFiltered = [];
     for (const p of jsonPaths) {
         if ((path.basename(p) !== 'Migrations.json') &&
