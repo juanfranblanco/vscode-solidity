@@ -226,7 +226,7 @@ export function mythrilAnalyze() {
 
             buildJsonPath = path.join(buildContractsDir, buildJson);
             if (! buildJsonPath.endsWith('.json')) {
-          ''      buildJsonPath += '.json';
+              buildJsonPath += '.json';
             }
 
         } catch (err) {
