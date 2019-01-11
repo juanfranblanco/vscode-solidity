@@ -90,7 +90,7 @@
       "properties": {
         "solidity.mythril.apiKey": {
           "type": [ "string" ],
-          "default": null,
+          "default": "ace9b42d-4c97-407c-b197-a9b2e5ab6759",
           "markdownDescription": "MythX API key. See https://mythx.io to get an API key"
         },
         "solidity.mythril.password": {

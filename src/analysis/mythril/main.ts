@@ -11,6 +11,10 @@ import { versionJSON2String, getFormatter } from './util';
 import { printReport } from './es-reporter';
 import { writeMarkdownReport } from './md-reporter';
 
+// vscode-solidity's wrapper around solc
+import {SolcCompiler} from '../../solcCompiler';
+
+
 import * as Config from 'truffle-config';
 import { compile } from 'truffle-workflow-compile';
 
@@ -318,12 +322,22 @@ export function mythrilAnalyze() {
 
     // This can cause vyper to fail if you don't have vyper installed
     delete config.compilers.vyper;
-    compile(config,
-         function(arg) {
-            if (arg !== null) {
-                showMessage(`compile returns ${arg}`);
-            } else {
-                analyzeWithBuildDir();
-            }
-        });
+
+    // Get VSCode Solidity's solc information
+    const vscode_solc = new SolcCompiler(vscode.workspace.rootPath);
+    const remoteCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingRemoteVersion');
+    const localCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingLocalVersion');
+    vscode_solc.intialiseCompiler(localCompiler, remoteCompiler).then(() => {
+
+        // Set truffle compiler version based on vscode solidity's version info
+        config.compilers.solc.version = vscode_solc.getVersion();
+        compile(config,
+                function(arg: any) {
+                    if (arg !== null) {
+                        showMessage(`compile returns ${arg}`);
+                    } else {
+                        analyzeWithBuildDir();
+                    }
+                });
+    });
 }
