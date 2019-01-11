@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as Handlebars from 'handlebars';
+import * as vscode from 'vscode';
 
 // Grab the template script
 
@@ -49,6 +50,9 @@ const theIssueTemplate = `
 /**
 const theIssueTemplate = fs.readFileSync('./issue-report.handlebars', 'utf8');
 */
+
+// FIXME: Shhould be in some place more generic.
+const diagnosticsCollection = vscode.languages.createDiagnosticCollection(`Mythril-Reports`);
 
 // Turn 0-index numbering of array into 1-index numbering of issues
 Handlebars.registerHelper('add1', function(value: string): number {
@@ -108,9 +112,6 @@ export function writeMarkdownReport(mdData: any) {
     return reportPath;
 }
 
-// FIXME should this vscode stuf be elsewhere
-import * as vscode from 'vscode';
-
 // Takes a reportJSON object and creates diagnostics for these
 export function parseMythXReport(reportJSON: any) {
     // The code you place here will be executed every time your command is executed
@@ -136,10 +137,14 @@ export function parseMythXReport(reportJSON: any) {
 
     for (const p of Object.keys(issueCollections)) {
         const uri = vscode.Uri.file(p);
-        const collection = vscode.languages.createDiagnosticCollection(`Mythril-${p}`);
+        /**
+         * FIXME: Move this code to more generic place.
+         * Problems tab should not depend on MD reports
+         * We should report to vscode tab as soon as possible
+         */
         vscode.window.showTextDocument(uri).then(textDocument => {
-            collection.clear();
-            collection.set(uri, issueCollections[p]);
+            diagnosticsCollection.clear();
+            diagnosticsCollection.set(uri, issueCollections[p]);
         });
     }
 }
