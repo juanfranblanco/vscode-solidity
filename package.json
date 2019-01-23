@@ -271,11 +271,11 @@
       },
       {
         "command": "solidity.mythx.analyze",
-        "title": "Solidity MythX: Run analyses"
+        "title": "Solidity: MythX analyses"
       },
       {
         "command": "solidity.mythx.version",
-        "title": "Solidty MythX: ShowAPI version information"
+        "title": "Solidity: MythX API version information"
       }
     ],
     "keybindings": [
