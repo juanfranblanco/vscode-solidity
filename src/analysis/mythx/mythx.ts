@@ -8,7 +8,7 @@ const warnFn = vscode.window.showWarningMessage;
 //       "https://smartcontractsecurity.github.io/SWC-registry/docs";
 
 /********************************************************
-Mythril messages currently needs a bit of messaging to
+Mythx messages currently needs a bit of messaging to
 be able to work within the Eslint framework. Some things
 we handle here:
 
@@ -18,7 +18,7 @@ we handle here:
   Remove them.
 **********************************************************/
 function massageMessage(mess: string): string {
-    // Mythril messages are long. Strip after first period.
+    // Mythx messages are long. Strip after first period.
     let sentMatch = null;
     try {
         sentMatch = mess.match('\\.[ \t\n]');
@@ -37,9 +37,9 @@ function massageMessage(mess: string): string {
 }
 
 /*
-  Mythril seems to downplay severity. What eslint calls an "error",
-  Mythril calls "warning". And what eslint calls "warning",
-  Mythril calls "informational".
+  Mythx seems to downplay severity. What eslint calls an "error",
+  Mythx calls "warning". And what eslint calls "warning",
+  Mythx calls "informational".
 */
 const myth2Severity = {
     Informational: 3,
@@ -95,7 +95,7 @@ class Info {
             this.ast);
         if (node && srcmap.isDynamicArray(node)) {
             if (options.debug) {
-                warnFn('**debug: Ignoring Mythril issue around ' +
+                warnFn('**debug: Ignoring Mythx issue around ' +
                        'dynamically-allocated array.');
             }
             return true;
@@ -156,10 +156,10 @@ class Info {
     The eslint report format which we use, has these fields:
     line, column, severity, message, ruleId, fatal
 
-    but a Mythril JSON report has these fields:
+    but a Mythx JSON report has these fields:
     address, type, description, contract, function,
 
-    Convert a Mythril issue into an ESLint-style issue.
+    Convert a Mythx issue into an ESLint-style issue.
   */
     public issue2EsLint(issue: any, path: string) {
         const esIssue = {
@@ -185,7 +185,7 @@ class Info {
         case 'maru':
            fields = ['title', 'tool', 'type', 'line', 'swc-description'];
             break;
-        case 'mythril':
+        case 'mythx':
             issue['swc-id'] = `SWC-${issue['swc-id']}`;
             break;
         }
@@ -240,7 +240,7 @@ class Info {
         // } else {
         //     esIssue.ruleId = `${issue.tool}`;
         // }
-        esIssue.fatal = false; // Mythril doesn't give fatal messages?
+        esIssue.fatal = false; // Mythx doesn't give fatal messages?
         return esIssue;
     }
 }
@@ -250,7 +250,7 @@ class Info {
    object internally. This may or may not be what we want to do in the
    future.
 */
-// Turn Mythril Issues, into eslint-format issues.
+// Turn Mythx Issues, into eslint-format issues.
 export function issues2Eslint(issues: any, buildObj: any, options: any): any {
     const esIssues = [];
     const info = new Info(issues, buildObj);
@@ -263,10 +263,10 @@ export function issues2Eslint(issues: any, buildObj: any, options: any): any {
 }
 
 // Take truffle's build/contracts/xxx.json JSON and make it
-// compatible with the Mythril Platform API
-export function truffle2MythrilJSON(truffleJSON: any) {
+// compatible with the Mythx Platform API
+export function truffle2MythxJSON(truffleJSON: any) {
 
-    // Add/remap some fields because the Mythril Platform API doesn't
+    // Add/remap some fields because the Mythx Platform API doesn't
     // align with truffle's JSON
 
     truffleJSON.sourceList = [truffleJSON.ast.absolutePath];

@@ -6,7 +6,7 @@ import * as vscode from 'vscode';
 // Grab the template script
 
 const theIssueTemplate = `
-# Mythril Report for {{contractName}} {{file_link sourcePath}}
+# Mythx Report for {{contractName}} {{file_link sourcePath}}
 
 **Table of Contents**
 
@@ -52,7 +52,7 @@ const theIssueTemplate = fs.readFileSync('./issue-report.handlebars', 'utf8');
 */
 
 // FIXME: Shhould be in some place more generic.
-const diagnosticsCollection = vscode.languages.createDiagnosticCollection(`Mythril-Reports`);
+const diagnosticsCollection = vscode.languages.createDiagnosticCollection(`Mythx-Reports`);
 
 // Turn 0-index numbering of array into 1-index numbering of issues
 Handlebars.registerHelper('add1', function(value: string): number {

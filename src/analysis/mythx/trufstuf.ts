@@ -32,7 +32,7 @@ export function getContractsDir(p: string) {
 }
 
 export function getMythReportsDir(buildContractsDir: string) {
-    return path.normalize(path.join(buildContractsDir, '..', 'mythril'));
+    return path.normalize(path.join(buildContractsDir, '..', 'mythx'));
 }
 
 export function getTruffleBuildJsonFiles(directory): any {
@@ -54,7 +54,7 @@ export function guessTruffleBuildJson(directory: string): string {
     const jsonPathsFiltered = [];
     for (const p of jsonPaths) {
         if ((path.basename(p) !== 'Migrations.json') &&
-            (path.basename(p) !== 'mythril.json')) {
+            (path.basename(p) !== 'mythx.json')) {
             jsonPathsFiltered.push(p);
         }
     }

@@ -93,6 +93,11 @@
           "default": "ace9b42d-4c97-407c-b197-a9b2e5ab6759",
           "markdownDescription": "MythX API key. See https://mythx.io to get an API key"
         },
+        "solidity.mythril.apiUrl": {
+          "type": [ "string" ],
+          "default": "https://staging.api.mythx.io",
+          "markdownDescription": "MythX URL to connect to"
+        },
         "solidity.mythril.password": {
           "type": [ "string" ],
           "default": null,
@@ -265,12 +270,12 @@
         "title": "Solidity: Fix document rules using Solium"
       },
       {
-        "command": "solidity.mythril.analyze",
-        "title": "MythX: Run analyses"
+        "command": "solidity.mythx.analyze",
+        "title": "Solidity MythX: Run analyses"
       },
       {
-        "command": "solidity.mythril.version",
-        "title": "MythX: ShowAPI version information"
+        "command": "solidity.mythx.version",
+        "title": "Solidty MythX: ShowAPI version information"
       }
     ],
     "keybindings": [

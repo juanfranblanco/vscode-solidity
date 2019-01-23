@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as solc from 'solc';
 import * as vscode from 'vscode';
-import * as myth from './myth';
+import * as myth from './mythx';
 import * as trufstuf from './trufstuf';
 import { DiagnosticSeverity as Severity, Diagnostic, Range } from 'vscode-languageserver';
 import { ContractCollection } from '../../model/contractsCollection';
@@ -84,7 +84,7 @@ function getArmletCredentialKeys(config: SolidityMythXOption): any {
     const options: any = {};
     let errorMessage: string;
     if (!apiKey && !password) {
-        errorMessage = 'You need to set either solidity.mythril.password or solidity.mythril.apiKey to run analyze.';
+        errorMessage = 'You need to set either solidity.mythx.password or solidity.mythx.apiKey to run analyze.';
     } else if (apiKey) {
         options.apiKey = apiKey;
     } else {
@@ -94,7 +94,7 @@ function getArmletCredentialKeys(config: SolidityMythXOption): any {
         } else if (email) {
             options.email = email;
         } else {
-            errorMessage = 'You need to set either solidity.mythril.ethAddress or solidity.mythril.email to run analyze.';
+            errorMessage = 'You need to set either solidity.mythx.ethAddress or solidity.mythx.email to run analyze.';
         }
     }
 
@@ -122,7 +122,7 @@ function solidityPathAndSource() {
     let rootDir = vscode.workspace.rootPath;
     // Check if is folder, if not stop we need to output to a bin folder on rootPath
     if (vscode.workspace.rootPath === undefined) {
-        warnFn('Please open a folder in Visual Studio Code as a workspace');
+        warnFn('Please open a folder or workspace folder in Visual Studio Code for us to set artifacts');
         return null;
     } else if (path.basename(rootDir) === 'contracts') {
         rootDir = path.dirname(rootDir);
@@ -140,7 +140,7 @@ function solidityPathAndSource() {
 }
 
 
-export function mythrilVersion() {
+export function mythxVersion() {
     ApiVersion().then(
         result => {
             const mess = versionJSON2String(result);
@@ -148,7 +148,7 @@ export function mythrilVersion() {
         });
 }
 
-export function mythrilAnalyze() {
+export function mythxAnalyze() {
     const solidityConfig = vscode.workspace.getConfiguration('solidity');
     const pathInfo = solidityPathAndSource();
 
@@ -198,7 +198,7 @@ export function mythrilAnalyze() {
     }
 
 
-    // Run Mythril Platform analyze after we have
+    // Run Mythx Platform analyze after we have
     // ensured via compile that JSON data is there and
     // up to date.
     // Parameters "config", and "done" are implicitly passed in.
@@ -241,7 +241,7 @@ export function mythrilAnalyze() {
         // console.log(`Reading ${buildJsonPath}`);
 
         // get armlet authentication options
-        const armletAuthOptions = getArmletCredentialKeys(solidityConfig.mythril);
+        const armletAuthOptions = getArmletCredentialKeys(solidityConfig.mythx);
         const armletOptions = {
             ...armletAuthOptions,
             platforms: ['vscode-solidity'],  // client chargeback
@@ -270,13 +270,13 @@ export function mythrilAnalyze() {
         }
 
         const analyzeOpts = {
-            data: myth.truffle2MythrilJSON(buildObj),
+            data: myth.truffle2MythxJSON(buildObj),
             mode: 'full',
             partners: ['vscode-solidity'],
-            timeout: solidityConfig.mythril.timeout * 1000,  // convert secs to millisecs
+            timeout: solidityConfig.mythx.timeout * 1000,  // convert secs to millisecs
 
             // FIXME: The below "partners" will change when
-            // https://github.com/ConsenSys/mythril-api/issues/59
+            // https://github.com/ConsenSys/mythx-api/issues/59
             // is resolved.
             };
 
@@ -286,7 +286,7 @@ export function mythrilAnalyze() {
 
         client.analyze(analyzeOpts)
             .then(issues => {
-                const formatter = getFormatter(solidityConfig.mythril.reportFormat);
+                const formatter = getFormatter(solidityConfig.mythx.reportFormat);
                 const esIssues = myth.issues2Eslint(issues, buildObj, analyzeOpts);
                 printReport(esIssues, contractName, formatter, showMessage);
                 const now = new Date();
@@ -298,7 +298,7 @@ export function mythrilAnalyze() {
                     reportsDir: reportsDir,
                     secsSinceEpoch: +now,
                     sourcePath: analyzeOpts.data.sourcePath,
-                    // Add stuff like mythril version
+                    // Add stuff like mythx version
                 };
                 writeMarkdownReport(mdData);
                 /*
