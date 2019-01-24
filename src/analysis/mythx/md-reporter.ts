@@ -25,6 +25,7 @@ const theIssueTemplate = `
 - [Analysis information](#analysis-info)
 
 {{#each issues}}
+
 ## Issue {{add1 @index}} {{severity}}: {{swcTitle}} [{{swcID}}]({{swc_url swcID}})
 
 {{description.head}} {{description.tail}}
@@ -36,16 +37,14 @@ const theIssueTemplate = `
 
 {{/if}}
 
-{{#each locations}}
-- sourceMap: {{sourceMap}}
-{{/each}}
-
+* sourceMap: {{sourceMap}}
 {{#if line}}
 * Starting at line {{line}}, column: {{column}}
 {{/if}}
 {{#if endLine}}
 * Ending at line: {{endLine}}, column: {{endCol}}
 {{/if}}
+
 {{/each}}
 {{/each}}
 

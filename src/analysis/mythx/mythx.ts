@@ -102,6 +102,33 @@ export class MythXIssues {
         return this._buildObj;
     }
 
+    get issuesWithLineColumn() {
+        return this.issues.map(issue => {
+           const { sourceFormat, source } = issue;
+           const sourceName = path.basename(source);
+           const lineBreakPositions = this.lineBreakPositions[sourceName];
+            issue.issues.map(i => {
+                let startLineCol, endLineCol;
+                if (sourceFormat === 'evm-byzantium-bytecode') {
+                    const offset = parseInt(i.sourceMap.split(':')[0], 10);
+                    [startLineCol, endLineCol] = this.byteOffset2lineColumn(offset, lineBreakPositions);
+                } else if (sourceFormat === 'text') {
+                    // Pick out first srcEntry value
+                    const srcEntry = i.sourceMap.split(';')[0];
+                    [startLineCol, endLineCol] = this.textSrcEntry2lineColumn(srcEntry, lineBreakPositions);
+                }
+                if (startLineCol) {
+                    i.line = startLineCol.line;
+                    i.column = startLineCol.column;
+                    i.endLine = endLineCol.line;
+                    i.endCol = endLineCol.column;
+                }
+                return i;
+            });
+            return issue;
+        });
+    }
+
     get contractName() {
         return this._contractName;
     }

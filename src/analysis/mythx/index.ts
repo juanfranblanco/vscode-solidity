@@ -297,12 +297,14 @@ async function analyzeWithBuildDir({
 
         showMessage(formatter(groupedEslintIssues));
 
+        const issues = obj.issuesWithLineColumn;
+
         const now = new Date();
         const reportsDir = trufstuf.getMythReportsDir(buildContractsDir);
         const mdData = {
             compilerVersion: analyzeOpts.data.version,
             contractName,
-            issues: mythXIssues,
+            issues,
             reportsDir: reportsDir,
             secsSinceEpoch: +now,
             sourcePath: mythxBuilObj.sourceList[0], // FIXME: We currently analyze single file. It's ok to take first item
