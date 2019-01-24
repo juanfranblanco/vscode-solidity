@@ -314,7 +314,7 @@ async function analyzeWithBuildDir({
         showMessage(err);
         vscode.window.showWarningMessage(err);
     }
-
+    return true;
 }
 
 

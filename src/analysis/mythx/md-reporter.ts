@@ -17,35 +17,36 @@ const theIssueTemplate = `
 **Table of Contents**
 
 {{#each issues}}
-    {{#each issues}}
-        - [Issue {{add1 @index}} {{severity}}: {{swcTitle}}]({{issue_markdown_link @index severity swcTitle swcID}})
-    {{/each}}
 
-    - [Analysis information](#analysis-info)
+{{#each issues}}
+- [Issue {{add1 @index}} {{severity}}: {{swcTitle}}]({{issue_markdown_link @index severity swcTitle swcID}})
+{{/each}}
 
-    {{#each issues}}
-        ## Issue {{add1 @index}} {{severity}}: {{swcTitle}} [{{swcID}}]({{swc_url swcID}})
+- [Analysis information](#analysis-info)
 
-        {{description.head}} {{description.tail}}
-        {{#if markedText}}
+{{#each issues}}
+## Issue {{add1 @index}} {{severity}}: {{swcTitle}} [{{swcID}}]({{swc_url swcID}})
 
-        \`\`\`
-        {{{markedText}}}
-        \`\`\`
+{{description.head}} {{description.tail}}
+{{#if markedText}}
 
-        {{/if}}
+\`\`\`
+{{{markedText}}}
+\`\`\`
 
-        {{#each locations}}
-            - sourceMap: {{sourceMap}}
-        {{/each}}
+{{/if}}
 
-        {{#if line}}
-            * Starting at line {{line}}, column: {{column}}
-        {{/if}}
-        {{#if endLine}}
-            * Ending at line: {{endLine}}, column: {{endCol}}
-        {{/if}}
-    {{/each}}
+{{#each locations}}
+- sourceMap: {{sourceMap}}
+{{/each}}
+
+{{#if line}}
+* Starting at line {{line}}, column: {{column}}
+{{/if}}
+{{#if endLine}}
+* Ending at line: {{endLine}}, column: {{endCol}}
+{{/if}}
+{{/each}}
 {{/each}}
 
 ## Analysis Info

@@ -20,7 +20,8 @@ export function activate(context: vscode.ExtensionContext) {
     initDiagnosticCollection(diagnosticCollection);
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.mythx.analyze', async () => {
-        await mythxAnalyze2();
+        const res = await mythxAnalyze2();
+        return res;
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.mythx.version', () => {
