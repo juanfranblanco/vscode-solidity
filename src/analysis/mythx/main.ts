@@ -115,7 +115,7 @@ function solidityPathAndSource() {
 
     const fileName = path.extname(editor.document.fileName);
     if (fileName !== '.sol') {
-        warnFn(`{$fileName} not a solidity file; should match: *.sol`);
+        warnFn(`${fileName} not a solidity file; should match: *.sol`);
         return null;
     }
 
@@ -270,7 +270,7 @@ export function mythxAnalyze() {
         }
 
         const analyzeOpts = {
-            data: mythx.truffle2MythxJSON(buildObj),
+            data: { analysisMode: '', compiler: { version: ''}, contractName: '', sourcePath: ''},
             mode: 'full',
             partners: ['vscode-solidity'],
             timeout: solidityConfig.mythx.timeout * 1000,  // convert secs to millisecs
@@ -336,6 +336,7 @@ export function mythxAnalyze() {
                     if (arg !== null) {
                         showMessage(`compile returns ${arg}`);
                     } else {
+                        console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
                         analyzeWithBuildDir();
                     }
                 });

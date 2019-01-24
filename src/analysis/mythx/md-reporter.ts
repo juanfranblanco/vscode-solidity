@@ -2,6 +2,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as Handlebars from 'handlebars';
 import * as vscode from 'vscode';
+import * as util from 'util';
+
+
+const fsExists = util.promisify(fs.exists);
+const fsMkdir = util.promisify(fs.mkdir);
+const writeFile = util.promisify(fs.writeFile);
 
 // Grab the template script
 
@@ -11,36 +17,37 @@ const theIssueTemplate = `
 **Table of Contents**
 
 {{#each issues}}
-- [Issue {{add1 @index}} {{type}}: {{title}}]({{issue_markdown_link @index type title ruleId}})
+    {{#each issues}}
+        - [Issue {{add1 @index}} {{severity}}: {{swcTitle}}]({{issue_markdown_link @index severity swcTitle swcID}})
+    {{/each}}
+
+    - [Analysis information](#analysis-info)
+
+    {{#each issues}}
+        ## Issue {{add1 @index}} {{severity}}: {{swcTitle}} [{{swcID}}]({{swc_url swcID}})
+
+        {{description.head}} {{description.tail}}
+        {{#if markedText}}
+
+        \`\`\`
+        {{{markedText}}}
+        \`\`\`
+
+        {{/if}}
+
+        {{#each locations}}
+            - sourceMap: {{sourceMap}}
+        {{/each}}
+
+        {{#if line}}
+            * Starting at line {{line}}, column: {{column}}
+        {{/if}}
+        {{#if endLine}}
+            * Ending at line: {{endLine}}, column: {{endCol}}
+        {{/if}}
+    {{/each}}
 {{/each}}
-- [Analysis information](#analysis-info)
 
-{{#each issues}}
-## Issue {{add1 @index}} {{type}}: {{title}} [{{ruleId}}]({{swc_url ruleId}})
-
-{{message}}
-{{#if markedText}}
-
-\`\`\`
-{{{markedText}}}
-\`\`\`
-
-{{/if}}
-{{#if address}}
-* Bytecode offset: {{address}}
-{{/if}}
-* Tool: {{tool}}
-{{#if function}}
-* Function {{function}}
-{{/if}}
-{{#if line}}
-* Starting at line {{line}}, column: {{column}}
-{{/if}}
-{{#if endLine}}
-* Ending at line: {{endLine}}, column: {{endCol}}
-{{/if}}
-
-{{/each}}
 ## Analysis Info
 * Contract Name {{contractName}}
 * Source Path:  {{file_link sourcePath}}
@@ -108,6 +115,35 @@ export function writeMarkdownReport(mdData: any) {
     // write in JSON format in case we want in the future to look at these.
     const reportJSONPath = path.join(mythReportDir, `${filePrefix}.json`);
     fs.writeFileSync(reportJSONPath, stringify , 'utf-8');
+    parseMythXReport(mdData);
+    return reportPath;
+}
+
+/*
+mdData is expected to have:
+   compilerVersion  string
+   contractName     string
+   reportsDir       directory path
+   sourcePath       file path
+   secsSinceEpoc    number
+*/
+export async function writeMarkdownReportAsync(mdData: any) {
+    // Pass our data to the template
+    const mythReportDir = mdData.reportsDir;
+    const theCompiledMarkdown = theTemplate(mdData);
+    const isReportDirExists = await fsExists(mythReportDir);
+    if (!isReportDirExists) {
+        await fsMkdir(mythReportDir);
+    }
+
+    const filePrefix = `${mdData.contractName}-${mdData.secsSinceEpoch}`;
+    const reportPath = path.join(mythReportDir, `${filePrefix}.md`);
+    await writeFile(reportPath, theCompiledMarkdown);
+    const stringify = JSON.stringify(mdData, null, 4);
+
+    // write in JSON format in case we want in the future to look at these.
+    const reportJSONPath = path.join(mythReportDir, `${filePrefix}.json`);
+    await writeFile(reportJSONPath, stringify , 'utf-8');
     parseMythXReport(mdData);
     return reportPath;
 }

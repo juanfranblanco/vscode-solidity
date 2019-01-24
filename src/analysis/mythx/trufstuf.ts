@@ -4,6 +4,24 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as assert from 'assert';
+import * as util from 'util';
+
+const readdir = util.promisify(fs.readdir);
+
+
+/**
+ * Scans Truffle smart contracts build directory and returns
+ * array of paths to smart contract build JSON files.
+ *
+ * @param {string} directory - path to truffle smart contracts build directory. {
+ * @returns {Array<string>} - list of JSON files.
+ */
+export const getTruffleBuildJsonFilesAsync = async function(directory: string) {
+    const files = await readdir(directory);
+    const filteredFiles = files.filter(f => f !== 'Migrations.json');
+    const filePaths = filteredFiles.map(f => path.join(directory, f));
+    return filePaths;
+};
 
 export function getBuildContractsDir(p: string): string {
     return `${p}/build/contracts`;
