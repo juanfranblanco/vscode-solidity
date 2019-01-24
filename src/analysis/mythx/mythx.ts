@@ -74,6 +74,7 @@ export class MythXIssues {
     private issues: any;
     private _contractName: any;
     private _buildObj: any;
+    private contractSource: string;
     private sourceMap: any;
     private deployedSourceMap: any;
     private offset2InstNum: any;
@@ -85,10 +86,11 @@ export class MythXIssues {
      *
      * @param {object} buildObj - Truffle smart contract build object
      */
-    constructor(buildObj) {
+    constructor(buildObj: any) {
         this.issues = [];
         this._contractName = buildObj.contractName;
         this._buildObj = truffle2MythXJSON(buildObj);
+        this.contractSource = buildObj.source;
         this.sourceMap = this._buildObj.sourceMap;
         this.deployedSourceMap = this._buildObj.deployedSourceMap;
         this.offset2InstNum = srcmap.makeOffset2InstNum(this._buildObj.deployedBytecode);
@@ -108,7 +110,7 @@ export class MythXIssues {
            const sourceName = path.basename(source);
            const lineBreakPositions = this.lineBreakPositions[sourceName];
             issue.issues.map(i => {
-                let startLineCol, endLineCol;
+                let startLineCol: any,  endLineCol: any;
                 if (sourceFormat === 'evm-byzantium-bytecode') {
                     const offset = parseInt(i.sourceMap.split(':')[0], 10);
                     [startLineCol, endLineCol] = this.byteOffset2lineColumn(offset, lineBreakPositions);
@@ -265,8 +267,33 @@ export class MythXIssues {
         return [loc.start, loc.end];
     }
 
+    // Return at most one line of text source marked up. If the spanned region
+    // is more than one line add ... to the end of the underline.
+    // For example:
+    //    x =  a + 1 * 2
+    //         ^^^^^
+    // or if the region spans more than one line:
+    //    if (a > b) {
+    //    ^^^^^^^^^^^^...
+    //
+    public sourceLocation2markedLine(startLineCol: any, endLineCol: any): string {
+        let endLine = this.contractSource.indexOf('\n', startLineCol.beginLinePos);
+        if (endLine === -1) {
+            endLine = this.contractSource.length;
+        }
+        const startText = this.contractSource.slice(startLineCol.beginLinePos, endLine);
+        let underlines = ' '.repeat(startLineCol.column);
+        if (startLineCol.beginLinePos === endLineCol.beginLinePos) {
+            // One same line, mark portion of that line.
+            underlines += '^'.repeat(endLineCol.column - startLineCol.column);
+        } else {
+            underlines += ('^'.repeat(startText.length - startLineCol.column)) + '...';
+        }
+        return `${startText}\n${underlines}`;
+    }
+
     /**
-      * Convert a MythX issue into an ESLint-style issue.
+      * Add to the MythX issue ESLint fields. Note these are added _in addition_.
       * The eslint report format which we use, has these fields:
       *
       * - column,
@@ -282,7 +309,7 @@ export class MythXIssues {
       *
       * - description.head
       * - description.tail,
-      * - locations
+      * - sourceMap,
       * - severity
       * - swcId
       * - swcTitle
@@ -294,20 +321,27 @@ export class MythXIssues {
       *                                     holds the locations that are referred to
       * @returns eslint-issue object
     */
-    public issue2EsLint(issue, spaceLimited, sourceFormat, sourceName) {
+    public issue2EsLint(issue: any, spaceLimited: boolean,
+                        sourceFormat: string, sourceName: string) {
         const esIssue = {
             column: 0,
             endCol: 0,
             endLine: -1,
             fatal: false,
+            head: issue.description.head,
             line: -1,
+            markedText: '',
             message: spaceLimited ? issue.description.head : `${issue.description.head} ${issue.description.tail}`,
             mythXseverity: issue.severity,
             ruleId: issue.swcID,
             severity: mythx2Severity[issue.severity] || 1,
+            sourceMap: issue.sourceMap,
+            swcID: issue.swcID,
+            swcTitle: issue.swcTitle,
+            tail: issue.description.tail,
         };
 
-        let startLineCol,  endLineCol;
+        let startLineCol: any,  endLineCol: any;
         const lineBreakPositions = this.lineBreakPositions[sourceName];
 
         if (sourceFormat === 'evm-byzantium-bytecode') {
@@ -318,6 +352,10 @@ export class MythXIssues {
             // Pick out first srcEntry value
             const srcEntry = issue.sourceMap.split(';')[0];
             [startLineCol, endLineCol] = this.textSrcEntry2lineColumn(srcEntry, lineBreakPositions);
+            if (startLineCol) {
+                esIssue.markedText = this.sourceLocation2markedLine(startLineCol, endLineCol);
+            }
+
         }
         if (startLineCol) {
             esIssue.line = startLineCol.line;
@@ -362,7 +400,7 @@ export class MythXIssues {
      * @param {boolean} spaceLimited
      * @returns {object[]}
      */
-    public getEslintIssues(spaceLimited = false) {
+    public getEslintIssues(spaceLimited) {
         return this.issues.map(report => this.convertMythXReport2EsIssue(report, spaceLimited));
     }
 }
@@ -575,7 +613,7 @@ export function issues2Eslint(issues: any, buildObj: any, options: any): any {
 
 // Take truffle's build/contracts/xxx.json JSON and make it
 // compatible with the Mythx Platform API
-const truffle2MythXJSON = function(truffleJSON: any, toolId = 'truffle-analyze'): any {
+export const truffle2MythXJSON = function(truffleJSON: any, toolId = 'truffle-analyze'): any {
     const {
         contractName,
         bytecode,

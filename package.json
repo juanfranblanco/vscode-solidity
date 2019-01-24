@@ -88,6 +88,11 @@
       "type": "object",
       "title": "Solidity configuration",
       "properties": {
+        "solidity.mythx.analysisMode": {
+          "type": [ "string" ],
+          "default": "quick",
+          "markdownDescription": "Whether to do quick or full (long) analysis"
+        },
         "solidity.mythx.apiKey": {
           "type": [ "string" ],
           "default": "ace9b42d-4c97-407c-b197-a9b2e5ab6759",

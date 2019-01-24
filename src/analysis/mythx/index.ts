@@ -5,7 +5,7 @@ import * as mythx from './mythx';
 import * as trufstuf from './trufstuf';
 import { ApiVersion, Client } from 'armlet';
 import { versionJSON2String, getFormatter } from './util';
-import { writeMarkdownReportAsync } from './md-reporter';
+import { writeMarkdownReportAsync, writeMarkdownReport } from './md-reporter';
 import * as util from 'util';
 
 // vscode-solidity's wrapper around solc
@@ -47,17 +47,19 @@ interface SolidityMythXOption {
 }
 
 // This is adapted from 'remix-lib/src/sourceMappingDecoder.js'
-function showMessage (mess) {
+function showMessage (mess: string) {
     outputChannel.clear();
     outputChannel.show();
     outputChannel.appendLine(mess);
 }
 
 // Take solc's JSON output and make it compatible with the Mythril Platform API
-function solc2MythrilJSON(inputSolcJSON, contractName, sourceCode,
-                          analysisMode) {
+function solc2MythrilJSON(inputSolcJSON: any,
+                          contractName: string,
+                          sourceCode: string,
+                          analysisMode: string) {
 
-    // Add/remap some fields because the Mythril Platform API doesn't
+    // Add/remap some fields because the MythX Platform API doesn't
     // align with solc's JSON.
 
     const solcJSON = {
@@ -149,7 +151,7 @@ function solidityPathAndSource() {
       negative:  line1/column1 < line2/column2
       positive:  line1/column1 > line2/column2
 */
-function compareLineCol(line1, column1, line2, column2) {
+function compareLineCol(line1: number, column1: number, line2: number, column2: number) {
     return line1 === line2 ?
         (column1 - column2) :
         (line1 - line2);
@@ -167,13 +169,13 @@ function compareLineCol(line1, column1, line2, column2) {
       positive:  range(mess1) > range(mess)
 
 */
-function compareMessLCRange(mess1, mess2) {
+function compareMessLCRange(mess1: any, mess2: any) {
     const c = compareLineCol(mess1.line, mess1.column, mess2.line, mess2.column);
     return c !== 0 ? c : compareLineCol(mess1.endLine, mess1.endCol, mess2.endLine, mess2.endCol);
 }
 
-const groupEslintIssuesByBasename = issues => {
-    const mappedIssues = issues.reduce((accum, issue) => {
+const groupEslintIssuesByBasename = (issues: any) => {
+    const mappedIssues = issues.reduce((accum: any, issue: any) => {
         const {
             errorCount,
             warningCount,
@@ -187,7 +189,7 @@ const groupEslintIssuesByBasename = issues => {
         if (!accum[basename]) {
             accum[basename] = {
                 errorCount: 0,
-                filePath: basename,
+                filePath: filePath,
                 fixableErrorCount: 0,
                 fixableWarningCount: 0,
                 messages: [],
@@ -204,7 +206,7 @@ const groupEslintIssuesByBasename = issues => {
 
     const issueGroups: any = Object.values(mappedIssues);
     for (const group of issueGroups) {
-        group.messages = group.messages.sort(function(mess1, mess2) {
+        group.messages = group.messages.sort(function(mess1: any, mess2: any) {
             return compareMessLCRange(mess1, mess2);
         });
 
@@ -275,7 +277,6 @@ async function analyzeWithBuildDir({
     const mythxBuilObj: any = obj.getBuildObj();
     const analyzeOpts = {
         data: mythxBuilObj,
-        mode: 'full',
         partners: ['vscode-solidity'],
         timeout: solidityConfig.mythx.timeout * 1000,  // convert secs to millisecs
 
@@ -284,14 +285,15 @@ async function analyzeWithBuildDir({
         // is resolved.
     };
 
-    analyzeOpts.data.analysisMode = 'full';
+    analyzeOpts.data.analysisMode = solidityConfig.mythx.analysisMode;
 
     const contractName: string = buildObj.contractName;
     let mythXIssues: any;
     try {
         mythXIssues = await client.analyze(analyzeOpts);
         obj.setIssues(mythXIssues);
-        const eslintIssues = obj.getEslintIssues(true);
+        const spaceLimited: boolean = ['tap', 'markdown'].indexOf(config.style) !== -1;
+        const eslintIssues = obj.getEslintIssues(spaceLimited);
         const formatter = getFormatter(solidityConfig.mythx.reportFormat);
         const groupedEslintIssues = groupEslintIssuesByBasename(eslintIssues);
 
@@ -302,12 +304,14 @@ async function analyzeWithBuildDir({
         const now = new Date();
         const reportsDir = trufstuf.getMythReportsDir(buildContractsDir);
         const mdData = {
+            analysisMode: analyzeOpts.data.analysisMode,
             compilerVersion: analyzeOpts.data.version,
             contractName,
-            issues,
+            groupedEslintIssues,
             reportsDir: reportsDir,
             secsSinceEpoch: +now,
             sourcePath: mythxBuilObj.sourceList[0], // FIXME: We currently analyze single file. It's ok to take first item
+            timeout: solidityConfig.mythx.timeout,
             // Add stuff like mythx version
         };
         await writeMarkdownReportAsync(mdData);
@@ -322,7 +326,7 @@ async function analyzeWithBuildDir({
 
 export function mythxVersion() {
     ApiVersion().then(
-        result => {
+        (result: any) => {
             const mess = versionJSON2String(result);
             vscode.window.showInformationMessage(mess);
         });

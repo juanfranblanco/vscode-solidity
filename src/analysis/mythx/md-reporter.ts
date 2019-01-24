@@ -12,31 +12,36 @@ const writeFile = util.promisify(fs.writeFile);
 // Grab the template script
 
 const theIssueTemplate = `
-# Mythx Report for {{contractName}} {{file_link sourcePath}}
+# MythX Report for {{contractName}} {{file_link sourcePath}}
 
 **Table of Contents**
 
-{{#each issues}}
-
-{{#each issues}}
-- [Issue {{add1 @index}} {{severity}}: {{swcTitle}}]({{issue_markdown_link @index severity swcTitle swcID}})
+{{#each groupedEslintIssues}}
+{{#each messages}}
+- [Issue {{add1 @index}} {{mythXseverity}}: {{swcTitle}}]({{issue_markdown_link @index mythXseverity swcTitle swcID}})
+{{/each}}
 {{/each}}
 
-- [Analysis information](#analysis-info)
+* [Analysis information](#analysis-info)
 
-{{#each issues}}
+{{#each groupedEslintIssues}}
+{{#each messages}}
 
-## Issue {{add1 @index}} {{severity}}: {{swcTitle}} [{{swcID}}]({{swc_url swcID}})
+## Issue {{add1 @index}} {{mythXseverity}}: {{swcTitle}} [{{swcID}}]({{swc_url swcID}})
 
-{{description.head}} {{description.tail}}
 {{#if markedText}}
-
 \`\`\`
 {{{markedText}}}
 \`\`\`
-
 {{/if}}
 
+{{head}}
+
+{{tail}}
+
+{{#if address}}
+* Bytecode offset: {{address}}
+{{/if}}
 * sourceMap: {{sourceMap}}
 {{#if line}}
 * Starting at line {{line}}, column: {{column}}
@@ -49,9 +54,11 @@ const theIssueTemplate = `
 {{/each}}
 
 ## Analysis Info
+* Analysis Mode: {{analysisMode}}
 * Contract Name {{contractName}}
 * Source Path:  {{file_link sourcePath}}
 * Compiler: {{compilerVersion}}
+* Timeout Seconds: {{timeout}}
 `;
 
 /**
@@ -79,13 +86,13 @@ Handlebars.registerHelper('file_link', function(filePath: string): string {
 });
 
 // Return an internal Markdown issue link for an issue
-Handlebars.registerHelper('issue_markdown_link', function(index: number, severity: string, title: string,
+Handlebars.registerHelper('issue_markdown_link', function(index: number, mythXseverity: string, title: string,
                                                           ruleId: string): string {
     let lowerTitle: string = title.toLowerCase();
     if (lowerTitle.indexOf(' ') >= 0) {
         lowerTitle = title.split(' ').join('-');
     }
-    return `#issue-${index + 1}-${severity.toLowerCase()}-${lowerTitle}-${ruleId}`;
+    return `#issue-${index + 1}-${mythXseverity.toLowerCase()}-${lowerTitle}-${ruleId}`;
 });
 
 // Compile the template
@@ -153,22 +160,24 @@ export function parseMythXReport(reportJSON: any) {
     // The code you place here will be executed every time your command is executed
     const issueCollections: any = {};
 
-    for (const issue of reportJSON.issues) {
-        // Parse Report creating diagnostics and update file
-        const p = issue.path;
-        const diagnostic = {
-            code: issue.ruleId,
-            message: issue.message,
-            range: new vscode.Range(new vscode.Position(issue.line - 1, issue.column),
-                                    new vscode.Position(issue.endLine - 1, issue.endCol)),
-            relatedInformation: [],
-            severity: issue.type,
-            source: 'MythX',
-        };
-        if (!issueCollections[p]) {
-            issueCollections[p] = [];
+    // Parse Report creating diagnostics and update file
+    for (const issueGroup of reportJSON.groupedEslintIssues) {
+        const p = issueGroup.filePath;
+        for (const issue of issueGroup.messages) {
+            const diagnostic = {
+                code: issue.ruleId,
+                message: issue.message,
+                range: new vscode.Range(new vscode.Position(issue.line - 1, issue.column),
+                                        new vscode.Position(issue.endLine - 1, issue.endCol)),
+                relatedInformation: [],
+                severity: issue.mythXseverity,
+                source: 'MythX',
+            };
+            if (!issueCollections[p]) {
+                issueCollections[p] = [];
+            }
+            issueCollections[p].push(diagnostic);
         }
-        issueCollections[p].push(diagnostic);
     }
 
     for (const p of Object.keys(issueCollections)) {

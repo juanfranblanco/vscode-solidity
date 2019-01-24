@@ -270,8 +270,10 @@ export function mythxAnalyze() {
         }
 
         const analyzeOpts = {
-            data: { analysisMode: '', compiler: { version: ''}, contractName: '', sourcePath: ''},
-            mode: 'full',
+            data: {
+                analysisMode: solidityConfig.mythx.analysisMode,
+                compiler: { version: ''},
+                contractName: '', sourcePath: ''},
             partners: ['vscode-solidity'],
             timeout: solidityConfig.mythx.timeout * 1000,  // convert secs to millisecs
 
@@ -279,8 +281,6 @@ export function mythxAnalyze() {
             // https://github.com/ConsenSys/mythx-api/issues/59
             // is resolved.
             };
-
-        analyzeOpts.data.analysisMode = 'full';
 
         const contractName: string = buildObj.contractName;
 
@@ -292,13 +292,15 @@ export function mythxAnalyze() {
                 const now = new Date();
                 const reportsDir = trufstuf.getMythReportsDir(buildContractsDir);
                 const mdData = {
+                    analysisMode: solidityConfig.mythx.analysisMode,
                     compilerVersion: analyzeOpts.data.compiler.version,
                     contractName: analyzeOpts.data.contractName,
                     issues: esIssues,
                     reportsDir: reportsDir,
                     secsSinceEpoch: +now,
                     sourcePath: analyzeOpts.data.sourcePath,
-                    // Add stuff like mythx version
+                    timeout: solidityConfig.mythx.timeout,
+                    // FIXME Add stuff like mythx version, UUID, run and queue time
                 };
                 writeMarkdownReport(mdData);
                 /*
