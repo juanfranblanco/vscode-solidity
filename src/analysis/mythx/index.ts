@@ -326,7 +326,7 @@ export function mythxVersion() {
         });
 }
 
-export async function mythxAnalyze2() {
+export async function mythxAnalyze() {
     const solidityConfig = vscode.workspace.getConfiguration('solidity');
     const pathInfo = solidityPathAndSource();
 
