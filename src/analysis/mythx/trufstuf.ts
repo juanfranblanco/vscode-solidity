@@ -5,24 +5,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as assert from 'assert';
 
-// Directories that must be in a truffle project
-
-const TRUFFLE_ROOT_DIRS = ['contracts', 'migrations'];
-
-export function isTruffleRoot (p: string): boolean {
-    for (const shortDir of TRUFFLE_ROOT_DIRS) {
-        const dir = `${p}/${shortDir}`;
-        if (!fs.existsSync(dir)) {
-            return false;
-        }
-        const stat = fs.statSync(dir);
-        if (!stat || !stat.isDirectory()) {
-            return false;
-        }
-    }
-    return true;
-}
-
 export function getBuildContractsDir(p: string): string {
     return `${p}/build/contracts`;
 }
@@ -35,15 +17,11 @@ export function getMythReportsDir(buildContractsDir: string) {
     return path.normalize(path.join(buildContractsDir, '..', 'mythx'));
 }
 
-export function getTruffleBuildJsonFiles(directory): any {
+export function getTruffleBuildJsonFiles(directory: string): Array<string> {
     const files = fs.readdirSync(directory);
-    const result = [];
-    for (const file of files) {
-        if (path.extname(file) === '.json' && path.basename(file)[0] !== '.') {
-            result.push(file);
-        }
-    }
-    return result;
+    const filteredFiles = files.filter(f => f !== 'Migrations.json');
+    const filePaths = filteredFiles.map(f => path.join(directory, f));
+    return filePaths;
 }
 
 export function guessTruffleBuildJson(directory: string): string {
@@ -66,3 +44,15 @@ export function guessTruffleBuildJson(directory: string): string {
     }
     return jsonPath;
 }
+/**
+ * Extracts path to solidity file from smart contract build object
+ * found in json files in truffle build directories.
+ *
+ * Build objects have property "sourcePath".
+ * For simplicity and readabilty build object is destructured and
+ * "sourcePath" property extracted to output directly.
+ *
+ * @param {Object} param - Smart contract build object,
+ * @returns {String} - Absolute path to solidity file.
+ */
+export const getSolidityFileFromJson = ({ sourcePath }) => sourcePath;

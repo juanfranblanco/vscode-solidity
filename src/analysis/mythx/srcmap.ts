@@ -9,14 +9,15 @@ import * as opcodes from 'remix-lib/src/code/opcodes';
 /**
  *  Return the VariableDeclaration AST node associated with instIndex
  *  if there is one. Otherwise return null.
- *  @param {instIndex} integer - bytecode offset of instruction
+ *  @param {instIndex} number  - bytecode offset of instruction
  *  @param {sourceMap} string  - solc srcmap used to associate the instruction
  *                               with an ast node
  *  @param {ast}               - solc root AST for contract
  *  @return {AST node or null}
  *
  */
-export function isVariableDeclaration (instIndex, sourceMap, ast) {
+export function isVariableDeclaration (instIndex: number, sourceMap: string,
+                                       ast: any) {
     const sourceMappingDecoder = new SourceMappingDecoder();
     return sourceMappingDecoder.findNodeAtInstructionIndex('VariableDeclaration',
                                                            instIndex, sourceMap, ast);
@@ -28,7 +29,7 @@ export function isVariableDeclaration (instIndex, sourceMap, ast) {
  *  @return {boolean}
  *
  */
-export function isDynamicArray(node) {
+export function isDynamicArray(node): boolean {
     // FIXME: do we want to check:
         // constant: false
     // storageLocation: 'default'
@@ -45,9 +46,9 @@ export function isDynamicArray(node) {
  *  @return {array mapping bytecode offset to an instruction number}
  *
  */
-export function makeOffset2InstNum(hexstr) {
+export function makeOffset2InstNum(hexstr: string): Array<number> {
     const bytecode = remixUtil.hexToIntArray(hexstr);
-    const instMap = {};
+    const instMap = [];
     let j = -1;
     for (let i = 0; i < bytecode.length; i++) {
         j++;

@@ -264,7 +264,7 @@ export function issues2Eslint(issues: any, buildObj: any, options: any): any {
 
 // Take truffle's build/contracts/xxx.json JSON and make it
 // compatible with the Mythx Platform API
-export function truffle2MythxJSON(truffleJSON: any) {
+export function truffle2MythxJSON(truffleJSON: any): any {
 
     // Add/remap some fields because the Mythx Platform API doesn't
     // align with truffle's JSON
@@ -275,3 +275,31 @@ export function truffle2MythxJSON(truffleJSON: any) {
 
     return truffleJSON;
 }
+
+export const remapMythXOutput = mythObject => {
+    const mapped = mythObject.sourceList.map(source => ({
+        issues: [],
+        source,
+        sourceFormat: mythObject.sourceFormat,
+        sourceType: mythObject.sourceType,
+    }));
+
+    if (mythObject.issues) {
+        mythObject.issues.forEach(issue => {
+            issue.locations.forEach(({ sourceMap }) => {
+                // const sourceListIndex = sourceMap.split(':')[2];
+                // FIXME: Only one sourceList is supported. set to 0
+                mapped[0].issues.push({
+                    description: issue.description,
+                    extra: issue.extra,
+                    severity: issue.severity,
+                    sourceMap: sourceMap,
+                    swcID: issue.swcID,
+                    swcTitle: issue.swcTitle,
+                });
+            });
+        });
+    }
+
+    return mapped;
+};

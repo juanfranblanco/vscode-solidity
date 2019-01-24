@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as solc from 'solc';
 import * as vscode from 'vscode';
-import * as myth from './mythx';
+import * as mythx from './mythx';
 import * as trufstuf from './trufstuf';
 import { DiagnosticSeverity as Severity, Diagnostic, Range } from 'vscode-languageserver';
 import { ContractCollection } from '../../model/contractsCollection';
@@ -209,7 +209,7 @@ export function mythxAnalyze() {
         let solidityFileBase: string;
         let solidityFile: string;
         let buildJsonPath: string;
-        let buildJson;
+        let buildJson: any;
 
         try {
             if (config._.length === 0) {
@@ -270,7 +270,7 @@ export function mythxAnalyze() {
         }
 
         const analyzeOpts = {
-            data: myth.truffle2MythxJSON(buildObj),
+            data: mythx.truffle2MythxJSON(buildObj),
             mode: 'full',
             partners: ['vscode-solidity'],
             timeout: solidityConfig.mythx.timeout * 1000,  // convert secs to millisecs
@@ -287,7 +287,7 @@ export function mythxAnalyze() {
         client.analyze(analyzeOpts)
             .then(issues => {
                 const formatter = getFormatter(solidityConfig.mythx.reportFormat);
-                const esIssues = myth.issues2Eslint(issues, buildObj, analyzeOpts);
+                const esIssues = mythx.issues2Eslint(issues, buildObj, analyzeOpts);
                 printReport(esIssues, contractName, formatter, showMessage);
                 const now = new Date();
                 const reportsDir = trufstuf.getMythReportsDir(buildContractsDir);
