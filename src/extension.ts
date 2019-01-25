@@ -7,6 +7,8 @@ import {codeGenerate, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFS
     codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll} from './codegen';
 import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn} from 'vscode-languageclient';
 import {lintAndfixCurrentDocument} from './linter/soliumClientFixer';
+import {mythxVersion} from './analysis/mythx/main';
+import {mythxAnalyze} from './analysis/mythx';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
@@ -16,6 +18,15 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(diagnosticCollection);
 
     initDiagnosticCollection(diagnosticCollection);
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.mythx.analyze', async () => {
+        const res = await mythxAnalyze();
+        return res;
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.mythx.version', () => {
+        mythxVersion();
+    }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.active', () => {
         compileActiveContract();

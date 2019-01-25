@@ -46,29 +46,39 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install"
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "mocha -r ts-node/register test/*.spec.ts"
   },
   "dependencies": {
     "abi-code-gen": "0.0.3",
     "ajv": "^6.5.2",
     "ajv-keywords": "^3.2.0",
+    "antlr4-c3": "^1.1.8",
+    "armlet": ">=0.3.1",
     "fs-extra": "^4.0.3",
+    "handlebars": "^4.0.12",
     "nethereum-codegen": "^1.0.6",
     "read-yaml": "^1.1.0",
+    "remix-lib": ">=0.4.1",
     "solc": "^0.5.0",
     "solhint": "^1.4.0",
+    "solidity-parser-antlr": "^0.3.2",
     "solium": "^1.1.8",
     "solparse": "^2.2.5",
     "truffle-artifactor": "^2.1.4",
+    "truffle-config": "^1.1.0-beta.2",
+    "truffle-workflow-compile": "^2.0.0",
     "vscode-languageclient": "^5.1.1",
     "vscode-languageserver": "^5.1.0",
-    "solidity-parser-antlr": "^0.3.2",
-    "antlr4-c3": "^1.1.8",
-    "vscode-uri": "^1.0.3",
-    "armlet": "^0.2.2"
+    "vscode-uri": "^1.0.3"
   },
   "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.5",
     "@types/node": "^10.5.5",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "typescript": "^3.1.3",
     "vscode": "^1.1.22"
@@ -78,6 +88,52 @@
       "type": "object",
       "title": "Solidity configuration",
       "properties": {
+        "solidity.mythx.analysisMode": {
+          "type": [ "string" ],
+          "default": "quick",
+          "markdownDescription": "Whether to do quick or full (long) analysis"
+        },
+        "solidity.mythx.apiKey": {
+          "type": [ "string" ],
+          "default": "ace9b42d-4c97-407c-b197-a9b2e5ab6759",
+          "markdownDescription": "MythX API key. See https://mythx.io to get an API key"
+        },
+        "solidity.mythx.apiUrl": {
+          "type": [ "string" ],
+          "default": "https://staging.api.mythx.io",
+          "markdownDescription": "MythX URL to connect to"
+        },
+        "solidity.mythx.password": {
+          "type": [ "string" ],
+          "default": null,
+          "markdownDescription": "MythX Password. See https://mythx.io to get password"
+        },
+        "solidity.mythx.ethAddress": {
+          "type": [ "string" ],
+          "default": null,
+          "markdownDescription": "MetaMask ETH address used to login to MythX. See https://mythx.io"
+        },
+        "solidity.mythx.email": {
+          "type": [ "string" ],
+          "default": null,
+          "markdownDescription": "MythX email address. See https://mythx.io"
+        },
+        "solidity.mythx.reportFormat": {
+          "type": [
+            "string",
+            "stylish"
+          ],
+          "default": "stylish",
+          "markdownDescription": "Report style format for analysis results. See https://eslint.org/docs/user-guide/formatters/ for a full list."
+        },
+        "solidity.mythx.timeout": {
+          "type": [
+            "number",
+            120
+          ],
+          "default": 120,
+          "markdownDescription": "Maximum time in seconds to give MythX for analysis"
+        },
         "solidity.compileUsingRemoteVersion": {
           "type": [
             "string",
@@ -217,6 +273,14 @@
       {
         "command": "solidity.fixDocument",
         "title": "Solidity: Fix document rules using Solium"
+      },
+      {
+        "command": "solidity.mythx.analyze",
+        "title": "Solidity: MythX analyses"
+      },
+      {
+        "command": "solidity.mythx.version",
+        "title": "Solidity: MythX API version information"
       }
     ],
     "keybindings": [
