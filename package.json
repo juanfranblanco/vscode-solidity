@@ -54,7 +54,7 @@
     "ajv": "^6.5.2",
     "ajv-keywords": "^3.2.0",
     "antlr4-c3": "^1.1.8",
-    "armlet": "^1.0.0",
+    "armlet": "/src/external-vcs/github/consensys/armlet",
     "fs-extra": "^4.0.3",
     "handlebars": "^4.0.12",
     "nethereum-codegen": "^1.0.6",
@@ -89,32 +89,44 @@
       "title": "Solidity configuration",
       "properties": {
         "solidity.mythx.analysisMode": {
-          "type": [ "string" ],
+          "type": [
+            "string"
+          ],
           "default": "quick",
           "markdownDescription": "Whether to do quick or full (long) analysis"
         },
         "solidity.mythx.apiKey": {
-          "type": [ "string" ],
+          "type": [
+            "string"
+          ],
           "default": "ace9b42d-4c97-407c-b197-a9b2e5ab6759",
           "markdownDescription": "MythX API key. See https://mythx.io to get an API key"
         },
         "solidity.mythx.apiUrl": {
-          "type": [ "string" ],
+          "type": [
+            "string"
+          ],
           "default": "https://staging.api.mythx.io",
           "markdownDescription": "MythX URL to connect to"
         },
         "solidity.mythx.password": {
-          "type": [ "string" ],
+          "type": [
+            "string"
+          ],
           "default": null,
           "markdownDescription": "MythX Password. See https://mythx.io to get password"
         },
         "solidity.mythx.ethAddress": {
-          "type": [ "string" ],
+          "type": [
+            "string"
+          ],
           "default": null,
           "markdownDescription": "MetaMask ETH address used to login to MythX. See https://mythx.io"
         },
         "solidity.mythx.email": {
-          "type": [ "string" ],
+          "type": [
+            "string"
+          ],
           "default": null,
           "markdownDescription": "MythX email address. See https://mythx.io"
         },

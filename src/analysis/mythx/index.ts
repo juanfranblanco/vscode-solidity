@@ -288,10 +288,10 @@ async function analyzeWithBuildDir({
     analyzeOpts.data.analysisMode = solidityConfig.mythx.analysisMode;
 
     const contractName: string = buildObj.contractName;
-    let mythXIssues: any;
+    let mythXresult: any;
     try {
-        mythXIssues = await client.analyze(analyzeOpts);
-        obj.setIssues(mythXIssues);
+        mythXresult = await client.analyzeWithStatus(analyzeOpts);
+        obj.setIssues(mythXresult.issues);
         const spaceLimited: boolean = ['tap', 'markdown'].indexOf(config.style) !== -1;
         const eslintIssues = obj.getEslintIssues(spaceLimited);
         const formatter = getFormatter(solidityConfig.mythx.reportFormat);
@@ -311,6 +311,7 @@ async function analyzeWithBuildDir({
             reportsDir: reportsDir,
             secsSinceEpoch: +now,
             sourcePath: mythxBuilObj.sourceList[0], // FIXME: We currently analyze single file. It's ok to take first item
+            status: mythXresult.status,
             timeout: solidityConfig.mythx.timeout,
             // Add stuff like mythx version
         };

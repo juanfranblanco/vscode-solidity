@@ -58,7 +58,15 @@ const theIssueTemplate = `
 * Contract Name {{contractName}}
 * Source Path:  {{file_link sourcePath}}
 * Compiler: {{compilerVersion}}
-* Timeout Seconds: {{timeout}}
+* Timeout: {{timeout}} secs
+* Run time: {{status.runTime}} msecs
+* Queue time: {{status.queueTime}} msecs
+* UUID: {{status.uuid}}
+
+## MythX Version Information
+* API version: {{status.apiVersion}}
+* Mythril version: {{status.mythrilVersion}}
+* Maru version: {{status.maruVersion}}
 `;
 
 /**
@@ -114,7 +122,7 @@ export function writeMarkdownReport(mdData: any) {
         fs.mkdirSync(mythReportDir);
     }
     const now = new Date();
-    const filePrefix = `${mdData.contractName}-${mdData.secsSinceEpoch}`;
+    const filePrefix = `${mdData.contractName}-${mdData.status.uuid}`;
     const reportPath = path.join(mythReportDir, `${filePrefix}.md`);
     fs.writeFileSync(reportPath, theCompiledMarkdown);
     const stringify = JSON.stringify(mdData, null, 4);
@@ -143,7 +151,7 @@ export async function writeMarkdownReportAsync(mdData: any) {
         await fsMkdir(mythReportDir);
     }
 
-    const filePrefix = `${mdData.contractName}-${mdData.secsSinceEpoch}`;
+    const filePrefix = `${mdData.contractName}-${mdData.status.uuid}`;
     const reportPath = path.join(mythReportDir, `${filePrefix}.md`);
     await writeFile(reportPath, theCompiledMarkdown);
     const stringify = JSON.stringify(mdData, null, 4);
