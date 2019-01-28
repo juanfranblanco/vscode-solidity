@@ -277,7 +277,7 @@ async function analyzeWithBuildDir({
     const mythxBuilObj: any = obj.getBuildObj();
     const analyzeOpts = {
         data: mythxBuilObj,
-        partners: ['vscode-solidity'],
+        // partners: ['vscode-solidity'],
         timeout: solidityConfig.mythx.timeout * 1000,  // convert secs to millisecs
 
         // FIXME: The below "partners" will change when
