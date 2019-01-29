@@ -19,7 +19,6 @@ import { compile } from 'truffle-workflow-compile';
 const fsExists = util.promisify(fs.exists);
 const fsMkdir = util.promisify(fs.mkdir);
 const readFile = util.promisify(fs.readFile);
-const contractsCompile = util.promisify(compile);
 
 const warnFn = vscode.window.showWarningMessage;
 
@@ -397,20 +396,19 @@ export async function mythxAnalyze() {
 
     // Set truffle compiler version based on vscode solidity's version info
     config.compilers.solc.version = vscode_solc.getVersion();
-    try {
-        await contractsCompile(config);
-    } catch (err) {
-        console.log('EE', err);
-        showMessage(`compile returns ${err}`);
-        return ;
-    }
-
-    const res = await analyzeWithBuildDir({
-        buildContractsDir,
-        config,
-        pathInfo,
-        solidityConfig,
-    });
-
-    return res;
+    return compile(config,
+                   function(arg) {
+                       if (arg !== null) {
+                           showMessage(`compile returns ${arg}`);
+                           return null;
+                       } else {
+                           const res = analyzeWithBuildDir({
+                               buildContractsDir,
+                               config,
+                               pathInfo,
+                               solidityConfig,
+                           });
+                           return res;
+                       }
+                   });
 }
