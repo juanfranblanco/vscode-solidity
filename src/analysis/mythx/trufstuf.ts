@@ -9,6 +9,40 @@ import * as util from 'util';
 const readdir = util.promisify(fs.readdir);
 
 
+// Directories that must be in a truffle project
+
+const TRUFFLE_ROOT_DIRS = ['contracts', 'migrations'];
+
+export function isTruffleRoot (p: string): boolean {
+    for (const shortDir of TRUFFLE_ROOT_DIRS) {
+        const dir = `${p}/${shortDir}`;
+        if (!fs.existsSync(dir)) {
+            return false;
+        }
+        const stat = fs.statSync(dir);
+        if (!stat || !stat.isDirectory()) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Return dirname of path p, unless we think this
+// part of a truffle project, in which case we'll
+// it is in a "contracts" directory and then the
+// we return the parent directory which is the
+// root of the truffle project.
+export function getRootDir (p: string): string {
+    const dirname = path.resolve(path.dirname(p));
+    if (path.basename(dirname) === 'contracts') {
+        const parent = path.normalize(`${dirname}/..`);
+        if (isTruffleRoot(parent)) {
+            return parent;
+        }
+    }
+    return dirname;
+}
+
 /**
  * Scans Truffle smart contracts build directory and returns
  * array of paths to smart contract build JSON files.

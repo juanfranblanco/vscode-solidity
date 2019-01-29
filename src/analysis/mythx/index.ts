@@ -117,23 +117,15 @@ function solidityPathAndSource() {
         return null; // We need something open
     }
 
-    const fileName = path.extname(editor.document.fileName);
-    if (fileName !== '.sol') {
-        warnFn(`{$fileName} not a solidity file; should match: *.sol`);
-        return null;
-    }
-
-    let rootDir = vscode.workspace.rootPath;
-    // Check if is folder, if not stop we need to output to a bin folder on rootPath
-    if (vscode.workspace.rootPath === undefined) {
-        warnFn('Please open a folder or workspace folder in Visual Studio Code for us to set artifacts');
-        return null;
-    } else if (path.basename(rootDir) === 'contracts') {
-        rootDir = path.dirname(rootDir);
-    }
-
-    const contractCode = editor.document.getText();
     const contractPath = editor.document.fileName;
+    const extName = path.extname(contractPath);
+    if (extName !== '.sol') {
+        warnFn(`${contractPath} not a solidity file; should match: *.sol`);
+        return null;
+    }
+
+    const rootDir = trufstuf.getRootDir(contractPath);
+    const contractCode = editor.document.getText();
 
     return {
         buildContractsDir: trufstuf.getBuildContractsDir(rootDir),
