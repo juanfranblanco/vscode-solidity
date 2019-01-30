@@ -1,9 +1,7 @@
 import * as smd from './sourceMappingDecoder';
 import * as srcmap from './srcmap';
-import * as vscode from 'vscode';
 import * as path from 'path';
 
-const warnFn = vscode.window.showWarningMessage;
 
 // const SWC_PREFIX =
 //       "https://smartcontractsecurity.github.io/SWC-registry/docs";
