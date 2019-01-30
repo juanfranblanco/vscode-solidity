@@ -80,6 +80,8 @@
     "mocha": "^5.2.0",
     "mock-require": "^3.0.3",
     "nyc": "^13.1.0",
+    "proxyquire": "^2.1.0",
+    "sinon": "^7.2.3",
     "source-map-support": "^0.5.10",
     "ts-mocha": "^2.0.0",
     "ts-node": "^7.0.1",
