@@ -73,7 +73,7 @@ const theIssueTemplate = `
 const theIssueTemplate = fs.readFileSync('./issue-report.handlebars', 'utf8');
 */
 
-// FIXME: Shhould be in some place more generic.
+// FIXME: Should be in some place more generic.
 const diagnosticsCollection = vscode.languages.createDiagnosticCollection(`Mythx-Reports`);
 
 // Turn 0-index numbering of array into 1-index numbering of issues
@@ -112,7 +112,6 @@ mdData is expected to have:
    contractName     string
    reportsDir       directory path
    sourcePath       file path
-   secsSinceEpoc    number
 */
 export function writeMarkdownReport(mdData: any) {
     // Pass our data to the template
@@ -140,7 +139,6 @@ mdData is expected to have:
    contractName     string
    reportsDir       directory path
    sourcePath       file path
-   secsSinceEpoc    number
 */
 export async function writeMarkdownReportAsync(mdData: any) {
     // Pass our data to the template

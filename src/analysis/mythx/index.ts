@@ -14,6 +14,7 @@ import {SolcCompiler} from '../../solcCompiler';
 
 import * as Config from 'truffle-config';
 import { compile } from 'truffle-workflow-compile';
+import * as stripAnsi from 'strip-ansi';
 
 
 const fsExists = util.promisify(fs.exists);
@@ -49,6 +50,10 @@ interface SolidityMythXOption {
 function showMessage (mess: string) {
     outputChannel.clear();
     outputChannel.show();
+    if (process.platform === 'darwin') {
+        // OSX OutputChannel can't handle ANSI codes, I think.
+        mess = stripAnsi(mess);
+    }
     outputChannel.appendLine(mess);
 }
 
@@ -267,13 +272,9 @@ async function analyzeWithBuildDir({
 
     const mythxBuilObj: any = obj.getBuildObj();
     const analyzeOpts = {
+        clientToolName: 'vscode-solidity',
         data: mythxBuilObj,
-        // partners: ['vscode-solidity'],
         timeout: solidityConfig.mythx.timeout * 1000,  // convert secs to millisecs
-
-        // FIXME: The below "partners" will change when
-        // https://github.com/ConsenSys/mythx-api/issues/59
-        // is resolved.
     };
 
     analyzeOpts.data.analysisMode = solidityConfig.mythx.analysisMode;
@@ -283,7 +284,10 @@ async function analyzeWithBuildDir({
     try {
         mythXresult = await client.analyzeWithStatus(analyzeOpts);
         obj.setIssues(mythXresult.issues);
-        const spaceLimited: boolean = ['tap', 'markdown'].indexOf(config.style) !== -1;
+        if (!config.style) {
+            config.style = 'stylish';
+        }
+        const spaceLimited: boolean = ['tap', 'markdown'].indexOf(config.style) === -1;
         const eslintIssues = obj.getEslintIssues(spaceLimited);
         const formatter = getFormatter(solidityConfig.mythx.reportFormat);
         const groupedEslintIssues = groupEslintIssuesByBasename(eslintIssues);
@@ -292,7 +296,6 @@ async function analyzeWithBuildDir({
 
         const issues = obj.issuesWithLineColumn;
 
-        const now = new Date();
         const reportsDir = trufstuf.getMythReportsDir(buildContractsDir);
         const mdData = {
             analysisMode: analyzeOpts.data.analysisMode,
@@ -300,7 +303,6 @@ async function analyzeWithBuildDir({
             contractName,
             groupedEslintIssues,
             reportsDir: reportsDir,
-            secsSinceEpoch: +now,
             sourcePath: mythxBuilObj.sourceList[0], // FIXME: We currently analyze single file. It's ok to take first item
             status: mythXresult.status,
             timeout: solidityConfig.mythx.timeout,
