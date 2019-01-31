@@ -6,55 +6,6 @@ import * as path from 'path';
 // const SWC_PREFIX =
 //       "https://smartcontractsecurity.github.io/SWC-registry/docs";
 
-/********************************************************
-Mythx messages currently needs a bit of messaging to
-be able to work within the Eslint framework. Some things
-we handle here:
-
-- long messages
-  Chop at sentence boundary.
-- Non-ASCII characters: /[\u0001-\u001A]/ (including \n and `)
-  Remove them.
-**********************************************************/
-function massageMessage(mess: string): string {
-    // Mythx messages are long. Strip after first period.
-    let sentMatch = null;
-    try {
-        sentMatch = mess.match('\\.[ \t\n]');
-    } catch (err) {
-        return 'no message';
-    }
-    if (sentMatch) {
-        mess = mess.slice(0, sentMatch.index + 1);
-    }
-
-    // Remove characters that mess up table formatting
-    mess = mess.replace(new RegExp(/`/, 'g'), '\'');
-    mess = mess.replace(new RegExp(/\n/, 'g'), ' ');
-    // mess = mess.replace(new RegExp(/[\u0001-\u001A]/, 'g'), '');
-    return mess;
-}
-
-/*
-  Mythx seems to downplay severity. What eslint calls an "error",
-  Mythx calls "warning". And what eslint calls "warning",
-  Mythx calls "informational".
-*/
-const myth2Severity = {
-    Informational: 3,
-    Warning: 2,
-};
-
-const myth2EslintField = {
-    'address': 'addr2lineColumn', // Not used
-    'description': 'message',
-    'line': 'lineNumberStart',
-    'swc-description': 'message',
-    'title': 'title',
-    'tool': 'tool',
-    'type': 'severity',
-};
-
 /*
   Mythril seems to downplay severity. What eslint calls an "error",
   Mythril calls "warning". And what eslint calls "warning",
@@ -69,7 +20,7 @@ const isFatal = (fatal, severity) => fatal || severity === 2;
 
 
 export class MythXIssues {
-    private issues: any;
+    private _issues: any;
     private _contractName: any;
     private _buildObj: any;
     private contractSource: string;
@@ -78,14 +29,14 @@ export class MythXIssues {
     private offset2InstNum: any;
     private sourceMappingDecoder: any;
     private asts: any;
-    private lineBreakPositions: any;
+    private _lineBreakPositions: any;
 
     /**
      *
      * @param {object} buildObj - Truffle smart contract build object
      */
     constructor(buildObj: any) {
-        this.issues = [];
+        this._issues = [];
         this._contractName = buildObj.contractName;
         this._buildObj = truffle2MythXJSON(buildObj);
         this.contractSource = buildObj.source;
@@ -95,18 +46,26 @@ export class MythXIssues {
 
         this.sourceMappingDecoder = new smd.SourceMappingDecoder();
         this.asts = this.mapAsts(this._buildObj.sources);
-        this.lineBreakPositions = this.mapLineBreakPositions(this.sourceMappingDecoder, this._buildObj.sources);
+        this._lineBreakPositions = this.mapLineBreakPositions(this.sourceMappingDecoder, this._buildObj.sources);
     }
 
     get buildObj() {
         return this._buildObj;
     }
 
+    get lineBreakPositions() {
+        return this._lineBreakPositions;
+    }
+
+    get issues() {
+        return this._issues;
+    }
+
     get issuesWithLineColumn() {
-        return this.issues.map(issue => {
+        return this._issues.map(issue => {
            const { sourceFormat, source } = issue;
            const sourceName = path.basename(source);
-           const lineBreakPositions = this.lineBreakPositions[sourceName];
+           const lineBreakPositions = this._lineBreakPositions[sourceName];
             issue.issues.map(i => {
                 let startLineCol: any,  endLineCol: any;
                 if (sourceFormat === 'evm-byzantium-bytecode') {
@@ -139,7 +98,7 @@ export class MythXIssues {
      * @param {object[]} issues - MythX analyze API output result issues
      */
     public setIssues(issues) {
-        this.issues = issues
+        this._issues = issues
             .map(remapMythXOutput)
             .reduce((acc, curr) => acc.concat(curr), []);
     }
@@ -340,7 +299,7 @@ export class MythXIssues {
         };
 
         let startLineCol: any,  endLineCol: any;
-        const lineBreakPositions = this.lineBreakPositions[sourceName];
+        const lineBreakPositions = this._lineBreakPositions[sourceName];
 
         if (sourceFormat === 'evm-byzantium-bytecode') {
             // Pick out first byteCode offset value
@@ -399,7 +358,7 @@ export class MythXIssues {
      * @returns {object[]}
      */
     public getEslintIssues(spaceLimited) {
-        return this.issues.map(report => this.convertMythXReport2EsIssue(report, spaceLimited));
+        return this._issues.map(report => this.convertMythXReport2EsIssue(report, spaceLimited));
     }
 }
 
