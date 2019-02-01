@@ -14,12 +14,12 @@ import {SolcCompiler} from '../../solcCompiler';
 
 import * as Config from 'truffle-config';
 import { compile } from 'truffle-workflow-compile';
+import * as stripAnsi from 'strip-ansi';
 
 
 const fsExists = util.promisify(fs.exists);
 const fsMkdir = util.promisify(fs.mkdir);
 const readFile = util.promisify(fs.readFile);
-const contractsCompile = util.promisify(compile);
 
 const warnFn = vscode.window.showWarningMessage;
 
@@ -50,6 +50,10 @@ interface SolidityMythXOption {
 function showMessage (mess: string) {
     outputChannel.clear();
     outputChannel.show();
+    if (process.platform === 'darwin') {
+        // OSX OutputChannel can't handle ANSI codes, I think.
+        mess = stripAnsi(mess);
+    }
     outputChannel.appendLine(mess);
 }
 
@@ -118,23 +122,15 @@ function solidityPathAndSource() {
         return null; // We need something open
     }
 
-    const fileName = path.extname(editor.document.fileName);
-    if (fileName !== '.sol') {
-        warnFn(`{$fileName} not a solidity file; should match: *.sol`);
-        return null;
-    }
-
-    let rootDir = vscode.workspace.rootPath;
-    // Check if is folder, if not stop we need to output to a bin folder on rootPath
-    if (vscode.workspace.rootPath === undefined) {
-        warnFn('Please open a folder or workspace folder in Visual Studio Code for us to set artifacts');
-        return null;
-    } else if (path.basename(rootDir) === 'contracts') {
-        rootDir = path.dirname(rootDir);
-    }
-
-    const contractCode = editor.document.getText();
     const contractPath = editor.document.fileName;
+    const extName = path.extname(contractPath);
+    if (extName !== '.sol') {
+        warnFn(`${contractPath} not a solidity file; should match: *.sol`);
+        return null;
+    }
+
+    const rootDir = trufstuf.getRootDir(contractPath);
+    const contractCode = editor.document.getText();
 
     return {
         buildContractsDir: trufstuf.getBuildContractsDir(rootDir),
@@ -276,23 +272,22 @@ async function analyzeWithBuildDir({
 
     const mythxBuilObj: any = obj.getBuildObj();
     const analyzeOpts = {
+        clientToolName: 'vscode-solidity',
         data: mythxBuilObj,
-        partners: ['vscode-solidity'],
         timeout: solidityConfig.mythx.timeout * 1000,  // convert secs to millisecs
-
-        // FIXME: The below "partners" will change when
-        // https://github.com/ConsenSys/mythx-api/issues/59
-        // is resolved.
     };
 
     analyzeOpts.data.analysisMode = solidityConfig.mythx.analysisMode;
 
     const contractName: string = buildObj.contractName;
-    let mythXIssues: any;
+    let mythXresult: any;
     try {
-        mythXIssues = await client.analyze(analyzeOpts);
-        obj.setIssues(mythXIssues);
-        const spaceLimited: boolean = ['tap', 'markdown'].indexOf(config.style) !== -1;
+        mythXresult = await client.analyzeWithStatus(analyzeOpts);
+        obj.setIssues(mythXresult.issues);
+        if (!config.style) {
+            config.style = 'stylish';
+        }
+        const spaceLimited: boolean = ['tap', 'markdown'].indexOf(config.style) === -1;
         const eslintIssues = obj.getEslintIssues(spaceLimited);
         const formatter = getFormatter(solidityConfig.mythx.reportFormat);
         const groupedEslintIssues = groupEslintIssuesByBasename(eslintIssues);
@@ -301,7 +296,6 @@ async function analyzeWithBuildDir({
 
         const issues = obj.issuesWithLineColumn;
 
-        const now = new Date();
         const reportsDir = trufstuf.getMythReportsDir(buildContractsDir);
         const mdData = {
             analysisMode: analyzeOpts.data.analysisMode,
@@ -309,8 +303,8 @@ async function analyzeWithBuildDir({
             contractName,
             groupedEslintIssues,
             reportsDir: reportsDir,
-            secsSinceEpoch: +now,
             sourcePath: mythxBuilObj.sourceList[0], // FIXME: We currently analyze single file. It's ok to take first item
+            status: mythXresult.status,
             timeout: solidityConfig.mythx.timeout,
             // Add stuff like mythx version
         };
@@ -396,20 +390,19 @@ export async function mythxAnalyze() {
 
     // Set truffle compiler version based on vscode solidity's version info
     config.compilers.solc.version = vscode_solc.getVersion();
-    try {
-        await contractsCompile(config);
-    } catch (err) {
-        console.log('EE', err);
-        showMessage(`compile returns ${err}`);
-        return ;
-    }
-
-    const res = await analyzeWithBuildDir({
-        buildContractsDir,
-        config,
-        pathInfo,
-        solidityConfig,
-    });
-
-    return res;
+    return compile(config,
+                   function(arg) {
+                       if (arg !== null) {
+                           showMessage(`compile returns ${arg}`);
+                           return null;
+                       } else {
+                           const res = analyzeWithBuildDir({
+                               buildContractsDir,
+                               config,
+                               pathInfo,
+                               solidityConfig,
+                           });
+                           return res;
+                       }
+                   });
 }

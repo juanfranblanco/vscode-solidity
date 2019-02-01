@@ -58,14 +58,22 @@ const theIssueTemplate = `
 * Contract Name {{contractName}}
 * Source Path:  {{file_link sourcePath}}
 * Compiler: {{compilerVersion}}
-* Timeout Seconds: {{timeout}}
+* Timeout: {{timeout}} secs
+* Run time: {{status.runTime}} msecs
+* Queue time: {{status.queueTime}} msecs
+* UUID: {{status.uuid}}
+
+## MythX Version Information
+* API version: {{status.apiVersion}}
+* Mythril version: {{status.mythrilVersion}}
+* Maru version: {{status.maruVersion}}
 `;
 
 /**
 const theIssueTemplate = fs.readFileSync('./issue-report.handlebars', 'utf8');
 */
 
-// FIXME: Shhould be in some place more generic.
+// FIXME: Should be in some place more generic.
 const diagnosticsCollection = vscode.languages.createDiagnosticCollection(`Mythx-Reports`);
 
 // Turn 0-index numbering of array into 1-index numbering of issues
@@ -104,7 +112,6 @@ mdData is expected to have:
    contractName     string
    reportsDir       directory path
    sourcePath       file path
-   secsSinceEpoc    number
 */
 export function writeMarkdownReport(mdData: any) {
     // Pass our data to the template
@@ -114,7 +121,7 @@ export function writeMarkdownReport(mdData: any) {
         fs.mkdirSync(mythReportDir);
     }
     const now = new Date();
-    const filePrefix = `${mdData.contractName}-${mdData.secsSinceEpoch}`;
+    const filePrefix = `${mdData.contractName}-${mdData.status.uuid}`;
     const reportPath = path.join(mythReportDir, `${filePrefix}.md`);
     fs.writeFileSync(reportPath, theCompiledMarkdown);
     const stringify = JSON.stringify(mdData, null, 4);
@@ -132,7 +139,6 @@ mdData is expected to have:
    contractName     string
    reportsDir       directory path
    sourcePath       file path
-   secsSinceEpoc    number
 */
 export async function writeMarkdownReportAsync(mdData: any) {
     // Pass our data to the template
@@ -143,7 +149,7 @@ export async function writeMarkdownReportAsync(mdData: any) {
         await fsMkdir(mythReportDir);
     }
 
-    const filePrefix = `${mdData.contractName}-${mdData.secsSinceEpoch}`;
+    const filePrefix = `${mdData.contractName}-${mdData.status.uuid}`;
     const reportPath = path.join(mythReportDir, `${filePrefix}.md`);
     await writeFile(reportPath, theCompiledMarkdown);
     const stringify = JSON.stringify(mdData, null, 4);

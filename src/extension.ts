@@ -7,8 +7,7 @@ import {codeGenerate, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFS
     codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll} from './codegen';
 import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn} from 'vscode-languageclient';
 import {lintAndfixCurrentDocument} from './linter/soliumClientFixer';
-import {mythxVersion} from './analysis/mythx/main';
-import {mythxAnalyze} from './analysis/mythx';
+import {mythxAnalyze, mythxVersion} from './analysis/mythx';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
