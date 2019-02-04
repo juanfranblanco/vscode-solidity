@@ -65,9 +65,9 @@
     "solidity-parser-antlr": "^0.3.2",
     "solium": "^1.1.8",
     "solparse": "^2.2.5",
-    "truffle-artifactor": "^4.0.0",
-    "truffle-config": "^1.1.0",
-    "truffle-workflow-compile": "^2.0.0",
+    "truffle-artifactor": "^4.0.3",
+    "truffle-config": "^1.1.3",
+    "truffle-workflow-compile": "^2.0.3",
     "vscode-languageclient": "^5.1.1",
     "vscode-languageserver": "^5.1.0",
     "vscode-uri": "^1.0.3"
