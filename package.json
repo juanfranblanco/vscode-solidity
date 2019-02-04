@@ -54,7 +54,7 @@
     "ajv": "^6.5.2",
     "ajv-keywords": "^3.2.0",
     "antlr4-c3": "^1.1.8",
-    "armlet": "^1.1.0",
+    "armlet": "^1.2.0",
     "fs-extra": "^4.0.3",
     "handlebars": "^4.0.12",
     "nethereum-codegen": "^1.0.6",
@@ -119,14 +119,13 @@
           "type": [
             "string"
           ],
-          "default": "ace9b42d-4c97-407c-b197-a9b2e5ab6759",
           "markdownDescription": "MythX API key. See https://mythx.io to get an API key"
         },
         "solidity.mythx.apiUrl": {
           "type": [
             "string"
           ],
-          "default": "https://staging.api.mythx.io",
+          "default": "https://api.mythx.io",
           "markdownDescription": "MythX URL to connect to"
         },
         "solidity.mythx.password": {

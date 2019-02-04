@@ -90,29 +90,12 @@ function solc2MythrilJSON(inputSolcJSON: any,
 
 function getArmletCredentialKeys(config: SolidityMythXOption): any {
     const { apiKey, password, ethAddress, email } = config;
-    const options: any = {};
-    let errorMessage: string;
-    if (!apiKey && !password) {
-        errorMessage = 'You need to set either solidity.mythx.password or solidity.mythx.apiKey to run analyze.';
-    } else if (apiKey) {
-        options.apiKey = apiKey;
-    } else {
-        options.password = password;
-        if (ethAddress) {
-            options.ethAddress = ethAddress;
-        } else if (email) {
-            options.email = email;
-        } else {
-            errorMessage = 'You need to set either solidity.mythx.ethAddress or solidity.mythx.email to run analyze.';
-        }
-    }
-
-    if (errorMessage) {
-        vscode.window.showErrorMessage(errorMessage);
-        throw new Error(errorMessage);
-    }
-
-    return options;
+    return {
+        apiKey,
+        email,
+        ethAddress,
+        password,
+    };
 }
 
 function solidityPathAndSource() {
