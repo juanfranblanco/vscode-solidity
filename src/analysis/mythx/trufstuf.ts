@@ -5,9 +5,36 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as util from 'util';
 
-const readdir = util.promisify(fs.readdir);
-const fsStat = util.promisify(fs.stat);
 
+const readdir = util.promisify(fs.readdir);
+const readFile = util.promisify(fs.readFile);
+const stat = util.promisify(fs.stat);
+
+const parseBuildJson = async file => {
+    const buildJson = await readFile(file, 'utf8');
+    const buildObj = JSON.parse(buildJson);
+    return buildObj;
+};
+
+/* returns true if directory/file out of date
+*/
+const staleBuildContract = async (directory, file) => {
+    const fullPath = path.join(directory, file);
+    const buildObj = await parseBuildJson(fullPath);
+    const fullPathStat = await stat(fullPath);
+    const buildMtime = fullPathStat.mtime;
+    const sourcePath = buildObj.sourcePath;
+    let sourcePathStat;
+
+    try {
+        sourcePathStat = await stat(sourcePath);
+    } catch (err) {
+        return true;
+    }
+
+    const sourceMtime = sourcePathStat.mtime;
+    return sourceMtime > buildMtime;
+};
 
 // Directories that must be in a truffle project
 
@@ -49,7 +76,7 @@ export function getRootDir (p: string): string {
 export const isTruffleRootAsync = async (p: string): Promise<boolean> => {
     const all = await Promise.all(TRUFFLE_ROOT_DIRS.map(async (shortDir) => {
         try {
-            const dir = await fsStat(`${p}/${shortDir}`);
+            const dir = await stat(`${p}/${shortDir}`);
             return dir.isDirectory();
         } catch (err) {
             return false;
@@ -80,8 +107,13 @@ export const getRootDirAsync = async (p: string): Promise<string> => {
  */
 export const getTruffleBuildJsonFilesAsync = async function(directory: string) {
     const files = await readdir(directory);
-    const filteredFiles = files.filter(f => f !== 'Migrations.json');
-    const filePaths = filteredFiles.map(f => path.join(directory, f));
+    const filtered1 = files.filter(f => f !== 'Migrations.json');
+    const promisified = await Promise.all(filtered1.map(async f => {
+        const isStale = await staleBuildContract(directory, f);
+        return isStale ? null : f;
+    }));
+    const filtered2 = promisified.filter(f => !!f);
+    const filePaths = filtered2.map(f => path.join(directory, f));
     return filePaths;
 };
 
