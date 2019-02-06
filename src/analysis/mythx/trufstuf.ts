@@ -48,8 +48,8 @@ export function isTruffleRoot (p: string): boolean {
         if (!fs.existsSync(dir)) {
             return false;
         }
-        const stat = fs.statSync(dir);
-        if (!stat || !stat.isDirectory()) {
+        const dirStat = fs.statSync(dir);
+        if (!dirStat || !dirStat.isDirectory()) {
             return false;
         }
     }

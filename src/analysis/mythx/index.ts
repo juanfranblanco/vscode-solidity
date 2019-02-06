@@ -28,12 +28,11 @@ const outputChannel = vscode.window.createOutputChannel('MythX');
 // What we use in a new armlet.Client()
 interface ArmletOptions {
     apiKey: string;
-    // userEmail: string;
-    platforms: Array<string>;
 }
 
 // What we use in a new armlet analyze call
 interface AnalyzeOptions {
+    clientToolName: string;
     data: any;  // Actually a JSON dictionary
     timeout: number;
 }
@@ -194,7 +193,7 @@ const groupEslintIssuesByBasename = (issues: any) => {
     return issueGroups;
 };
 
-// Run Mythx Platform analyze after we have
+// Run MythX  analyze after we have
 // ensured via compile that JSON data is there and
 // up to date.
 // Parameters "config", and "done" are implicitly passed in.
@@ -219,14 +218,14 @@ async function analyzeWithBuildDir({
 
     // get armlet authentication options
     const armletAuthOptions = getArmletCredentialKeys(solidityConfig.mythx);
+    debugger
     const armletOptions = {
         ...armletAuthOptions,
-        platforms: ['vscode-solidity'],  // client chargeback
     };
 
     let client: any;
     try {
-        client = new Client(armletOptions);
+        client = new Client(armletOptions, solidityConfig.mythx.apiUrl);
     } catch (err) {
         console.log(err);
         warnFn(err);

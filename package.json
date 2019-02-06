@@ -117,15 +117,16 @@
         },
         "solidity.mythx.apiKey": {
           "type": [
-            "string"
+              "string"
           ],
+          "default": "ace9b42d-4c97-407c-b197-a9b2e5ab6759",
           "markdownDescription": "MythX API key. See https://mythx.io to get an API key"
         },
         "solidity.mythx.apiUrl": {
           "type": [
             "string"
           ],
-          "default": "https://api.mythx.io",
+          "default": "https://staging.api.mythx.io",
           "markdownDescription": "MythX URL to connect to"
         },
         "solidity.mythx.password": {
@@ -141,13 +142,6 @@
           ],
           "default": null,
           "markdownDescription": "MetaMask ETH address used to login to MythX. See https://mythx.io"
-        },
-        "solidity.mythx.email": {
-          "type": [
-            "string"
-          ],
-          "default": null,
-          "markdownDescription": "MythX email address. See https://mythx.io"
         },
         "solidity.mythx.reportFormat": {
           "type": [
