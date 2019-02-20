@@ -7,6 +7,7 @@ import { ApiVersion, Client } from 'armlet';
 import { versionJSON2String, getFormatter } from './util';
 import { writeMarkdownReportAsync, writeMarkdownReport } from './md-reporter';
 import * as util from 'util';
+import { getUniqueIssues } from './eslint';
 
 // vscode-solidity's wrapper around solc
 import {SolcCompiler} from '../../solcCompiler';
@@ -15,6 +16,11 @@ import {SolcCompiler} from '../../solcCompiler';
 import * as Config from 'truffle-config';
 import { compile } from 'truffle-workflow-compile';
 import * as stripAnsi from 'strip-ansi';
+
+
+const trialEthAddress = '0x0000000000000000000000000000000000000000';
+const trialPassword = 'trial';
+const defaultAnalyzeRateLimit = 4;
 
 
 const fsExists = util.promisify(fs.exists);
@@ -39,11 +45,23 @@ interface AnalyzeOptions {
 
 // What we use in a new armlet analyze call
 interface SolidityMythXOption {
-    apiKey?: string;
-    password?: string;
-    ethAddress?: string;
-    email?: string;
+    password: string;
+    ethAddress: string;
 }
+
+// FIXME: util.promisify breaks compile internal call to writeContracts
+// const contractsCompile = util.promisify(contracts.compile);
+const contractsCompile = config => {
+    return new Promise((resolve, reject) => {
+        compile(config, (err, result) => {
+            if (err) {
+                reject(err);
+                return ;
+            }
+            resolve(result);
+        });
+    });
+};
 
 // This is adapted from 'remix-lib/src/sourceMappingDecoder.js'
 function showMessage (mess: string) {
@@ -88,12 +106,10 @@ function solc2MythrilJSON(inputSolcJSON: any,
 }
 
 function getArmletCredentialKeys(config: SolidityMythXOption): any {
-    const { apiKey, password, ethAddress, email } = config;
+    const { password, ethAddress } = config;
     return {
-        apiKey,
-        email,
-        ethAddress,
-        password,
+        ethAddress: (ethAddress || trialEthAddress),
+        password: (password || trialPassword),
     };
 }
 
@@ -218,7 +234,7 @@ async function analyzeWithBuildDir({
 
     // get armlet authentication options
     const armletAuthOptions = getArmletCredentialKeys(solidityConfig.mythx);
-    debugger
+
     const armletOptions = {
         ...armletAuthOptions,
     };
@@ -274,9 +290,8 @@ async function analyzeWithBuildDir({
         const formatter = getFormatter(solidityConfig.mythx.reportFormat);
         const groupedEslintIssues = groupEslintIssuesByBasename(eslintIssues);
 
-        showMessage(formatter(groupedEslintIssues));
-
-        const issues = obj.issuesWithLineColumn;
+        const uniqueIssues = getUniqueIssues(groupedEslintIssues);
+        showMessage(formatter(uniqueIssues));
 
         const reportsDir = trufstuf.getMythReportsDir(buildContractsDir);
         const mdData = {
@@ -372,19 +387,11 @@ export async function mythxAnalyze() {
 
     // Set truffle compiler version based on vscode solidity's version info
     config.compilers.solc.version = vscode_solc.getVersion();
-    return compile(config,
-                   function(arg) {
-                       if (arg !== null) {
-                           showMessage(`compile returns ${arg}`);
-                           return null;
-                       } else {
-                           const res = analyzeWithBuildDir({
-                               buildContractsDir,
-                               config,
-                               pathInfo,
-                               solidityConfig,
-                           });
-                           return res;
-                       }
-                   });
+    await contractsCompile(config);
+    return await analyzeWithBuildDir({
+        buildContractsDir,
+        config,
+        pathInfo,
+        solidityConfig,
+    });
 }

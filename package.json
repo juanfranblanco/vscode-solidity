@@ -54,7 +54,7 @@
     "ajv": "^6.5.2",
     "ajv-keywords": "^3.2.0",
     "antlr4-c3": "^1.1.8",
-    "armlet": "^1.2.0",
+    "armlet": "^2.0.0",
     "fs-extra": "^4.0.3",
     "handlebars": "^4.0.12",
     "nethereum-codegen": "^1.0.6",
@@ -67,7 +67,7 @@
     "solparse": "^2.2.5",
     "truffle-artifactor": "^4.0.3",
     "truffle-config": "^1.1.3",
-    "truffle-workflow-compile": "^2.0.3",
+    "truffle-workflow-compile": ">=2.0.2",
     "vscode-languageclient": "^5.1.1",
     "vscode-languageserver": "^5.1.0",
     "vscode-uri": "^1.0.3"
@@ -117,7 +117,7 @@
         },
         "solidity.mythx.apiKey": {
           "type": [
-              "string"
+            "string"
           ],
           "default": "ace9b42d-4c97-407c-b197-a9b2e5ab6759",
           "markdownDescription": "MythX API key. See https://mythx.io to get an API key"
