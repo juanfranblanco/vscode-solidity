@@ -218,6 +218,7 @@ async function analyzeWithBuildDir({
     config,
     buildContractsDir,
     solidityConfig,
+    progress,
 }: any) {
     let buildJsonPath: string;
 
@@ -278,9 +279,29 @@ async function analyzeWithBuildDir({
     analyzeOpts.data.analysisMode = solidityConfig.mythx.analysisMode;
 
     const contractName: string = buildObj.contractName;
+
+    const timeout = solidityConfig.mythx.timeout;
+    const progressStep = 100 / timeout;
+    let progressBarcurrStep = 0;
+    let progressBarInterval = setInterval(() => {
+        if (progressBarInterval && progressBarcurrStep >= 100) {
+            clearInterval(progressBarInterval);
+            progressBarInterval = null;
+            return ;
+        }
+        progressBarcurrStep += progressStep;
+
+        progress.report({ increment: progressBarcurrStep, message: `Running ${contractName}` });
+    }, 1000);
+
     let mythXresult: any;
     try {
         mythXresult = await client.analyzeWithStatus(analyzeOpts);
+
+        if (progressBarcurrStep < 100 ) {
+            progressBarcurrStep = 100;
+            progress.report({ increment: progressBarcurrStep, message: `Running ${contractName}` });
+        }
         obj.setIssues(mythXresult.issues);
         if (!config.style) {
             config.style = 'stylish';
@@ -307,6 +328,10 @@ async function analyzeWithBuildDir({
         };
         await writeMarkdownReportAsync(mdData);
     } catch (err) {
+        if (progressBarInterval) {
+            clearInterval(progressBarInterval);
+            progressBarInterval = null;
+        }
         console.log(err);
         showMessage(err);
         vscode.window.showWarningMessage(err);
@@ -323,7 +348,7 @@ export function mythxVersion() {
         });
 }
 
-export async function mythxAnalyze() {
+export async function mythxAnalyze(progress) {
     const solidityConfig = vscode.workspace.getConfiguration('solidity');
     const pathInfo = solidityPathAndSource();
 
@@ -392,6 +417,7 @@ export async function mythxAnalyze() {
         buildContractsDir,
         config,
         pathInfo,
+        progress,
         solidityConfig,
     });
 }
