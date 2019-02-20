@@ -133,14 +133,14 @@
           "type": [
             "string"
           ],
-          "default": null,
+          "default": "trial",
           "markdownDescription": "MythX Password. See https://mythx.io to get password"
         },
         "solidity.mythx.ethAddress": {
           "type": [
             "string"
           ],
-          "default": null,
+          "default": "0x0000000000000000000000000000000000000000",
           "markdownDescription": "MetaMask ETH address used to login to MythX. See https://mythx.io"
         },
         "solidity.mythx.reportFormat": {

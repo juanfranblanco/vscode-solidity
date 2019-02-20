@@ -18,11 +18,6 @@ import { compile } from 'truffle-workflow-compile';
 import * as stripAnsi from 'strip-ansi';
 
 
-const trialEthAddress = '0x0000000000000000000000000000000000000000';
-const trialPassword = 'trial';
-const defaultAnalyzeRateLimit = 4;
-
-
 const fsExists = util.promisify(fs.exists);
 const fsMkdir = util.promisify(fs.mkdir);
 const readFile = util.promisify(fs.readFile);
@@ -108,8 +103,8 @@ function solc2MythrilJSON(inputSolcJSON: any,
 function getArmletCredentialKeys(config: SolidityMythXOption): any {
     const { password, ethAddress } = config;
     return {
-        ethAddress: (ethAddress || trialEthAddress),
-        password: (password || trialPassword),
+        ethAddress,
+        password,
     };
 }
 
