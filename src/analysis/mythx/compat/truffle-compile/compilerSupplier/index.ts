@@ -80,8 +80,8 @@ export default class CompilerSupplier {
       .getSolcVersions()
       .then(list => {
         const prereleases = list.builds
-          .filter(build => build['prerelease'])
-          .map(build => build['longVersion']);
+          .filter(build => build.prerelease)
+          .map(build => build.longVersion);
 
         const releases = Object.keys(list.releases);
 

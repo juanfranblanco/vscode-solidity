@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import * as fs from 'fs';
 import * as OS from 'os';
 import * as path from 'path';
@@ -110,7 +109,7 @@ const normalizeJsonOutput = jsonObject => {
     result.sources[sourcePath].ast = solData.ast;
     result.sources[sourcePath].legacyAST = solData.legacyAST;
     result.sources[sourcePath].id = solData.id;
-    result.sources[sourcePath].source = getFileContent(sourcePath)
+    result.sources[sourcePath].source = getFileContent(sourcePath);
   }
 
   return result;
@@ -127,19 +126,19 @@ const normalizeJsonOutput = jsonObject => {
 //   logger: console
 // }
 const compile = (sourcePath, sourceText, options, callback, isStale) => {
-  if (typeof options === "function") {
+  if (typeof options === 'function') {
     callback = options;
     options = {};
   }
 
-  if (options.logger === undefined) options.logger = console;
+  if (options.logger === undefined) { options.logger = console; }
 
   const hasTargets =
     options.compilationTargets && options.compilationTargets.length;
 
-  expect.options(options, ["contracts_directory", "compilers"]);
+  expect.options(options, ['contracts_directory', 'compilers']);
 
-  expect.options(options.compilers, ["solc"]);
+  expect.options(options.compilers, ['solc']);
 
   options.compilers.solc.settings.evmVersion =
     options.compilers.solc.settings.evmVersion ||
@@ -157,16 +156,16 @@ const compile = (sourcePath, sourceText, options, callback, isStale) => {
   const originalPathMappings = {};
 
   const defaultSelectors = {
-    "": ["legacyAST", "ast"],
-    "*": [
-      "abi",
-      "evm.bytecode.object",
-      "evm.bytecode.sourceMap",
-      "evm.deployedBytecode.object",
-      "evm.deployedBytecode.sourceMap",
-      "userdoc",
-      "devdoc"
-    ]
+    '': ['legacyAST', 'ast'],
+    '*': [
+      'abi',
+      'evm.bytecode.object',
+      'evm.bytecode.sourceMap',
+      'evm.deployedBytecode.object',
+      'evm.deployedBytecode.sourceMap',
+      'userdoc',
+      'devdoc',
+    ],
   };
 
   // Specify compilation targets
@@ -177,16 +176,16 @@ const compile = (sourcePath, sourceText, options, callback, isStale) => {
 
   targetPaths.length
     ? targetPaths.forEach(key => (outputSelection[key] = defaultSelectors))
-    : (outputSelection["*"] = defaultSelectors);
+    : (outputSelection['*'] = defaultSelectors);
 
   const solcStandardInput = {
-    language: "Solidity",
+    language: 'Solidity',
     sources: {},
     settings: {
       evmVersion: options.compilers.solc.settings.evmVersion,
       optimizer: options.compilers.solc.settings.optimizer,
-      outputSelection
-    }
+      outputSelection,
+    },
   };
 
   // Load solc module only when compilation is actually required.
@@ -199,7 +198,7 @@ const compile = (sourcePath, sourceText, options, callback, isStale) => {
       const solcVersion = solc.version();
       solcStandardInput.sources = {
         [sourcePath]: {
-          content: sourceText
+          content: sourceText,
         },
       };
 
@@ -212,16 +211,16 @@ const compile = (sourcePath, sourceText, options, callback, isStale) => {
 
       if (options.strict !== true) {
         warnings = errors.filter(function(error) {
-          return error.severity === "warning";
+          return error.severity === 'warning';
         });
 
         errors = errors.filter(function(error) {
-          return error.severity !== "warning";
+          return error.severity !== 'warning';
         });
 
         if (options.quiet !== true && warnings.length > 0) {
           options.logger.log(
-            OS.EOL + "Compilation warnings encountered:" + OS.EOL
+            OS.EOL + 'Compilation warnings encountered:' + OS.EOL,
           );
           options.logger.log(
             warnings
@@ -234,26 +233,26 @@ const compile = (sourcePath, sourceText, options, callback, isStale) => {
       }
 
       if (errors.length > 0) {
-        options.logger.log("");
+        options.logger.log('');
         return callback(
           new CompileError(
             standardOutput.errors
               .map(function(error) {
                 return error.formattedMessage;
               })
-              .join()
-          )
+              .join(),
+          ),
         );
       }
 
       standardOutput.compiler =  {
-        name: "solc",
-        version: solcVersion
+        name: 'solc',
+        version: solcVersion,
       };
       standardOutput.source = sourceText;
       standardOutput.updatedAt = new Date();
 
-      const normalizedOutput = normalizeJsonOutput(standardOutput)
+      const normalizedOutput = normalizeJsonOutput(standardOutput);
 
       // FIXME: the below return path is hoaky, because it is in the format that
       // the multiPromisify'd caller in workflow-compile expects.
@@ -267,10 +266,10 @@ const compile = (sourcePath, sourceText, options, callback, isStale) => {
 /** From original truffle-compile. This is not used yet.
 **/
 function replaceLinkReferences(bytecode, linkReferences, libraryName) {
-  let linkId = "__" + libraryName;
+  let linkId = '__' + libraryName;
 
   while (linkId.length < 40) {
-    linkId += "_";
+    linkId += '_';
   }
 
   linkReferences.forEach(function(ref) {
@@ -296,7 +295,7 @@ function orderABI(contract) {
     // AST can have multiple contract definitions, make sure we have the
     // one that matches our contract
     if (
-      definition.name !== "ContractDefinition" ||
+      definition.name !== 'ContractDefinition' ||
       definition.attributes.name !== contract.contract_name
     ) {
       continue;
@@ -314,7 +313,7 @@ function orderABI(contract) {
   }
 
   contract_definition.children.forEach(function(child) {
-    if (child.name === "FunctionDefinition") {
+    if (child.name === 'FunctionDefinition') {
       ordered_function_names.push(child.attributes.name);
     }
   });
@@ -406,10 +405,10 @@ const with_dependencies = (options, callback) => {
   options.contracts_directory = options.contracts_directory || process.cwd();
 
   expect.options(options, [
-    "paths",
-    "working_directory",
-    "contracts_directory",
-    "resolver"
+    'paths',
+    'working_directory',
+    'contracts_directory',
+    'resolver',
   ]);
 
   const config = Config.default().merge(options);
@@ -418,7 +417,7 @@ const with_dependencies = (options, callback) => {
     config.with({
       paths: options.paths,
       base_path: options.contracts_directory,
-      resolver: options.resolver
+      resolver: options.resolver,
     }),
     (err, allSources, required) => {
       if (err) {
@@ -467,12 +466,12 @@ const display = (paths, options) => {
     paths.sort().forEach(contract => {
       if (path.isAbsolute(contract)) {
         contract =
-          "." + path.sep + path.relative(options.working_directory, contract);
+          '.' + path.sep + path.relative(options.working_directory, contract);
       }
       if (contract.match(blacklistRegex)) {
         return;
       }
-      options.logger.log("Compiling " + contract + "...");
+      options.logger.log('Compiling ' + contract + '...');
     });
   }
 };
