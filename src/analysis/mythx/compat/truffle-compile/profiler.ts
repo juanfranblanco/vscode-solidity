@@ -5,7 +5,7 @@ import * as path from 'path';
 import * as async from 'async';
 import * as fs from 'fs';
 import * as Parser from './parser';
-import * as CompilerSupplier from './compilerSupplier';
+import CompilerSupplier from './compilerSupplier';
 import * as expect from 'truffle-expect';
 import * as find_contracts from 'truffle-contract-sources';
 import * as Debug from 'debug';

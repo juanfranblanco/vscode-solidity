@@ -407,8 +407,7 @@ export async function mythxAnalyze(progress) {
 
     // Set truffle compiler version based on vscode solidity's version info
     config.compilers.solc.version = vscode_solc.getVersion();
-    config.build_mythx_contracts = path.join(config.build_directory,
-        "mythx", "contracts");
+    config.build_mythx_contracts = path.join(config.build_directory, 'mythx', 'contracts');
     await contractsCompile(config);
     return await analyzeWithBuildDir({
         buildContractsDir,

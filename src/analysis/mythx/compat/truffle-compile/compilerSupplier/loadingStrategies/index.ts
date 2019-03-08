@@ -1,9 +1,9 @@
-import * as Bundled from './Bundled';
-import * as Docker from './Docker';
-import * as LoadingStrategy from './LoadingStrategy';
-import * as Local from './Local';
-import * as Native from './Native';
-import * as VersionRange from './VersionRange';
+import Bundled from './Bundled';
+import Docker from './Docker';
+import LoadingStrategy from './LoadingStrategy';
+import Local from './Local';
+import Native from './Native';
+import VersionRange from './VersionRange';
 
 export default {
   Bundled,

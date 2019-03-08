@@ -7,8 +7,8 @@ import * as expect from 'truffle-expect';
 import * as find_contracts from 'truffle-contract-sources';
 import * as Config from 'truffle-config';
 import * as Debug from 'debug';
-import * as CompileError from './compileerror';
-import * as CompilerSupplier from './compilerSupplier';
+import CompileError from './compileerror';
+import CompilerSupplier from './compilerSupplier';
 
 const debug = Debug('compile'); // eslint-disable-line no-unused-vars
 
@@ -18,7 +18,7 @@ function getFileContent(filepath: string) {
   if (stats.isFile()) {
     return fs.readFileSync(filepath).toString();
   } else {
-    throw new Error `File ${filepath} not found`;
+    throw new Error (`File ${filepath} not found`);
   }
 }
 
@@ -100,7 +100,10 @@ const normalizeJsonOutput = jsonObject => {
       }
   }
 
-  for (const [ sourcePath, solData ] of Object.entries(sources)) {
+  for (const entry of Object.entries(sources)) {
+    const sourcePath: any = entry[0];
+    const solData: any = entry[1];
+
     if (!result.sources[sourcePath]) {
       continue;
     }
@@ -191,7 +194,7 @@ const compile = (sourcePath, sourceText, options, callback, isStale) => {
 
   supplier
     .load()
-    .then(solc => {
+    .then((solc: any) => {
 
       const solcVersion = solc.version();
       solcStandardInput.sources = {
@@ -205,7 +208,7 @@ const compile = (sourcePath, sourceText, options, callback, isStale) => {
       const standardOutput = JSON.parse(result);
 
       let errors = standardOutput.errors || [];
-      const warnings = [];
+      let warnings = [];
 
       if (options.strict !== true) {
         warnings = errors.filter(function(error) {

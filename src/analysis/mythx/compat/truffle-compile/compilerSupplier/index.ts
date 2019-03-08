@@ -1,14 +1,12 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as semver from 'semver';
+import Bundled from './loadingStrategies/Bundled';
+import Docker from './loadingStrategies/Docker';
+import Native from './loadingStrategies/Native';
+import Local from './loadingStrategies/Local';
+import VersionRange from './loadingStrategies/VersionRange';
 
-import {
-  Bundled,
-  Docker,
-  Local,
-  Native,
-  VersionRange,
-} from './loadingStrategies';
 
 export default class CompilerSupplier {
   private config: any;

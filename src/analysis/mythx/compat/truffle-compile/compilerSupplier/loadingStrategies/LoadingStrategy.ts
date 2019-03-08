@@ -26,7 +26,7 @@ export default class LoadingStrategy {
     fs.writeFileSync(filePath, code);
   }
 
-  public errors(kind, input, error = '') {
+  public errors(kind, input = '', error = '') {
     const info = "Run `truffle compile --list` to see available versions.";
 
     const kinds = {
