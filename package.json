@@ -60,6 +60,7 @@
     "nethereum-codegen": "^1.0.6",
     "read-yaml": "^1.1.0",
     "remix-lib": ">=0.4.1",
+    "require-from-string": "^2.0.2",
     "solc": "^0.5.0",
     "solhint": "^1.4.0",
     "solidity-parser-antlr": "^0.3.2",

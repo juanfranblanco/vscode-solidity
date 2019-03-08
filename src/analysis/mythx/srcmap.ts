@@ -3,7 +3,7 @@
 //
 
 import * as remixUtil from 'remix-lib/src/util';
-import { SourceMappingDecoder } from './sourceMappingDecoder';
+import { SourceMappingDecoder } from './compat/remix-lib/sourceMappingDecoder';
 import * as opcodes from 'remix-lib/src/code/opcodes';
 
 /**

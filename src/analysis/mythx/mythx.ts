@@ -1,4 +1,4 @@
-import * as smd from './sourceMappingDecoder';
+import * as smd from './compat/remix-lib/sourceMappingDecoder';
 import * as srcmap from './srcmap';
 import * as path from 'path';
 

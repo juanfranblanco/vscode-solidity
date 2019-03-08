@@ -14,7 +14,7 @@ import {SolcCompiler} from '../../solcCompiler';
 
 
 import * as Config from 'truffle-config';
-import { compile } from 'truffle-workflow-compile';
+import Contracts from './wfc';
 import * as stripAnsi from 'strip-ansi';
 
 
@@ -48,7 +48,7 @@ interface SolidityMythXOption {
 // const contractsCompile = util.promisify(contracts.compile);
 const contractsCompile = config => {
     return new Promise((resolve, reject) => {
-        compile(config, (err, result) => {
+        Contracts.compile(config, (err, result) => {
             if (err) {
                 reject(err);
                 return ;
@@ -407,6 +407,8 @@ export async function mythxAnalyze(progress) {
 
     // Set truffle compiler version based on vscode solidity's version info
     config.compilers.solc.version = vscode_solc.getVersion();
+    config.build_mythx_contracts = path.join(config.build_directory,
+        "mythx", "contracts");
     await contractsCompile(config);
     return await analyzeWithBuildDir({
         buildContractsDir,
