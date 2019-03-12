@@ -2,10 +2,10 @@ import * as Debug from 'debug';
 import CompileError from './compileerror';
 
 
-const debug = Debug('compile:parser'); // eslint-disable-line no-unused-vars
+const debug = Debug("compile:parser"); // eslint-disable-line no-unused-vars
 // Warning issued by a pre-release compiler version, ignored by this component.
 const preReleaseCompilerWarning =
-  'This is a pre-release compiler version, please do not use it in production.';
+  "This is a pre-release compiler version, please do not use it in production.";
 
 export const parseImports = (body, solc) => {
   // WARNING: Kind of a hack (an expedient one).
@@ -23,27 +23,27 @@ export const parseImports = (body, solc) => {
   }
 
   // Helper to detect import errors with an easy regex.
-  const importErrorKey = 'TRUFFLE_IMPORT';
+  const importErrorKey = "TRUFFLE_IMPORT";
 
   // Inject failing import.
-  const failingImportFileName = '__Truffle__NotFound.sol';
+  const failingImportFileName = "__Truffle__NotFound.sol";
 
   body = body + "\n\nimport '" + failingImportFileName + "';\n";
 
   const solcStandardInput = {
-    language: 'Solidity',
+    language: "Solidity",
     sources: {
-      'ParsedContract.sol': {
-        content: body,
-      },
+      "ParsedContract.sol": {
+        content: body
+      }
     },
     settings: {
       outputSelection: {
-        'ParsedContract.sol': {
-          '*': [], // We don't need any output.
-        },
-      },
-    },
+        "ParsedContract.sol": {
+          "*": [] // We don't need any output.
+        }
+      }
+    }
   };
 
   let output = solc.compile(JSON.stringify(solcStandardInput), function() {
@@ -81,7 +81,7 @@ export const parseImports = (body, solc) => {
     })
     .map(function(solidity_error) {
       const matches = solidity_error.formattedMessage.match(
-        /import[^'"]+("|')([^'"]+)("|')/,
+        /import[^'"]+("|')([^'"]+)("|')/
       );
 
       // Return the item between the quotes.

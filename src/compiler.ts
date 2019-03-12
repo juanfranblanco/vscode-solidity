@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as fsex from 'fs-extra';
+import * as artifactor from 'truffle-artifactor';
 import {SolcCompiler, compilerType} from './solcCompiler';
 import { errorsToDiagnostics } from './solErrorsToDiaganosticsClient';
 

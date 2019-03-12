@@ -17,7 +17,7 @@ export default class Local extends LoadingStrategy {
       compiler = originalRequire(compilerPath);
       this.removeListener();
     } catch (error) {
-      throw this.errors('noPath', localPath, error);
+      throw this.errors("noPath", localPath, error);
     }
     return compiler;
   }

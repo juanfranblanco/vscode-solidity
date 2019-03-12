@@ -11,10 +11,10 @@ import * as find_contracts from 'truffle-contract-sources';
 import * as Debug from 'debug';
 
 
-const debug = Debug('compile:profiler'); // eslint-disable-line no-unused-vars
+const debug = Debug("compile:profiler"); // eslint-disable-line no-unused-vars
 
 export const updated = (options, callback) => {
-  expect.options(options, ['resolver']);
+  expect.options(options, ["resolver"]);
 
   const contracts_directory = options.contracts_directory;
 
@@ -56,7 +56,7 @@ export const updated = (options, callback) => {
           if (err) {
             // The build directory may not always exist.
             if (
-              err.message.indexOf('ENOENT: no such file or directory') >= 0
+              err.message.indexOf("ENOENT: no such file or directory") >= 0
             ) {
               // Ignore it.
               build_files = [];
@@ -66,7 +66,7 @@ export const updated = (options, callback) => {
           }
 
           build_files = build_files.filter(function(build_file) {
-            return path.extname(build_file) === '.json';
+            return path.extname(build_file) === ".json";
           });
 
           async.map(
@@ -74,7 +74,7 @@ export const updated = (options, callback) => {
             function(buildFile, finished) {
               fs.readFile(
                 path.join(build_directory, buildFile),
-                'utf8',
+                "utf8",
                 function(err, body) {
                   if (err) {
                     return finished(err);
@@ -193,7 +193,7 @@ export const updated = (options, callback) => {
 // Returns the minimal set of sources to pass to solc as compilations targets,
 // as well as the complete set of sources so solc can resolve the comp targets' imports.
 export const required_sources = (options, callback) => {
-  expect.options(options, ['paths', 'base_path', 'resolver']);
+  expect.options(options, ["paths", "base_path", "resolver"]);
 
   const resolver = options.resolver;
 
@@ -232,7 +232,7 @@ export const required_sources = (options, callback) => {
           // Generate hash of all sources including external packages - passed to solc inputs.
           const resolvedPaths = Object.keys(resolved);
           resolvedPaths.forEach(
-            file => (allSources[file] = resolved[file].body),
+            file => (allSources[file] = resolved[file].body)
           );
 
           // Exit w/out minimizing if we've been asked to compile everything, or nothing.
@@ -275,7 +275,7 @@ export const required_sources = (options, callback) => {
                     );
                   } catch (err) {
                     err.message =
-                      'Error parsing ' + currentFile + ': ' + err.message;
+                      "Error parsing " + currentFile + ": " + err.message;
                     return fileFinished(err);
                   }
 
@@ -321,7 +321,7 @@ export const resolveAllSources = (resolver, initialPaths, solc, callback) => {
 
       // Some paths will have been extracted as imports from a file
       // and have information about their parent location we need to track.
-      if (typeof candidate === 'object') {
+      if (typeof candidate === "object") {
         file = candidate.file;
         parent = candidate.parent;
       } else {
@@ -355,7 +355,7 @@ export const resolveAllSources = (resolver, initialPaths, solc, callback) => {
           try {
             imports = getImports(result.file, result, solc);
           } catch (err) {
-            err.message = 'Error parsing ' + result.file + ': ' + err.message;
+            err.message = "Error parsing " + result.file + ": " + err.message;
             return finished(err);
           }
 
@@ -375,7 +375,7 @@ export const resolveAllSources = (resolver, initialPaths, solc, callback) => {
   async.whilst(
     () => allPaths.length,
     generateMapping,
-    err => (err ? callback(err) : callback(null, mapping)),
+    err => (err ? callback(err) : callback(null, mapping))
   );
 };
 
@@ -416,5 +416,5 @@ export const convert_to_absolute_paths = (paths: any, base: any) => {
 };
 
 export const isExplicitlyRelative = (import_path: any) => {
-  return import_path.indexOf('.') === 0;
+  return import_path.indexOf(".") === 0;
 };

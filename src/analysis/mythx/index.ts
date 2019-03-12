@@ -5,7 +5,7 @@ import * as mythx from './mythx';
 import * as trufstuf from './trufstuf';
 import { ApiVersion, Client } from 'armlet';
 import { versionJSON2String, getFormatter } from './util';
-import { writeMarkdownReportAsync } from './md-reporter';
+import { writeMarkdownReportAsync, writeMarkdownReport } from './md-reporter';
 import * as util from 'util';
 import { getUniqueIssues } from './eslint';
 

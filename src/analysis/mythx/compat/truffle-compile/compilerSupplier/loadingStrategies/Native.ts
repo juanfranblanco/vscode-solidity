@@ -5,7 +5,7 @@ import VersionRange from './VersionRange';
 export default class Native extends LoadingStrategy {
   public load() {
     const versionString = this.validateAndGetSolcVersion();
-    const command = 'solc --standard-json';
+    const command = "solc --standard-json";
 
     const versionRange = new VersionRange();
     const commit = versionRange.getCommitFromVersion(versionString);
@@ -15,12 +15,12 @@ export default class Native extends LoadingStrategy {
         return {
           compile: options => String(execSync(command, { input: options })),
           version: () => versionString,
-          importsParser: solcjs,
+          importsParser: solcjs
         };
       })
       .catch(error => {
-        if (error.message === 'No matching version found') {
-          throw this.errors('noVersion', versionString);
+        if (error.message === "No matching version found") {
+          throw this.errors("noVersion", versionString);
         }
         throw new Error(error);
       });
@@ -29,9 +29,9 @@ export default class Native extends LoadingStrategy {
   public validateAndGetSolcVersion() {
     let version;
     try {
-      version = execSync('solc --version');
+      version = execSync("solc --version");
     } catch (error) {
-      throw this.errors('noNative', null, error);
+      throw this.errors("noNative", null, error);
     }
     return new VersionRange().normalizeSolcVersion(version);
   }

@@ -1,5 +1,5 @@
 'use strict';
-import { DiagnosticSeverity } from 'vscode-languageserver';
+import { DiagnosticSeverity, Diagnostic } from 'vscode-languageserver';
 
 export interface CompilerError {
     diagnostic: any;
