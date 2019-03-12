@@ -373,7 +373,7 @@ const all = function(options, callback) {
     }
 
     options.paths = files;
-    with_dependencies(options, callback);
+    with_dependencies(options, callback, true);
   });
 };
 
@@ -396,11 +396,11 @@ const necessary = function(options, callback) {
     }
 
     options.paths = updated;
-    with_dependencies(options, callback);
+    with_dependencies(options, callback, false);
   });
 };
 
-const with_dependencies = (options, callback) => {
+const with_dependencies = (options, callback, compileAll) => {
   options.logger = options.logger || console;
   options.contracts_directory = options.contracts_directory || process.cwd();
 
@@ -429,7 +429,7 @@ const with_dependencies = (options, callback) => {
       const filteredRequired = [];
       for (const sourcePath of options.paths) {
         const targetJsonPath = sourcePath2BuildPath(sourcePath, options.build_mythx_contracts);
-        if (staleBuildContract(sourcePath, targetJsonPath)) {
+        if (compileAll || staleBuildContract(sourcePath, targetJsonPath)) {
           // Set for compilation
           filteredRequired.push(sourcePath);
         } else {
