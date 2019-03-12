@@ -310,7 +310,7 @@ async function analyzeWithBuildDir({
             const uniqueIssues = getUniqueIssues(groupedEslintIssues);
             showMessage(formatter(uniqueIssues));
 
-            const reportsDir = trufstuf.getMythReportsDir(buildContractsDir);
+            const reportsDir = trufstuf.getMythReportsDir(pathInfo.buildMythxContractsDir);
             const mdData = {
                 analysisMode: analyzeOpts.data.analysisMode,
                 compilerVersion: analyzeOpts.data.version,

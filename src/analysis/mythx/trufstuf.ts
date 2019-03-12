@@ -105,6 +105,6 @@ export function getContractsDir(p: string) {
     return `${p}/contracts`;
 }
 
-export function getMythReportsDir(buildContractsDir: string) {
-    return path.normalize(path.join(buildContractsDir, '..', 'mythx'));
+export function getMythReportsDir(buildMythXContractsDir: string) {
+    return path.normalize(path.join(buildMythXContractsDir, '..', 'reports'));
 }
