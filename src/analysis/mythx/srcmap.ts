@@ -78,7 +78,7 @@ export function zeroedSourceMap (sourceMap: string) {
             if (index !== '-1' && index !== '') {
                 if (indexSeen !== -2) {
                     if (indexSeen !== index) {
-                        throw new Error(`assuming only one index ${indexSeen} needs moving; saw ${index} as well`)
+                        throw new Error(`assuming only one index ${indexSeen} needs moving; saw ${index} as well`);
                     }
                 }
                 fields[2] = '0';
