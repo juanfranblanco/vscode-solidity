@@ -20,6 +20,11 @@ const isFatal = (fatal, severity) => fatal || severity === 2;
 
 
 export class MythXIssues {
+    public logs: any;
+    public logger: any;
+    public debug: any;
+    public sourcePath: any;
+
     private _issues: any;
     private _contractName: any;
     private _buildObj: any;
@@ -35,10 +40,14 @@ export class MythXIssues {
      *
      * @param {object} buildObj - Truffle smart contract build object
      */
-    constructor(buildObj: any) {
+    constructor(buildObj: any, config: any) {
         this._issues = [];
         this._contractName = buildObj.contractName;
         this._buildObj = truffle2MythXJSON(buildObj);
+        this.logs = [];
+        this.debug = config.debug;
+        this.logger = config.logger;
+        this.sourcePath = buildObj.sourcePath;
         this.contractSource = buildObj.source;
         this.sourceMap = this._buildObj.sourceMap;
         this.deployedSourceMap = this._buildObj.deployedSourceMap;
@@ -97,10 +106,27 @@ export class MythXIssues {
      *
      * @param {object[]} issues - MythX analyze API output result issues
      */
-    public setIssues(issues) {
-        this._issues = issues
-            .map(remapMythXOutput)
+    public setIssues(issueGroups) {
+        issueGroups.forEach((issueGroup: any) => {
+            if (issueGroup.sourceType === 'solidity-file' &&
+            issueGroup.sourceFormat === 'text') {
+            const filteredIssues = [];
+            for (const issue of issueGroup.issues) {
+                for (const location of issue.locations) {
+                    if (!this.isIgnorable(location.sourceMap)) {
+                        filteredIssues.push(issue);
+                    }
+                }
+            }
+            issueGroup.issues = filteredIssues;
+        }
+        });
+        const remappedIssues = issueGroups.map(remapMythXOutput);
+        this._issues = remappedIssues
             .reduce((acc, curr) => acc.concat(curr), []);
+
+        const logs = issueGroups.map(issue => (issue.meta && issue.meta.logs) || []);
+        this.logs = logs.reduce((acc, curr) => acc.concat(curr), []);
     }
 
     public getBuildObj() {
@@ -145,14 +171,17 @@ export class MythXIssues {
     }
 
     // Is this an issue that should be ignored?
-    public isIgnorable(sourceMapLocation, options, source) {
-        const ast = this.asts[source];
-        const instIndex = sourceMapLocation.split(':')[0];
-        const node = srcmap.isVariableDeclaration(instIndex, this.deployedSourceMap, ast);
+    public isIgnorable(sourceMapLocation) {
+        const basename = path.basename(this.sourcePath);
+        if (!( basename in this.asts)) {
+            return false;
+        }
+        const ast = this.asts[basename];
+        const node = srcmap.isVariableDeclaration(sourceMapLocation, ast);
         if (node && srcmap.isDynamicArray(node)) {
-            if (options.debug) {
+            if (this.debug) {
                 // this might brealk if logger is none.
-                const logger = options.logger || console;
+                const logger = this.logger || console;
                 logger.log('**debug: Ignoring Mythril issue around ' +
                       'dynamically-allocated array.');
             }
@@ -369,13 +398,20 @@ export const truffle2MythXJSON = function(truffleJSON: any): any {
         contractName,
         bytecode,
         deployedBytecode,
-        sourceMap,
-        deployedSourceMap,
         sourcePath,
         source,
         ast,
+        legacyAST,
         compiler: { version },
     } = truffleJSON;
+
+    let { sourceMap, deployedSourceMap } = truffleJSON;
+    // FIXME: why do we only one sourcePath in sourceList?
+    // We shouldn't be zeroing this but instead correcting sourceList to
+    // have the multiple entries.
+    sourceMap = srcmap.zeroedSourceMap(sourceMap);
+    deployedSourceMap = srcmap.zeroedSourceMap(deployedSourceMap);
+
 
     const sourcesKey = path.basename(sourcePath);
 
@@ -389,6 +425,7 @@ export const truffle2MythXJSON = function(truffleJSON: any): any {
         sources: {
             [sourcesKey]: {
                 ast,
+                legacyAST,
                 source,
             },
         },
@@ -422,4 +459,32 @@ export const remapMythXOutput = mythObject => {
     }
 
     return mapped;
+};
+
+export const newTruffleObjToOldTruffleByContracts = (buildObj: any) => {
+    const { sources, compiler } = buildObj;
+
+    let allContracts = [];
+
+    for (const e of Object.entries(sources)) {
+        const sourcePath: string = e[0];
+        const data: any = e[1];
+
+        const contracts = data.contracts.map(contract => ({
+            contractName: contract.contractName,
+            bytecode: contract.bytecode,
+            deployedBytecode: contract.deployedBytecode,
+            sourceMap: contract.sourceMap,
+            deployedSourceMap: contract.deployedSourceMap,
+            ast: data.ast,
+            legacyAST: data.legacyAST,
+            source: data.source,
+            compiler,
+            sourcePath,
+        }));
+
+        allContracts = allContracts.concat(contracts);
+    }
+
+    return allContracts;
 };

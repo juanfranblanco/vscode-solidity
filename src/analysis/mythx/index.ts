@@ -127,6 +127,7 @@ function solidityPathAndSource() {
 
     return {
         buildContractsDir: trufstuf.getBuildContractsDir(rootDir),
+        buildMythxContractsDir: trufstuf.getBuildMythxContractsDir(rootDir),
         code: contractCode,
         path: contractPath,
         rootDir: rootDir,
@@ -262,22 +263,12 @@ async function analyzeWithBuildDir({
         return;
     }
 
-    const obj = new mythx.MythXIssues(buildObj);
-
-    const mythxBuilObj: any = obj.getBuildObj();
-    const analyzeOpts = {
-        clientToolName: 'vscode-solidity',
-        data: mythxBuilObj,
-        timeout: solidityConfig.mythx.timeout * 1000,  // convert secs to millisecs
-    };
-
-    analyzeOpts.data.analysisMode = solidityConfig.mythx.analysisMode;
-
-    const contractName: string = buildObj.contractName;
+    const contracts = mythx.newTruffleObjToOldTruffleByContracts(buildObj);
 
     const timeout = solidityConfig.mythx.timeout;
-    const progressStep = 100 / timeout;
+    const progressStep = 100 / (timeout * contracts.length);
     let progressBarcurrStep = 0;
+    let currentContract: string;
     let progressBarInterval = setInterval(() => {
         if (progressBarInterval && progressBarcurrStep >= 100) {
             clearInterval(progressBarInterval);
@@ -285,53 +276,66 @@ async function analyzeWithBuildDir({
             return ;
         }
         progressBarcurrStep += progressStep;
-
-        progress.report({ increment: progressBarcurrStep, message: `Running ${contractName}` });
+        const message = currentContract ? `Running ${currentContract}` : 'Running...';
+        progress.report({ increment: progressBarcurrStep, message });
     }, 1000);
 
-    let mythXresult: any;
-    try {
-        mythXresult = await client.analyzeWithStatus(analyzeOpts);
-
-        if (progressBarcurrStep < 100 ) {
-            progressBarcurrStep = 100;
-            progress.report({ increment: progressBarcurrStep, message: `Running ${contractName}` });
-        }
-        obj.setIssues(mythXresult.issues);
-        if (!config.style) {
-            config.style = 'stylish';
-        }
-        const spaceLimited: boolean = ['tap', 'markdown'].indexOf(config.style) === -1;
-        const eslintIssues = obj.getEslintIssues(spaceLimited);
-        const formatter = getFormatter(solidityConfig.mythx.reportFormat);
-        const groupedEslintIssues = groupEslintIssuesByBasename(eslintIssues);
-
-        const uniqueIssues = getUniqueIssues(groupedEslintIssues);
-        showMessage(formatter(uniqueIssues));
-
-        const reportsDir = trufstuf.getMythReportsDir(buildContractsDir);
-        const mdData = {
-            analysisMode: analyzeOpts.data.analysisMode,
-            compilerVersion: analyzeOpts.data.version,
-            contractName,
-            groupedEslintIssues,
-            reportsDir: reportsDir,
-            sourcePath: mythxBuilObj.sourceList[0], // FIXME: We currently analyze single file. It's ok to take first item
-            status: mythXresult.status,
-            timeout: solidityConfig.mythx.timeout,
-            // Add stuff like mythx version
+    const analysisResults = await Promise.all(contracts.map(async (contract: any) => {
+        const obj = new mythx.MythXIssues(contract, config);
+        const mythxBuilObj: any = obj.getBuildObj();
+        currentContract = obj.contractName;
+        const analyzeOpts = {
+            clientToolName: 'vscode-solidity',
+            data: mythxBuilObj,
+            timeout: solidityConfig.mythx.timeout * 1000,  // convert secs to millisecs
         };
-        await writeMarkdownReportAsync(mdData);
-    } catch (err) {
-        if (progressBarInterval) {
-            clearInterval(progressBarInterval);
-            progressBarInterval = null;
+        analyzeOpts.data.analysisMode = solidityConfig.mythx.analysisMode;
+        let mythXresult: any;
+        try {
+            mythXresult = await client.analyzeWithStatus(analyzeOpts);
+
+            if (progressBarcurrStep < 100 ) {
+                progressBarcurrStep = 100;
+                progress.report({ increment: progressBarcurrStep, message: `Running ${obj.contractName}` });
+            }
+            obj.setIssues(mythXresult.issues);
+            if (!config.style) {
+                config.style = 'stylish';
+            }
+            const spaceLimited: boolean = ['tap', 'markdown'].indexOf(config.style) === -1;
+            const eslintIssues = obj.getEslintIssues(spaceLimited);
+            const formatter = getFormatter(solidityConfig.mythx.reportFormat);
+            const groupedEslintIssues = groupEslintIssuesByBasename(eslintIssues);
+
+            const uniqueIssues = getUniqueIssues(groupedEslintIssues);
+            showMessage(formatter(uniqueIssues));
+
+            const reportsDir = trufstuf.getMythReportsDir(buildContractsDir);
+            const mdData = {
+                analysisMode: analyzeOpts.data.analysisMode,
+                compilerVersion: analyzeOpts.data.version,
+                contractName: obj.contractName,
+                groupedEslintIssues,
+                reportsDir: reportsDir,
+                sourcePath: mythxBuilObj.sourceList[0], // FIXME: We currently analyze single file. It's ok to take first item
+                status: mythXresult.status,
+                timeout: solidityConfig.mythx.timeout,
+                // Add stuff like mythx version
+            };
+            await writeMarkdownReportAsync(mdData);
+            return mythXresult;
+        } catch (err) {
+            if (progressBarInterval) {
+                clearInterval(progressBarInterval);
+                progressBarInterval = null;
+            }
+            console.log(err);
+            showMessage(err);
+            vscode.window.showWarningMessage(err);
+            return null;
         }
-        console.log(err);
-        showMessage(err);
-        vscode.window.showWarningMessage(err);
-    }
-    return true;
+    }));
+    return analysisResults;
 }
 
 
@@ -362,7 +366,7 @@ export async function mythxAnalyze(progress) {
     let buildContractsDir: string = pathInfo.buildContractsDir;
     // FIXME: Add a better test to see if we are a truffle project
     try {
-        config = Config.detect(truffleOptions, pathInfo.rootDir);
+        config = Config.detect(truffleOptions);
         buildContractsDir = pathInfo.buildContractsDir;
     } catch (err) {
         // FIXME: Dummy up in config whatever we need to run compile.
@@ -392,6 +396,7 @@ export async function mythxAnalyze(progress) {
             },
             contracts_build_directory: buildContractsDir,
             contracts_directory: pathInfo.rootDir,
+            working_directory: pathInfo.rootDir,
         };
     }
 
@@ -407,10 +412,11 @@ export async function mythxAnalyze(progress) {
 
     // Set truffle compiler version based on vscode solidity's version info
     config.compilers.solc.version = vscode_solc.getVersion();
-    config.build_mythx_contracts = path.join(config.build_directory, 'mythx', 'contracts');
+    config.build_mythx_contracts = pathInfo.buildMythxContractsDir;
+
     await contractsCompile(config);
     return await analyzeWithBuildDir({
-        buildContractsDir,
+        buildContractsDir: pathInfo.buildMythxContractsDir,
         config,
         pathInfo,
         progress,
