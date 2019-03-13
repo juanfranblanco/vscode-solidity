@@ -54,7 +54,7 @@
     "ajv": "^6.5.2",
     "ajv-keywords": "^3.2.0",
     "antlr4-c3": "^1.1.8",
-    "armlet": "^1.2.0",
+    "armlet": "^2.0.0",
     "fs-extra": "^4.0.3",
     "handlebars": "^4.0.12",
     "nethereum-codegen": "^1.0.6",
@@ -132,22 +132,15 @@
           "type": [
             "string"
           ],
-          "default": null,
+          "default": "trial",
           "markdownDescription": "MythX Password. See https://mythx.io to get password"
         },
         "solidity.mythx.ethAddress": {
           "type": [
             "string"
           ],
-          "default": null,
+          "default": "0x0000000000000000000000000000000000000000",
           "markdownDescription": "MetaMask ETH address used to login to MythX. See https://mythx.io"
-        },
-        "solidity.mythx.email": {
-          "type": [
-            "string"
-          ],
-          "default": null,
-          "markdownDescription": "MythX email address. See https://mythx.io"
         },
         "solidity.mythx.reportFormat": {
           "type": [

@@ -179,17 +179,28 @@ describe ('analysis.mythx.trufstuf', () => {
   });
 
   describe('getTruffleBuildJsonFilesAsync', () => {
-    let readdir: any;
+    let readdir: any, stat: any;
     afterEach(() => {
       readdir.restore();
+      stat.reset();
     });
 
     it('should return paths to contract build json files', async () => {
       readdir = sinon.stub(fs, 'readdir').yields(null, [
         'Migrations.json', 'Contract.sol', 'Contract2.sol',
       ]);
+
+      stat = sinon.stub();
+
+      stat.yields(null, { mtime: 1000000 });
+      // stat.onCall(2).yields('error');
+
         const trufModule = proxyquire('../../../src/analysis/mythx/trufstuf', {
-          fs: { readdir },
+          fs: {
+            readFile: (filePath, encoding, cb) => cb(null, '{"content": "content"}'),
+            readdir,
+            stat,
+          },
         });
 
         const res = await trufModule.getTruffleBuildJsonFilesAsync('/folder/build/contracts');
