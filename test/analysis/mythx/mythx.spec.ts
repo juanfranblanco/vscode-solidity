@@ -18,7 +18,7 @@ describe('mythx.ts', () => {
         }
 
         const truffleJSON = JSON.parse(data);
-        const mythXJSON = mythx.truffle2MythXJSON(truffleJSON, 'test-truffle-analyze');
+        const mythXJSON = mythx.truffle2MythXJSON(truffleJSON);
 
         assert.deepEqual(mythXJSON,  {
           bytecode: truffleJSON.bytecode,
@@ -33,7 +33,6 @@ describe('mythx.ts', () => {
               source: truffleJSON.source,
             },
           },
-          toolId: 'test-truffle-analyze',
           version: truffleJSON.compiler.version,
         });
         done();
@@ -188,7 +187,7 @@ describe('mythx.ts', () => {
             message: 'Head message Tail message',
             mythXseverity: 'High',
             ruleId: 'SWC-000',
-            severity: 3,
+            severity: 2,
             sourceMap: '444:1:0',
             swcID: 'SWC-000',
             swcTitle: 'Test Title',
@@ -238,7 +237,7 @@ describe('mythx.ts', () => {
             message: 'Head message Tail message',
             mythXseverity: 'High',
             ruleId: 'SWC-000',
-            severity: 3,
+            severity: 2,
             sourceMap: '310:23:0',
             swcID: 'SWC-000',
             swcTitle: 'Test Title',
@@ -319,7 +318,7 @@ describe('mythx.ts', () => {
         const result = remappedMythXOutput.map(output => issuesObject.convertMythXReport2EsIssue(output, true));
 
         assert.deepEqual(result, [{
-            errorCount: 0,
+            errorCount: 1,
             filePath: '/tmp/contracts/simple_dao.sol',
             fixableErrorCount: 0,
             fixableWarningCount: 0,
@@ -334,13 +333,13 @@ describe('mythx.ts', () => {
                 message: 'Head message',
                 mythXseverity: 'High',
                 ruleId: 'SWC-000',
-                severity: 3,
+                severity: 2,
                 sourceMap: '310:23:0',
                 swcID: 'SWC-000',
                 swcTitle: 'Test Title',
                 tail: 'Tail message',
             }],
-            warningCount: 1,
+            warningCount: 0,
         }]);
     });
 
@@ -419,7 +418,7 @@ describe('mythx.ts', () => {
         issuesObject.setIssues(mythXOutput);
         const result = issuesObject.getEslintIssues(true);
         assert.deepEqual(result, [{
-            errorCount: 0,
+            errorCount: 1,
             filePath: '/tmp/contracts/simple_dao.sol',
             fixableErrorCount: 0,
             fixableWarningCount: 0,
@@ -434,13 +433,13 @@ describe('mythx.ts', () => {
                 message: 'Head message',
                 mythXseverity: 'High',
                 ruleId: 'SWC-000',
-                severity: 3,
+                severity: 2,
                 sourceMap: '310:23:0',
                 swcID: 'SWC-000',
                 swcTitle: 'Test Title',
                 tail: 'Tail message',
             }],
-            warningCount: 1,
+            warningCount: 0,
         }]);
     });
   });
