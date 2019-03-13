@@ -304,11 +304,9 @@ async function analyzeWithBuildDir({
             }
             const spaceLimited: boolean = ['tap', 'markdown'].indexOf(config.style) === -1;
             const eslintIssues = obj.getEslintIssues(spaceLimited);
-            const formatter = getFormatter(solidityConfig.mythx.reportFormat);
             const groupedEslintIssues = groupEslintIssuesByBasename(eslintIssues);
 
             const uniqueIssues = getUniqueIssues(groupedEslintIssues);
-            showMessage(formatter(uniqueIssues));
 
             const reportsDir = trufstuf.getMythReportsDir(pathInfo.buildMythxContractsDir);
             const mdData = {
@@ -323,7 +321,7 @@ async function analyzeWithBuildDir({
                 // Add stuff like mythx version
             };
             await writeMarkdownReportAsync(mdData);
-            return mythXresult;
+            return uniqueIssues;
         } catch (err) {
             if (progressBarInterval) {
                 clearInterval(progressBarInterval);
@@ -415,11 +413,20 @@ export async function mythxAnalyze(progress) {
     config.build_mythx_contracts = pathInfo.buildMythxContractsDir;
 
     await contractsCompile(config);
-    return await analyzeWithBuildDir({
+    let analysisResults = await analyzeWithBuildDir({
         buildContractsDir: pathInfo.buildMythxContractsDir,
         config,
         pathInfo,
         progress,
         solidityConfig,
     });
+
+    analysisResults = analysisResults.filter(res => res !== null);
+    analysisResults = analysisResults.reduce((accum, res) => accum.concat(res), []);
+
+    const groupedEslintIssues = groupEslintIssuesByBasename(analysisResults);
+    const uniqueIssues = getUniqueIssues(groupedEslintIssues);
+
+    const formatter = getFormatter(solidityConfig.mythx.reportFormat);
+    showMessage(formatter(uniqueIssues));
 }
