@@ -5,7 +5,7 @@ import * as mythx from './mythx';
 import * as trufstuf from './trufstuf';
 import { ApiVersion, Client } from 'armlet';
 import { versionJSON2String, getFormatter } from './util';
-import { writeMarkdownReportAsync } from './md-reporter';
+import { writeMarkdownReportAsync, writeMarkdownReport } from './md-reporter';
 import * as util from 'util';
 import { getUniqueIssues } from './eslint';
 
@@ -67,6 +67,37 @@ function showMessage (mess: string) {
         mess = stripAnsi(mess);
     }
     outputChannel.appendLine(mess);
+}
+
+// Take solc's JSON output and make it compatible with the Mythril Platform API
+function solc2MythrilJSON(inputSolcJSON: any,
+                          contractName: string,
+                          sourceCode: string,
+                          analysisMode: string) {
+
+    // Add/remap some fields because the MythX Platform API doesn't
+    // align with solc's JSON.
+
+    const solcJSON = {
+        analysisMode: analysisMode,
+        bytecode: '',
+        contractName: contractName,
+        deployedBytecode: '',
+        deployedSourceMap: '',
+        sourceList: [contractName],
+        sourceMap: '',
+        sources: {},
+    };
+    solcJSON.sources[contractName] = sourceCode;
+
+    for (const field of ['bytecode', 'deployedBytecode']) {
+        solcJSON[field] = inputSolcJSON.evm[field].object;
+    }
+
+    solcJSON.deployedSourceMap = inputSolcJSON.evm.deployedBytecode.sourceMap;
+    solcJSON.sourceMap = inputSolcJSON.evm.bytecode.sourceMap;
+
+    return solcJSON;
 }
 
 function getArmletCredentialKeys(config: SolidityMythXOption): any {
@@ -374,6 +405,10 @@ export async function mythxAnalyze(progress) {
 
     // Get VSCode Solidity's solc information
     const vscode_solc = new SolcCompiler(vscode.workspace.rootPath);
+    const remoteCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingRemoteVersion');
+    const localCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingLocalVersion');
+
+    const initialized = await vscode_solc.intialiseCompiler(localCompiler, remoteCompiler);
 
     // Set truffle compiler version based on vscode solidity's version info
     config.compilers.solc.version = vscode_solc.getVersion();
