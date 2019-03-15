@@ -1,14 +1,42 @@
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+**Table of Contents**
+
+- [Prerequisites...](#prerequisites)
+    - [Dependency hell](#dependency-hell)
+- [How to run code in this github repository](#how-to-run-code-in-this-github-repository)
+    - [Running](#running)
+    - [Debugging](#debugging)
+- [See also:](#see-also)
+
+<!-- markdown-toc end -->
 Perhaps you want to help work on this awesome project? Or run from the github repository?
 
 # Prerequisites...
 
 You need to have installed
 
-* VSCode (duh). Download [here](https://code.visualstudio.com/download)
+* VSCode (duh). Download [here](https://code.visualstudio.com/download).
 * [nodejs](https://nodejs.org/en/)
 * [npm](https://www.npmjs.com/get-npm)
 
-There are a number of nodejs packages are needed, like [typescript](https://www.typescriptlang.org/), but you can get those via `npm`.
+There are a number of nodejs packages are needed, like [typescript](https://www.typescriptlang.org/), but you can get those via `npm`,
+which is described in a below [section](#how-to-run-code-in-this-github-repository).
+
+
+## Dependency hell
+
+This code is known to work with:
+
+* (Microsoft) code 1.30.2
+* nodejs 8.9.3
+* (npm) vscode 1.1.30
+
+Starting with Microsoft code 1.31 (or 1.32) you will get a crash when you try to run this code.
+Also, starting with those versions, you need nodejs 10 or greater.
+
+To be able to have several nodejs versions around, there is [nvm](https://github.com/creationix/nvm).
+
+
 
 
 # How to run code in this github repository
