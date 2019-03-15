@@ -1,6 +1,5 @@
 'use strict';
 import * as solparse from 'solparse';
-import * as antlrParser from 'solidity-parser-antlr';
 import {ContractCollection} from './model/contractsCollection';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { initialiseProject } from './projectService';

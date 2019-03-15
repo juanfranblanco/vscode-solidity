@@ -14,7 +14,7 @@ import {
     TextDocuments, InitializeResult,
     Files, Diagnostic,
     TextDocumentPositionParams,
-    CompletionItem, Location, SignatureHelp, ConnectionStrategy,
+    CompletionItem, Location, SignatureHelp,
 } from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 

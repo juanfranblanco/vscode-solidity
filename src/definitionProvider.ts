@@ -73,8 +73,7 @@ export class SolidityDefinitionProvider {
               vscode.Range.create(0, 0, 0, 0),
             ),
           );
-        case 'ContractStatement':
-        {
+        case 'ContractStatement': {
           // find definition for inheritance
           const isBlock = this.findElementByOffset(element.is, offset);
           if (isBlock !== undefined) {
@@ -101,8 +100,7 @@ export class SolidityDefinitionProvider {
           }
           break;
         }
-        case 'LibraryStatement':
-        {
+        case 'LibraryStatement': {
           // find definition in library body recursively
           const statement = this.findElementByOffset(element.body, offset);
           if (statement !== undefined) {
