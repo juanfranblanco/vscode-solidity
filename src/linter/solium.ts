@@ -29,6 +29,10 @@ export default class SoliumService implements Linter {
             this.soliumRules = soliumRules;
         }
 
+        if (typeof this.soliumRules['indentation'] === 'undefined' ||  this.soliumRules['indentation'] === null) {
+            this.soliumRules['indentation'] = 'false';
+        }
+
         if (process.platform === 'win32') {
             if (typeof  this.soliumRules['linebreak-style'] === 'undefined' ||  this.soliumRules['linebreak-style'] === null) {
                 this.soliumRules['linebreak-style'] = 'off';

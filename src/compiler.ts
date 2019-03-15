@@ -91,6 +91,15 @@ function processCompilationOuput(outputString: any, outputChannel: vscode.Output
     }
 }
 
+function ensureDirectoryExistence(filePath) {
+    const dirname = path.dirname(filePath);
+    if (fs.existsSync(dirname)) {
+      return true;
+    }
+    ensureDirectoryExistence(dirname);
+    fs.mkdirSync(dirname);
+  }
+
 function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, sourceDir: string,
                                                     excludePath?: string, singleContractFilePath?: string) {
     const binPath = path.join(vscode.workspace.rootPath, buildDir);
@@ -103,10 +112,12 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
         const relativePath = path.relative(vscode.workspace.rootPath, singleContractFilePath);
         const dirName = path.dirname(path.join(binPath, relativePath));
         const outputCompilationPath = path.join(dirName, path.basename(singleContractFilePath, '.sol') + '-sol-output' + '.json');
+        ensureDirectoryExistence(outputCompilationPath);
         fs.writeFileSync(outputCompilationPath, JSON.stringify(output, null, 4));
     } else {
         const dirName = binPath;
         const outputCompilationPath = path.join(dirName, 'compile-all-output' + '.json');
+        ensureDirectoryExistence(outputCompilationPath);
         if (fs.existsSync(outputCompilationPath)) {
             fs.unlinkSync(outputCompilationPath);
         }
