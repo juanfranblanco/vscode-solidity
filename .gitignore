@@ -1,6 +1,10 @@
-out
-node_modules
-.vscode-test
-.vs
-tmp
 .DS_Store
+.vs
+.vscode-test
+/package-lock.json
+node_modules
+out
+tmp
+.nyc_output
+coverage
+

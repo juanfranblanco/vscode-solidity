@@ -55,7 +55,8 @@ But if you are working on an specific project using an older version, you can us
 
 ## Default project structure
 
-A default project  / library dependency structure is supported as follows:
+A default project  / library dependency structure follows the DappSys library model:
+
 ![Screenshot](screenshots/simpleProjectStructure.PNG)
 
 Libraries will have the same name as their folder they are included.
@@ -63,6 +64,47 @@ Solidity files will be in the 'src' folder.
 Libraries will be included in the 'lib' folder.
 
 Currently there is no name conflicting resolution, so the first library found matching a name, will be the first one used.
+
+The user settings for this structure is:
+
+```
+  "solidity.packageDefaultDependenciesContractsDirectory": "src",
+  "solidity.packageDefaultDependenciesDirectory": "lib"
+```
+
+### OpenZeppelin
+
+If you're using `openzeppelin-solidity`, the contracts will be found in your node_modules folder, so the user settings will be the following, assuming your solidity project is at root. 
+
+```
+  "solidity.packageDefaultDependenciesContractsDirectory": "",
+  "solidity.packageDefaultDependenciesDirectory": "node_modules"
+```
+
+If you have a deeper structure, like
+
+```
+Solution
+└───solidity_project
+│   │
+|   │   xx.sol
+│   └───node_modules
+│   
+└───Nethereum_Project
+|   │   xx.cs
+|   │   yy.cs
+|
+└───Web3Js_Project
+|   │   xx.js
+|   │   yy.js
+```
+
+Your user settings configuration will need to represent the full structure:
+
+```
+  "solidity.packageDefaultDependenciesContractsDirectory": "",
+  "solidity.packageDefaultDependenciesDirectory": "solidity_project/node_modules"
+```
 
 ## Code completion
 
@@ -78,6 +120,7 @@ Auto compilation of files and error highlighting can be enabled or disabled usin
 "solidity.enabledAsYouTypeCompilationErrorCheck": true,
 "solidity.validationDelay": 1500
 ```
+
 
 ## Linting
 
@@ -137,7 +180,7 @@ Forest Fang for providing the implementation of the "Go to definition", allowing
 
 Bernardo Vieira for adding the capability to read the solium settings from a file in the workspace root directory.
 
-Nick Addison, Elazar Gershuni, Joe Whittles, Iñigo Villalba, Thien Toan, Jonathan Carter, Stefan Lew, Nikita Savchenko, Josh Stevens for their contributions.
+Nick Addison, Elazar Gershuni, Joe Whittles, Iñigo Villalba, Thien Toan, Jonathan Carter, Stefan Lew, Nikita Savchenko, Josh Stevens, Paul Berg for their contributions.
 
 Sebastian Bürgel for keeping reminding me of the offline installation suppport
 
