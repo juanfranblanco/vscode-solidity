@@ -6,14 +6,13 @@
   renames this to "nodes".
 ***/
 
-import * as util from 'remix-lib/src/util';
 import { AstWalker } from './astWalker';
+import {findLowerBound} from './srcmap';
 
 /**
  * Decompress the source mapping given by solc-bin.js
  */
 export class SourceMappingDecoder {
-
     /**
      * get a list of nodes that are at the given @arg position
      *
@@ -179,7 +178,7 @@ export class SourceMappingDecoder {
     }
 
     public convertFromCharPosition (pos, lineBreakPositions) {
-        let line = util.findLowerBound(pos, lineBreakPositions);
+        let line = findLowerBound(pos, lineBreakPositions);
         if (lineBreakPositions[line] !== pos) {
             line += 1;
         }

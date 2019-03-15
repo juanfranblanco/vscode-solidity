@@ -1,5 +1,5 @@
 'use strict';
-import * as Solium from 'solium';
+import * as Solium from 'ethlint';
 import { DiagnosticSeverity, IConnection,
 } from 'vscode-languageserver';
 import Linter from './linter';

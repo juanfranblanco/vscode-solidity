@@ -18,7 +18,7 @@
                 "${workspaceFolder}/out/src/**/*.js"
             ],        
             "preLaunchTask": "npm: watch",
-            "stopOnEntry": true
+            "stopOnEntry": false
         },
         {
             "type": "node",
