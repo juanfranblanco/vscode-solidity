@@ -19,8 +19,15 @@ export function activate(context: vscode.ExtensionContext) {
     initDiagnosticCollection(diagnosticCollection);
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.mythx.analyze', async () => {
-        const res = await mythxAnalyze();
-        return res;
+        return await vscode.window.withProgress({
+            cancellable: true,
+            location: vscode.ProgressLocation.Notification,
+            title: 'MythX analysis',
+        }, (progress) => {
+            progress.report({ increment: 0 });
+
+            return mythxAnalyze(progress);
+        });
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.mythx.version', () => {

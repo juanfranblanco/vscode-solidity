@@ -12,8 +12,8 @@ import * as path from 'path';
   Mythril calls "informational".
 */
 const mythx2Severity = {
-    High: 3,
-    Medium: 2,
+    High: 2,
+    Medium: 1,
 };
 
 const isFatal = (fatal, severity) => fatal || severity === 2;
@@ -364,7 +364,7 @@ export class MythXIssues {
 
 // Take truffle's build/contracts/xxx.json JSON and make it
 // compatible with the Mythx Platform API
-export const truffle2MythXJSON = function(truffleJSON: any, toolId = 'truffle-analyze'): any {
+export const truffle2MythXJSON = function(truffleJSON: any): any {
     const {
         contractName,
         bytecode,
@@ -392,7 +392,6 @@ export const truffle2MythXJSON = function(truffleJSON: any, toolId = 'truffle-an
                 source,
             },
         },
-        toolId,
         version,
     };
 };
