@@ -76,8 +76,8 @@ const normalizeJsonOutput = jsonObject => {
   const { contracts, sources, compiler, updatedAt } = jsonObject;
   const result = {
     compiler,
-    updatedAt,
     sources: {},
+    updatedAt,
   };
 
   for (const [ sourcePath, solData ] of Object.entries(contracts)) {
@@ -89,11 +89,11 @@ const normalizeJsonOutput = jsonObject => {
       }
       for (const [ contractName, contractData ] of Object.entries(solData)) {
           const o = {
-              contractName,
               bytecode: cleanBytecode(contractData.evm.bytecode.object),
+              contractName,
               deployedBytecode: cleanBytecode(contractData.evm.deployedBytecode.object),
-              sourceMap: contractData.evm.bytecode.sourceMap,
               deployedSourceMap: contractData.evm.deployedBytecode.sourceMap,
+              sourceMap: contractData.evm.bytecode.sourceMap,
           };
 
           result.sources[sourcePath].contracts.push(o);
@@ -110,7 +110,7 @@ const normalizeJsonOutput = jsonObject => {
     result.sources[sourcePath].ast = solData.ast;
     result.sources[sourcePath].legacyAST = solData.legacyAST;
     result.sources[sourcePath].id = solData.id;
-    result.sources[sourcePath].source = getFileContent(sourcePath)
+    result.sources[sourcePath].source = getFileContent(sourcePath);
   }
 
   return result;

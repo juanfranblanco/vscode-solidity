@@ -28,7 +28,7 @@ which is described in a below [section](#how-to-run-code-in-this-github-reposito
 This code is known to work with:
 
 * (Microsoft) code 1.30.2
-* nodejs 8.9.3
+* nodejs 8.9.4; truffle 5 libraries request at least this
 * (npm) vscode 1.1.30
 
 Starting with Microsoft code 1.31 (or 1.32) you will get a crash when you try to run this code.
@@ -108,9 +108,9 @@ But if everything is good, enter `Ctrl`-`Shift`-`P` and a list of commands will 
 
 ## Debugging
 
-You may want to extend this code of may find a problem and want to debug what is going wrong. For this, you start off from the "Debug" menu using the first item on the list "Start Debugging" which is also bound to the function key `F5`. As before the window will go orange a popup menu bar will appear at the top and on the left it will initially look like parallel bars (or "pause" button you find on old DVD, VHS, or CD devices).  But..
+You may want to extend this code of may find a problem and want to debug what is going wrong. For this, you start off from the "Debug" menu using the first item on the list "Start Debugging" which is also bound to the function key `F5`. As before the window will go orange a popup menu bar will appear at the top.
 
-__NOTE__: after the window goes orange, another and VSCode window with the blue, the "play button" will go from a the parallel bars to "pause" back to "play" and you will be stopped in `bootstrap-fork.js` at some nonsensical like like line 9 which has no code on it. When this happens (and it may happen several times) just hit the play button to make sure it goes back to the parallel bars. You have 10 seconds from the time this button goes from "Pause" to "Play" to hit the "Play" button. Otherwise in the other VSCode you will get a popup message that reads:
+__NOTE__: It may happen that after the window goes orange, another and VSCode window with the blue, the "play button" may go from a the parallel bars to "pause" back to "play". When that happens you may also be stopped in `bootstrap-fork.js` at some nonsensical like like line 9 which has no code on it. If this happens (and it may happen several times for each solidity file loaded) just hit the play button to make sure it goes back to the parallel bars. You have 10 seconds from the time this button goes from "Pause" to "Play" to hit the "Play" button. Otherwise in the other VSCode you will get a popup message that reads:
 
 > Extension host did not start in 10 seconds, it might be stopped on the first line and needs a debugger to continue.
 

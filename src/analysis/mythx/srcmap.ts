@@ -2,9 +2,8 @@
 // We use this to filter out some MythX error messages.
 //
 
-import { SourceMappingDecoder } from './sourceMappingDecoder';
+import { SourceMappingDecoder } from './compat/remix-lib/sourceMappingDecoder';
 import {GetOpcode} from './opcodes';
-import * as remixUtil from 'remix-lib/src/util';
 
 /**
  *  Return the VariableDeclaration AST node associated with instIndex

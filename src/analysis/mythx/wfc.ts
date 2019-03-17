@@ -17,7 +17,6 @@ import * as fs from 'fs-extra';
 import { callbackify, promisify } from 'util';
 import * as Config from 'truffle-config';
 import solcCompile from './compat/truffle-compile';
-import * as vyperCompile from 'truffle-compile-vyper';
 import * as externalCompile from 'truffle-external-compile';
 import * as expect from 'truffle-expect';
 import * as Resolver from 'truffle-resolver';
@@ -26,9 +25,8 @@ import * as OS from 'os';
 
 
 const SUPPORTED_COMPILERS = {
-    'solc': solcCompile,
-    'vyper': vyperCompile,
     'external': externalCompile,
+    'solc': solcCompile,
 };
 
 /* A replacement for truffe-artifacts.save, that
@@ -85,9 +83,9 @@ const mythXsave = function(object) {
             finalObject.updatedAt = new Date().toISOString();
 
             // output object
-            fs.outputFile(outputPath, JSON.stringify(finalObject, null, 2), 'utf8', function(err) {
-                if (err) {
-                    return reject(err);
+            fs.outputFile(outputPath, JSON.stringify(finalObject, null, 2), 'utf8', function(outErr: any) {
+                if (outErr) {
+                    return reject(outErr);
                 }
                 accept();
             });
@@ -160,13 +158,13 @@ const Contracts = {
         // convert to promise to compile+write
         const compilations = await this.compileSources(config, compilers);
 
-        const collect = async (compilations) => {
+        const collect = async (comps: any) => {
             const result = {
-                outputs: {},
                 basenames: {},
+                outputs: {},
             };
 
-            for (const compilation of compilations) {
+            for (const compilation of comps) {
                 const { compiler, artifacts } = compilation;
 
                 if (artifacts) {
