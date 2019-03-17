@@ -10,31 +10,12 @@ const readdir = util.promisify(fs.readdir);
 const readFile = util.promisify(fs.readFile);
 const stat = util.promisify(fs.stat);
 
-const parseBuildJson = async file => {
+export const parseBuildJson = async file => {
     const buildJson = await readFile(file, 'utf8');
     const buildObj = JSON.parse(buildJson);
     return buildObj;
 };
 
-/* returns true if directory/file out of date
-*/
-const staleBuildContract = async (directory, file) => {
-    const fullPath = path.join(directory, file);
-    const buildObj = await parseBuildJson(fullPath);
-    const fullPathStat = await stat(fullPath);
-    const buildMtime = fullPathStat.mtime;
-    const sourcePath = buildObj.sourcePath;
-    let sourcePathStat;
-
-    try {
-        sourcePathStat = await stat(sourcePath);
-    } catch (err) {
-        return true;
-    }
-
-    const sourceMtime = sourcePathStat.mtime;
-    return sourceMtime > buildMtime;
-};
 
 // Directories that must be in a truffle project
 
@@ -107,13 +88,8 @@ export const getRootDirAsync = async (p: string): Promise<string> => {
  */
 export const getTruffleBuildJsonFilesAsync = async function(directory: string) {
     const files = await readdir(directory);
-    const filtered1 = files.filter(f => f !== 'Migrations.json');
-    const promisified = await Promise.all(filtered1.map(async f => {
-        const isStale = await staleBuildContract(directory, f);
-        return isStale ? null : f;
-    }));
-    const filtered2 = promisified.filter(f => !!f);
-    const filePaths = filtered2.map(f => path.join(directory, f));
+    const filtered = files.filter(f => f !== 'Migrations.json');
+    const filePaths = filtered.map(f => path.join(directory, f));
     return filePaths;
 };
 
@@ -121,10 +97,14 @@ export function getBuildContractsDir(p: string): string {
     return `${p}/build/contracts`;
 }
 
+export function getBuildMythxContractsDir(p: string): string {
+    return `${p}/build/mythx/contracts`;
+}
+
 export function getContractsDir(p: string) {
     return `${p}/contracts`;
 }
 
-export function getMythReportsDir(buildContractsDir: string) {
-    return path.normalize(path.join(buildContractsDir, '..', 'mythx'));
+export function getMythReportsDir(buildMythXContractsDir: string) {
+    return path.normalize(path.join(buildMythXContractsDir, '..', 'reports'));
 }

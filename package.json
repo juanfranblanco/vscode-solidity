@@ -59,6 +59,7 @@
     "nethereum-codegen": "^1.0.6",
     "read-yaml": "^1.1.0",
     "solc": "^0.5.6",
+    "require-from-string": "^2.0.2",
     "solhint": "^1.4.0",
     "ethlint": "^1.2.3",
     "solparse": "^2.2.8",
