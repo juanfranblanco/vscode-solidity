@@ -62,11 +62,14 @@ const theIssueTemplate = `
 * Run time: {{status.runTime}} msecs
 * Queue time: {{status.queueTime}} msecs
 * UUID: {{status.uuid}}
+* User: {{status.submittedBy}}
 
 ## MythX Version Information
 * API version: {{status.apiVersion}}
 * Mythril version: {{status.mythrilVersion}}
 * Maru version: {{status.maruVersion}}
+* Maestro version: {{status.maestroVersion}}
+* Harvey version: {{status.harveylVersion}}
 `;
 
 /**
