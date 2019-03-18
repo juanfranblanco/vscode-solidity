@@ -117,13 +117,16 @@ export default class VersionRange extends LoadingStrategy {
     //   color: 'red',
     //   text: 'Downloading compiler',
     // }).start();
+    process.stdout.write('Downloading compiler...');
     try {
       const response = await request.get(url);
+      process.stdout.write('\n');
       // spinner.stop();
       this.addFileToCache(response, fileName);
       return this.compilerFromString(response);
     } catch (error) {
       // spinner.stop();
+      process.stdout.write('\n');
       throw this.errors('noRequest', url, error);
     }
   }
@@ -154,12 +157,15 @@ export default class VersionRange extends LoadingStrategy {
     //   text: 'Fetching solc version list from solc-bin',
     // }).start();
 
+    process.stdout.write('Fetching solc version list from solc-bin...')
     return request(this.config.versionsUrl)
       .then(list => {
+        process.stdout.write('\n');
         // spinner.stop();
         return JSON.parse(list);
       })
       .catch(err => {
+        process.stdout.write('\n');
         // spinner.stop();
         throw this.errors('noRequest', this.config.versionsUrl, err);
       });
