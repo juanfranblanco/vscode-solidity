@@ -7,7 +7,7 @@
 ***/
 
 import { AstWalker } from './astWalker';
-import {findLowerBound} from './srcmap';
+import {findLowerBound} from '../../srcmap';
 
 /**
  * Decompress the source mapping given by solc-bin.js
