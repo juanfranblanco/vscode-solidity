@@ -44,6 +44,9 @@ interface SolidityMythXOption {
     ethAddress: string;
 }
 
+const hasSolcVersion = config => config.compilers && config.compilers.solc && !!config.compilers.solc.version;
+
+
 // FIXME: util.promisify breaks compile internal call to writeContracts
 // const contractsCompile = util.promisify(contracts.compile);
 const contractsCompile = config => {
@@ -409,7 +412,9 @@ export async function mythxAnalyze(progress) {
     const initialized = await vscode_solc.intialiseCompiler(localCompiler, remoteCompiler);
 
     // Set truffle compiler version based on vscode solidity's version info
-    config.compilers.solc.version = vscode_solc.getVersion();
+    if (!hasSolcVersion(config)) {
+        config.compilers.solc.version = vscode_solc.getVersion();
+    }
     config.build_mythx_contracts = pathInfo.buildMythxContractsDir;
 
     await contractsCompile(config);
