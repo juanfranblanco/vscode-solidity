@@ -13,6 +13,9 @@ import CompilerSupplier from './compilerSupplier';
 const debug = Debug('compile'); // eslint-disable-line no-unused-vars
 
 
+let nodeDirectory: string;
+let contractsDirectory: string;
+
 function getFileContent(filepath: string) {
   const stats: any = fs.statSync(filepath);
   if (stats.isFile()) {
@@ -22,12 +25,23 @@ function getFileContent(filepath: string) {
   }
 }
 
-function findImports(pathName: string) {
-  try {
-    return { contents: getFileContent(pathName) };
-  } catch (e) {
-    return { error: e.message };
+function isExplicitlyRelative(import_path) {
+  return import_path.indexOf('.') === 0;
+}
+
+function convertToAbsolutePath(p, base, nodeBase) {
+  // If it's an absolute paths, leave it alone.
+  if (path.isAbsolute(p)) {
+    return p;
   }
+
+  // If it's not explicitly relative, must be relative to node_modules
+  if (!isExplicitlyRelative(p)) {
+    return path.resolve(path.join(nodeBase, p));
+  }
+
+  // Path must be explicitly relative, therefore make it absolute.
+  return path.resolve(path.join(base, p));
 }
 
 const getSourceFileName = sourcePath => {
@@ -110,7 +124,8 @@ const normalizeJsonOutput = jsonObject => {
     result.sources[sourcePath].ast = solData.ast;
     result.sources[sourcePath].legacyAST = solData.legacyAST;
     result.sources[sourcePath].id = solData.id;
-    result.sources[sourcePath].source = getFileContent(sourcePath);
+    const absPathName = convertToAbsolutePath(sourcePath, contractsDirectory, nodeDirectory);
+    result.sources[sourcePath].source = getFileContent(absPathName);
   }
 
   return result;
@@ -127,6 +142,8 @@ const normalizeJsonOutput = jsonObject => {
 //   logger: console
 // }
 const compile = (sourcePath, sourceText, options, callback, isStale) => {
+  nodeDirectory = path.join(options.working_directory, 'node_modules');
+  contractsDirectory = options.contracts_directory;
   if (typeof options === "function") {
     callback = options;
     options = {};
@@ -199,9 +216,24 @@ const compile = (sourcePath, sourceText, options, callback, isStale) => {
       const solcVersion = solc.version();
       solcStandardInput.sources = {
         [sourcePath]: {
-          content: sourceText
+          content: sourceText,
         },
       };
+
+      function findImports(pathName) {
+        try {
+          const absPathName = convertToAbsolutePath(pathName, contractsDirectory, nodeDirectory);
+          if (fs.existsSync(absPathName)) {
+            return { contents: getFileContent(absPathName) };
+          } else {
+            // We can't find the file, so fudge it with the empty contents, which is
+            // better than throwing an error.
+            return { contents: '' };
+          }
+        } catch (e) {
+          return { error: e.message };
+        }
+      }
 
       const result = solc.compile(JSON.stringify(solcStandardInput), findImports);
 
@@ -261,108 +293,10 @@ const compile = (sourcePath, sourceText, options, callback, isStale) => {
 
       callback(null, {[shortName]: normalizedOutput}, isStale);
     })
-    .catch(callback);
+    .catch(e => {
+      throw e;
+    });
 };
-
-/** From original truffle-compile. This is not used yet.
-**/
-function replaceLinkReferences(bytecode, linkReferences, libraryName) {
-  let linkId = "__" + libraryName;
-
-  while (linkId.length < 40) {
-    linkId += "_";
-  }
-
-  linkReferences.forEach(function(ref) {
-    // ref.start is a byte offset. Convert it to character offset.
-    const start = ref.start * 2 + 2;
-
-    bytecode =
-      bytecode.substring(0, start) + linkId + bytecode.substring(start + 40);
-  });
-
-  return bytecode;
-}
-
-/** From original truffle-compile. This is not used yet.
-**/
-function orderABI(contract) {
-  let contract_definition;
-  const ordered_function_names = [];
-
-  for (let i = 0; i < contract.legacyAST.children.length; i++) {
-    const definition = contract.legacyAST.children[i];
-
-    // AST can have multiple contract definitions, make sure we have the
-    // one that matches our contract
-    if (
-      definition.name !== "ContractDefinition" ||
-      definition.attributes.name !== contract.contract_name
-    ) {
-      continue;
-    }
-
-    contract_definition = definition;
-    break;
-  }
-
-  if (!contract_definition) {
-    return contract.abi;
-  }
-  if (!contract_definition.children) {
-    return contract.abi;
-  }
-
-  contract_definition.children.forEach(function(child) {
-    if (child.name === "FunctionDefinition") {
-      ordered_function_names.push(child.attributes.name);
-    }
-  });
-
-  // Put function names in a hash with their order, lowest first, for speed.
-  const functions_to_remove = ordered_function_names.reduce(function(
-    obj,
-    value,
-    index,
-  ) {
-    obj[value] = index;
-    return obj;
-  },
-  {});
-
-  // Filter out functions from the abi
-  let function_definitions: any = contract.abi.filter(function(item) {
-    return functions_to_remove[item.name] !== undefined;
-  });
-
-  // Sort removed function defintions
-  function_definitions = function_definitions.sort(function(item_a, item_b) {
-    const a = functions_to_remove[item_a.name];
-    const b = functions_to_remove[item_b.name];
-
-    if (a > b) {
-      return 1;
-    }
-    if (a < b) {
-      return -1;
-    }
-    return 0;
-  });
-
-  // Create a new ABI, placing ordered functions at the end.
-  const newABI = [];
-  contract.abi.forEach(function(item) {
-    if (functions_to_remove[item.name] !== undefined) {
-      return;
-    }
-    newABI.push(item);
-  });
-
-  // Now pop the ordered functions definitions on to the end of the abi..
-  Array.prototype.push.apply(newABI, function_definitions);
-
-  return newABI;
-}
 
 // contracts_directory: String. Directory where .sol files can be found.
 // quiet: Boolean. Suppress output. Defaults to false.
@@ -409,7 +343,7 @@ const with_dependencies = (options, callback, compileAll) => {
     "paths",
     "working_directory",
     "contracts_directory",
-    "resolver"
+    // "resolver"
   ]);
 
   const config = Config.default().merge(options);
@@ -418,7 +352,7 @@ const with_dependencies = (options, callback, compileAll) => {
     config.with({
       paths: options.paths,
       base_path: options.contracts_directory,
-      resolver: options.resolver
+      // resolver: options.resolver
     }),
     (err, allSources, required) => {
       if (err) {
