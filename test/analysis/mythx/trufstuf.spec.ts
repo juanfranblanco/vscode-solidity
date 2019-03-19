@@ -228,7 +228,7 @@ describe ('analysis.mythx.trufstuf', () => {
   describe('getMythReportsDir', () => {
     it('should return path to mythx reports', () => {
       const res = trufstuf.getMythReportsDir('/my-project/build/contracts');
-      assert.equal(res, '/my-project/build/mythx');
+      assert.equal(res, '/my-project/build/reports');
     });
   });
 });

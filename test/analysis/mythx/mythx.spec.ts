@@ -10,6 +10,11 @@ import * as srcmap from '../../../src/analysis/mythx/srcmap';
 const simpleDaoJsonPath = `${__dirname}/fixtures/simple_dao/build/contracts/SimpleDAO.json`;
 
 describe('mythx.ts', () => {
+  const config = {
+    debug: false,
+    logger: console,
+  };
+
   describe('truffle2MythXJSON', () => {
     it('should turn truffle contract json to mythx compatible object', done => {
       fs.readFile(simpleDaoJsonPath, 'utf8', (err, data) => {
@@ -24,12 +29,13 @@ describe('mythx.ts', () => {
           bytecode: truffleJSON.bytecode,
           contractName: truffleJSON.contractName,
           deployedBytecode: truffleJSON.deployedBytecode,
-          deployedSourceMap: truffleJSON.deployedSourceMap,
+          deployedSourceMap: srcmap.zeroedSourceMap(truffleJSON.deployedSourceMap),
           sourceList: [ truffleJSON.sourcePath ],
-          sourceMap: truffleJSON.sourceMap,
+          sourceMap: srcmap.zeroedSourceMap(truffleJSON.sourceMap),
           sources: {
             'simple_dao.sol': {
               ast: truffleJSON.ast,
+              legacyAST: truffleJSON.legacyAST,
               source: truffleJSON.source,
             },
           },
@@ -125,7 +131,7 @@ describe('mythx.ts', () => {
     });
 
     it('should decode a source code location correctly', (done) => {
-        const issuesObject = new mythx.MythXIssues(truffleJSON);
+        const issuesObject = new mythx.MythXIssues(truffleJSON, config);
         assert.deepEqual(issuesObject.textSrcEntry2lineColumn('30:2:0', issuesObject.lineBreakPositions[sourceName]),
             [ { line: 2, column: 27, beginLinePos: 3 }, { line: 2, column: 29, beginLinePos: 3 } ]);
 
@@ -133,14 +139,14 @@ describe('mythx.ts', () => {
     });
 
     it('should decode a bytecode offset correctly', (done) => {
-        const issuesObject = new mythx.MythXIssues(truffleJSON);
+        const issuesObject = new mythx.MythXIssues(truffleJSON, config);
         assert.deepEqual(issuesObject.byteOffset2lineColumn('100', issuesObject.lineBreakPositions[sourceName]),
                          [ { line: 8, column: 0, beginLinePos: 195 }, { line: 25, column: 1, beginLinePos: 602 } ]);
         done();
     });
 
     it('should decode a bytecode offset to empty result', (done) => {
-        const issuesObject = new mythx.MythXIssues(truffleJSON);
+        const issuesObject = new mythx.MythXIssues(truffleJSON, config);
         assert.deepEqual(issuesObject.byteOffset2lineColumn('50', issuesObject.lineBreakPositions[sourceName]),
                          [ { 'line': -1, 'column': 0 }, { } ]);
         done();
@@ -173,7 +179,7 @@ describe('mythx.ts', () => {
         };
 
         const remappedMythXOutput = mythx.remapMythXOutput(mythXOutput);
-        const issuesObject = new mythx.MythXIssues(truffleJSON);
+        const issuesObject = new mythx.MythXIssues(truffleJSON, config);
         const res = issuesObject.issue2EsLint(remappedMythXOutput[0].issues[0], false, 'evm-byzantium-bytecode', sourceName);
 
         assert.deepEqual({
@@ -223,7 +229,7 @@ describe('mythx.ts', () => {
         };
 
         const remappedMythXOutput = mythx.remapMythXOutput(mythXOutput);
-        const issuesObject = new mythx.MythXIssues(truffleJSON);
+        const issuesObject = new mythx.MythXIssues(truffleJSON, config);
         const res = issuesObject.issue2EsLint(remappedMythXOutput[0].issues[0], false, 'text', sourceName);
 
         assert.deepEqual({
@@ -248,8 +254,8 @@ describe('mythx.ts', () => {
     it('should call isIgnorable correctly', () => {
         const spyIsVariableDeclaration = sinon.spy(srcmap, 'isVariableDeclaration');
         const spyIsDynamicArray = sinon.spy(srcmap, 'isDynamicArray');
-        const issuesObject = new mythx.MythXIssues(truffleJSON);
-        const res = issuesObject.isIgnorable('444:5:0', {}, sourceName);
+        const issuesObject = new mythx.MythXIssues(truffleJSON, config);
+        const res = issuesObject.isIgnorable('218:39:0');
         assert.ok(spyIsVariableDeclaration.called);
         assert.ok(spyIsDynamicArray.called);
         assert.ok(spyIsDynamicArray.returned(false));
@@ -263,8 +269,8 @@ describe('mythx.ts', () => {
         const spyIsVariableDeclaration = sinon.spy(srcmap, 'isVariableDeclaration');
         const spyIsDynamicArray = sinon.stub(srcmap, 'isDynamicArray');
         spyIsDynamicArray.returns(true);
-        const issuesObject = new mythx.MythXIssues(truffleJSON);
-        const res = issuesObject.isIgnorable('444:5:0', {}, sourceName);
+        const issuesObject = new mythx.MythXIssues(truffleJSON, config);
+        const res = issuesObject.isIgnorable('218:39:0');
         assert.ok(spyIsVariableDeclaration.called);
         assert.ok(spyIsDynamicArray.called);
         assert.ok(res);
@@ -276,9 +282,13 @@ describe('mythx.ts', () => {
         const spyIsVariableDeclaration = sinon.spy(srcmap, 'isVariableDeclaration');
         const spyIsDynamicArray = sinon.stub(srcmap, 'isDynamicArray');
         const loggerStub = sinon.stub();
+        const debugConfig = {
+            debug: true,
+            logger: { log: loggerStub },
+        };
         spyIsDynamicArray.returns(true);
-        const issuesObject = new mythx.MythXIssues(truffleJSON);
-        const res = issuesObject.isIgnorable('444:5:0',  { debug: true, logger: { log: loggerStub } }, sourceName);
+        const issuesObject = new mythx.MythXIssues(truffleJSON, debugConfig);
+        const res = issuesObject.isIgnorable('218:39:0');
         assert.ok(spyIsVariableDeclaration.called);
         assert.ok(spyIsDynamicArray.called);
         assert.ok(loggerStub.called);
@@ -313,7 +323,7 @@ describe('mythx.ts', () => {
             'sourceType': 'solidity-file',
         };
 
-        const issuesObject = new mythx.MythXIssues(truffleJSON);
+        const issuesObject = new mythx.MythXIssues(truffleJSON, config);
         const remappedMythXOutput = mythx.remapMythXOutput(mythXOutput);
         const result = remappedMythXOutput.map(output => issuesObject.convertMythXReport2EsIssue(output, true));
 
@@ -344,7 +354,7 @@ describe('mythx.ts', () => {
     });
 
     it('It normalize and store mythX API output', () => {
-        const issuesObject = new mythx.MythXIssues(truffleJSON);
+        const issuesObject = new mythx.MythXIssues(truffleJSON, config);
         const mythXOutput = [{
             'issues': [{
                 'description': {
@@ -390,7 +400,7 @@ describe('mythx.ts', () => {
     });
 
     it('It converts mythX issues to ESLint issues output format', () => {
-        const issuesObject = new mythx.MythXIssues(truffleJSON);
+        const issuesObject = new mythx.MythXIssues(truffleJSON, config);
         const mythXOutput = [{
             'issues': [{
                 'description': {
