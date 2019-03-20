@@ -360,7 +360,6 @@ export async function mythxAnalyze(progress) {
             log: console.log,
             warn: console.log,
         },
-        working_directory: pathInfo.rootDir,
     };
 
     let config: any;
