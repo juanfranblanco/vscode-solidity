@@ -57,7 +57,7 @@
     "find-cache-dir": "^2.1.0",
     "fs-extra": "^4.0.3",
     "mkdirp": "^0.5.1",
-    "nethereum-codegen": "^1.0.7",
+    "nethereum-codegen": "^1.0.8",
     "read-yaml": "^1.1.0",
     "require-from-string": "^2.0.2",
     "solc": "^0.5.6",
