@@ -13,7 +13,7 @@ export function initDiagnosticCollection(diagnostics: vscode.DiagnosticCollectio
     diagnosticCollection = diagnostics;
 }
 
-export function compileActiveContract() {
+export function compileActiveContract(): Promise<Array<string>> {
     const editor = vscode.window.activeTextEditor;
 
     if (!editor) {
@@ -42,7 +42,7 @@ export function compileActiveContract() {
     const contract = contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
     const packagesPath = formatPath(project.packagesDir);
 
-    compile(contractsCollection.getContractsForCompilation(),
+    return compile(contractsCollection.getContractsForCompilation(),
             diagnosticCollection,
             project.projectPackage.build_dir,
             project.projectPackage.absoluletPath,

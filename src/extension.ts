@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import {compileAllContracts} from './compileAll';
 import {compileActiveContract, initDiagnosticCollection} from './compileActive';
 import {codeGenerate, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
-    codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll} from './codegen';
+    codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll, autoCodeGenerateAfterCompilation} from './codegen';
 import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn} from 'vscode-languageclient';
 import {lintAndfixCurrentDocument} from './linter/soliumClientFixer';
 
@@ -19,7 +19,9 @@ export function activate(context: vscode.ExtensionContext) {
     initDiagnosticCollection(diagnosticCollection);
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.active', () => {
-        compileActiveContract();
+      compileActiveContract().then((compiledResults: string[]) => {
+       autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection);
+      });
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile', () => {

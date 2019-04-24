@@ -9,7 +9,7 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
 * Default project structure (solidity files needs to be in the 'src' directory, and libraries in the 'lib' directory). Libraries will follow the same structure.
 * Compilation supporting EIP82 (dappfile and dependency packages)
 * Support for different solidity versions (Remote and local)
-* Code generation using https://github.com/Nethereum/abi-code-gen, it includes currently the default template for Nethereum service, dtos generation. 
+* Code generation using https://github.com/Nethereum/Nethereum, it includes currently the default template for Nethereum service, dtos generation. 
   (Open 'contractName.json' after compilation from the bin folder. Press F1 and press Solidity: Code generate from compilation output..)
   Please contribute more templates.
 * Linting using Solhint or Solium
@@ -152,6 +152,31 @@ Solium is the default linter of supported by the extesion https://github.com/dua
 ```
 
 soliumrc.json support will be included in the near future, for specific project linting requirements.
+
+# Code generation Nethereum
+The extension integrates with the Nethereum code generator to create Contract integration definitions. You can either generate the api for a single contract, all compiled contracts, or automatically every time you compile a smart contract solidity file.
+
+## Automatic code generation and the Nethereum Code generation settings file.
+The simplest way is to automatically code generate your api, for this you need to create a file called "nethereum-gen.settings" at the root of your project, with the following contents.
+
+```json
+{
+    "projectName": "Solidity.Samples",
+    "namespace": "Solidity.Samples",
+    "lang":0,
+    "autoCodeGen":true
+}
+
+```
+"lang" indicates what language to generate the code, 0 = CSharp, 1 = Vb.Net and 3 = FSharp
+
+The "projectName" and "namespace" settings will be used for the manual code generation also.
+
+## Single smart contract manual code generation
+To code generate the Nethereum contract api from a single smart contract, you need to select the compiled "json" output file from the "bin" folder, press F1 and start typing "Solidity: Code generate" and select what language you want to generate for the current selected file.
+
+## All smart contracts manual code generation
+To code generate the Nethereum contract for all smart contracts already compiled, just press F1, and start typing "Solidity: Code generate" and select the option for all contracts for your desired language.
 
 ## Contributing / Issues / Requests
 
