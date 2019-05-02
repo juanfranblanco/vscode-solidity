@@ -36,16 +36,17 @@ export interface CompilerError {
         const column = parseInt(errorSplit[index + 1]);
         const severity = this.getDiagnosticSeverity(error.severity);
         const errorMessage = error.message;
+
         return {
             diagnostic: {
                 message: errorMessage,
                 range: {
                     end: {
-                        character: column,
+                        character: column + error.sourceLocation.end - error.sourceLocation.start - 1,
                         line: line - 1,
                     },
                     start: {
-                        character: column,
+                        character: column - 1,
                         line: line - 1,
                     },
                 },
