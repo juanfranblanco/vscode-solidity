@@ -72,12 +72,20 @@ class ValidationConfig {
         };
     }
 
-    private loadFileConfig(rootPath: string) {
-        const filePath = `${rootPath}/.solhint.json`;
-        const readConfig = this.readFileConfig.bind(this, filePath);
+    public isRootPathSet(rootPath: string): boolean {
+        return typeof rootPath !== 'undefined' && rootPath !== null;
+    }
 
-        readConfig();
-        fs.watchFile(filePath, {persistent: false}, readConfig);
+    private loadFileConfig(rootPath: string) {
+        if (this.isRootPathSet(rootPath)) {
+            const filePath = `${rootPath}/.solhint.json`;
+            const readConfig = this.readFileConfig.bind(this, filePath);
+
+            readConfig();
+            fs.watchFile(filePath, {persistent: false}, readConfig);
+        } else {
+                this.fileConfig = ValidationConfig.EMPTY_CONFIG;
+        }
     }
 
     private readFileConfig(filePath: string) {
