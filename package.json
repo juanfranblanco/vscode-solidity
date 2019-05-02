@@ -50,7 +50,6 @@
     "test": "nyc --require ts-node/register --require source-map-support/register mocha test/**/*.spec.ts"
   },
   "dependencies": {
-    "@types/isomorphic-fetch": "0.0.35",
     "abi-code-gen": "0.0.3",
     "ajv": "^6.10.0",
     "ajv-keywords": "^3.4.0",
@@ -65,8 +64,7 @@
     "solium": "^1.2.3",
     "solparse": "^2.2.8",
     "vscode-languageclient": "^5.2.1",
-    "vscode-languageserver": "^5.2.1",
-    "vscode-uri": "^1.0.6"
+    "vscode-languageserver": "^5.2.1"
   },
   "devDependencies": {
     "@types/node": "^11.11.4",

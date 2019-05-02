@@ -5,9 +5,9 @@ import {compileAllContracts} from './compileAll';
 import {compileActiveContract, initDiagnosticCollection} from './compileActive';
 import {codeGenerate, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
     codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll, autoCodeGenerateAfterCompilation} from './codegen';
-import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn} from 'vscode-languageclient';
+import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn, WorkspaceChange} from 'vscode-languageclient';
 import {lintAndfixCurrentDocument} from './linter/soliumClientFixer';
-
+import { workspace, WorkspaceFolder } from 'vscode';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
@@ -91,11 +91,16 @@ export function activate(context: vscode.ExtensionContext) {
                 },
     };
 
-    const clientDisposable = new LanguageClient(
-        'solidity',
-        'Solidity Language Server',
-        serverOptions,
-        clientOptions).start();
+    let ws: WorkspaceFolder[] | undefined = workspace.workspaceFolders;
+
+    let clientDisposable;
+    if (ws) {
+        clientDisposable = new LanguageClient(
+            'solidity',
+            'Solidity Language Server',
+            serverOptions,
+            clientOptions).start();
+    }
 
     // Push the disposable to the context's subscriptions so that the
     // client can be deactivated on extension deactivation
