@@ -36,7 +36,6 @@ export interface CompilerError {
         const column = parseInt(errorSplit[index + 1]);
         const severity = this.getDiagnosticSeverity(error.severity);
         const errorMessage = error.message;
-
         return {
             diagnostic: {
                 message: errorMessage,
