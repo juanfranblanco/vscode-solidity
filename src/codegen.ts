@@ -1,23 +1,9 @@
 'use strict';
 import * as vscode from 'vscode';
-import * as abicodegen from 'abi-code-gen';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as codegen from 'nethereum-codegen';
 import { initialiseProject } from './projectService';
-
-export function codeGenerate(args: any, diagnostics: vscode.DiagnosticCollection) {
-    try {
-        const editor = vscode.window.activeTextEditor;
-        abicodegen.generateCode(editor.document.fileName, 'cs-service');
-    } catch (e) {
-        const outputChannel = vscode.window.createOutputChannel('solidity code generation');
-        outputChannel.clear();
-        outputChannel.appendLine('Error generating code:');
-        outputChannel.appendLine(e.message);
-        outputChannel.show();
-    }
-}
 
 export function autoCodeGenerateAfterCompilation(compiledFiles: Array<string>, args: any, diagnostics: vscode.DiagnosticCollection) {
     if (compiledFiles !== undefined && compiledFiles.length > 0) {

@@ -6,6 +6,8 @@
     "ethereum",
     "blockchain",
     "compiler",
+    "solium",
+    "nethereum",
     "solhint"
   ],
   "version": "0.0.54",
@@ -32,7 +34,6 @@
     "onLanguage:solidity",
     "onCommand:solidity.compile",
     "onCommand:solidity.compile.active",
-    "onCommand:solidity.codegen",
     "onCommand:solidity.codegenCSharpProject",
     "onCommand:solidity.codegenVbNetProject",
     "onCommand:solidity.codegenFSharpProject",
@@ -50,23 +51,23 @@
     "test": "nyc --require ts-node/register --require source-map-support/register mocha test/**/*.spec.ts"
   },
   "dependencies": {
-    "abi-code-gen": "0.0.3",
     "ajv": "^6.10.0",
     "ajv-keywords": "^3.4.0",
     "find-cache-dir": "^2.1.0",
     "fs-extra": "^4.0.3",
     "mkdirp": "^0.5.1",
     "nethereum-codegen": "^1.0.10",
-    "read-yaml": "^1.1.0",
     "require-from-string": "^2.0.2",
-    "solc": "^0.5.7",
-    "solhint": "^1.5.1",
-    "solium": "^1.2.3",
+    "solc": "^0.5.8",
+    "solhint": "^2.0.0",
+    "solium": "^1.2.4",
     "solparse": "^2.2.8",
+    "yaml-js": "0.2.3",
     "vscode-languageclient": "^5.2.1",
     "vscode-languageserver": "^5.2.1"
   },
   "devDependencies": {
+    "@types/isomorphic-fetch": "0.0.35",
     "@types/node": "^11.11.4",
     "ts-node": "^7.0.1",
     "tslint": "^5.14.0",
@@ -137,8 +138,12 @@
           "default": {
             "imports-on-top": 0,
             "variable-declarations": 0,
+            "indentation": [
+              "off",
+              4
+            ],
             "quotes": [
-              "error",
+              "off",
               "double"
             ]
           },
@@ -197,20 +202,16 @@
         "title": "Solidity: Compile Current Solidity Contract"
       },
       {
-        "command": "solidity.codegen",
-        "title": "Solidity: Code generate from compilation output 'contract.json'"
-      },
-      {
         "command": "solidity.codegenCSharpProject",
-        "title": "Solidity: Code generate CSharp Project from compilation output 'contract.json'"
+        "title": "Solidity: Code generate CSharp contract definition from selected compilation 'contractName.json'"
       },
       {
         "command": "solidity.codegenVbNetProject",
-        "title": "Solidity: Code generate VB.Net Project from compilation output 'contract.json'"
+        "title": "Solidity: Code generate VB.Net contract definition from selected compilation 'contractName.json'"
       },
       {
         "command": "solidity.codegenFSharpProject",
-        "title": "Solidity: Code generate FSharp Project from compilation output 'contract.json'"
+        "title": "Solidity: Code generate FSharp contract definition from selected compilation 'contractName.json'"
       },
       {
         "command": "solidity.codegenCSharpProjectAll",

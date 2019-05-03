@@ -3,10 +3,11 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import {compileAllContracts} from './compileAll';
 import {compileActiveContract, initDiagnosticCollection} from './compileActive';
-import {codeGenerate, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
+import {codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
     codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll, autoCodeGenerateAfterCompilation} from './codegen';
 import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn, WorkspaceChange} from 'vscode-languageclient';
 import {lintAndfixCurrentDocument} from './linter/soliumClientFixer';
+// tslint:disable-next-line:no-duplicate-imports
 import { workspace, WorkspaceFolder } from 'vscode';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
@@ -26,10 +27,6 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile', () => {
         compileAllContracts(diagnosticCollection);
-    }));
-
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.codegen', (args: any[]) => {
-        codeGenerate(args, diagnosticCollection);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenCSharpProject', (args: any[]) => {
@@ -91,7 +88,7 @@ export function activate(context: vscode.ExtensionContext) {
                 },
     };
 
-    let ws: WorkspaceFolder[] | undefined = workspace.workspaceFolders;
+    const ws: WorkspaceFolder[] | undefined = workspace.workspaceFolders;
 
     let clientDisposable;
     if (ws) {
