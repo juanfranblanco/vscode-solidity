@@ -23,20 +23,15 @@ There are a number of nodejs packages are needed, like [typescript](https://www.
 which is described in a below [section](#how-to-run-code-in-this-github-repository).
 
 
-## Dependency hell
+## Dependency hell / Current Issues
+There is a dependency on isomorphic-fetch
+if having issues compiling, replace the index.d.ts file with this
 
-This code is known to work with:
-
-* (Microsoft) code 1.30.2
-* nodejs 8.9.4; truffle 5 libraries request at least this
-* (npm) vscode 1.1.30
-
-Starting with Microsoft code 1.31 (or 1.32) you will get a crash when you try to run this code.
-Also, starting with those versions, you need nodejs 10 or greater.
-
-To be able to have several nodejs versions around, there is [nvm](https://github.com/creationix/nvm).
-
-
+```typescript
+declare namespace _fetch { }
+declare const _fetch: any;
+export = _fetch;
+```
 
 
 # How to run code in this github repository
