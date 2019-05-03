@@ -17,7 +17,7 @@ function outputErrorsToChannel(outputChannel: vscode.OutputChannel, errors: any)
 
 export function compile(contracts: any,
                         diagnosticCollection: vscode.DiagnosticCollection,
-                        buildDir: string, rootDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string) {
+                        buildDir: string, rootDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string): Promise<Array<string>> {
     // Did we find any sol files after all?
     if (Object.keys(contracts).length === 0) {
         vscode.window.showWarningMessage('No solidity files (*.sol) found');
@@ -33,34 +33,37 @@ export function compile(contracts: any,
     const remoteCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingRemoteVersion');
     const localCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingLocalVersion');
 
-    solc.intialiseCompiler(localCompiler, remoteCompiler).then(() => {
-        const output = solc.compile(JSON.stringify(contracts));
+    return new Promise((resolve, reject) => {
+        solc.intialiseCompiler(localCompiler, remoteCompiler).then(() => {
+            const output = solc.compile(JSON.stringify(contracts));
 
-        if (solc.currentCompilerType === compilerType.localFile) {
-            outputChannel.appendLine("Compiling using local file: '" + solc.currentCompilerSetting + "', solidity version: " + solc.getVersion() );
-        }
+            if (solc.currentCompilerType === compilerType.localFile) {
+                outputChannel.appendLine("Compiling using local file: '" + solc.currentCompilerSetting + "', solidity version: " + solc.getVersion() );
+            }
 
-        if (solc.currentCompilerType === compilerType.localNode) {
-            outputChannel.appendLine('Compiling using solidity from node_modules, solidity version: ' + solc.getVersion());
-        }
+            if (solc.currentCompilerType === compilerType.localNode) {
+                outputChannel.appendLine('Compiling using solidity from node_modules, solidity version: ' + solc.getVersion());
+            }
 
-        if (solc.currentCompilerType === compilerType.Remote) {
-            outputChannel.appendLine("Compiling using remote version: '" + solc.currentCompilerSetting  + "', solidity version: " + solc.getVersion() );
-        }
+            if (solc.currentCompilerType === compilerType.Remote) {
+                outputChannel.appendLine("Compiling using remote version: '" + solc.currentCompilerSetting  + "', solidity version: " + solc.getVersion() );
+            }
 
-        if (solc.currentCompilerType === compilerType.default) {
-            outputChannel.appendLine('Compiling using default compiler, solidity version: ' + solc.getVersion() );
-        }
+            if (solc.currentCompilerType === compilerType.default) {
+                outputChannel.appendLine('Compiling using default compiler, solidity version: ' + solc.getVersion() );
+            }
 
-        processCompilationOuput(output, outputChannel, diagnosticCollection, buildDir,
-            sourceDir, excludePath, singleContractFilePath);
-    }).catch( (reason: any) => {
-        vscode.window.showWarningMessage(reason);
+            resolve(processCompilationOuput(output, outputChannel, diagnosticCollection, buildDir,
+                sourceDir, excludePath, singleContractFilePath));
+        }).catch( (reason: any) => {
+            vscode.window.showWarningMessage(reason);
+            reject(reason);
+        });
     });
  }
 
 function processCompilationOuput(outputString: any, outputChannel: vscode.OutputChannel, diagnosticCollection: vscode.DiagnosticCollection,
-                    buildDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string) {
+                    buildDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string): Array<string> {
     const output = JSON.parse(outputString);
     if (Object.keys(output).length === 0) {
         vscode.window.showWarningMessage('No output by the compiler');
@@ -79,12 +82,12 @@ function processCompilationOuput(outputString: any, outputChannel: vscode.Output
                 vscode.window.showWarningMessage(`Compilation had ${errorWarningCounts.warnings} warnings`);
             }
         } else if (errorWarningCounts.warnings > 0) {
-            writeCompilationOutputToBuildDirectory(output, buildDir, sourceDir, excludePath, singleContractFilePath);
+           return writeCompilationOutputToBuildDirectory(output, buildDir, sourceDir, excludePath, singleContractFilePath);
             vscode.window.showWarningMessage(`Compilation had ${errorWarningCounts.warnings} warnings`);
             vscode.window.showInformationMessage('Compilation completed succesfully!');
         }
     } else {
-        writeCompilationOutputToBuildDirectory(output, buildDir, sourceDir, excludePath, singleContractFilePath);
+        return writeCompilationOutputToBuildDirectory(output, buildDir, sourceDir, excludePath, singleContractFilePath);
         // outputChannel.hide();
         vscode.window.showInformationMessage('Compilation completed succesfully!');
     }
@@ -100,8 +103,9 @@ function ensureDirectoryExistence(filePath) {
   }
 
 function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, sourceDir: string,
-                                                    excludePath?: string, singleContractFilePath?: string) {
+                                                    excludePath?: string, singleContractFilePath?: string): Array<string> {
     const binPath = path.join(vscode.workspace.rootPath, buildDir);
+    const compiledFiles: Array<string> = new Array<string>();
 
     if (!fs.existsSync(binPath)) {
         fs.mkdirSync(binPath);
@@ -122,6 +126,7 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
         }
         fs.writeFileSync(outputCompilationPath, JSON.stringify(output, null, 4));
     }
+
     // iterate through all the sources,
     // find contracts and output them into the same folder structure to avoid collisions, named as the contract
     for (const source in output.contracts) {
@@ -178,6 +183,7 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
                             };
 
                             fs.writeFileSync(contractJsonPath, JSON.stringify(shortJsonOutput, null, 4));
+                            compiledFiles.push(contractJsonPath);
                             /*
                             let contract_data = {
                                 contract_name: contractName,
@@ -193,4 +199,5 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
             }
         }
     }
+    return compiledFiles;
 }

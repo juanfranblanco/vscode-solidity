@@ -6,9 +6,11 @@
     "ethereum",
     "blockchain",
     "compiler",
+    "solium",
+    "nethereum",
     "solhint"
   ],
-  "version": "0.0.50",
+  "version": "0.0.55",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.28.0"
@@ -32,7 +34,6 @@
     "onLanguage:solidity",
     "onCommand:solidity.compile",
     "onCommand:solidity.compile.active",
-    "onCommand:solidity.codegen",
     "onCommand:solidity.codegenCSharpProject",
     "onCommand:solidity.codegenVbNetProject",
     "onCommand:solidity.codegenFSharpProject",
@@ -50,50 +51,28 @@
     "test": "nyc --require ts-node/register --require source-map-support/register mocha test/**/*.spec.ts"
   },
   "dependencies": {
-    "abi-code-gen": "0.0.3",
-    "mkdirp": "^0.5.1",
-    "ajv": "^6.5.2",
-    "ajv-keywords": "^3.2.0",
-    "armlet": "^2.0.0",
+    "ajv": "^6.10.0",
+    "ajv-keywords": "^3.4.0",
     "find-cache-dir": "^2.1.0",
     "fs-extra": "^4.0.3",
-    "handlebars": "^4.0.12",
-    "nethereum-codegen": "^1.0.6",
-    "ora": "^3.1.0",
-    "read-yaml": "^1.1.0",
-    "solc": "^0.5.6",
+    "mkdirp": "^0.5.1",
+    "nethereum-codegen": "^1.0.11",
     "require-from-string": "^2.0.2",
-    "solhint": "^1.4.0",
-    "solium": "^1.2.3",
-    "request-promise": "^4.2.2",
+    "solc": "^0.5.8",
+    "solhint": "^2.0.0",
+    "solium": "^1.2.4",
     "solparse": "^2.2.8",
-    "truffle-artifactor": "^4.0.3",
-    "truffle-config": "^1.1.3",
-    "truffle-contract-sources": "^0.1.2",
-    "truffle-external-compile": "^1.0.4",
-    "truffle-resolver": "^5.0.4",
-    "vscode-languageclient": "^5.1.1",
-    "vscode-languageserver": "^5.1.0",
-    "vscode-uri": "^1.0.3"
+    "yaml-js": "0.2.3",
+    "vscode-languageclient": "^5.2.1",
+    "vscode-languageserver": "^5.2.1"
   },
   "devDependencies": {
-    "@types/assert": "^1.4.1",
-    "@types/debug": "^4.1.2",
-    "@types/mocha": "^5.2.5",
-    "@types/node": "^10.5.5",
-    "@types/ora": "^3.2.0",
-    "electron-rebuild": "^1.8.2",
-    "mocha": "^5.2.0",
-    "mock-require": "^3.0.3",
-    "nyc": "^13.1.0",
-    "proxyquire": "^2.1.0",
-    "sinon": "^7.2.3",
-    "source-map-support": "^0.5.10",
-    "ts-mocha": "^2.0.0",
+    "@types/isomorphic-fetch": "0.0.35",
+    "@types/node": "^11.11.4",
     "ts-node": "^7.0.1",
-    "tslint": "^5.11.0",
-    "typescript": "^3.1.3",
-    "vscode": "^1.1.22"
+    "tslint": "^5.14.0",
+    "typescript": "^3.3.4000",
+    "vscode": "^1.1.32"
   },
   "nyc": {
     "extension": [
@@ -114,56 +93,6 @@
       "type": "object",
       "title": "Solidity configuration",
       "properties": {
-        "solidity.mythx.analysisMode": {
-          "type": [
-            "string"
-          ],
-          "default": "quick",
-          "markdownDescription": "Whether to do quick or full (long) analysis"
-        },
-        "solidity.mythx.apiKey": {
-          "type": [
-            "string"
-          ],
-          "markdownDescription": "MythX API key. See https://mythx.io to get an API key"
-        },
-        "solidity.mythx.apiUrl": {
-          "type": [
-            "string"
-          ],
-          "default": "https://api.mythx.io",
-          "markdownDescription": "MythX URL to connect to"
-        },
-        "solidity.mythx.password": {
-          "type": [
-            "string"
-          ],
-          "default": "trial",
-          "markdownDescription": "MythX Password. See https://mythx.io to get password"
-        },
-        "solidity.mythx.ethAddress": {
-          "type": [
-            "string"
-          ],
-          "default": "0x0000000000000000000000000000000000000000",
-          "markdownDescription": "MetaMask ETH address used to login to MythX. See https://mythx.io"
-        },
-        "solidity.mythx.reportFormat": {
-          "type": [
-            "string",
-            "stylish"
-          ],
-          "default": "stylish",
-          "markdownDescription": "Report style format for analysis results. See https://eslint.org/docs/user-guide/formatters/ for a full list."
-        },
-        "solidity.mythx.timeout": {
-          "type": [
-            "number",
-            120
-          ],
-          "default": 120,
-          "markdownDescription": "Maximum time in seconds to give MythX for analysis"
-        },
         "solidity.compileUsingRemoteVersion": {
           "type": [
             "string",
@@ -209,8 +138,12 @@
           "default": {
             "imports-on-top": 0,
             "variable-declarations": 0,
+            "indentation": [
+              "off",
+              4
+            ],
             "quotes": [
-              "error",
+              "off",
               "double"
             ]
           },
@@ -269,20 +202,16 @@
         "title": "Solidity: Compile Current Solidity Contract"
       },
       {
-        "command": "solidity.codegen",
-        "title": "Solidity: Code generate from compilation output 'contract.json'"
-      },
-      {
         "command": "solidity.codegenCSharpProject",
-        "title": "Solidity: Code generate CSharp Project from compilation output 'contract.json'"
+        "title": "Solidity: Code generate CSharp contract definition from selected compilation 'contractName.json'"
       },
       {
         "command": "solidity.codegenVbNetProject",
-        "title": "Solidity: Code generate VB.Net Project from compilation output 'contract.json'"
+        "title": "Solidity: Code generate VB.Net contract definition from selected compilation 'contractName.json'"
       },
       {
         "command": "solidity.codegenFSharpProject",
-        "title": "Solidity: Code generate FSharp Project from compilation output 'contract.json'"
+        "title": "Solidity: Code generate FSharp contract definition from selected compilation 'contractName.json'"
       },
       {
         "command": "solidity.codegenCSharpProjectAll",
@@ -299,14 +228,6 @@
       {
         "command": "solidity.fixDocument",
         "title": "Solidity: Fix document rules using Solium"
-      },
-      {
-        "command": "solidity.mythx.analyze",
-        "title": "Solidity: MythX analyses"
-      },
-      {
-        "command": "solidity.mythx.version",
-        "title": "Solidity: MythX API version information"
       }
     ],
     "keybindings": [

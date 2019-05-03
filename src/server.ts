@@ -226,9 +226,6 @@ connection.onInitialize((result): InitializeResult => {
     rootPath = result.rootPath;
     solcCompiler = new SolcCompiler(rootPath);
 
-    if (linter === null) {
-        linter = new SolhintService(rootPath, null);
-    }
     return {
         capabilities: {
             completionProvider: {

@@ -3,11 +3,12 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import {compileAllContracts} from './compileAll';
 import {compileActiveContract, initDiagnosticCollection} from './compileActive';
-import {codeGenerate, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
-    codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll} from './codegen';
-import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn} from 'vscode-languageclient';
+import {codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
+    codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll, autoCodeGenerateAfterCompilation} from './codegen';
+import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn, WorkspaceChange} from 'vscode-languageclient';
 import {lintAndfixCurrentDocument} from './linter/soliumClientFixer';
-import {mythxAnalyze, mythxVersion} from './analysis/mythx';
+// tslint:disable-next-line:no-duplicate-imports
+import { workspace, WorkspaceFolder } from 'vscode';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
@@ -18,32 +19,14 @@ export function activate(context: vscode.ExtensionContext) {
 
     initDiagnosticCollection(diagnosticCollection);
 
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.mythx.analyze', async () => {
-        return await vscode.window.withProgress({
-            cancellable: true,
-            location: vscode.ProgressLocation.Notification,
-            title: 'MythX analysis',
-        }, (progress) => {
-            progress.report({ increment: 0 });
-
-            return mythxAnalyze(progress);
-        });
-    }));
-
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.mythx.version', () => {
-        mythxVersion();
-    }));
-
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.active', () => {
-        compileActiveContract();
+      compileActiveContract().then((compiledResults: string[]) => {
+       autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection);
+      });
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile', () => {
         compileAllContracts(diagnosticCollection);
-    }));
-
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.codegen', (args: any[]) => {
-        codeGenerate(args, diagnosticCollection);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenCSharpProject', (args: any[]) => {
@@ -105,11 +88,16 @@ export function activate(context: vscode.ExtensionContext) {
                 },
     };
 
-    const clientDisposable = new LanguageClient(
-        'solidity',
-        'Solidity Language Server',
-        serverOptions,
-        clientOptions).start();
+    const ws: WorkspaceFolder[] | undefined = workspace.workspaceFolders;
+
+    let clientDisposable;
+    if (ws) {
+        clientDisposable = new LanguageClient(
+            'solidity',
+            'Solidity Language Server',
+            serverOptions,
+            clientOptions).start();
+    }
 
     // Push the disposable to the context's subscriptions so that the
     // client can be deactivated on extension deactivation

@@ -1,7 +1,7 @@
 'use strict';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as readyaml from 'read-yaml';
+import * as yaml from 'yaml-js';
 import {Package} from './model/package';
 import {Project} from './model/project';
 
@@ -19,7 +19,7 @@ function createPackage(rootPath: string) {
     const projectPackageFile = path.join(rootPath, packageConfigFileName);
     if (fs.existsSync(projectPackageFile)) {
         // TODO: automapper
-        const packageConfig = readyaml.sync(projectPackageFile);
+        const packageConfig = readYamlSync(projectPackageFile);
         // TODO: throw expection / warn user of invalid package file
         const projectPackage = new Package(packageDependenciesContractsDirectory);
         projectPackage.absoluletPath = rootPath;
@@ -49,6 +49,11 @@ function createPackage(rootPath: string) {
         return projectPackage;
     }
     return null;
+}
+
+function readYamlSync(filePath: string) {
+    const fileContent = fs.readFileSync(filePath);
+    return yaml.load(fileContent);
 }
 
 export function initialiseProject(rootPath: string, packageDefaultDependenciesDirectory: string, packageDefaultDependenciesContractsDirectory: string) {

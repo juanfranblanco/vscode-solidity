@@ -22,6 +22,10 @@ export default class SoliumService implements Linter {
       this.setIdeRules(soliumRules);
     }
 
+    public isRootPathSet(rootPath: string): boolean {
+        return typeof rootPath !== 'undefined' && rootPath !== null;
+    }
+
     public setIdeRules(soliumRules: any) {
         if (typeof soliumRules === 'undefined' || soliumRules === null) {
             this.soliumRules = defaultSoliumRules;
@@ -115,11 +119,15 @@ export default class SoliumService implements Linter {
     }
 
     private loadFileConfig(rootPath: string) {
-        const filePath = `${rootPath}/.soliumrc.json`;
-        const readConfig = this.readFileConfig.bind(this, filePath);
+        if (this.isRootPathSet(rootPath)) {
+            const filePath = `${rootPath}/.soliumrc.json`;
+            const readConfig = this.readFileConfig.bind(this, filePath);
 
-        readConfig();
-        fs.watchFile(filePath, {persistent: false}, readConfig);
+            readConfig();
+            fs.watchFile(filePath, {persistent: false}, readConfig);
+        } else {
+            this.fileConfig = SoliumService.EMPTY_CONFIG;
+        }
     }
 
     private readFileConfig(filePath: string) {
