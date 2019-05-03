@@ -41,11 +41,11 @@ export interface CompilerError {
                 message: errorMessage,
                 range: {
                     end: {
-                        character: column,
+                        character: column + error.sourceLocation.end - error.sourceLocation.start - 1,
                         line: line - 1,
                     },
                     start: {
-                        character: column,
+                        character: column - 1,
                         line: line - 1,
                     },
                 },
