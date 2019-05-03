@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import {compileAllContracts} from './compileAll';
 import {compileActiveContract, initDiagnosticCollection} from './compileActive';
-import {codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
+import {generateNethereumCodeSettingsFile, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
     codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll, autoCodeGenerateAfterCompilation} from './codegen';
 import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn, WorkspaceChange} from 'vscode-languageclient';
 import {lintAndfixCurrentDocument} from './linter/soliumClientFixer';
@@ -32,6 +32,11 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenCSharpProject', (args: any[]) => {
         codeGenerateNethereumCQSCsharp(args, diagnosticCollection);
     }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenNethereumCodeGenSettings', (args: any[]) => {
+        generateNethereumCodeSettingsFile();
+    }));
+
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenVbNetProject', (args: any[]) => {
         codeGenerateNethereumCQSVbNet(args, diagnosticCollection);

@@ -22,7 +22,7 @@ export function autoCodeGenerateAfterCompilation(compiledFiles: Array<string>, a
     }
 }
 
-export function GetProjectExtensionFromLang(lang: number) {
+export function getProjectExtensionFromLang(lang: number) {
     switch (lang) {
         case 0:
         return '.csproj';
@@ -30,6 +30,24 @@ export function GetProjectExtensionFromLang(lang: number) {
         return '.vbproj';
         case 3:
         return '.fsproj';
+    }
+}
+
+export function generateNethereumCodeSettingsFile() {
+    const root = vscode.workspace.workspaceFolders[0];
+    const settingsFile = path.join(root.uri.fsPath, 'nethereum-gen.settings');
+    if (!fs.existsSync(settingsFile)) {
+
+        const prettyRootName = prettifyRootNameAsNamespace(root.name);
+        const baseNamespace = prettyRootName + '.Contracts';
+        const jsonSettings = {
+            'projectName': prettyRootName,
+            // tslint:disable-next-line:object-literal-sort-keys
+            'namespace': baseNamespace,
+            'lang': 0,
+            'autoCodeGen': true,
+        };
+        fs.writeFileSync(settingsFile, JSON.stringify(jsonSettings, null, 4));
     }
 }
 
@@ -102,7 +120,7 @@ function getCodeGenerationSettings() {
 
 function codeGenerateCQS(fileName: string, lang: number, args: any, diagnostics: vscode.DiagnosticCollection) {
         try {
-            const extension = GetProjectExtensionFromLang(lang);
+            const extension = getProjectExtensionFromLang(lang);
             const root = vscode.workspace.workspaceFolders[0];
             const settings = getCodeGenerationSettings();
             const prettyRootName = prettifyRootNameAsNamespace(root.name);

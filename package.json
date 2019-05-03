@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.55",
+  "version": "0.0.56",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.28.0"
@@ -33,6 +33,7 @@
   "activationEvents": [
     "onLanguage:solidity",
     "onCommand:solidity.compile",
+    "onCommand:solidity.codegenNethereumCodeGenSettings",
     "onCommand:solidity.compile.active",
     "onCommand:solidity.codegenCSharpProject",
     "onCommand:solidity.codegenVbNetProject",
@@ -200,6 +201,10 @@
       {
         "command": "solidity.compile.active",
         "title": "Solidity: Compile Current Solidity Contract"
+      },
+      {
+        "command": "solidity.codegenNethereumCodeGenSettings",
+        "title": "Solidity: Create 'nethereum-gen.settings' with default values at root"
       },
       {
         "command": "solidity.codegenCSharpProject",
