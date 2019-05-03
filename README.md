@@ -1,4 +1,6 @@
 # Solidity support for Visual Studio code
+[![Version](https://vsmarketplacebadge.apphb.com/version/juanblanco.solidity.svg)](https://marketplace.visualstudio.com/items?itemName=juanblanco.solidity)  [![Downloads](https://vsmarketplacebadge.apphb.com/downloads/juanblanco.solidity.svg)](https://marketplace.visualstudio.com/items?itemNamejuanblanco.solidity) [![Installs](https://vsmarketplacebadge.apphb.com/installs/juanblanco.solidity.svg)](https://marketplace.visualstudio.com/items?itemNamejuanblanco.solidity) [![Rating](https://vsmarketplacebadge.apphb.com/rating-star/juanblanco.solidity.svg)](https://marketplace.visualstudio.com/items?itemName=juanblanco.solidity#review-details)
+
 Solidity is the language used in Ethereum to create smart contracts, this extension provides: 
 
 * Syntax highlighting
