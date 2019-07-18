@@ -53,7 +53,7 @@ export function compile(contracts: any,
                 outputChannel.appendLine('Compiling using default compiler, solidity version: ' + solc.getVersion() );
             }
 
-            resolve(processCompilationOuput(output, outputChannel, diagnosticCollection, buildDir,
+            resolve(processCompilationOutput(output, outputChannel, diagnosticCollection, buildDir,
                 sourceDir, excludePath, singleContractFilePath));
         }).catch( (reason: any) => {
             vscode.window.showWarningMessage(reason);
@@ -62,7 +62,7 @@ export function compile(contracts: any,
     });
  }
 
-function processCompilationOuput(outputString: any, outputChannel: vscode.OutputChannel, diagnosticCollection: vscode.DiagnosticCollection,
+function processCompilationOutput(outputString: any, outputChannel: vscode.OutputChannel, diagnosticCollection: vscode.DiagnosticCollection,
                     buildDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string): Array<string> {
     const output = JSON.parse(outputString);
     if (Object.keys(output).length === 0) {
@@ -93,7 +93,7 @@ function processCompilationOuput(outputString: any, outputChannel: vscode.Output
     }
 }
 
-function ensureDirectoryExistence(filePath) {
+function ensureDirectoryExistence(filePath: string) {
     const dirname = path.dirname(filePath);
     if (fs.existsSync(dirname)) {
       return true;
