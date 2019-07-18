@@ -56,7 +56,7 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
         });
         const sourceDirPath = formatPath(project.projectPackage.getSolSourcesAbsolutePath());
         const packagesPath = formatPath(project.packagesDir);
-        compile(contractsCollection.getContractsForCompilation(),
+        compile(contractsCollection.getDefaultContractsForCompilation(),
                 diagnosticCollection,
                 project.projectPackage.build_dir,
                 project.projectPackage.absoluletPath,

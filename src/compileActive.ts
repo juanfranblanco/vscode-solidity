@@ -42,7 +42,7 @@ export function compileActiveContract(): Promise<Array<string>> {
     const contract = contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
     const packagesPath = formatPath(project.packagesDir);
 
-    return compile(contractsCollection.getContractsForCompilation(),
+    return compile(contractsCollection.getDefaultContractsForCompilation(),
             diagnosticCollection,
             project.projectPackage.build_dir,
             project.projectPackage.absoluletPath,

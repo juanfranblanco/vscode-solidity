@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.56",
+  "version": "0.0.57",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.28.0"
@@ -59,7 +59,7 @@
     "mkdirp": "^0.5.1",
     "nethereum-codegen": "^1.0.11",
     "require-from-string": "^2.0.2",
-    "solc": "^0.5.8",
+    "solc": "^0.5.10",
     "solhint": "^2.0.0",
     "solium": "^1.2.4",
     "solparse": "^2.2.8",

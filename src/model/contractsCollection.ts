@@ -18,7 +18,29 @@ export class ContractCollection {
         return this.contracts.findIndex((contract: Contract) => { return contract.absolutePath === contractPath; }) > -1;
     }
 
-    public getContractsForCompilation() {
+    public getDefaultContractsForCompilation() {
+        const compilerOutputSelection = {
+            '*': {
+                '': ['ast'],
+                '*': ['abi', 'devdoc', 'userdoc', 'metadata', 'evm.bytecode', 'evm.deployedBytecode', 'evm.methodIdentifiers', 'evm.gasEstimates'],
+            },
+        };
+
+        return this.getContractsForCompilation(true, 200, compilerOutputSelection);
+    }
+
+    public getDefaultContractsForCompilationDiagnostics() {
+        const compilerOutputSelection = {
+            '*': {
+                '': [],
+                '*': [],
+            },
+        };
+
+        return this.getContractsForCompilation(false, 0, compilerOutputSelection);
+    }
+
+    public getContractsForCompilation(optimizeCompilation: boolean, optimizeCompilationRuns: number, outputSelection) {
         const contractsForCompilation = {};
         this.contracts.forEach(contract => {
             contractsForCompilation[contract.absolutePath] = {content: contract.code};
@@ -28,23 +50,16 @@ export class ContractCollection {
             settings:
             {
                 optimizer: {
-                    enabled: true,
-                    // TODO: Make all settings configurable
-                    // Optimize for how many times you intend to run the code.
-                    // Lower values will optimize more for initial deployment cost, higher values will optimize more for high-frequency usage.
-                    runs: 200,
+                    enabled: optimizeCompilation,
+                    runs: optimizeCompilationRuns,
                 },
-                outputSelection: {
-                    '*': {
-                        '': ['ast'],
-                        '*': ['abi', 'devdoc', 'userdoc', 'metadata', 'evm.bytecode', 'evm.methodIdentifiers', 'evm.gasEstimates'],
-                    },
-                },
+                outputSelection: outputSelection,
             },
             sources : contractsForCompilation,
         };
         return compilation;
     }
+
 
     public addContractAndResolveImports(contractPath: string, code: string, project: Project) {
         const contract = this.addContract(contractPath, code);

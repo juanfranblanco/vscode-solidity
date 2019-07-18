@@ -139,7 +139,7 @@ export class SolcCompiler {
                 filePath,
                 documentText,
                 initialiseProject(this.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory));
-            const contractsForCompilation = contracts.getContractsForCompilation();
+            const contractsForCompilation = contracts.getDefaultContractsForCompilationDiagnostics();
             contractsForCompilation.settings = null;
             const outputString = this.compile(JSON.stringify(contractsForCompilation));
             const output = JSON.parse(outputString);
