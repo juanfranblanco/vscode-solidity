@@ -66,7 +66,10 @@ function processCompilationOutput(outputString: any, outputChannel: vscode.Outpu
                     buildDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string): Array<string> {
     const output = JSON.parse(outputString);
     if (Object.keys(output).length === 0) {
-        vscode.window.showWarningMessage('No output by the compiler');
+        const noOutputMessage = `No output by the compiler`;
+        vscode.window.showWarningMessage(noOutputMessage);
+        vscode.window.setStatusBarMessage(noOutputMessage);
+        outputChannel.appendLine(noOutputMessage);
         return;
     }
 
@@ -77,19 +80,28 @@ function processCompilationOutput(outputString: any, outputChannel: vscode.Outpu
         outputErrorsToChannel(outputChannel, output.errors);
 
         if (errorWarningCounts.errors > 0) {
-            vscode.window.showErrorMessage(`Compilation failed with ${errorWarningCounts.errors} errors`);
+            const compilationWithErrorsMessage = `Compilation failed with ${errorWarningCounts.errors} errors`;
+            vscode.window.showErrorMessage(compilationWithErrorsMessage);
+            vscode.window.setStatusBarMessage(compilationWithErrorsMessage);
+            outputChannel.appendLine(compilationWithErrorsMessage);
             if (errorWarningCounts.warnings > 0) {
                 vscode.window.showWarningMessage(`Compilation had ${errorWarningCounts.warnings} warnings`);
             }
         } else if (errorWarningCounts.warnings > 0) {
-           return writeCompilationOutputToBuildDirectory(output, buildDir, sourceDir, excludePath, singleContractFilePath);
-            vscode.window.showWarningMessage(`Compilation had ${errorWarningCounts.warnings} warnings`);
-            vscode.window.showInformationMessage('Compilation completed succesfully!');
+            const files = writeCompilationOutputToBuildDirectory(output, buildDir, sourceDir, excludePath, singleContractFilePath);
+            const compilationWithWarningsMessage = `Compilation completed successfully!, with ${errorWarningCounts.warnings} warnings`;
+            vscode.window.showWarningMessage(compilationWithWarningsMessage);
+            vscode.window.setStatusBarMessage(compilationWithWarningsMessage);
+            outputChannel.appendLine(compilationWithWarningsMessage);
+            return files;
         }
     } else {
-        return writeCompilationOutputToBuildDirectory(output, buildDir, sourceDir, excludePath, singleContractFilePath);
-        // outputChannel.hide();
-        vscode.window.showInformationMessage('Compilation completed succesfully!');
+        const files = writeCompilationOutputToBuildDirectory(output, buildDir, sourceDir, excludePath, singleContractFilePath);
+        const compilationSuccessMessage = `Compilation completed successfully!`;
+        vscode.window.showInformationMessage(compilationSuccessMessage);
+        vscode.window.setStatusBarMessage(compilationSuccessMessage);
+        outputChannel.appendLine(compilationSuccessMessage);
+        return files;
     }
 }
 
@@ -154,7 +166,6 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
                             const contractAbiPath = path.join(dirName, contractName + '.abi');
                             const contractBinPath = path.join(dirName, contractName + '.bin');
                             const contractJsonPath = path.join(dirName, contractName + '.json');
-                            const truffleArtifactPath = path.join(dirName, contractName + '.sol.js');
 
                             if (fs.existsSync(contractAbiPath)) {
                                 fs.unlinkSync(contractAbiPath);
@@ -168,31 +179,31 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
                                 fs.unlinkSync(contractJsonPath);
                             }
 
-                            if (fs.existsSync(truffleArtifactPath)) {
-                                fs.unlinkSync(truffleArtifactPath);
-                            }
-
                             fs.writeFileSync(contractBinPath, contract.evm.bytecode.object);
                             fs.writeFileSync(contractAbiPath, JSON.stringify(contract.abi));
 
                             const shortJsonOutput = {
+                                contractName: contractName,
+                                // tslint:disable-next-line:object-literal-sort-keys
                                 abi : contract.abi,
+                                metadata: contract.metadata,
                                 bytecode : contract.evm.bytecode.object,
+                                deployedBytecode: contract.evm.deployedBytecode.object,
+                                sourceMap: contract.evm.bytecode.sourceMap,
+                                deployedSourceMap: contract.evm.deployedBytecode.sourceMap,
+                                sourcePath: source,
+                                compiler: {
+                                    name: 'solc',
+                                    version: JSON.parse(contract.metadata).compiler.version,
+                                },
+                                ast: output.sources[source].ast,
                                 functionHashes : contract.evm.methodIdentifiers,
                                 gasEstimates : contract.evm.gasEstimates,
+
                             };
 
                             fs.writeFileSync(contractJsonPath, JSON.stringify(shortJsonOutput, null, 4));
                             compiledFiles.push(contractJsonPath);
-                            /*
-                            let contract_data = {
-                                contract_name: contractName,
-                                abi: output.contracts[source + ':' + contractName].interface,
-                                unlinked_binary: output.contracts[source + ':' + contractName].bytecode,
-                                };
-
-                            artifactor.save(contract_data, truffleArtifactPath);
-                            */
                         }
                     }
                 }
