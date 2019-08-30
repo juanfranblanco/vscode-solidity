@@ -7,13 +7,17 @@ import {generateNethereumCodeSettingsFile, codeGenerateNethereumCQSCsharp, codeG
     codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll, autoCodeGenerateAfterCompilation} from './codegen';
 import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn, WorkspaceChange} from 'vscode-languageclient';
 import {lintAndfixCurrentDocument} from './linter/soliumClientFixer';
+import { analyzeContract } from './analysers/mythx/commands/analyzeContract';
 // tslint:disable-next-line:no-duplicate-imports
 import { workspace, WorkspaceFolder } from 'vscode';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
+let mythxDiagnostic: vscode.DiagnosticCollection
 
 export function activate(context: vscode.ExtensionContext) {
     diagnosticCollection = vscode.languages.createDiagnosticCollection('solidity');
+
+    mythxDiagnostic = vscode.languages.createDiagnosticCollection('mythx');
 
     context.subscriptions.push(diagnosticCollection);
 
@@ -60,6 +64,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.fixDocument', () => {
         lintAndfixCurrentDocument();
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.runMythx', () => {
+        analyzeContract(mythxDiagnostic)
     }));
 
 
