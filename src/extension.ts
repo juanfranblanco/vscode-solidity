@@ -7,7 +7,7 @@ import {generateNethereumCodeSettingsFile, codeGenerateNethereumCQSCsharp, codeG
     codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll, autoCodeGenerateAfterCompilation} from './codegen';
 import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn, WorkspaceChange} from 'vscode-languageclient';
 import {lintAndfixCurrentDocument} from './linter/soliumClientFixer';
-import { analyzeContract } from './mythx/commands/analyzeContract';
+import { analyzeContract } from './analysers/mythx/commands/analyzeContract';
 // tslint:disable-next-line:no-duplicate-imports
 import { workspace, WorkspaceFolder } from 'vscode';
 
