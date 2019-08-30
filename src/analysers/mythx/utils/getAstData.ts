@@ -2,8 +2,8 @@ import * as vscode from "vscode";
 const os = require('os');
 const path = require('path')
 
-import { Bytecode, AnalyzeOptions } from "../utils/types"
-import { hasPlaceHolder } from '../utils/hasPlaceHolder'
+import { Bytecode, AnalyzeOptions } from "./types"
+import { hasPlaceHolder } from './hasPlaceHolder'
 
 export async function getAstData(contractName: string, fileContent: string): Promise<AnalyzeOptions>  {
 	try {
