@@ -5,8 +5,8 @@ const { extensions } = vscode;
 
 export async function getCompiler(): Promise<string> {
     const selection = await vscode.window.showQuickPick(['solc', 'truffle'], {
-      placeHolder: 'Select compiler version:',
       canPickMany: false,
+      placeHolder: 'Select compiler version:',
     });
 
     if (selection === 'solc') {

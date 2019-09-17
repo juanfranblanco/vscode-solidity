@@ -58,9 +58,9 @@ export async function analyzeContract(diagnosticCollection: vscode.DiagnosticCol
   // Get in progress bar
     await window.withProgress(
         {
+            cancellable: true,
             location: vscode.ProgressLocation.Notification,
             title: `Analysing smart contract ${contractName}`,
-            cancellable: true,
         },
         (_) => new Promise(
             (resolve) => {

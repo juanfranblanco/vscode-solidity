@@ -5,6 +5,7 @@ export interface JwtTokensInterface {
     refresh: string;
 }
 
+// tslint:disable-next-line:class-name
 export interface loginResponse {
     jwtTokens: JwtTokensInterface;
     access: string;
@@ -38,18 +39,19 @@ export interface SubmitContractRes {
     submittedBy: string;
     uuid: string;
 }
-
+// tslint:disable-next-line:class-name
 export interface descriptionObj {
     head: string;
     tail: string;
     // Make below a mapping of severity warnings
     severity: string;
 }
-
+// tslint:disable-next-line:class-name
 export interface decodedLocationsObj {
     line: number;
     column: number;
 }
+// tslint:disable-next-line:class-name
 export interface issueObj {
     swcID: string;
     swcTitle: string;

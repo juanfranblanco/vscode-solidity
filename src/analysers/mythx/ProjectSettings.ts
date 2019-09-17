@@ -3,7 +3,7 @@ import { workspace, WorkspaceConfiguration, Uri, ConfigurationTarget } from 'vsc
 export const extensionPrefix = 'mythx';
 
 export function getExtensionSetting<T>(key: string, fsPath?: string): T | undefined {
-    const projectConfiguration: WorkspaceConfiguration = workspace.getConfiguration(extensionPrefix, fsPath ? Uri.file(fsPath): undefined);
+    const projectConfiguration: WorkspaceConfiguration = workspace.getConfiguration(extensionPrefix, fsPath ? Uri.file(fsPath) : undefined);
     return projectConfiguration.get<T>(key);
 }
 
