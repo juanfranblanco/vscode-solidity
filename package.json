@@ -238,7 +238,7 @@
       },
       {
         "command": "solidity.runMythx",
-        "title": "Solidity: Run MythX instance"
+        "title": "Solidity: Analyze Smart Contract with MythX"
       }
     ],
     "keybindings": [
