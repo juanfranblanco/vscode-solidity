@@ -12,7 +12,7 @@ import { analyzeContract } from './analysers/mythx/commands/analyzeContract';
 import { workspace, WorkspaceFolder } from 'vscode';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
-let mythxDiagnostic: vscode.DiagnosticCollection
+let mythxDiagnostic: vscode.DiagnosticCollection;
 
 export function activate(context: vscode.ExtensionContext) {
     diagnosticCollection = vscode.languages.createDiagnosticCollection('solidity');
@@ -24,8 +24,8 @@ export function activate(context: vscode.ExtensionContext) {
     initDiagnosticCollection(diagnosticCollection);
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.active', () => {
-      compileActiveContract().then((compiledResults: string[]) => {
-       autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection);
+        compileActiveContract().then((compiledResults: string[]) => {
+        autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection);
       });
     }));
 
@@ -67,7 +67,7 @@ export function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.runMythx', () => {
-        analyzeContract(mythxDiagnostic)
+        analyzeContract(mythxDiagnostic);
     }));
 
 
