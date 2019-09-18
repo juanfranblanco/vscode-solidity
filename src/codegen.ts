@@ -46,6 +46,7 @@ export function generateNethereumCodeSettingsFile() {
             'namespace': baseNamespace,
             'lang': 0,
             'autoCodeGen': true,
+            'projectPath': '../',
         };
         fs.writeFileSync(settingsFile, JSON.stringify(jsonSettings, null, 4));
     }
@@ -126,16 +127,21 @@ function codeGenerateCQS(fileName: string, lang: number, args: any, diagnostics:
             const prettyRootName = prettifyRootNameAsNamespace(root.name);
             let baseNamespace = prettyRootName + '.Contracts';
             let projectName = baseNamespace;
+            let projectPath = path.join(root.uri.fsPath);
+
             if (settings !== undefined) {
                 if (settings.projectName !== undefined) {
                    projectName = settings.projectName;
                    baseNamespace = settings.namespace;
                 }
+
+                if (settings.projectPath !== undefined) {
+                    projectPath = path.relative(projectPath, settings.projectPath);
+                }
             }
             const outputPathInfo = path.parse(fileName);
             const contractName = outputPathInfo.name;
 
-            const projectPath = path.join(root.uri.fsPath);
             const compilationOutput = JSON.parse(fs.readFileSync(fileName, 'utf8'));
             if (compilationOutput.abi !== undefined) {
                 const abi = JSON.stringify(compilationOutput.abi);
