@@ -7,7 +7,6 @@ export async function getCredentials(): Promise<Credentials> {
 			let ethAddress = "0x0000000000000000000000000000000000000000"
 			let password = "trial"
 			const projectConfiguration: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('mythxvsc');
-			console.log(projectConfiguration, 'poro')
 
 			if(projectConfiguration.ethAddress && projectConfiguration.password) {
 				ethAddress = projectConfiguration.ethAddress
