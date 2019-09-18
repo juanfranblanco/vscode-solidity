@@ -5,9 +5,9 @@ import { errorCodeDiagnostic } from '../errorCodeDiagnostic';
 import { AnalyzeOptions, Credentials } from '../utils/types';
 import {  getFileContent } from '../utils/getFileContent';
 import { getAstData } from '../utils/getAstData';
+import {compileActiveContract} from '../../../compileActive';
 
 const { window } = vscode;
-import {compileActiveContract} from '../../../compileActive';
 
 let mythx: Client;
 
@@ -83,7 +83,6 @@ export async function analyzeContract(diagnosticCollection: vscode.DiagnosticCol
 		}
 
 		// Diagnostic
-
 		errorCodeDiagnostic(vscode.window.activeTextEditor.document, diagnosticCollection, analysisResult);
 		
 	}).catch(
