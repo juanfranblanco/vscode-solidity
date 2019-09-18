@@ -19,7 +19,6 @@ const contractNameOption: vscode.InputBoxOptions = {
 
 export async function analyzeContract(diagnosticCollection: vscode.DiagnosticCollection): Promise<void> {
     let contractName;
-
     await compileActiveContract().then(async (compiledResults: string[]) => {
         if (!compiledResults) {
             throw new Error(`MythX error with compilation.`);
@@ -67,6 +66,7 @@ export async function analyzeContract(diagnosticCollection: vscode.DiagnosticCol
                     }, 10000);
                 }));
 
+        diagnosticCollection.clear();
         const analysisResult = await mythx.getDetectedIssues(uuid);
 
         const { issues } = analysisResult[0];

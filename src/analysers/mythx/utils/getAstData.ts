@@ -29,9 +29,9 @@ export async function getAstData(contractName: string, fileContent: string): Pro
         const relativePath = path.relative(rootPath, pathNoFileName);
 
         if (pathNoFileName === rootPath) {
-            outputAST = `${rootPath}/bin/${fileNameTrimmed}-solc-output.json`;
+            outputAST = path.join(rootPath, 'bin', `${fileNameTrimmed}-solc-output.json`);
         } else {
-            outputAST = `${rootPath}/bin/${relativePath}/${fileNameTrimmed}-solc-output.json`;
+            outputAST =  path.join(rootPath, 'bin', relativePath, `${fileNameTrimmed}-solc-output.json`);
         }
 
         const documentObj = await vscode.workspace.openTextDocument(outputAST);
