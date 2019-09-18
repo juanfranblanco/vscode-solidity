@@ -136,7 +136,7 @@ function codeGenerateCQS(fileName: string, lang: number, args: any, diagnostics:
                 }
 
                 if (settings.projectPath !== undefined) {
-                    projectPath = path.relative(projectPath, settings.projectPath);
+                    projectPath = path.join(projectPath, settings.projectPath);
                 }
             }
             const outputPathInfo = path.parse(fileName);
