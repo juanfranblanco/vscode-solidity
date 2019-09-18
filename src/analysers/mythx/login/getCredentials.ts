@@ -4,9 +4,9 @@ import { Credentials } from '../utils/types';
 export async function getCredentials(): Promise<Credentials> {
         const {window} = vscode;
     try {
-			let ethAddress = "0x0000000000000000000000000000000000000000"
-			let password = "trial"
-			const projectConfiguration: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('mythxvsc');
+            let ethAddress = '0x0000000000000000000000000000000000000000';
+            let password = 'trial';
+            const projectConfiguration: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration('mythxvsc');
 
             if (projectConfiguration.ethAddress && projectConfiguration.password) {
                 ethAddress = projectConfiguration.ethAddress;

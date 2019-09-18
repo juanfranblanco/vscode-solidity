@@ -23,7 +23,8 @@ export function compile(contracts: any,
         vscode.window.showWarningMessage('No solidity files (*.sol) found');
         return;
     }
-    const solc = new SolcCompiler(vscode.workspace.rootPath);
+    const rootPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    const solc = new SolcCompiler(rootPath);
     const outputChannel = vscode.window.createOutputChannel('solidity compilation');
     outputChannel.clear();
     outputChannel.show();
@@ -116,7 +117,8 @@ function ensureDirectoryExistence(filePath: string) {
 
 function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, sourceDir: string,
                                                     excludePath?: string, singleContractFilePath?: string): Array<string> {
-    const binPath = path.join(vscode.workspace.rootPath, buildDir);
+    const rootPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    const binPath = path.join(rootPath, buildDir);
     const compiledFiles: Array<string> = new Array<string>();
 
     if (!fs.existsSync(binPath)) {
@@ -124,7 +126,7 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
     }
 
     if (typeof singleContractFilePath !== 'undefined' && singleContractFilePath !== null) {
-        const relativePath = path.relative(vscode.workspace.rootPath, singleContractFilePath);
+        const relativePath = path.relative(rootPath, singleContractFilePath);
         const dirName = path.dirname(path.join(binPath, relativePath));
         const outputCompilationPath = path.join(dirName, path.basename(singleContractFilePath, '.sol') + '-solc-output' + '.json');
         ensureDirectoryExistence(outputCompilationPath);
@@ -156,7 +158,7 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
                         if (output.contracts[source].hasOwnProperty(contractName)) {
 
                             const contract = output.contracts[source][contractName];
-                            const relativePath = path.relative(vscode.workspace.rootPath, source);
+                            const relativePath = path.relative(rootPath, source);
                             const dirName = path.dirname(path.join(binPath, relativePath));
 
                             if (!fs.existsSync(dirName)) {

@@ -10,15 +10,16 @@ import { formatPath } from './util';
 export function compileAllContracts(diagnosticCollection: vscode.DiagnosticCollection) {
 
     // Check if is folder, if not stop we need to output to a bin folder on rootPath
-    if (vscode.workspace.rootPath === undefined) {
+    if (vscode.workspace.workspaceFolders[0] === undefined) {
         vscode.window.showWarningMessage('Please open a folder in Visual Studio Code as a workspace');
         return;
     }
+    const rootPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
     const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
     const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
 
     const contractsCollection = new ContractCollection();
-    const project = initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
+    const project = initialiseProject(rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
     let solidityPath = '**/*.sol';
     if (project.projectPackage.sol_sources !== undefined && project.projectPackage.sol_sources !== '') {
         solidityPath = project.projectPackage.sol_sources + '/' + solidityPath;

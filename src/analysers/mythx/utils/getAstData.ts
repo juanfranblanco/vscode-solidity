@@ -9,7 +9,7 @@ export async function getAstData(contractName: string, fileContent: string): Pro
     try {
         let outputAST;
         let fixedPath = vscode.window.activeTextEditor.document.fileName;
-        const roothPath = vscode.workspace.rootPath;
+        const rootPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
 
         // Windows OS hack
         if (os.platform() === 'win32') {
@@ -26,12 +26,12 @@ export async function getAstData(contractName: string, fileContent: string): Pro
         const pathNoFileName = fixedPath.substring(0, fixedPath.lastIndexOf('/'));
 
         // Find differences between two path
-        const relativePath = path.relative(vscode.workspace.rootPath, pathNoFileName);
+        const relativePath = path.relative(rootPath, pathNoFileName);
 
-        if (pathNoFileName === roothPath) {
-            outputAST = `${roothPath}/bin/${fileNameTrimmed}-solc-output.json`;
+        if (pathNoFileName === rootPath) {
+            outputAST = `${rootPath}/bin/${fileNameTrimmed}-solc-output.json`;
         } else {
-            outputAST = `${roothPath}/bin/${relativePath}/${fileNameTrimmed}-solc-output.json`;
+            outputAST = `${rootPath}/bin/${relativePath}/${fileNameTrimmed}-solc-output.json`;
         }
 
         const documentObj = await vscode.workspace.openTextDocument(outputAST);

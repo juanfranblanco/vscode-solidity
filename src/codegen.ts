@@ -91,9 +91,9 @@ export function codeGenerateNethereumCQSCSharpAll(args: any, diagnostics: vscode
 function getBuildPath() {
     const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
     const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
-
-    const project = initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
-    return path.join(vscode.workspace.rootPath, project.projectPackage.build_dir);
+    const rootPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    const project = initialiseProject(rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
+    return path.join(rootPath, project.projectPackage.build_dir);
 }
 
 function codeGenerateAllFiles(lang: number, args: any, diagnostics: vscode.DiagnosticCollection) {

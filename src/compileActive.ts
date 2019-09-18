@@ -26,7 +26,7 @@ export function compileActiveContract(): Promise<Array<string>> {
     }
 
     // Check if is folder, if not stop we need to output to a bin folder on rootPath
-    if (vscode.workspace.rootPath === undefined) {
+    if (vscode.workspace.workspaceFolders[0] === undefined) {
         vscode.window.showWarningMessage('Please open a folder in Visual Studio Code as a workspace');
         return;
     }
@@ -38,7 +38,7 @@ export function compileActiveContract(): Promise<Array<string>> {
     const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
     const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
 
-    const project = initialiseProject(vscode.workspace.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
+    const project = initialiseProject(vscode.workspace.workspaceFolders[0].uri.fsPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
     const contract = contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
     const packagesPath = formatPath(project.packagesDir);
 
