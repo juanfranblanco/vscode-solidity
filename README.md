@@ -13,7 +13,8 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
 * Support for different solidity versions (Remote and local)
 * Code generation using https://github.com/Nethereum/Nethereum, it includes currently the default template for Nethereum service, dtos generation. 
   (Open 'contractName.json' after compilation from the bin folder. Press F1 and press Solidity: Code generate from compilation output..)
-  Please contribute more templates.
+  Auto generation of Nethereun files on compilation
+* Analysis of smart contracts using Mythx
 * Linting using Solhint or Solium
 
 # Instructions
@@ -155,6 +156,20 @@ Solium is the default linter of supported by the extesion https://github.com/dua
 
 soliumrc.json support will be included in the near future, for specific project linting requirements.
 
+# Analysis of smart contracts with Mythx
+You can analyse your smart contracts using Mythx, to start the analysis just open a smart contract and press F1 or Ctrl+Shift+P
+and use the command "Solidity: Analyse smart contract with Mythx"
+
+By default the extension will use the trial version, but if you have already a Mythx account you can enter your details using the following settings:
+
+```json
+    "mythxvsc.ethAddress": "0x0000000000000000000000000000000000000000",
+    "mythxvsc.jwtAccess": "",
+    "mythxvsc.jwtRefresh": "",
+    "mythxvsc.password": "trial",
+    
+```
+
 # Code generation Nethereum
 The extension integrates with the Nethereum code generator to create Contract integration definitions. You can either generate the api for a single contract, all compiled contracts, or automatically every time you compile a smart contract solidity file.
 
@@ -166,13 +181,15 @@ The simplest way is to automatically code generate your api, for this you need t
     "projectName": "Solidity.Samples",
     "namespace": "Solidity.Samples",
     "lang":0,
-    "autoCodeGen":true
+    "autoCodeGen":true,
+    "projectPath": "../SoliditySamples"
 }
-
 ```
 "lang" indicates what language to generate the code, 0 = CSharp, 1 = Vb.Net and 3 = FSharp
 
 The "projectName" and "namespace" settings will be used for the manual code generation also.
+
+Use the "projectPath" to set the relative path of your .Net project, this allows to work in a "solution" mode so you can work as an both in Visual Studio Code and Visual Studio (Fat) with your .Net project, or two windows of vscode.
 
 ## Single smart contract manual code generation
 To code generate the Nethereum contract api from a single smart contract, you need to select the compiled "json" output file from the "bin" folder, press F1 and start typing "Solidity: Code generate" and select what language you want to generate for the current selected file.
@@ -206,6 +223,8 @@ Piotr Szlachciak for refactoring the syntaxes
 Forest Fang for providing the implementation of the "Go to definition", allowing you to navigate to structs, contracts, functions calls, etc
 
 Bernardo Vieira for adding the capability to read the solium settings from a file in the workspace root directory.
+
+Mirko Garozzo and Rocky Bernstein for the work on creating and integrating the Mythx api to analyse smart contracts.
 
 Nick Addison, Elazar Gershuni, Joe Whittles, Iñigo Villalba, Thien Toan, Jonathan Carter, Stefan Lew, Nikita Savchenko, Josh Stevens, Paul Berg for their contributions.
 
