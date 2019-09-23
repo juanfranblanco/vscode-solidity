@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.60",
+  "version": "0.0.61",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.28.0"
@@ -96,6 +96,14 @@
       "type": "object",
       "title": "Solidity configuration",
       "properties": {
+        "solidity.enableLocalNodeCompiler": {
+          "type": [
+            "bool",
+            "true"
+          ],
+          "default": null,
+          "description": "If enabled (default true) and a solc version is found in the workspace node_modules, it will use this version of solc'"
+        },
         "solidity.compileUsingRemoteVersion": {
           "type": [
             "string",

@@ -18,6 +18,7 @@ export class SolcCompiler {
     public rootPath: string;
     public currentCompilerType: compilerType;
     public currentCompilerSetting: string;
+    public enableNodeCompilerSetting: boolean;
     private localSolc: any;
 
     public getVersion(): string {
@@ -35,12 +36,14 @@ export class SolcCompiler {
     }
 
     // simple validation to match our settings with the ones passed
-    public initialisedAlready(localInstallationPath: string, remoteInstallationVersion: string): boolean {
+    public initialisedAlready(localInstallationPath: string, remoteInstallationVersion: string, enableNodeCompiler: boolean): boolean {
         // tslint:disable-next-line:curly
         if (this.localSolc === null) return false;
+        // tslint:disable-next-line: curly
+        if (this.enableNodeCompilerSetting !== enableNodeCompiler) return false;
 
         let installedNodeLocally = false;
-        if (this.isRootPathSet()) {
+        if (this.isRootPathSet() && enableNodeCompiler) {
             installedNodeLocally = this.isInstalledSolcUsingNode(this.rootPath);
             if (this.currentCompilerType === compilerType.localNode && installedNodeLocally) {
                 return true;
@@ -51,7 +54,7 @@ export class SolcCompiler {
             return true;
         }
 
-        if (this.currentCompilerType === compilerType.Remote && localInstallationPath === this.currentCompilerSetting) {
+        if (this.currentCompilerType === compilerType.Remote && localInstallationPath === this.currentCompilerSetting ) {
             return true;
         }
 
@@ -64,14 +67,15 @@ export class SolcCompiler {
         return false;
     }
 
-    public intialiseCompiler(localInstallationPath: string, remoteInstallationVersion: string): Promise<void> {
+    public intialiseCompiler(localInstallationPath: string, remoteInstallationVersion: string, enableNodeCompiler: boolean): Promise<void> {
             return new Promise<void> ((resolve, reject) => {
             try {
-                if (this.initialisedAlready(localInstallationPath, remoteInstallationVersion)) {
+                if (this.initialisedAlready(localInstallationPath, remoteInstallationVersion, enableNodeCompiler)) {
                     resolve();
                 }
                 let solidityfile = '';
-                if (this.isInstalledSolcUsingNode(this.rootPath)) {
+                this.enableNodeCompilerSetting = enableNodeCompiler;
+                if (enableNodeCompiler && this.isInstalledSolcUsingNode(this.rootPath)) {
                     solidityfile = require(this.getLocalSolcNodeInstallation());
                     this.localSolc = solc.setupMethods(solidityfile);
                     this.currentCompilerType = compilerType.localNode;

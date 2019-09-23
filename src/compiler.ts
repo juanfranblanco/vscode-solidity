@@ -33,9 +33,9 @@ export function compile(contracts: any,
 
     const remoteCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingRemoteVersion');
     const localCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingLocalVersion');
-
+    const enableNodeCompiler = vscode.workspace.getConfiguration('solidity').get<boolean>('enableLocalNodeCompiler'); 
     return new Promise((resolve, reject) => {
-        solc.intialiseCompiler(localCompiler, remoteCompiler).then(() => {
+        solc.intialiseCompiler(localCompiler, remoteCompiler, enableNodeCompiler).then(() => {
             const output = solc.compile(JSON.stringify(contracts));
 
             if (solc.currentCompilerType === compilerType.localFile) {

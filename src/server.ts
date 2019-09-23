@@ -29,6 +29,7 @@ interface SoliditySettings {
     enabledAsYouTypeCompilationErrorCheck: boolean;
     compileUsingLocalVersion: string;
     compileUsingRemoteVersion: string;
+    enableNodeCompiler: boolean;
     soliumRules: any;
     solhintRules: any;
     validationDelay: number;
@@ -55,6 +56,7 @@ let linter: Linter = null;
 let enabledAsYouTypeErrorCheck = false;
 let compileUsingRemoteVersion = '';
 let compileUsingLocalVersion = '';
+let enableNodeCompiler = true;
 let solhintDefaultRules = {};
 let soliumDefaultRules = {};
 let validationDelay = 1500;
@@ -196,7 +198,7 @@ function validateAllDocuments() {
 
 function startValidation() {
     if (enabledAsYouTypeErrorCheck) {
-        solcCompiler.intialiseCompiler(compileUsingLocalVersion, compileUsingRemoteVersion).then(() => {
+        solcCompiler.intialiseCompiler(compileUsingLocalVersion, compileUsingRemoteVersion, enableNodeCompiler).then(() => {
             validateAllDocuments();
         });
     } else {
@@ -246,6 +248,7 @@ connection.onDidChangeConfiguration((change) => {
     solhintDefaultRules = settings.solidity.solhintRules;
     soliumDefaultRules = settings.solidity.soliumRules;
     validationDelay = settings.solidity.validationDelay;
+    enableNodeCompiler = settings.solidity.enableNodeCompiler;
     packageDefaultDependenciesContractsDirectory = settings.solidity.packageDefaultDependenciesContractsDirectory;
     packageDefaultDependenciesDirectory = settings.solidity.packageDefaultDependenciesDirectory;
 
