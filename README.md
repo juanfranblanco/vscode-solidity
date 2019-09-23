@@ -55,6 +55,10 @@ So if you just want to use the latest version of solidity for all the projects a
 
 But if you are working on an specific project using an older version, you can use npm install locally to target that specefic version, without affecting the global setting.
 
+## Compiler optimization
+Optimize for how many times you intend to run the code. Lower values will optimize more for initial deployment cost, higher values will optimize more for high-frequency usage. The default value is **200**.
+```"solidity.compilerOptimization": 200``` 
+
 
 ## Default project structure
 

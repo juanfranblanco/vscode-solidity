@@ -37,12 +37,12 @@ export function compileActiveContract(): Promise<Array<string>> {
 
     const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
     const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
-
+    const compilationOptimisation = vscode.workspace.getConfiguration('solidity').get<number>('compilerOptimization');
     const project = initialiseProject(vscode.workspace.workspaceFolders[0].uri.fsPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
     const contract = contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
     const packagesPath = formatPath(project.packagesDir);
 
-    return compile(contractsCollection.getDefaultContractsForCompilation(),
+    return compile(contractsCollection.getDefaultContractsForCompilation(compilationOptimisation),
             diagnosticCollection,
             project.projectPackage.build_dir,
             project.projectPackage.absoluletPath,

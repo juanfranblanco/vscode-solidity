@@ -17,6 +17,7 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
     const rootPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
     const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
     const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
+    const compilationOptimisation = vscode.workspace.getConfiguration('solidity').get<number>('compilerOptimization');
 
     const contractsCollection = new ContractCollection();
     const project = initialiseProject(rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
@@ -57,7 +58,7 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
         });
         const sourceDirPath = formatPath(project.projectPackage.getSolSourcesAbsolutePath());
         const packagesPath = formatPath(project.packagesDir);
-        compile(contractsCollection.getDefaultContractsForCompilation(),
+        compile(contractsCollection.getDefaultContractsForCompilation(compilationOptimisation),
                 diagnosticCollection,
                 project.projectPackage.build_dir,
                 project.projectPackage.absoluletPath,

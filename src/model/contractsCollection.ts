@@ -18,7 +18,7 @@ export class ContractCollection {
         return this.contracts.findIndex((contract: Contract) => { return contract.absolutePath === contractPath; }) > -1;
     }
 
-    public getDefaultContractsForCompilation() {
+    public getDefaultContractsForCompilation(optimizeCompilationRuns = 200) {
         const compilerOutputSelection = {
             '*': {
                 '': ['ast'],
@@ -26,7 +26,7 @@ export class ContractCollection {
             },
         };
 
-        return this.getContractsForCompilation(true, 200, compilerOutputSelection);
+        return this.getContractsForCompilation(true, optimizeCompilationRuns, compilerOutputSelection);
     }
 
     public getDefaultContractsForCompilationDiagnostics() {

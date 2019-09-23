@@ -104,6 +104,13 @@
           "default": null,
           "description": "Compile using a remote version instead of the current one, for example: 'latest' or 'v0.4.3+commit.2353da71'"
         },
+        "solidity.compilerOptimization": {
+          "type": [
+            "number"
+          ],
+          "default": 200,
+          "description": "Optimize for how many times you intend to run the code.Lower values will optimize more for initial deployment cost, higher values will optimize more for high-frequency usage."
+        },
         "solidity.compileUsingLocalVersion": {
           "type": [
             "string",
