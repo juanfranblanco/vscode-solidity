@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.61",
+  "version": "0.0.62",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.28.0"
@@ -99,7 +99,7 @@
         "solidity.enableLocalNodeCompiler": {
           "type": [
             "boolean",
-            "null"
+            "true"
           ],
           "default": null,
           "description": "If enabled (default true) and a solc version is found in the workspace node_modules, it will use this version of solc'"
