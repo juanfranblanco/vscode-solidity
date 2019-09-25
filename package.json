@@ -98,8 +98,8 @@
       "properties": {
         "solidity.enableLocalNodeCompiler": {
           "type": [
-            "bool",
-            "true"
+            "boolean",
+            "null"
           ],
           "default": null,
           "description": "If enabled (default true) and a solc version is found in the workspace node_modules, it will use this version of solc'"
