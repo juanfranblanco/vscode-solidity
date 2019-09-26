@@ -29,7 +29,7 @@ interface SoliditySettings {
     enabledAsYouTypeCompilationErrorCheck: boolean;
     compileUsingLocalVersion: string;
     compileUsingRemoteVersion: string;
-    enableNodeCompiler: boolean;
+    enableLocalNodeCompiler: boolean;
     soliumRules: any;
     solhintRules: any;
     validationDelay: number;
@@ -248,7 +248,7 @@ connection.onDidChangeConfiguration((change) => {
     solhintDefaultRules = settings.solidity.solhintRules;
     soliumDefaultRules = settings.solidity.soliumRules;
     validationDelay = settings.solidity.validationDelay;
-    enableNodeCompiler = settings.solidity.enableNodeCompiler;
+    enableNodeCompiler = settings.solidity.enableLocalNodeCompiler;
     packageDefaultDependenciesContractsDirectory = settings.solidity.packageDefaultDependenciesContractsDirectory;
     packageDefaultDependenciesDirectory = settings.solidity.packageDefaultDependenciesDirectory;
 
