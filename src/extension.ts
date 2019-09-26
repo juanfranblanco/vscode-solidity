@@ -23,10 +23,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     initDiagnosticCollection(diagnosticCollection);
 
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.active', () => {
-        compileActiveContract().then((compiledResults: string[]) => {
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.active', async () => {
+        const compiledResults = await compileActiveContract();
         autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection);
-      });
+        return compiledResults;
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile', () => {
