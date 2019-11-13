@@ -66,8 +66,8 @@ export function activate(context: vscode.ExtensionContext) {
         lintAndfixCurrentDocument();
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.runMythx', () => {
-        analyzeContract(mythxDiagnostic);
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.runMythx', async (fileUri: vscode.Uri) => {
+        analyzeContract(mythxDiagnostic, fileUri);
     }));
 
 
