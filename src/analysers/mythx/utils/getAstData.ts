@@ -57,16 +57,16 @@ export async function getAstData(contractName: string, fileContent: string): Pro
         const solcVersion = metadata.compiler.version;
 
         const request: AnalyzeOptions = {
-                bytecode: hasPlaceHolder(bytecode.object),
-                contractName: contractName,
-                deployedBytecode: hasPlaceHolder(deployedBytecode.object),
-                deployedSourceMap: deployedBytecode.sourceMap,
-                mainSource: fixedPath,
-                solcVersion: solcVersion,
-                sourceList: Object.keys(compiled.sources),
-                sourceMap: bytecode.sourceMap,
-                sources: sources,
-                toolName: 'mythx-vscode-extension',
+            bytecode: hasPlaceHolder(bytecode.object),
+            contractName: contractName,
+            deployedBytecode: hasPlaceHolder(deployedBytecode.object),
+            deployedSourceMap: deployedBytecode.sourceMap,
+            mainSource: fixedPath,
+            solcVersion: solcVersion,
+            sourceList: Object.keys(compiled.sources),
+            sourceMap: bytecode.sourceMap,
+            sources: sources,
+            toolName: 'mythx-vscode-extension',
         };
 
         return request;

@@ -5,6 +5,7 @@ import { errorCodeDiagnostic } from '../errorCodeDiagnostic';
 import { AnalyzeOptions, Credentials } from '../utils/types';
 import {  getFileContent } from '../utils/getFileContent';
 import { getAstData } from '../utils/getAstData';
+import { getContractName } from "../utils/getContractName";
 import {compileActiveContract} from '../../../compileActive';
 
 const { window } = vscode;
@@ -17,7 +18,7 @@ const contractNameOption: vscode.InputBoxOptions = {
     prompt: 'Contract Name: ',
 };
 
-export async function analyzeContract(diagnosticCollection: vscode.DiagnosticCollection): Promise<void> {
+export async function analyzeContract(diagnosticCollection: vscode.DiagnosticCollection, fileUri: vscode.Uri): Promise<void> {
     let contractName;
     await compileActiveContract().then(async (compiledResults: string[]) => {
         if (!compiledResults) {
@@ -28,13 +29,7 @@ export async function analyzeContract(diagnosticCollection: vscode.DiagnosticCol
 
         await mythx.login();
 
-        await window.showInputBox(contractNameOption).then(value => {
-                if (value === undefined) {
-                        throw new Error('Contract Name cancelled. Please re-run analysis.');
-                }
-                contractName = value;
-        });
-
+        const fileContent = await getFileContent(fileUri)
 
         const fileContent = await getFileContent();
 
