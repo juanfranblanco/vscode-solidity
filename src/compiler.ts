@@ -184,6 +184,12 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
                             fs.writeFileSync(contractBinPath, contract.evm.bytecode.object);
                             fs.writeFileSync(contractAbiPath, JSON.stringify(contract.abi));
 
+                            let version = '';
+                            try {
+                                version = JSON.parse(contract.metadata).compiler.version; 
+                            // tslint:disable-next-line: no-empty
+                            } catch {} // i could do a check for string.empty but this catches (literally :) ) all scenarios
+
                             const shortJsonOutput = {
                                 contractName: contractName,
                                 // tslint:disable-next-line:object-literal-sort-keys
@@ -196,7 +202,7 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
                                 sourcePath: source,
                                 compiler: {
                                     name: 'solc',
-                                    version: JSON.parse(contract.metadata).compiler.version,
+                                    version: version,
                                 },
                                 ast: output.sources[source].ast,
                                 functionHashes : contract.evm.methodIdentifiers,
