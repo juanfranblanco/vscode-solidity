@@ -63,7 +63,13 @@ class ValidationConfig {
     }
 
     public build() {
+        let extendsConfig = ['solhint:recommended'];
+        if (this.fileConfig.extends !== 'undefined' && this.fileConfig.extends !== null) {
+            extendsConfig = this.fileConfig.extends;
+        }
+
         return {
+            extends: extendsConfig,
             rules: Object.assign(
                 ValidationConfig.DEFAULT_RULES,
                 this.ideRules,
