@@ -81,7 +81,7 @@ The user settings for this structure is:
 
 ### OpenZeppelin
 
-If you're using `openzeppelin-solidity`, the contracts will be found in your node_modules folder, so the user settings will be the following, assuming your solidity project is at root. 
+If you're using [`@openzeppelin/contracts`](https://github.com/OpenZeppelin/openzeppelin-contracts), the OpenZeppelin Contracts will be found in your node_modules folder, so the user settings will be the following, assuming your solidity project is at root. 
 
 ```
   "solidity.packageDefaultDependenciesContractsDirectory": "",
