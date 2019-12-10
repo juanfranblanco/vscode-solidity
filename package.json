@@ -13,7 +13,7 @@
   "version": "0.0.64",
   "publisher": "JuanBlanco",
   "engines": {
-    "vscode": "^1.28.0"
+    "vscode": "^1.30.0"
   },
   "contributors": [
     "Juan Blanco"
