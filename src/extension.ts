@@ -10,6 +10,7 @@ import {lintAndfixCurrentDocument} from './linter/soliumClientFixer';
 import { analyzeContract } from './analysers/mythx/commands/analyzeContract';
 // tslint:disable-next-line:no-duplicate-imports
 import { workspace, WorkspaceFolder } from 'vscode';
+import {formatDocument} from './formatter/prettierFormatter';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 let mythxDiagnostic: vscode.DiagnosticCollection;
@@ -70,6 +71,11 @@ export function activate(context: vscode.ExtensionContext) {
         analyzeContract(mythxDiagnostic, fileUri);
     }));
 
+    context.subscriptions.push(
+    vscode.languages.registerDocumentFormattingEditProvider('solidity', {
+        provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.TextEdit[] {
+            return formatDocument(document, context);
+    }}));
 
     const serverModule = path.join(__dirname, 'server.js');
 
