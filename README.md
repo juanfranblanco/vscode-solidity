@@ -173,6 +173,28 @@ By default the extension will use the trial version, but if you have already a M
     "mythxvsc.password": "trial",
     
 ```
+# Formatting using Prettier and the Prettier Solidity Plugin
+Formatting is provided thanks to the Prettier plugin for Solidity for more info check https://prettier.io/ and https://github.com/prettier-solidity/prettier-plugin-solidity
+
+Formatting uses the default formatting settings provided by prettier, if you want to provide your custom settings create a **.prettierrc** file as follows
+
+```json
+{
+  "overrides": [
+    {
+      "files": "*.sol",
+      "options": {
+        "printWidth": 80,
+        "tabWidth": 4,
+        "useTabs": true,
+        "singleQuote": false,
+        "bracketSpacing": true,
+        "explicitTypes": "always"
+      }
+    }
+  ]
+}
+```
 
 # Code generation Nethereum
 The extension integrates with the Nethereum code generator to create Contract integration definitions. You can either generate the api for a single contract, all compiled contracts, or automatically every time you compile a smart contract solidity file.
@@ -219,6 +241,8 @@ Ilya Drabenia for creating the Solhint linter and the integration into the exten
 Nexus team for the original creation of the dappfile to structure contracts in projects https://github.com/nexusdev/dapple.
 
 Beau Gunderson for contributing the initial integration of solium  https://github.com/juanfranblanco/vscode-solidity/issues/24, the initial server and error mappings.
+
+Mattia Richetto, Klaus Hott Vidal and Franco Victorio for creating the Prettier Solidity plugin and of course all the developers of Prettier.
 
 Bram Hoven for starting the multiple package dependency support for different environments (node_modules, lib)
 
