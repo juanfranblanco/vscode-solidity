@@ -246,7 +246,7 @@ Nexus team for the original creation of the dappfile to structure contracts in p
 
 Beau Gunderson for contributing the initial integration of solium  https://github.com/juanfranblanco/vscode-solidity/issues/24, the initial server and error mappings.
 
-Mattia Richetto, Klaus Hott Vidal and Franco Victorio for creating the Prettier Solidity plugin and of course all the developers of Prettier.
+Mattia Richetto, Klaus Hott Vidal and Franco Victorio for creating the Prettier Solidity plugin and of course all the developers of Prettier. Please go to https://github.com/prettier-solidity/prettier-plugin-solidity for help and collaboration.
 
 Bram Hoven for starting the multiple package dependency support for different environments (node_modules, lib)
 
