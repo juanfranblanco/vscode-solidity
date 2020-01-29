@@ -196,6 +196,10 @@ Formatting uses the default formatting settings provided by prettier, if you wan
 }
 ```
 
+If you would like to format on save, add this entry to your user / workspace settings:
+
+```"editor.formatOnSave": true```
+
 # Code generation Nethereum
 The extension integrates with the Nethereum code generator to create Contract integration definitions. You can either generate the api for a single contract, all compiled contracts, or automatically every time you compile a smart contract solidity file.
 

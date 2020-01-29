@@ -1,11 +1,17 @@
 import * as prettier from 'prettier';
 import * as vscode from 'vscode';
 import * as path from 'path';
+
 export function formatDocument(document: vscode.TextDocument, context: vscode.ExtensionContext): vscode.TextEdit[] {
+  const rootPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+  const ignoreOptions = { ignorePath: path.join(rootPath, '.prettierignore') };
+  const fileInfo = prettier.getFileInfo.sync(document.uri.fsPath, ignoreOptions);
+  if (!fileInfo.ignored) {
     const source = document.getText();
+
     const pluginPath = path.join(context.extensionPath, 'node_modules', 'prettier-plugin-solidity');
     const options = {
-      'parser' : 'solidity-parse',
+      'parser': 'solidity-parse',
       'pluginSearchDirs': [context.extensionPath],
       'plugins': [pluginPath],
     };
@@ -16,4 +22,6 @@ export function formatDocument(document: vscode.TextDocument, context: vscode.Ex
     const fullTextRange = new vscode.Range(firstLine.range.start, lastLine.range.end);
     const formatted = prettier.format(source, options);
     return [vscode.TextEdit.replace(fullTextRange, formatted)];
+  }
+  return null;
 }
