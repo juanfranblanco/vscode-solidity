@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.68",
+  "version": "0.0.69",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.30.0"
@@ -214,12 +214,12 @@
     ],
     "commands": [
       {
-        "command": "solidity.compile",
-        "title": "Solidity: Compile All Solidity Contracts"
+        "command": "solidity.compile.active",
+        "title": "Solidity: Compile Contract"
       },
       {
-        "command": "solidity.compile.active",
-        "title": "Solidity: Compile Current Solidity Contract"
+        "command": "solidity.compile",
+        "title": "Solidity: Compile All"
       },
       {
         "command": "solidity.codegenNethereumCodeGenSettings",
@@ -227,15 +227,27 @@
       },
       {
         "command": "solidity.codegenCSharpProject",
-        "title": "Solidity: Code generate CSharp contract definition from selected compilation 'contractName.json'"
+        "title": "Solidity: Code generate CSharp contract definition"
+      },
+      {
+        "command": "solidity.compileAndCodegenCSharpProject",
+        "title": "Solidity: Compile and Code generate CSharp contract definition"
       },
       {
         "command": "solidity.codegenVbNetProject",
-        "title": "Solidity: Code generate VB.Net contract definition from selected compilation 'contractName.json'"
+        "title": "Solidity: Code generate VB.Net contract definition"
+      },
+      {
+        "command": "solidity.compileAndCodegenVbNetProject",
+        "title": "Solidity: Compile and Code generate VB.Net contract definition"
       },
       {
         "command": "solidity.codegenFSharpProject",
-        "title": "Solidity: Code generate FSharp contract definition from selected compilation 'contractName.json'"
+        "title": "Solidity: Code generate FSharp contract definition"
+      },
+      {
+        "command": "solidity.compileAndCodegenFSharpProject",
+        "title": "Solidity: Compile and Code generate FSharp contract definition"
       },
       {
         "command": "solidity.codegenCSharpProjectAll",
@@ -250,6 +262,18 @@
         "title": "Solidity: Code generate FSharp Project from all compiled files"
       },
       {
+        "command": "solidity.codegenCSharpProjectAllAbiCurrent",
+        "title": "Solidity: Code generate CSharp Definitions for Abi files in current folder"
+      },
+      {
+        "command": "solidity.codegenVbNetProjectAllAbiCurrent",
+        "title": "Solidity: Code generate VB.Net Definitions for Abi files in current folder"
+      },
+      {
+        "command": "solidity.codegenFSharpProjectAllAbiCurrent",
+        "title": "Solidity: Code generate FSharp Definitions for Abi files in current folder"
+      },
+      {
         "command": "solidity.fixDocument",
         "title": "Solidity: Fix document rules using Solium"
       },
@@ -258,6 +282,134 @@
         "title": "Solidity: Analyze Smart Contract with MythX"
       }
     ],
+    "menus": {
+      "commandPalette": [
+        {
+          "when": "resourceExtname == .abi || resourceExtname == .json",
+          "command": "solidity.codegenCSharpProject"
+        },
+        {
+          "when": "resourceExtname == .abi || resourceExtname == .json",
+          "command": "solidity.codegenVbNetProject"
+        },
+        {
+          "when": "resourceExtname == .abi || resourceExtname == .json",
+          "command": "solidity.codegenFSharpProject"
+        },
+        {
+          "when": "editorTextFocus && editorLangId == 'solidity'",
+          "command": "solidity.compile.active"
+        },
+        {
+          "when": "editorTextFocus && editorLangId == 'solidity'",
+          "command": "solidity.compile"
+        }
+      ],
+      "editor/context": [
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.compile.active",
+          "group": "2_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.compile",
+          "group": "2_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.codegenNethereumCodeGenSettings",
+          "group": "3_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.compileAndCodegenCSharpProject",
+          "group": "3_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.compileAndCodegenVbNetProject",
+          "group": "3_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.compileAndCodegenFSharpProject",
+          "group": "3_solidity"
+        },
+        {
+          "when": "resourceExtname == .abi",
+          "command": "solidity.codegenCSharpProject",
+          "group": "3_solidity"
+        },
+        {
+          "when": "resourceExtname == .abi",
+          "command": "solidity.codegenVbNetProject",
+          "group": "3_solidity"
+        },
+        {
+          "when": "resourceExtname == .abi",
+          "command": "solidity.codegenFSharpProject",
+          "group": "3_solidity"
+        },
+        {
+          "when": "resourceExtname == .abi",
+          "command": "solidity.codegenCSharpProjectAllAbiCurrent",
+          "group": "3_solidity"
+        },
+        {
+          "when": "resourceExtname == .abi",
+          "command": "solidity.codegenVbNetProjectAllAbiCurrent",
+          "group": "3_solidity"
+        },
+        {
+          "when": "resourceExtname == .abi",
+          "command": "solidity.codegenFSharpProjectAllAbiCurrent",
+          "group": "3_solidity"
+        }
+      ],
+      "explorer/context": [
+        {
+          "when": "resourceExtname == .abi",
+          "command": "solidity.codegenCSharpProject",
+          "group": "3_solidity"
+        },
+        {
+          "when": "resourceExtname == .abi",
+          "command": "solidity.codegenVbNetProject",
+          "group": "3_solidity"
+        },
+        {
+          "when": "resourceExtname == .abi",
+          "command": "solidity.codegenFSharpProject",
+          "group": "3_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.compile.active",
+          "group": "2_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.compile",
+          "group": "2_solidity"
+        },
+        {
+          "when": "resourceExtname == .abi",
+          "command": "solidity.codegenCSharpProjectAllAbiCurrent",
+          "group": "3_solidity"
+        },
+        {
+          "when": "resourceExtname == .abi",
+          "command": "solidity.codegenVbNetProjectAllAbiCurrent",
+          "group": "3_solidity"
+        },
+        {
+          "when": "resourceExtname == .abi",
+          "command": "solidity.codegenFSharpProjectAllAbiCurrent",
+          "group": "3_solidity"
+        }
+      ]
+    },
     "keybindings": [
       {
         "command": "solidity.compile.active",

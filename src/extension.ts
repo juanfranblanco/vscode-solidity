@@ -1,16 +1,19 @@
 'use strict';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import {compileAllContracts} from './compileAll';
-import {compileActiveContract, initDiagnosticCollection} from './compileActive';
-import {generateNethereumCodeSettingsFile, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
-    codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll, autoCodeGenerateAfterCompilation} from './codegen';
-import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn, WorkspaceChange} from 'vscode-languageclient';
-import {lintAndfixCurrentDocument} from './linter/soliumClientFixer';
+import { compileAllContracts } from './compileAll';
+import { compileActiveContract, initDiagnosticCollection } from './compileActive';
+import {
+    generateNethereumCodeSettingsFile, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
+    codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll, autoCodeGenerateAfterCompilation,
+    codeGenerateCQS, codeGenerateAllFilesFromAbiInCurrentFolder
+} from './codegen';
+import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn, WorkspaceChange } from 'vscode-languageclient';
+import { lintAndfixCurrentDocument } from './linter/soliumClientFixer';
 import { analyzeContract } from './analysers/mythx/commands/analyzeContract';
 // tslint:disable-next-line:no-duplicate-imports
 import { workspace, WorkspaceFolder } from 'vscode';
-import {formatDocument} from './formatter/prettierFormatter';
+import { formatDocument } from './formatter/prettierFormatter';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 let mythxDiagnostic: vscode.DiagnosticCollection;
@@ -30,12 +33,20 @@ export function activate(context: vscode.ExtensionContext) {
         return compiledResults;
     }));
 
+
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile', () => {
         compileAllContracts(diagnosticCollection);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenCSharpProject', (args: any[]) => {
         codeGenerateNethereumCQSCsharp(args, diagnosticCollection);
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.compileAndCodegenCSharpProject', async (args: any[]) => {
+        const compiledResults = await compileActiveContract();
+        compiledResults.forEach(file => {
+            codeGenerateCQS(file, 0, args, diagnosticCollection);
+        });
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenNethereumCodeGenSettings', (args: any[]) => {
@@ -47,8 +58,22 @@ export function activate(context: vscode.ExtensionContext) {
         codeGenerateNethereumCQSVbNet(args, diagnosticCollection);
     }));
 
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.compileAndCodegenVbNetProject', async (args: any[]) => {
+        const compiledResults = await compileActiveContract();
+        compiledResults.forEach(file => {
+            codeGenerateCQS(file, 1, args, diagnosticCollection);
+        });
+    }));
+
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenFSharpProject', (args: any[]) => {
         codeGenerateNethereumCQSFSharp(args, diagnosticCollection);
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.compileAndCodegenFSharpProject', async (args: any[]) => {
+        const compiledResults = await compileActiveContract();
+        compiledResults.forEach(file => {
+            codeGenerateCQS(file, 3, args, diagnosticCollection);
+        });
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenCSharpProjectAll', (args: any[]) => {
@@ -63,6 +88,19 @@ export function activate(context: vscode.ExtensionContext) {
         codeGenerateNethereumCQSFSharpAll(args, diagnosticCollection);
     }));
 
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenCSharpProjectAllAbiCurrent', (args: any[]) => {
+        codeGenerateAllFilesFromAbiInCurrentFolder(0, args, diagnosticCollection);
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenVbNetProjectAllAbiCurrent', (args: any[]) => {
+        codeGenerateAllFilesFromAbiInCurrentFolder(1, args, diagnosticCollection);
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenFSharpProjectAllAbiCurrent', (args: any[]) => {
+        codeGenerateAllFilesFromAbiInCurrentFolder(3, args, diagnosticCollection);
+    }));
+
     context.subscriptions.push(vscode.commands.registerCommand('solidity.fixDocument', () => {
         lintAndfixCurrentDocument();
     }));
@@ -72,10 +110,11 @@ export function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(
-    vscode.languages.registerDocumentFormattingEditProvider('solidity', {
-        provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.TextEdit[] {
-            return formatDocument(document, context);
-    }}));
+        vscode.languages.registerDocumentFormattingEditProvider('solidity', {
+            provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.TextEdit[] {
+                return formatDocument(document, context);
+            }
+        }));
 
     const serverModule = path.join(__dirname, 'server.js');
 
@@ -100,11 +139,11 @@ export function activate(context: vscode.ExtensionContext) {
         ],
         revealOutputChannelOn: RevealOutputChannelOn.Never,
         synchronize: {
-                    // Synchronize the setting section 'solidity' to the server
-                    configurationSection: 'solidity',
-                    // Notify the server about file changes to '.sol.js files contain in the workspace (TODO node, linter)
-                    // fileEvents: vscode.workspace.createFileSystemWatcher('**/.sol.js'),
-                },
+            // Synchronize the setting section 'solidity' to the server
+            configurationSection: 'solidity',
+            // Notify the server about file changes to '.sol.js files contain in the workspace (TODO node, linter)
+            // fileEvents: vscode.workspace.createFileSystemWatcher('**/.sol.js'),
+        },
     };
 
     const ws: WorkspaceFolder[] | undefined = workspace.workspaceFolders;

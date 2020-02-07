@@ -8,11 +8,11 @@ import { initialiseProject } from './projectService';
 export function autoCodeGenerateAfterCompilation(compiledFiles: Array<string>, args: any, diagnostics: vscode.DiagnosticCollection) {
     if (compiledFiles !== undefined && compiledFiles.length > 0) {
         const settings = getCodeGenerationSettings();
-        if (settings !== undefined ) {
+        if (settings !== undefined) {
             if (settings.autoCodeGen === true) {
                 let lang = 0;
                 if (settings.lang !== undefined) {
-                        lang = settings.lang;
+                    lang = settings.lang;
                 }
                 compiledFiles.forEach(file => {
                     codeGenerateCQS(file, lang, args, diagnostics);
@@ -25,11 +25,11 @@ export function autoCodeGenerateAfterCompilation(compiledFiles: Array<string>, a
 export function getProjectExtensionFromLang(lang: number) {
     switch (lang) {
         case 0:
-        return '.csproj';
+            return '.csproj';
         case 1:
-        return '.vbproj';
+            return '.vbproj';
         case 3:
-        return '.fsproj';
+            return '.fsproj';
     }
 }
 
@@ -53,10 +53,10 @@ export function generateNethereumCodeSettingsFile() {
 }
 
 export function codeGenerateNethereumCQSCsharp(args: any, diagnostics: vscode.DiagnosticCollection) {
-        const lang = 0;
-        const editor = vscode.window.activeTextEditor;
-        const fileName = editor.document.fileName;
-        codeGenerateCQS(fileName, lang, args, diagnostics);
+    const lang = 0;
+    const editor = vscode.window.activeTextEditor;
+    const fileName = editor.document.fileName;
+    codeGenerateCQS(fileName, lang, args, diagnostics);
 }
 
 export function codeGenerateNethereumCQSVbNet(args: any, diagnostics: vscode.DiagnosticCollection) {
@@ -103,11 +103,29 @@ function codeGenerateAllFiles(lang: number, args: any, diagnostics: vscode.Diagn
     files.then(documents => {
         documents.forEach(document => {
             if (document.fsPath.startsWith(buildPath)) {
-             codeGenerateCQS(document.fsPath, lang, args, diagnostics);
+                codeGenerateCQS(document.fsPath, lang, args, diagnostics);
             }
         });
     });
 }
+
+export function codeGenerateAllFilesFromAbiInCurrentFolder(lang: number, args: any, diagnostics: vscode.DiagnosticCollection) {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        return; // We need something open
+    }
+    const buildPath = path.dirname(editor.document.uri.fsPath);
+    const outputPath = '**/*.abi';
+    const files = vscode.workspace.findFiles(outputPath, null, 1000);
+    files.then(documents => {
+        documents.forEach(document => {
+            if (document.fsPath.startsWith(buildPath)) {
+                codeGenerateCQS(document.fsPath, lang, args, diagnostics);
+            }
+        });
+    });
+}
+
 
 function getCodeGenerationSettings() {
     const root = vscode.workspace.workspaceFolders[0];
@@ -119,59 +137,69 @@ function getCodeGenerationSettings() {
     return undefined;
 }
 
-function codeGenerateCQS(fileName: string, lang: number, args: any, diagnostics: vscode.DiagnosticCollection) {
-        try {
-            const extension = getProjectExtensionFromLang(lang);
-            const root = vscode.workspace.workspaceFolders[0];
-            const settings = getCodeGenerationSettings();
-            const prettyRootName = prettifyRootNameAsNamespace(root.name);
-            let baseNamespace = prettyRootName + '.Contracts';
-            let projectName = baseNamespace;
-            let projectPath = path.join(root.uri.fsPath);
+export function codeGenerateCQS(fileName: string, lang: number, args: any, diagnostics: vscode.DiagnosticCollection) {
+    try {
+        const extension = getProjectExtensionFromLang(lang);
+        const root = vscode.workspace.workspaceFolders[0];
+        const settings = getCodeGenerationSettings();
+        const prettyRootName = prettifyRootNameAsNamespace(root.name);
+        let baseNamespace = prettyRootName + '.Contracts';
+        let projectName = baseNamespace;
+        let projectPath = path.join(root.uri.fsPath);
 
-            if (settings !== undefined) {
-                if (settings.projectName !== undefined) {
-                   projectName = settings.projectName;
-                   baseNamespace = settings.namespace;
-                }
-
-                if (settings.projectPath !== undefined) {
-                    projectPath = path.join(projectPath, settings.projectPath);
-                }
+        if (settings !== undefined) {
+            if (settings.projectName !== undefined) {
+                projectName = settings.projectName;
+                baseNamespace = settings.namespace;
             }
-            const outputPathInfo = path.parse(fileName);
-            const contractName = outputPathInfo.name;
 
-            const compilationOutput = JSON.parse(fs.readFileSync(fileName, 'utf8'));
-            if (compilationOutput.abi !== undefined) {
-                const abi = JSON.stringify(compilationOutput.abi);
-                const contractByteCode = compilationOutput.bytecode;
-                const projectFullPath = path.join(projectPath, projectName + extension);
-
-                if (!fs.existsSync(projectFullPath)) {
-                    codegen.generateNetStandardClassLibrary(projectName, projectPath, lang);
-                }
-
-                codegen.generateAllClasses(abi,
-                    contractByteCode,
-                    contractName,
-                    baseNamespace,
-                    projectPath,
-                    lang);
+            if (settings.projectPath !== undefined) {
+                projectPath = path.join(projectPath, settings.projectPath);
             }
-        } catch (e) {
-            const outputChannel = vscode.window.createOutputChannel('solidity code generation');
-            outputChannel.clear();
-            outputChannel.appendLine('Error generating code:');
-            outputChannel.appendLine(e.message);
-            outputChannel.show();
         }
-    }
+        const outputPathInfo = path.parse(fileName);
+        const contractName = outputPathInfo.name;
+        let compilationOutput;
+        if (outputPathInfo.ext === '.abi') {
+            const abi = fs.readFileSync(fileName, 'utf8');
+            compilationOutput = { 'abi': abi, 'bytecode': '0x' };
+            const binFile = fileName.substr(0, fileName.lastIndexOf('.')) + '.bin';
+            if (fs.existsSync(binFile)) {
+                const bin = fs.readFileSync(binFile, 'utf8');
+                compilationOutput.bytecode = bin;
+            }
+        } else {
+            compilationOutput = JSON.parse(fs.readFileSync(fileName, 'utf8'));
+        }
+        if (compilationOutput.abi !== undefined) {
+            const abi = JSON.stringify(compilationOutput.abi);
+            const contractByteCode = compilationOutput.bytecode;
+            const projectFullPath = path.join(projectPath, projectName + extension);
 
-    // remove - and make upper case
-    function prettifyRootNameAsNamespace(value: string) {
-        return value.split('-').map(function capitalize(part) {
-            return part.charAt(0).toUpperCase() + part.slice(1);
-        }).join('');
+            if (!fs.existsSync(projectFullPath)) {
+                codegen.generateNetStandardClassLibrary(projectName, projectPath, lang);
+            }
+
+            codegen.generateAllClasses(abi,
+                contractByteCode,
+                contractName,
+                baseNamespace,
+                projectPath,
+                lang);
+        }
+    } catch (e) {
+        const outputChannel = vscode.window.createOutputChannel('solidity code generation');
+        outputChannel.clear();
+        outputChannel.appendLine('Error generating code:');
+        outputChannel.appendLine(e.message);
+        outputChannel.show();
     }
+}
+
+// remove - and make upper case
+function prettifyRootNameAsNamespace(value: string) {
+    return value.split('-').map(function capitalize(part) {
+        return part.charAt(0).toUpperCase() + part.slice(1);
+    }).join('');
+}
 
