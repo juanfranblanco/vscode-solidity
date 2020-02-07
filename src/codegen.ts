@@ -161,7 +161,7 @@ export function codeGenerateCQS(fileName: string, lang: number, args: any, diagn
         const contractName = outputPathInfo.name;
         let compilationOutput;
         if (outputPathInfo.ext === '.abi') {
-            const abi = fs.readFileSync(fileName, 'utf8');
+            const abi = JSON.parse(fs.readFileSync(fileName, 'utf8'));
             compilationOutput = { 'abi': abi, 'bytecode': '0x' };
             const binFile = fileName.substr(0, fileName.lastIndexOf('.')) + '.bin';
             if (fs.existsSync(binFile)) {
