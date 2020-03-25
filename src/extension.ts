@@ -2,11 +2,12 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { compileAllContracts } from './compileAll';
+import { outputCompilerInfo, initialiseSolidityCompilationOutput, initialiseCompiler, outputSolcReleases, selectRemoteVersion } from './compiler';
 import { compileActiveContract, initDiagnosticCollection } from './compileActive';
 import {
     generateNethereumCodeSettingsFile, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
     codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll, autoCodeGenerateAfterCompilation,
-    codeGenerateCQS, codeGenerateAllFilesFromAbiInCurrentFolder
+    codeGenerateCQS, codeGenerateAllFilesFromAbiInCurrentFolder,
 } from './codegen';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn, WorkspaceChange } from 'vscode-languageclient';
 import { lintAndfixCurrentDocument } from './linter/soliumClientFixer';
@@ -18,10 +19,14 @@ import { formatDocument } from './formatter/prettierFormatter';
 let diagnosticCollection: vscode.DiagnosticCollection;
 let mythxDiagnostic: vscode.DiagnosticCollection;
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
     diagnosticCollection = vscode.languages.createDiagnosticCollection('solidity');
-
+    initialiseSolidityCompilationOutput();
+    initialiseCompiler();
     mythxDiagnostic = vscode.languages.createDiagnosticCollection('mythx');
+    workspace.onDidChangeConfiguration(async (event) => {
+        await initialiseCompiler();
+    });
 
     context.subscriptions.push(diagnosticCollection);
 
@@ -107,6 +112,22 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.runMythx', async (fileUri: vscode.Uri) => {
         analyzeContract(mythxDiagnostic, fileUri);
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.compilerInfo', async () => {
+        await outputCompilerInfo();
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.solcReleases', async () => {
+        outputSolcReleases();
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.selectWorkspaceRemoteSolcVersion', async () => {
+        selectRemoteVersion(vscode.ConfigurationTarget.Workspace);
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.selectGlobalRemoteSolcVersion', async () => {
+        selectRemoteVersion(vscode.ConfigurationTarget.Global);
     }));
 
     context.subscriptions.push(

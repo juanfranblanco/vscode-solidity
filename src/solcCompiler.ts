@@ -1,9 +1,9 @@
 'use strict';
-import {errorToDiagnostic} from './solErrorsToDiagnostics';
+import { errorToDiagnostic } from './solErrorsToDiagnostics';
 import * as solc from 'solc';
 import * as fs from 'fs';
 import * as path from 'path';
-import {ContractCollection} from './model/contractsCollection';
+import { ContractCollection } from './model/contractsCollection';
 import { initialiseProject } from './projectService';
 
 export enum compilerType {
@@ -54,68 +54,69 @@ export class SolcCompiler {
             return true;
         }
 
-        if (this.currentCompilerType === compilerType.Remote && localInstallationPath === this.currentCompilerSetting ) {
+        if (this.currentCompilerType === compilerType.Remote && remoteInstallationVersion === this.currentCompilerSetting) {
             return true;
         }
 
         if (this.currentCompilerType === compilerType.default && !installedNodeLocally &&
-            (typeof localInstallationPath === 'undefined' || localInstallationPath === null) &&
-            (typeof remoteInstallationVersion === 'undefined' || remoteInstallationVersion === null)) {
-                return true;
+            (typeof localInstallationPath === 'undefined' || localInstallationPath === null || localInstallationPath === '') &&
+            (typeof remoteInstallationVersion === 'undefined' || remoteInstallationVersion === null || remoteInstallationVersion === '')) {
+            return true;
         }
 
         return false;
     }
 
     public intialiseCompiler(localInstallationPath: string, remoteInstallationVersion: string, enableNodeCompiler: boolean): Promise<void> {
-            return new Promise<void> ((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             try {
                 if (this.initialisedAlready(localInstallationPath, remoteInstallationVersion, enableNodeCompiler)) {
                     resolve();
-                }
-                let solidityfile = '';
-                this.enableNodeCompilerSetting = enableNodeCompiler;
-                if (enableNodeCompiler && this.isInstalledSolcUsingNode(this.rootPath)) {
-                    solidityfile = require(this.getLocalSolcNodeInstallation());
-                    this.localSolc = solc.setupMethods(solidityfile);
-                    this.currentCompilerType = compilerType.localNode;
-                    this.currentCompilerSetting = null;
-                    resolve();
                 } else {
-                    // local file
-                    if (typeof localInstallationPath !== 'undefined' && localInstallationPath !== null) {
-                        solidityfile = require(localInstallationPath);
+                    let solidityfile = '';
+                    this.enableNodeCompilerSetting = enableNodeCompiler;
+                    if (enableNodeCompiler && this.isInstalledSolcUsingNode(this.rootPath)) {
+                        solidityfile = require(this.getLocalSolcNodeInstallation());
                         this.localSolc = solc.setupMethods(solidityfile);
-                        this.currentCompilerType = compilerType.localFile;
-                        this.currentCompilerSetting = localInstallationPath;
+                        this.currentCompilerType = compilerType.localNode;
+                        this.currentCompilerSetting = null;
                         resolve();
                     } else {
-                        // remote
-                        if (typeof remoteInstallationVersion !== 'undefined' && remoteInstallationVersion !== null) {
-                            const solcService = this;
-                            solc.loadRemoteVersion(remoteInstallationVersion, function(err, solcSnapshot) {
-                                if (err) {
-                                        reject('There was an error loading the remote version: ' + remoteInstallationVersion);
-                                } else {
-                                    solcService.currentCompilerType = compilerType.Remote;
-                                    solcService.currentCompilerSetting = remoteInstallationVersion;
-                                    solcService.localSolc = solcSnapshot;
-                                    resolve();
-                                }
-                            });
-                        // default
-                        } else {
-                            this.localSolc = require('solc');
-                            this.currentCompilerType = compilerType.default;
-                            this.currentCompilerSetting = null;
+                        // local file
+                        if (typeof localInstallationPath !== 'undefined' && localInstallationPath !== null && localInstallationPath !== '') {
+                            solidityfile = require(localInstallationPath);
+                            this.localSolc = solc.setupMethods(solidityfile);
+                            this.currentCompilerType = compilerType.localFile;
+                            this.currentCompilerSetting = localInstallationPath;
                             resolve();
+                        } else {
+                            // remote
+                            if (typeof remoteInstallationVersion !== 'undefined' && remoteInstallationVersion !== null && remoteInstallationVersion !== '') {
+                                const solcService = this;
+                                solc.loadRemoteVersion(remoteInstallationVersion, function (err, solcSnapshot) {
+                                    if (err) {
+                                        reject('There was an error loading the remote version: ' + remoteInstallationVersion);
+                                    } else {
+                                        solcService.currentCompilerType = compilerType.Remote;
+                                        solcService.currentCompilerSetting = remoteInstallationVersion;
+                                        solcService.localSolc = solcSnapshot;
+                                        resolve();
+                                    }
+                                });
+                                // default
+                            } else {
+                                this.localSolc = require('solc');
+                                this.currentCompilerType = compilerType.default;
+                                this.currentCompilerSetting = null;
+                                resolve();
+                            }
                         }
                     }
                 }
             } catch (error) {
                 reject(error);
             }
-            } );
+        });
     }
 
     public getLocalSolcNodeInstallation() {
@@ -136,7 +137,7 @@ export class SolcCompiler {
     }
 
     public compileSolidityDocumentAndGetDiagnosticErrors(filePath: string, documentText: string,
-                packageDefaultDependenciesDirectory: string, packageDefaultDependenciesContractsDirectory: string ) {
+        packageDefaultDependenciesDirectory: string, packageDefaultDependenciesContractsDirectory: string) {
         if (this.isRootPathSet()) {
             const contracts = new ContractCollection();
             contracts.addContractAndResolveImports(
@@ -155,7 +156,7 @@ export class SolcCompiler {
         } else {
             const contract = {};
             contract[filePath] = documentText;
-            const output = this.compile({sources: contract });
+            const output = this.compile({ sources: contract });
             if (output.errors) {
                 return output.errors.map((error) => errorToDiagnostic(error));
             }

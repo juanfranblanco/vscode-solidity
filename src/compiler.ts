@@ -4,9 +4,9 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as fsex from 'fs-extra';
-import {SolcCompiler, compilerType} from './solcCompiler';
+import * as https from 'https';
+import { SolcCompiler, compilerType } from './solcCompiler';
 import { errorsToDiagnostics } from './solErrorsToDiaganosticsClient';
-
 
 function outputErrorsToChannel(outputChannel: vscode.OutputChannel, errors: any) {
     errors.forEach(error => {
@@ -15,56 +15,146 @@ function outputErrorsToChannel(outputChannel: vscode.OutputChannel, errors: any)
     outputChannel.show();
 }
 
-export function compile(contracts: any,
-                        diagnosticCollection: vscode.DiagnosticCollection,
-                        buildDir: string, rootDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string): Promise<Array<string>> {
+let outputChannel: vscode.OutputChannel;
+let solc: SolcCompiler;
+
+export function initialiseSolidityCompilationOutput() {
+    outputChannel = vscode.window.createOutputChannel('solidity compilation');
+}
+
+export function outputCompilerInfo() {
+    outputChannel.clear();
+    outputChannel.show();
+    outputChannel.appendLine('Retrieving compiler information:');
+    if (solc.currentCompilerType === compilerType.localFile) {
+        outputChannel.appendLine("Compiler using local file: '" + solc.currentCompilerSetting + "', solidity version: " + solc.getVersion());
+    }
+
+    if (solc.currentCompilerType === compilerType.localNode) {
+        outputChannel.appendLine('Compiler using solidity from node_modules, solidity version: ' + solc.getVersion());
+    }
+
+    if (solc.currentCompilerType === compilerType.Remote) {
+        outputChannel.appendLine("Compiler using remote version: '" + solc.currentCompilerSetting + "', solidity version: " + solc.getVersion());
+    }
+
+    if (solc.currentCompilerType === compilerType.default) {
+        outputChannel.appendLine('Compiler using default compiler (embedded on extension), solidity version: ' + solc.getVersion());
+    }
+}
+
+export async function selectRemoteVersion(target: vscode.ConfigurationTarget) {
+    const releases = await getSolcReleases();
+    const releasesToSelect: string[] = ['none', 'latest'];
+    // tslint:disable-next-line: forin
+    for (const release in releases) {
+        releasesToSelect.push(release);
+    }
+    vscode.window.showQuickPick(releasesToSelect).then((selected: string) => {
+        let updateValue = '';
+        if (selected !== 'none') {
+            if (selected === 'latest') {
+                updateValue = selected;
+            } else {
+                const value: string = releases[selected];
+                if (value !== 'undefined') {
+                    updateValue = value.replace('soljson-', '');
+                    updateValue = updateValue.replace('.js', '');
+                }
+            }
+        }
+        vscode.workspace.getConfiguration('solidity').update('compileUsingRemoteVersion', updateValue, target);
+    });
+}
+
+export function getSolcReleases(): Promise<any> {
+    const url = 'https://solc-bin.ethereum.org/bin/list.json';
+    return new Promise((resolve, reject) => {
+        https.get(url, (res) => {
+            let body = '';
+            res.on('data', (chunk) => {
+                body += chunk;
+            });
+            res.on('end', () => {
+                try {
+                    const binList = JSON.parse(body);
+                    resolve(binList.releases);
+                } catch (error) {
+                    reject(error.message);
+                }
+            });
+        }).on('error', (error) => {
+            reject(error.message);
+        });
+    });
+}
+
+export async function outputSolcReleases() {
+    outputChannel.clear();
+    outputChannel.appendLine('Retrieving solc versions ..');
+    try {
+        const releases = await getSolcReleases();
+        // tslint:disable-next-line: forin
+        for (const release in releases) {
+            outputChannel.appendLine(release + ': ' + releases[release]);
+        }
+    } catch (error) {
+        outputChannel.appendLine('Error:' + error);
+    }
+}
+
+export function initialiseCompiler(): Promise<void> {
+    const rootPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    if (typeof solc === 'undefined' || solc === null) {
+        solc = new SolcCompiler(rootPath);
+    }
+    outputChannel.clear();
+    outputChannel.show();
+    const remoteCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingRemoteVersion');
+    const localCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingLocalVersion');
+    const enableNodeCompiler = vscode.workspace.getConfiguration('solidity').get<boolean>('enableLocalNodeCompiler');
+    outputChannel.appendLine('Initialising compiler with settings:');
+    outputChannel.appendLine('Remote compiler: ' + remoteCompiler);
+    outputChannel.appendLine('Local compiler: ' + localCompiler);
+    outputChannel.appendLine('Node compiler enabled: ' + enableNodeCompiler);
+    outputChannel.appendLine('This may take a couple of seconds as we may need to download the solc binaries...');
+    return new Promise((resolve, reject) => {
+        solc.intialiseCompiler(localCompiler, remoteCompiler, enableNodeCompiler).then(() => {
+            outputCompilerInfo();
+            resolve();
+        }).catch((reason: any) => {
+            vscode.window.showWarningMessage(reason);
+            reject(reason);
+        });
+    });
+}
+
+export async function compile(contracts: any,
+    diagnosticCollection: vscode.DiagnosticCollection,
+    buildDir: string, rootDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string): Promise<Array<string>> {
     // Did we find any sol files after all?
     if (Object.keys(contracts).length === 0) {
         vscode.window.showWarningMessage('No solidity files (*.sol) found');
         return;
     }
-    const rootPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
-    const solc = new SolcCompiler(rootPath);
-    const outputChannel = vscode.window.createOutputChannel('solidity compilation');
-    outputChannel.clear();
-    outputChannel.show();
-
-    vscode.window.setStatusBarMessage('Compilation started');
-
-    const remoteCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingRemoteVersion');
-    const localCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingLocalVersion');
-    const enableNodeCompiler = vscode.workspace.getConfiguration('solidity').get<boolean>('enableLocalNodeCompiler'); 
     return new Promise((resolve, reject) => {
-        solc.intialiseCompiler(localCompiler, remoteCompiler, enableNodeCompiler).then(() => {
-            const output = solc.compile(JSON.stringify(contracts));
-
-            if (solc.currentCompilerType === compilerType.localFile) {
-                outputChannel.appendLine("Compiling using local file: '" + solc.currentCompilerSetting + "', solidity version: " + solc.getVersion() );
+        initialiseCompiler().then(() => {
+            outputCompilerInfo();
+            try {
+                const output = solc.compile(JSON.stringify(contracts));
+                resolve(processCompilationOutput(output, outputChannel, diagnosticCollection, buildDir,
+                    sourceDir, excludePath, singleContractFilePath));
+            } catch (reason) {
+                vscode.window.showWarningMessage(reason);
+                reject(reason);
             }
 
-            if (solc.currentCompilerType === compilerType.localNode) {
-                outputChannel.appendLine('Compiling using solidity from node_modules, solidity version: ' + solc.getVersion());
-            }
-
-            if (solc.currentCompilerType === compilerType.Remote) {
-                outputChannel.appendLine("Compiling using remote version: '" + solc.currentCompilerSetting  + "', solidity version: " + solc.getVersion() );
-            }
-
-            if (solc.currentCompilerType === compilerType.default) {
-                outputChannel.appendLine('Compiling using default compiler, solidity version: ' + solc.getVersion() );
-            }
-
-            resolve(processCompilationOutput(output, outputChannel, diagnosticCollection, buildDir,
-                sourceDir, excludePath, singleContractFilePath));
-        }).catch( (reason: any) => {
-            vscode.window.showWarningMessage(reason);
-            reject(reason);
         });
     });
- }
+}
 
 function processCompilationOutput(outputString: any, outputChannel: vscode.OutputChannel, diagnosticCollection: vscode.DiagnosticCollection,
-                    buildDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string): Array<string> {
+    buildDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string): Array<string> {
     const output = JSON.parse(outputString);
     if (Object.keys(output).length === 0) {
         const noOutputMessage = `No output by the compiler`;
@@ -109,14 +199,14 @@ function processCompilationOutput(outputString: any, outputChannel: vscode.Outpu
 function ensureDirectoryExistence(filePath: string) {
     const dirname = path.dirname(filePath);
     if (fs.existsSync(dirname)) {
-      return true;
+        return true;
     }
     ensureDirectoryExistence(dirname);
     fs.mkdirSync(dirname);
-  }
+}
 
 function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, sourceDir: string,
-                                                    excludePath?: string, singleContractFilePath?: string): Array<string> {
+    excludePath?: string, singleContractFilePath?: string): Array<string> {
     const rootPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
     const binPath = path.join(rootPath, buildDir);
     const compiledFiles: Array<string> = new Array<string>();
@@ -186,16 +276,16 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
 
                             let version = '';
                             try {
-                                version = JSON.parse(contract.metadata).compiler.version; 
-                            // tslint:disable-next-line: no-empty
-                            } catch {} // i could do a check for string.empty but this catches (literally :) ) all scenarios
+                                version = JSON.parse(contract.metadata).compiler.version;
+                                // tslint:disable-next-line: no-empty
+                            } catch { } // i could do a check for string.empty but this catches (literally :) ) all scenarios
 
                             const shortJsonOutput = {
                                 contractName: contractName,
                                 // tslint:disable-next-line:object-literal-sort-keys
-                                abi : contract.abi,
+                                abi: contract.abi,
                                 metadata: contract.metadata,
-                                bytecode : contract.evm.bytecode.object,
+                                bytecode: contract.evm.bytecode.object,
                                 deployedBytecode: contract.evm.deployedBytecode.object,
                                 sourceMap: contract.evm.bytecode.sourceMap,
                                 deployedSourceMap: contract.evm.deployedBytecode.sourceMap,
@@ -205,8 +295,8 @@ function writeCompilationOutputToBuildDirectory(output: any, buildDir: string, s
                                     version: version,
                                 },
                                 ast: output.sources[source].ast,
-                                functionHashes : contract.evm.methodIdentifiers,
-                                gasEstimates : contract.evm.gasEstimates,
+                                functionHashes: contract.evm.methodIdentifiers,
+                                gasEstimates: contract.evm.gasEstimates,
 
                             };
 

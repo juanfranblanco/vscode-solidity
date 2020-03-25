@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.70",
+  "version": "0.0.71",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.30.0"
@@ -61,14 +61,14 @@
     "mythxjs": "1.3.9",
     "nethereum-codegen": "^1.0.12",
     "require-from-string": "^2.0.2",
-    "solc": "^0.6.1",
-    "solhint": "^2.3.0",
+    "solc": "^0.6.4",
+    "solhint": "^2.3.1",
     "solium": "^1.2.5",
     "solparse": "^2.2.8",
     "vscode-languageclient": "^5.2.1",
     "vscode-languageserver": "^5.2.1",
-    "prettier": "1.19.1",
-    "prettier-plugin-solidity": "1.0.0-alpha.36",
+    "prettier": "^2.0.2",
+    "prettier-plugin-solidity": "1.0.0-alpha.47",
     "yaml-js": "0.2.3"
   },
   "devDependencies": {
@@ -99,35 +99,24 @@
       "title": "Solidity configuration",
       "properties": {
         "solidity.enableLocalNodeCompiler": {
-          "type": [
-            "boolean",
-            "null"
-          ],
+          "type": "boolean",
           "default": true,
-          "description": "If enabled (default true) and a solc version is found in the workspace node_modules, it will use this version of solc'"
+          "description": "If enabled (default true) and a solc version is found in the workspace folder 'node_modules', it will use that version of solc, overriding local or remote settings'"
         },
         "solidity.compileUsingRemoteVersion": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": null,
-          "description": "Compile using a remote version instead of the current one, for example: 'latest' or 'v0.4.3+commit.2353da71'"
+          "type": "string",
+          "default": "",
+          "description": "Compile downloading a remote solc binary file, for example: 'latest' or 'v0.4.3+commit.2353da71', use the command 'Solidity: Get solidity releases' to list all versions"
         },
         "solidity.compilerOptimization": {
-          "type": [
-            "number"
-          ],
+          "type": "number",
           "default": 200,
-          "description": "Optimize for how many times you intend to run the code.Lower values will optimize more for initial deployment cost, higher values will optimize more for high-frequency usage."
+          "description": "Optimize for how many times you intend to run the code. Lower values will optimize more for initial deployment cost, higher values will optimize more for high-frequency usage."
         },
         "solidity.compileUsingLocalVersion": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": null,
-          "description": "Compile using a local version instead of the current one, for example: 'C://v0.4.3+commit.2353da71.js'"
+          "type": "string",
+          "default": "",
+          "description": "Compile using a local solc binary file, please include the path of the file if wanted: 'C://v0.4.3+commit.2353da71.js'"
         },
         "solidity.linter": {
           "type": [
@@ -170,32 +159,24 @@
           "description": "Solium linting validation rules"
         },
         "solidity.enabledAsYouTypeCompilationErrorCheck": {
-          "type": [
-            "boolean"
-          ],
+          "type": "boolean",
           "default": true,
           "description": "Enables as you type compilation of the document and error highlighting"
         },
         "solidity.validationDelay": {
-          "type": [
-            "number"
-          ],
+          "type": "number",
           "default": 1500,
           "description": "Delay to trigger the validation of the changes of the current document (compilation, solium)"
         },
         "solidity.packageDefaultDependenciesDirectory": {
-          "type": [
-            "string"
-          ],
+          "type": "string",
           "default": "node_modules",
-          "description": "Default directory for Packages Dependencies, i.e: 'node_modules', 'lib'"
+          "description": "Default directory for Packages Dependencies, i.e: 'node_modules', 'lib'. This is used to avoid typing imports with that path prefix"
         },
         "solidity.packageDefaultDependenciesContractsDirectory": {
-          "type": [
-            "string"
-          ],
+          "type": "string",
           "default": "contracts",
-          "description": "Default directory where the Package Dependency store its contracts, i.e: 'src', 'contracts', or just a blank string ''"
+          "description": "Default directory where the Package Dependency store its contracts, i.e: 'src', 'contracts', or just a blank string '', this is used to avoid typing imports with subfolder paths"
         }
       }
     },
@@ -220,6 +201,14 @@
       {
         "command": "solidity.compile",
         "title": "Solidity: Compile All"
+      },
+      {
+        "command": "solidity.compilerInfo",
+        "title": "Solidity: Compiler Information"
+      },
+      {
+        "command": "solidity.solcReleases",
+        "title": "Solidity: Get solidity releases"
       },
       {
         "command": "solidity.codegenNethereumCodeGenSettings",
@@ -278,6 +267,14 @@
         "title": "Solidity: Fix document rules using Solium"
       },
       {
+        "command": "solidity.selectWorkspaceRemoteSolcVersion",
+        "title": "Solidity: Change workspace compiler version (Remote)"
+      },
+      {
+        "command": "solidity.selectGlobalRemoteSolcVersion",
+        "title": "Solidity: Change global compiler version (Remote)"
+      },
+      {
         "command": "solidity.runMythx",
         "title": "Solidity: Analyze Smart Contract with MythX"
       }
@@ -297,11 +294,11 @@
           "command": "solidity.codegenFSharpProject"
         },
         {
-          "when": "editorTextFocus && editorLangId == 'solidity'",
+          "when": "editorLangId == 'solidity'",
           "command": "solidity.compile.active"
         },
         {
-          "when": "editorTextFocus && editorLangId == 'solidity'",
+          "when": "editorLangId == 'solidity'",
           "command": "solidity.compile"
         }
       ],
@@ -309,11 +306,31 @@
         {
           "when": "editorLangId == 'solidity'",
           "command": "solidity.compile.active",
-          "group": "2_solidity"
+          "group": "1_solidity"
         },
         {
           "when": "editorLangId == 'solidity'",
           "command": "solidity.compile",
+          "group": "1_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.compilerInfo",
+          "group": "1_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.solcReleases",
+          "group": "2_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.selectGlobalRemoteSolcVersion",
+          "group": "2_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.selectWorkspaceRemoteSolcVersion",
           "group": "2_solidity"
         },
         {
