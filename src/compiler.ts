@@ -21,6 +21,10 @@ let solc: SolcCompiler;
 export function initialiseSolidityCompilationOutput() {
     outputChannel = vscode.window.createOutputChannel('solidity compilation');
 }
+export function outputCompilerInfoEnsuringInitialised() {
+    // initialise compiler outputs the information and validates existing settings
+    initialiseCompiler();
+}
 
 export function outputCompilerInfo() {
     outputChannel.clear();
@@ -139,7 +143,6 @@ export async function compile(contracts: any,
     }
     return new Promise((resolve, reject) => {
         initialiseCompiler().then(() => {
-            outputCompilerInfo();
             try {
                 const output = solc.compile(JSON.stringify(contracts));
                 resolve(processCompilationOutput(output, outputChannel, diagnosticCollection, buildDir,

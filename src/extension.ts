@@ -2,7 +2,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { compileAllContracts } from './compileAll';
-import { outputCompilerInfo, initialiseSolidityCompilationOutput, initialiseCompiler, outputSolcReleases, selectRemoteVersion } from './compiler';
+import { outputCompilerInfoEnsuringInitialised, initialiseSolidityCompilationOutput, initialiseCompiler, outputSolcReleases, selectRemoteVersion } from './compiler';
 import { compileActiveContract, initDiagnosticCollection } from './compileActive';
 import {
     generateNethereumCodeSettingsFile, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
@@ -20,12 +20,18 @@ let diagnosticCollection: vscode.DiagnosticCollection;
 let mythxDiagnostic: vscode.DiagnosticCollection;
 
 export async function activate(context: vscode.ExtensionContext) {
+    const ws: WorkspaceFolder[] | undefined = workspace.workspaceFolders;
     diagnosticCollection = vscode.languages.createDiagnosticCollection('solidity');
     initialiseSolidityCompilationOutput();
-    initialiseCompiler();
+
     mythxDiagnostic = vscode.languages.createDiagnosticCollection('mythx');
+
     workspace.onDidChangeConfiguration(async (event) => {
-        await initialiseCompiler();
+        if (event.affectsConfiguration('solidity.enableLocalNodeCompiler') ||
+            event.affectsConfiguration('solidity.compileUsingRemoteVersion') ||
+            event.affectsConfiguration('solidity.compileUsingLocalVersion')) {
+            await initialiseCompiler();
+        }
     });
 
     context.subscriptions.push(diagnosticCollection);
@@ -37,7 +43,6 @@ export async function activate(context: vscode.ExtensionContext) {
         autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection);
         return compiledResults;
     }));
-
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile', () => {
         compileAllContracts(diagnosticCollection);
@@ -57,7 +62,6 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenNethereumCodeGenSettings', (args: any[]) => {
         generateNethereumCodeSettingsFile();
     }));
-
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenVbNetProject', (args: any[]) => {
         codeGenerateNethereumCQSVbNet(args, diagnosticCollection);
@@ -93,7 +97,6 @@ export async function activate(context: vscode.ExtensionContext) {
         codeGenerateNethereumCQSFSharpAll(args, diagnosticCollection);
     }));
 
-
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenCSharpProjectAllAbiCurrent', (args: any[]) => {
         codeGenerateAllFilesFromAbiInCurrentFolder(0, args, diagnosticCollection);
     }));
@@ -115,7 +118,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compilerInfo', async () => {
-        await outputCompilerInfo();
+        await outputCompilerInfoEnsuringInitialised();
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.solcReleases', async () => {
@@ -134,11 +137,10 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.languages.registerDocumentFormattingEditProvider('solidity', {
             provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.TextEdit[] {
                 return formatDocument(document, context);
-            }
+            },
         }));
 
     const serverModule = path.join(__dirname, 'server.js');
-
     const serverOptions: ServerOptions = {
         debug: {
             module: serverModule,
@@ -167,9 +169,8 @@ export async function activate(context: vscode.ExtensionContext) {
         },
     };
 
-    const ws: WorkspaceFolder[] | undefined = workspace.workspaceFolders;
-
     let clientDisposable;
+
     if (ws) {
         clientDisposable = new LanguageClient(
             'solidity',
@@ -177,7 +178,6 @@ export async function activate(context: vscode.ExtensionContext) {
             serverOptions,
             clientOptions).start();
     }
-
     // Push the disposable to the context's subscriptions so that the
     // client can be deactivated on extension deactivation
     context.subscriptions.push(clientDisposable);
