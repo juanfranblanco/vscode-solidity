@@ -200,8 +200,8 @@ export function GetCompletionKeywords(): CompletionItem[] {
     const completionItems = [];
     const keywords = [ 'modifier', 'mapping', 'break', 'continue', 'delete', 'else', 'for',
     'if', 'new', 'return', 'returns', 'while', 'using',
-    'private', 'public', 'external', 'internal', 'payable', 'view', 'pure', 'case', 'do', 'else', 'finally',
-    'in', 'instanceof', 'return', 'throw', 'try', 'typeof', 'yield', 'void'] ;
+    'private', 'public', 'external', 'internal', 'payable', 'nonpayable', 'view', 'pure', 'case', 'do', 'else', 'finally',
+    'in', 'instanceof', 'return', 'throw', 'try', 'typeof', 'yield', 'void', 'virtual', 'override'] ;
     keywords.forEach(unit => {
         const completionItem =  CompletionItem.create(unit);
         completionItem.kind = CompletionItemKind.Keyword;
@@ -243,7 +243,7 @@ export function GeCompletionUnits(): CompletionItem[] {
         if (unit !== 'years') {
             completionItem.detail = unit + ': time unit';
         } else {
-            completionItem.detail = 'DEPRICATED: ' + unit + ': time unit';
+            completionItem.detail = 'DEPRECATED: ' + unit + ': time unit';
         }
         completionItems.push(completionItem);
     });
