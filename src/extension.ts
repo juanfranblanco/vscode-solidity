@@ -2,7 +2,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { compileAllContracts } from './compileAll';
-import { outputCompilerInfoEnsuringInitialised, initialiseSolidityCompilationOutput, initialiseCompiler, outputSolcReleases, selectRemoteVersion } from './compiler';
+import { Compiler } from './compiler';
 import { compileActiveContract, initDiagnosticCollection } from './compileActive';
 import {
     generateNethereumCodeSettingsFile, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
@@ -18,14 +18,22 @@ import { formatDocument } from './formatter/prettierFormatter';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 let mythxDiagnostic: vscode.DiagnosticCollection;
+let compiler: Compiler;
 
 export async function activate(context: vscode.ExtensionContext) {
     const ws: WorkspaceFolder[] | undefined = workspace.workspaceFolders;
     diagnosticCollection = vscode.languages.createDiagnosticCollection('solidity');
-    initialiseSolidityCompilationOutput();
-
+    compiler = new Compiler(context.extensionPath);
     mythxDiagnostic = vscode.languages.createDiagnosticCollection('mythx');
+    
+    /*
+    const configuration = vscode.workspace.getConfiguration('solidity');
+    const cacheConfiguration = configuration.get<string>('solcCache');
+    if (typeof cacheConfiguration === 'undefined' || cacheConfiguration === null) {
+        configuration.update('solcCache', context.extensionPath, vscode.ConfigurationTarget.Global);
+    }*/
 
+    /* WSL is affected by this
     workspace.onDidChangeConfiguration(async (event) => {
         if (event.affectsConfiguration('solidity.enableLocalNodeCompiler') ||
             event.affectsConfiguration('solidity.compileUsingRemoteVersion') ||
@@ -33,19 +41,20 @@ export async function activate(context: vscode.ExtensionContext) {
             await initialiseCompiler();
         }
     });
+    */
 
     context.subscriptions.push(diagnosticCollection);
 
     initDiagnosticCollection(diagnosticCollection);
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.active', async () => {
-        const compiledResults = await compileActiveContract();
+        const compiledResults = await compileActiveContract(compiler);
         autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection);
         return compiledResults;
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile', () => {
-        compileAllContracts(diagnosticCollection);
+        compileAllContracts(compiler, diagnosticCollection);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenCSharpProject', (args: any[]) => {
@@ -53,7 +62,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compileAndCodegenCSharpProject', async (args: any[]) => {
-        const compiledResults = await compileActiveContract();
+        const compiledResults = await compileActiveContract(compiler);
         compiledResults.forEach(file => {
             codeGenerateCQS(file, 0, args, diagnosticCollection);
         });
@@ -68,7 +77,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compileAndCodegenVbNetProject', async (args: any[]) => {
-        const compiledResults = await compileActiveContract();
+        const compiledResults = await compileActiveContract(compiler);
         compiledResults.forEach(file => {
             codeGenerateCQS(file, 1, args, diagnosticCollection);
         });
@@ -79,7 +88,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compileAndCodegenFSharpProject', async (args: any[]) => {
-        const compiledResults = await compileActiveContract();
+        const compiledResults = await compileActiveContract(compiler);
         compiledResults.forEach(file => {
             codeGenerateCQS(file, 3, args, diagnosticCollection);
         });
@@ -114,23 +123,23 @@ export async function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.runMythx', async (fileUri: vscode.Uri) => {
-        analyzeContract(mythxDiagnostic, fileUri);
+        analyzeContract(compiler, mythxDiagnostic, fileUri);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compilerInfo', async () => {
-        await outputCompilerInfoEnsuringInitialised();
+        await compiler.outputCompilerInfoEnsuringInitialised();
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.solcReleases', async () => {
-        outputSolcReleases();
+        compiler.outputSolcReleases();
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.selectWorkspaceRemoteSolcVersion', async () => {
-        selectRemoteVersion(vscode.ConfigurationTarget.Workspace);
+        compiler.selectRemoteVersion(vscode.ConfigurationTarget.Workspace);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.selectGlobalRemoteSolcVersion', async () => {
-        selectRemoteVersion(vscode.ConfigurationTarget.Global);
+        compiler.selectRemoteVersion(vscode.ConfigurationTarget.Global);
     }));
 
     context.subscriptions.push(
@@ -167,6 +176,7 @@ export async function activate(context: vscode.ExtensionContext) {
             // Notify the server about file changes to '.sol.js files contain in the workspace (TODO node, linter)
             // fileEvents: vscode.workspace.createFileSystemWatcher('**/.sol.js'),
         },
+        initializationOptions: context.extensionPath
     };
 
     let clientDisposable;

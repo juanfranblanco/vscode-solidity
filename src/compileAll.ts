@@ -2,12 +2,12 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import {compile} from './compiler';
+import {Compiler} from './compiler';
 import {ContractCollection} from './model/contractsCollection';
 import { initialiseProject } from './projectService';
 import { formatPath } from './util';
 
-export function compileAllContracts(diagnosticCollection: vscode.DiagnosticCollection) {
+export function compileAllContracts(compiler: Compiler, diagnosticCollection: vscode.DiagnosticCollection) {
 
     // Check if is folder, if not stop we need to output to a bin folder on rootPath
     if (vscode.workspace.workspaceFolders[0] === undefined) {
@@ -58,7 +58,7 @@ export function compileAllContracts(diagnosticCollection: vscode.DiagnosticColle
         });
         const sourceDirPath = formatPath(project.projectPackage.getSolSourcesAbsolutePath());
         const packagesPath = formatPath(project.packagesDir);
-        compile(contractsCollection.getDefaultContractsForCompilation(compilationOptimisation),
+        compiler.compile(contractsCollection.getDefaultContractsForCompilation(compilationOptimisation),
                 diagnosticCollection,
                 project.projectPackage.build_dir,
                 project.projectPackage.absoluletPath,

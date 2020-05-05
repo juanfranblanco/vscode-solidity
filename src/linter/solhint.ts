@@ -70,6 +70,7 @@ class ValidationConfig {
 
         return {
             extends: extendsConfig,
+            plugins : this.fileConfig.plugins,
             rules: Object.assign(
                 ValidationConfig.DEFAULT_RULES,
                 this.ideRules,

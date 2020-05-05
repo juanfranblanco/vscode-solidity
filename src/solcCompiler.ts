@@ -3,6 +3,7 @@ import { errorToDiagnostic } from './solErrorsToDiagnostics';
 import * as solc from 'solc';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as https from 'https';
 import { ContractCollection } from './model/contractsCollection';
 import { initialiseProject } from './projectService';
 
@@ -20,6 +21,11 @@ export class SolcCompiler {
     public currentCompilerSetting: string;
     public enableNodeCompilerSetting: boolean;
     private localSolc: any;
+    private solcCachePath: string;
+
+    public setSolcCache(solcCachePath: string): void {
+        this.solcCachePath = solcCachePath;
+    }
 
     public getVersion(): string {
         return this.localSolc.version();
@@ -93,7 +99,7 @@ export class SolcCompiler {
                             // remote
                             if (typeof remoteInstallationVersion !== 'undefined' && remoteInstallationVersion !== null && remoteInstallationVersion !== '') {
                                 const solcService = this;
-                                solc.loadRemoteVersion(remoteInstallationVersion, function (err, solcSnapshot) {
+                                this.loadRemoteWasmVersion(remoteInstallationVersion, function (err, solcSnapshot) {
                                     if (err) {
                                         reject('There was an error loading the remote version: ' + remoteInstallationVersion);
                                     } else {
@@ -162,5 +168,32 @@ export class SolcCompiler {
             }
         }
         return [];
+    }
+
+    private loadRemoteWasmVersion (versionString, cb) {
+        const pathVersion = path.resolve(path.join(this.solcCachePath, 'soljson-' + versionString + '.js'));
+        if (fs.existsSync(pathVersion) && versionString !== 'latest') {
+            const solidityfile = require(pathVersion);
+                const solcConfigured = solc.setupMethods(solidityfile);
+                cb(null, solcConfigured);
+        } else {
+            const file = fs.createWriteStream(pathVersion);
+            // the files have a redirection.. so we are not using the wasm path for the time being until i check with Christian
+            const url = 'https://raw.githubusercontent.com/ethereum/solc-bin/gh-pages/bin/soljson-' + versionString + '.js';
+            https.get(url, function (response) {
+                if (response.statusCode !== 200) {
+                cb(new Error('Error retrieving binary: ' + response.statusMessage));
+                } else {
+                response.pipe(file);
+                response.on('end', function () {
+                    const solidityfile = require(pathVersion);
+                    const solcConfigured = solc.setupMethods(solidityfile);
+                    cb(null, solcConfigured);
+                });
+                }
+            }).on('error', function (error) {
+                cb(error);
+            });
+        }
     }
 }

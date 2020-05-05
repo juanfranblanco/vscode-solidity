@@ -7,6 +7,7 @@ import {  getFileContent } from '../utils/getFileContent';
 import { getAstData } from '../utils/getAstData';
 import { getContractName } from "../utils/getContractName";
 import {compileActiveContract} from '../../../compileActive';
+import {Compiler} from '../../../compiler';
 
 const { window } = vscode;
 
@@ -18,9 +19,9 @@ const contractNameOption: vscode.InputBoxOptions = {
     prompt: 'Contract Name: ',
 };
 
-export async function analyzeContract(diagnosticCollection: vscode.DiagnosticCollection, fileUri: vscode.Uri): Promise<void> {
+export async function analyzeContract(compiler: Compiler, diagnosticCollection: vscode.DiagnosticCollection, fileUri: vscode.Uri): Promise<void> {
     let contractName;
-    await compileActiveContract().then(async (compiledResults: string[]) => {
+    await compileActiveContract(compiler).then(async (compiledResults: string[]) => {
         if (!compiledResults) {
             throw new Error(`MythX error with compilation.`);
         }

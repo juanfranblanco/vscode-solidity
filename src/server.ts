@@ -60,6 +60,7 @@ let enableNodeCompiler = true;
 let solhintDefaultRules = {};
 let soliumDefaultRules = {};
 let validationDelay = 1500;
+let solcCachePath = '';
 
 // flags to avoid trigger concurrent validations (compiling is slow)
 let validatingDocument = false;
@@ -226,7 +227,9 @@ documents.listen(connection);
 
 connection.onInitialize((result): InitializeResult => {
     rootPath = result.rootPath;
+    solcCachePath = result.initializationOptions;
     solcCompiler = new SolcCompiler(rootPath);
+    solcCompiler.setSolcCache(solcCachePath);
 
     return {
         capabilities: {

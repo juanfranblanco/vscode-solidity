@@ -1,7 +1,7 @@
 'use strict';
 import * as vscode from 'vscode';
 import * as path from 'path';
-import {compile} from './compiler';
+import {Compiler} from './compiler';
 import {ContractCollection} from './model/contractsCollection';
 import { initialiseProject } from './projectService';
 import { formatPath } from './util';
@@ -13,7 +13,7 @@ export function initDiagnosticCollection(diagnostics: vscode.DiagnosticCollectio
     diagnosticCollection = diagnostics;
 }
 
-export function compileActiveContract(): Promise<Array<string>> {
+export function compileActiveContract(compiler: Compiler): Promise<Array<string>> {
     const editor = vscode.window.activeTextEditor;
 
     if (!editor) {
@@ -42,7 +42,7 @@ export function compileActiveContract(): Promise<Array<string>> {
     const contract = contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
     const packagesPath = formatPath(project.packagesDir);
 
-    return compile(contractsCollection.getDefaultContractsForCompilation(compilationOptimisation),
+    return compiler.compile(contractsCollection.getDefaultContractsForCompilation(compilationOptimisation),
             diagnosticCollection,
             project.projectPackage.build_dir,
             project.projectPackage.absoluletPath,
