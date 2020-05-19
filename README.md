@@ -50,10 +50,19 @@ npm install solc
 
 **Note:** The above compilers, have an order of preference when using different settings are: Local node installation (Npm / node installation) will be used first, Local file second and finally remote. 
 
-So if you just want to use the latest version of solidity for all the projects and have online connectivity all the time, use the setting:
-```"solidity.compileUsingRemoteVersion" : "latest"```
+If you are working on an specific project using an older version, you can use npm install locally to target that specefic version, without affecting the global setting.
 
-But if you are working on an specific project using an older version, you can use npm install locally to target that specefic version, without affecting the global setting.
+But if you want to use the latest version of solidity for all the projects and have online connectivity all the time, use the setting:
+
+```json
+"solidity.compileUsingRemoteVersion" : "latest"
+```
+
+In case one of your dependencies has a nested dependency on a solc version, effectively breakign the remote version setting from above, you have to disable the node compiler like so:
+
+```json
+"solidity.enableLocalNodeCompiler": false
+```
 
 ## Compiler optimization
 Optimize for how many times you intend to run the code. Lower values will optimize more for initial deployment cost, higher values will optimize more for high-frequency usage. The default value is **200**.
