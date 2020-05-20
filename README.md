@@ -58,7 +58,7 @@ But if you want to use the latest version of solidity for all the projects and h
 "solidity.compileUsingRemoteVersion" : "latest"
 ```
 
-In case one of your dependencies has a nested dependency on a solc version, effectively breakign the remote version setting from above, you have to disable the node compiler like so:
+In case one of your dependencies has a nested dependency on a solc version, effectively breaking the remote version setting from above, you have to disable the node compiler like so:
 
 ```json
 "solidity.enableLocalNodeCompiler": false
