@@ -70,7 +70,7 @@ class ValidationConfig {
 
         return {
             extends: extendsConfig,
-            plugins : this.fileConfig.plugins,
+           // plugins : this.fileConfig.plugins, //removed plugins as it crashes the extension until this is fully supported path etc loading in solhint
             rules: Object.assign(
                 ValidationConfig.DEFAULT_RULES,
                 this.ideRules,

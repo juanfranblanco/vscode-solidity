@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.73",
+  "version": "0.0.74",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.30.0"
@@ -62,9 +62,9 @@
     "mythxjs": "1.3.9",
     "nethereum-codegen": "^1.0.12",
     "prettier": "^2.0.2",
-    "prettier-plugin-solidity": "1.0.0-alpha.51",
+    "prettier-plugin-solidity": "1.0.0-alpha.54",
     "require-from-string": "^2.0.2",
-    "solc": "^0.6.8",
+    "solc": "^0.6.9",
     "solhint": "^3.0.0",
     "solium": "^1.2.5",
     "solparse": "^2.2.8",
