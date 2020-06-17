@@ -11,21 +11,18 @@ import {
 } from './codegen';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn, WorkspaceChange } from 'vscode-languageclient';
 import { lintAndfixCurrentDocument } from './linter/soliumClientFixer';
-import { analyzeContract } from './analysers/mythx/commands/analyzeContract';
 // tslint:disable-next-line:no-duplicate-imports
 import { workspace, WorkspaceFolder } from 'vscode';
 import { formatDocument } from './formatter/prettierFormatter';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
-let mythxDiagnostic: vscode.DiagnosticCollection;
 let compiler: Compiler;
 
 export async function activate(context: vscode.ExtensionContext) {
     const ws: WorkspaceFolder[] | undefined = workspace.workspaceFolders;
     diagnosticCollection = vscode.languages.createDiagnosticCollection('solidity');
     compiler = new Compiler(context.extensionPath);
-    mythxDiagnostic = vscode.languages.createDiagnosticCollection('mythx');
-    
+
     /*
     const configuration = vscode.workspace.getConfiguration('solidity');
     const cacheConfiguration = configuration.get<string>('solcCache');
@@ -122,10 +119,6 @@ export async function activate(context: vscode.ExtensionContext) {
         lintAndfixCurrentDocument();
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.runMythx', async (fileUri: vscode.Uri) => {
-        analyzeContract(compiler, mythxDiagnostic, fileUri);
-    }));
-
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compilerInfo', async () => {
         await compiler.outputCompilerInfoEnsuringInitialised();
     }));
@@ -176,7 +169,7 @@ export async function activate(context: vscode.ExtensionContext) {
             // Notify the server about file changes to '.sol.js files contain in the workspace (TODO node, linter)
             // fileEvents: vscode.workspace.createFileSystemWatcher('**/.sol.js'),
         },
-        initializationOptions: context.extensionPath
+        initializationOptions: context.extensionPath,
     };
 
     let clientDisposable;
