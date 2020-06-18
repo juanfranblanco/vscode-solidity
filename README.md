@@ -169,11 +169,7 @@ Solium is the default linter of supported by the extesion https://github.com/dua
 soliumrc.json support will be included in the near future, for specific project linting requirements.
 
 # Analysis of smart contracts with Mythx
-We're no longer supporting MythX scans through vscode-solidity as [MythX is now available as its own standalone extension](https://marketplace.visualstudio.com/items?itemName=MythX.mythxvsc), which provides:
-- Smart contract compilation (via the Solidity VS Code extension)
-- AST extraction from compiled source
-- Submission of analysis
-- Displaying analysis result in VS Code in a linting fashion
+Mythx analysis tool, has been moved to its own stand alone extension, [please download it here](https://marketplace.visualstudio.com/items?itemName=MythX.mythxvsc).
 
 
 # Formatting using Prettier and the Prettier Solidity Plugin
