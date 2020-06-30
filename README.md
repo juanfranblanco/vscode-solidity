@@ -14,7 +14,6 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
 * Code generation using https://github.com/Nethereum/Nethereum, it includes currently the default template for Nethereum service, dtos generation. 
   (Open 'contractName.json' after compilation from the bin folder. Press F1 and press Solidity: Code generate from compilation output..)
   Auto generation of Nethereun files on compilation
-* Analysis of smart contracts using Mythx
 * Linting using Solhint or Solium
 
 # Instructions
@@ -170,18 +169,9 @@ Solium is the default linter of supported by the extesion https://github.com/dua
 soliumrc.json support will be included in the near future, for specific project linting requirements.
 
 # Analysis of smart contracts with Mythx
-You can analyse your smart contracts using Mythx, to start the analysis just open a smart contract and press F1 or Ctrl+Shift+P
-and use the command "Solidity: Analyse smart contract with Mythx"
+Mythx analysis tool, has been moved to its own stand alone extension, [please download it here](https://marketplace.visualstudio.com/items?itemName=MythX.mythxvsc).
 
-By default the extension will use the trial version, but if you have already a Mythx account you can enter your details using the following settings:
 
-```json
-    "mythxvsc.ethAddress": "0x0000000000000000000000000000000000000000",
-    "mythxvsc.jwtAccess": "",
-    "mythxvsc.jwtRefresh": "",
-    "mythxvsc.password": "trial",
-    
-```
 # Formatting using Prettier and the Prettier Solidity Plugin
 Formatting is provided thanks to the Prettier plugin for Solidity for more info check https://prettier.io/ and https://github.com/prettier-solidity/prettier-plugin-solidity
 

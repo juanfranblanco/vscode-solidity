@@ -41,8 +41,7 @@
     "onCommand:solidity.codegenCSharpProjectAll",
     "onCommand:solidity.codegenVbNetProjectAll",
     "onCommand:solidity.codegenFSharpProjectAll",
-    "onCommand:solidity.fixDocument",
-    "onCommand:solidity.runMythX"
+    "onCommand:solidity.fixDocument"
   ],
   "main": "./out/src/extension",
   "scripts": {
@@ -59,7 +58,6 @@
     "find-cache-dir": "^2.1.0",
     "fs-extra": "^4.0.3",
     "mkdirp": "^0.5.1",
-    "mythxjs": "1.3.9",
     "nethereum-codegen": "^1.0.12",
     "prettier": "^2.0.2",
     "prettier-plugin-solidity": "1.0.0-alpha.54",
@@ -283,10 +281,6 @@
       {
         "command": "solidity.selectGlobalRemoteSolcVersion",
         "title": "Solidity: Change global compiler version (Remote)"
-      },
-      {
-        "command": "solidity.runMythx",
-        "title": "Solidity: Analyze Smart Contract with MythX"
       }
     ],
     "menus": {
