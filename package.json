@@ -62,12 +62,13 @@
     "prettier": "^2.0.2",
     "prettier-plugin-solidity": "1.0.0-alpha.54",
     "require-from-string": "^2.0.2",
-    "solc": "^0.6.9",
+    "solc": "^0.6.11",
     "solhint": "^3.0.0",
     "solium": "^1.2.5",
     "solparse": "^2.2.8",
     "vscode-languageclient": "^5.2.1",
     "vscode-languageserver": "^5.2.1",
+    "@solidity-parser/parser": "^0.6.2",
     "yaml-js": "0.2.3"
   },
   "devDependencies": {

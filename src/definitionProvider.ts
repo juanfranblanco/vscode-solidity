@@ -1,12 +1,16 @@
 import * as path from 'path';
 import * as solparse from 'solparse';
 import * as vscode from 'vscode-languageserver';
+import * as soliparse from '@solidity-parser/parser';
+
 import Uri from 'vscode-uri';
 
 import { Contract } from './model/contract';
 import { ContractCollection } from './model/contractsCollection';
 import { Project } from './model/project';
 import { initialiseProject } from './projectService';
+import { Console } from 'console';
+import { Location } from 'vscode';
 
 export class SolidityDefinitionProvider {
   private rootPath: string;
@@ -31,6 +35,11 @@ export class SolidityDefinitionProvider {
       );
     }
   }
+
+  public isNodePartOfOffset(node: soliparse.BaseASTNode, offset: number): boolean {
+     return node.range[0] <= offset && node.range[1] >= offset;
+  }
+
 
   /**
    * Provide definition for cursor position in Solidity codebase. It calculate offset from cursor position and find the
@@ -61,9 +70,85 @@ export class SolidityDefinitionProvider {
     const contract = contracts.contracts[0];
 
     const offset = document.offsetAt(position);
-    const result = solparse.parse(documentText);
-    const element = this.findElementByOffset(result.body, offset);
+    let locationReturn = null;
+    const result = soliparse.parse(documentText, { loc: true, range: true, tolerant: true});
+    soliparse.visit(result, {
+      ImportDirective : (node) => {
+          if (this.isNodePartOfOffset(node, offset)) {
+            locationReturn =
+              vscode.Location.create(
+                Uri.file(this.resolveImportPath(node.path, contract)).toString(),
+                vscode.Range.create(0, 0, 0, 0),
+              );
+              return false;
+          }
+      },
+      // tslint:disable-next-line:object-literal-sort-keys
+      Identifier: (node) => {
+        if (this.isNodePartOfOffset(node, offset))  {
+           locationReturn = this.findDirectImport2(document, result, node.name, null, contracts).location;
+           return false;
+        }
+      },
+      VariableDeclaration: (node) => {
+        if (this.isNodePartOfOffset(node, offset)) {
+         // locationReturn = this.findDirectImport2(document, result, node.typeName.namePath, null, contracts).location;
+        }
+      },
+      ContractDefinition: (node) => {
+        if (this.isNodePartOfOffset(node, offset))  {
+            const inherited = node.baseContracts.find(x => this.isNodePartOfOffset(x, offset));
+            if (inherited !== undefined) {
+               const contractName = inherited.baseName.namePath;
+               locationReturn = this.findDirectImport2(
+                document,
+                result,
+                contractName,
+                'ContractDefinition',
+                contracts,
+              ).location;
+              return false;
+            } else {
+              const subNode = node.subNodes.find(x => this.isNodePartOfOffset(x, offset));
+              if (subNode !== undefined) {
+                switch (subNode.type)  {
+                  case 'FunctionDefinition' : {
+                      const parameterNode = subNode.parameters.find(x => this.isNodePartOfOffset(x, offset));
+                      if (parameterNode !== undefined) {
+                          if (this.isNodePartOfOffset(parameterNode.typeName, offset)) {
+                            if (parameterNode.typeName.type === 'UserDefinedTypeName') {
+                                  // this should be a struct or a enume
+                                  locationReturn = this.findDirectImport2(document, result, parameterNode.typeName.namePath, null, contracts).location;
+                                  return false;
+                             }
+                          }
+                      } else {
+                        const returnParemeterNode = subNode.returnParameters.find(x => this.isNodePartOfOffset(x, offset));
+                        if (returnParemeterNode !== undefined) {
+                          if (this.isNodePartOfOffset(returnParemeterNode.typeName, offset)) {
+                              if (returnParemeterNode.typeName.type === 'UserDefinedTypeName') {
+                                // this should be a struct or a enume
+                                locationReturn = this.findDirectImport2(document, result, returnParemeterNode.typeName.namePath, null, contracts).location;
+                                return false;
+                              }
+                            }
+                        } else {
+                            const statement = subNode.body.statements.find(x => this.isNodePartOfOffset(x, offset));
+                        }
+                      }
 
+                    }
+                }
+              }
+              const m = subNode;
+            }
+          }
+        },
+      },
+    );
+    const element = undefined; // this.findElementByOffset(result, offset);
+    return locationReturn;
+ /*
     if (element !== undefined) {
       switch (element.type) {
         case 'ImportStatement':
@@ -118,8 +203,202 @@ export class SolidityDefinitionProvider {
         default:
           break;
       }
+    } */
+  }
+
+  /*
+  * This is used to find either Contract or Library statement to define `is`, `using`, or member accessor.
+  *
+  * @private
+  * @param {vscode.TextDocument} document document where statements belong, used to convert offset to position
+  * @param {Array<any>} statements list of statements to search through
+  * @param {string} name name of statement to find
+  * @param {string} type type of statement to find
+  * @param {ContractCollection} contracts collection of contracts resolved by current contract
+  * @returns location of the statement and its document and document statements
+  * @memberof SolidityDefinitionProvider
+  */
+ private findDirectImport2(
+   document: vscode.TextDocument,
+   statements: soliparse.ASTNode,
+   name: string,
+   type: string,
+   contracts: ContractCollection,
+ ) {
+   // find in the current file
+   let location = this.findStatementLocationByNameType2(document, statements, name, type);
+
+   // find in direct imports if not found in file
+   const contract = contracts.contracts[0];
+   // TODO: when importing contracts with conflict names, which one will Solidity pick? first or last? or error?
+   for (let i = 0; location === null && i < contract.imports.length; i++) {
+     const importPath = this.resolveImportPath(contract.imports[i], contract);
+     const importContract = contracts.contracts.find(e => e.absolutePath === importPath);
+     const uri = Uri.file(importContract.absolutePath).toString();
+     document = vscode.TextDocument.create(uri, null, null, importContract.code);
+     const astNode = soliparse.parse(importContract.code, { loc: true, range: true, tolerant: true});
+     location = this.findStatementLocationByNameType2(document, astNode, name, type);
+   }
+
+   return {
+     document,
+     location,
+     statements,
+   };
+ }
+
+ /**
+   * Provide definition for anything other than `import`, and `is` statements by recursively searching through
+   * statement and its children.
+   *
+   * @private
+   * @param {vscode.TextDocument} document text document, where statement belongs, used to convert position to/from offset
+   * @param {Array<any>} documentStatements array of statements found in the current document
+   * @param {*} statement current statement which contains the cursor offset
+   * @param {*} parentStatement parent of the current statement
+   * @param {number} offset cursor offset of the element we need to provide definition for
+   * @param {ContractCollection} contracts collection of contracts resolved by current contract
+   * @returns {(Thenable<vscode.Location | vscode.Location[]>)}
+   * @memberof SolidityDefinitionProvider
+   */
+  private provideDefinitionInStatement2(
+    document: vscode.TextDocument,
+    documentStatements: Array<any>,
+    statement: soliparse.ASTNode,
+    parentStatement: any,
+    offset: number,
+    contracts: ContractCollection,
+  ): vscode.Location | vscode.Location[] {
+    switch (statement.type) {
+      /*
+      case 'UsingStatement':
+        if (offset < statement.for.start) {
+          // definition of the library itself i.e. using **Library** for xxxx
+          return Promise.resolve(
+            this.findDirectImport(
+              document,
+              documentStatements,
+              statement.library,
+              'LibraryStatement',
+              contracts,
+            ).location,
+          );
+        } else {
+          // definition of the using statement target i.e. using Library for **DataType**
+          return this.provideDefinitionForType(
+            document,
+            documentStatements,
+            statement.for,
+            contracts,
+          );
+        }*/
+      case 'Mapping': {
+        if (this.isNodePartOfOffset(statement.valueType, offset)) {
+            return this.provideDefinitionInStatement2(document, documentStatements, statement.valueType, statement, offset);
+        }
+        break;
+      }
+      case 'ArrayTypeName': {
+        if (this.isNodePartOfOffset(statement.baseTypeName, offset)) {
+          return this.provideDefinitionInStatement2(document, documentStatements, statement.baseTypeName, statement, offset);
+        }
+        break;
+      }
+      case 'UserDefinedTypeName':
+        return this.findDirectImport2(document, statement, statement.namePath, null, contracts).location;
+      case 'FunctionTypeName':
+        // return this.findDirectImport2(document, statement, parentStatement.na, null, contracts).location;
+        break;
+      case 'Identifier':
+        switch (parentStatement.type) {
+          case 'CallExpression': // e.g. Func(x, y)
+            if (parentStatement.callee === statement) {
+              // TODO: differentiate function, event, and struct construction
+              return this.provideDefinitionForCallee(
+                contracts,
+                statement.name,
+              );
+            }
+            break;
+          case 'MemberExpression': // e.g. x.y x.f(y) arr[1] map['1'] arr[i] map[k]
+            if (parentStatement.object === statement) {
+              // NB: it is possible to have f(x).y but the object statement would not be an identifier
+              // therefore we can safely assume this is a variable instead
+              return this.provideDefinitionForVariable(
+                contracts,
+                statement.name,
+              );
+            } else if (parentStatement.property === statement) {
+              return Promise.all([
+                // TODO: differentiate better between following possible cases
+
+                // TODO: provide field access definition, which requires us to know the type of object
+                // Consider find the definition of object first and recursive upward till declarative expression for type inference
+
+                // array or mapping access via variable i.e. arr[i] map[k]
+                this.provideDefinitionForVariable(
+                  contracts,
+                  statement.name,
+                ),
+                // func call in the form of obj.func(arg)
+                this.provideDefinitionForCallee(
+                  contracts,
+                  statement.name,
+                ),
+              ]).then(locationsArray => Array.prototype.concat.apply([], locationsArray));
+            }
+            break;
+          default:
+            return this.provideDefinitionForVariable(
+              contracts,
+              statement.name,
+            );
+        }
+        break;
+      default:
+        for (const key in statement) {
+          if (statement.hasOwnProperty(key)) {
+            const element = statement[key];
+            if (element instanceof Array) {
+              // recursively drill down to collections e.g. statements, params
+              const inner = this.findElementByOffset(element, offset);
+              if (inner !== undefined) {
+                return this.provideDefinitionInStatement(
+                  document,
+                  documentStatements,
+                  inner,
+                  statement,
+                  offset,
+                  contracts,
+                );
+              }
+            } else if (element instanceof Object) {
+              // recursively drill down to elements with start/end e.g. literal type
+              if (
+                element.hasOwnProperty('start') && element.hasOwnProperty('end') &&
+                element.start <= offset && offset <= element.end
+              ) {
+                return this.provideDefinitionInStatement(
+                  document,
+                  documentStatements,
+                  element,
+                  statement,
+                  offset,
+                  contracts,
+                );
+              }
+            }
+          }
+        }
+
+        // handle modifier last now that params have not been selected
+        if (statement.type === 'ModifierArgument') {
+          return this.provideDefinitionForCallee(contracts, statement.name);
+        }
+        break;
     }
   }
+
 
   /**
    * Provide definition for anything other than `import`, and `is` statements by recursively searching through
@@ -464,7 +743,7 @@ export class SolidityDefinitionProvider {
     // find in direct imports if not found in file
     const contract = contracts.contracts[0];
     // TODO: when importing contracts with conflict names, which one will Solidity pick? first or last? or error?
-    for (let i = 0; location === undefined && i < contract.imports.length; i++) {
+    for (let i = 0; location === null && i < contract.imports.length; i++) {
       const importPath = this.resolveImportPath(contract.imports[i], contract);
       const importContract = contracts.contracts.find(e => e.absolutePath === importPath);
       const uri = Uri.file(importContract.absolutePath).toString();
@@ -497,6 +776,7 @@ export class SolidityDefinitionProvider {
     name: string,
     type: string,
   ): vscode.Location {
+
     const localDef = statements.find(e => e.type === type && e.name === name);
     if (localDef !== undefined) {
       return vscode.Location.create(
@@ -504,6 +784,45 @@ export class SolidityDefinitionProvider {
         vscode.Range.create(document.positionAt(localDef.start), document.positionAt(localDef.end)),
       );
     }
+  }
+
+   /**
+   * Find the first statement by its name and type
+   *
+   * @private
+   * @param {vscode.TextDocument} document document where statements belong, used to convert offset to position
+   * @param {Array<any>} statements list of statements to search through
+   * @param {string} name name of statement to find
+   * @param {string} type type of statement to find
+   * @returns {vscode.Location} the location of the found statement
+   * @memberof SolidityDefinitionProvider
+   */
+  private findStatementLocationByNameType2(
+    document: vscode.TextDocument,
+    astNode: soliparse.ASTNode,
+    name: string,
+    type: string,
+  ): vscode.Location {
+    let location: vscode.Location = null;
+    const checkDefinition = (node) => {
+            if (node.name === name && (type === null || type === node.type)) {
+                location = vscode.Location.create(
+                            document.uri,
+                          vscode.Range.create(document.positionAt(node.range[0]), document.positionAt(node.range[1])));
+              return false; }
+              return true;
+            };
+    soliparse.visit(astNode,
+      { ContractDefinition: (node) => checkDefinition(node),
+        EnumDefinition: (node) => checkDefinition(node),
+        EventDefinition: (node) => checkDefinition(node),
+        FunctionDefinition : (node) => checkDefinition(node),
+        LabelDefinition : (node) => checkDefinition(node),
+        ModifierDefinition : (node) => checkDefinition(node),
+        StructDefinition : (node) => checkDefinition(node),
+      },
+     );
+    return location;
   }
 
   /**
