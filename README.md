@@ -20,17 +20,28 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
 
 ## Using a different version of the solidity compiler
 
-Sometimes you may want to use a different compiler than the one provided. All the different versions of the solidity compiler can be found in this repository: You can find all the different versions in the solc-bin repository https://github.com/ethereum/solc-bin/tree/gh-pages/bin
+Sometimes you may want to use a different compiler than the one provided. You can find all the different versions in the solc-bin repository https://github.com/ethereum/solc-bin/tree/gh-pages/bin
 
 Currently we support three ways supported to use a different version of the solidity compiler.
 
 ### Remote download
+When selecting remote download the compiler gets download from the solc-bin repository. 
 
-To compile using a remote version, you need to change the following user setting, with the version required, for example 'latest' or 'v0.4.3+commit.2353da71'
+You will need to change the following user setting, with the version required, for example ```'latest'``` or ```'v0.4.3+commit.2353da71'```, for your workspace user setting (current project) or global user setting (all projects)
 
 ```
 "solidity.compileUsingRemoteVersion" : "latest"
 ```
+![Screenshot](screenshots/change-compiler-version-gui-setting.png)
+ 
+You can simply change this setting using the context menu:
+
+![Screenshot](screenshots/change-compiler-version-contextmenu.png) 
+
+![Screenshot](screenshots/change-compiler-version-selectversion.png) 
+
+
+
 ### Using Local file
 
 If you don't have an internet connection, you can download the compiler and change your user settings to use this.
@@ -68,26 +79,9 @@ Optimize for how many times you intend to run the code. Lower values will optimi
 ```"solidity.compilerOptimization": 200``` 
 
 
-## Default project structure
+## Project structure
 
-A default project  / library dependency structure follows the DappSys library model:
-
-![Screenshot](screenshots/simpleProjectStructure.PNG)
-
-Libraries will have the same name as their folder they are included.
-Solidity files will be in the 'src' folder.
-Libraries will be included in the 'lib' folder.
-
-Currently there is no name conflicting resolution, so the first library found matching a name, will be the first one used.
-
-The user settings for this structure is:
-
-```
-  "solidity.packageDefaultDependenciesContractsDirectory": "src",
-  "solidity.packageDefaultDependenciesDirectory": "lib"
-```
-
-### OpenZeppelin
+### OpenZeppelin (Default)
 
 If you're using [`@openzeppelin/contracts`](https://github.com/OpenZeppelin/openzeppelin-contracts), the OpenZeppelin Contracts will be found in your node_modules folder, so the user settings will be the following, assuming your solidity project is at root. 
 
@@ -119,6 +113,25 @@ Your user settings configuration will need to represent the full structure:
 ```
   "solidity.packageDefaultDependenciesContractsDirectory": "",
   "solidity.packageDefaultDependenciesDirectory": "solidity_project/node_modules"
+```
+
+## Dappsys (old ERC)
+
+The project  / library dependency structure can use the DappSys library model, this was the default mode before as it was part of an ERC:
+
+![Screenshot](screenshots/simpleProjectStructure.PNG)
+
+Libraries will have the same name as their folder they are included.
+Solidity files will be in the 'src' folder.
+Libraries will be included in the 'lib' folder.
+
+Currently there is no name conflicting resolution, so the first library found matching a name, will be the first one used.
+
+The user settings for this structure is:
+
+```
+  "solidity.packageDefaultDependenciesContractsDirectory": "src",
+  "solidity.packageDefaultDependenciesDirectory": "lib"
 ```
 
 ## Code completion
@@ -154,9 +167,13 @@ This extension supports `.solhint.json` configuration file. It must be placed to
 directory. After any changes in `.solhint.json` it will be synchronized with current IDE 
 configuration. 
 
-### Solium
+This is the default linter now.
 
-Solium is the default linter of supported by the extesion https://github.com/duaraghav8/Solium, you can configure it using the following user settings:
+NOTE: Solhint plugins are not supported yet.
+
+### Solium / Ethlint
+
+Solium is the default linter of supported by the extension https://github.com/duaraghav8/Solium, you can configure it using the following user settings:
 
 ```json
 "solidity.linter": "solium",
@@ -165,8 +182,6 @@ Solium is the default linter of supported by the extesion https://github.com/dua
     "indentation": ["error", 4]
 },
 ```
-
-soliumrc.json support will be included in the near future, for specific project linting requirements.
 
 # Analysis of smart contracts with Mythx
 Mythx analysis tool, has been moved to its own stand alone extension, [please download it here](https://marketplace.visualstudio.com/items?itemName=MythX.mythxvsc).
