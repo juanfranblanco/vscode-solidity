@@ -82,13 +82,19 @@ In case one of your dependencies has a nested dependency on a solc version, effe
 ```
 
 ## ERC, ERC drafts and Smart contracts snippets / reference
+
 It is pretty hard sometimes to find interfaces or information about an EIP (ERC) or specific libraries to simply get started working with Solidity. 
+The solidity extension now includes ERC approved and most drafts (wip) to help get you started.
+
 Just type ```erc`` and select the erc example or interface you want.
 
 ![Screenshot](screenshots/ercautocomplete1.png)
 ![Screenshot](screenshots/ercautocomplete2.png)
 
-#### Smart contract project interfaces (Uniswap)
+### Smart contract project interfaces 
+In a similar to way to ERCs and as we work towards to more interoperable smart contracts, being able to quickly examine those interfaces that you want to integrate is a time saver.
+
+The current release includes the interfaces for Uniswap V2 (to get started), just type ```uni`` to list them all.
 ![Screenshot](screenshots/unigen1.png) 
 ![Screenshot](screenshots/unigen2.png)
 
