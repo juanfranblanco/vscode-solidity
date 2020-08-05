@@ -24,7 +24,6 @@ interface Settings {
 
 interface SoliditySettings {
     // option for backward compatibilities, please use "linter" option instead
-    enabledSolium: boolean;
     linter: boolean | string;
     enabledAsYouTypeCompilationErrorCheck: boolean;
     compileUsingLocalVersion: string;
@@ -277,13 +276,7 @@ connection.onDidChangeConfiguration((change) => {
 });
 
 function linterName(settings: SoliditySettings) {
-    const enabledSolium = settings.enabledSolium;
-
-    if (enabledSolium) {
-        return 'solium';
-    } else {
-        return settings.linter;
-    }
+     return settings.linter;
 }
 
 function linterRules(settings: SoliditySettings) {

@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.74",
+  "version": "0.0.75",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.30.0"
@@ -60,10 +60,10 @@
     "mkdirp": "^0.5.1",
     "nethereum-codegen": "^1.0.12",
     "prettier": "^2.0.2",
-    "prettier-plugin-solidity": "1.0.0-alpha.54",
+    "prettier-plugin-solidity": "1.0.0-alpha.55",
     "require-from-string": "^2.0.2",
-    "solc": "^0.6.9",
-    "solhint": "^3.0.0",
+    "solc": "^0.7.0",
+    "solhint": "^3.1.0",
     "solium": "^1.2.5",
     "solparse": "^2.2.8",
     "vscode-languageclient": "^5.2.1",
@@ -118,12 +118,14 @@
           "description": "Compile using a local solc binary file, please include the path of the file if wanted: 'C://v0.4.3+commit.2353da71.js'"
         },
         "solidity.linter": {
-          "type": [
-            "boolean",
-            "string"
+          "type": "string",
+          "enum": [
+            "",
+            "solhint",
+            "solium"
           ],
-          "default": "solium",
-          "description": "Enables solhint linting. Possible options 'solhint' and 'solium'"
+          "default": "solhint",
+          "description": "Enables linting using either solium (ethlint) or solhint. Possible options 'solhint' and 'solium', the default is solhint"
         },
         "solidity.solhintRules": {
           "type": [
@@ -140,13 +142,6 @@
             "prettier"
           ],
           "description": "Enables / disables the solidity formatter (prettier solidity default)"
-        },
-        "solidity.enabledSolium": {
-          "type": [
-            "boolean"
-          ],
-          "default": false,
-          "description": "Enables solium linting. DEPRECATED: Use \"linter\" instead"
         },
         "solidity.soliumRules": {
           "type": [
@@ -183,7 +178,7 @@
         },
         "solidity.packageDefaultDependenciesContractsDirectory": {
           "type": "string",
-          "default": "contracts",
+          "default": "",
           "description": "Default directory where the Package Dependency store its contracts, i.e: 'src', 'contracts', or just a blank string '', this is used to avoid typing imports with subfolder paths"
         }
       }

@@ -103,7 +103,7 @@ export default class SoliumService implements Linter {
         const line = lintResult.line - 1;
 
         return {
-            message: `${lintResult.ruleName}: ${lintResult.message}`,
+            message: `Linter: ${lintResult.ruleName}: ${lintResult.message}`,
             range: {
                 end: {
                     character: lintResult.node.end,
