@@ -33,7 +33,7 @@ You will need to change the following user setting, with the version required, f
 "solidity.compileUsingRemoteVersion" : "latest"
 ```
 ![Screenshot](screenshots/change-compiler-version-gui-setting.png)
- 
+
 You can simply change this setting using the context menu:
 
 ![Screenshot](screenshots/change-compiler-version-contextmenu.png) 
@@ -42,20 +42,27 @@ You can simply change this setting using the context menu:
 
 
 
-### Using Local file
+### Using a Local file
 
-If you don't have an internet connection, you can download the compiler and change your user settings to use this.
-The local file will be use instead of remote.
+If you don't have an internet connection, you can download the compiler from https://github.com/ethereum/solc-bin/tree/gh-pages/bin and change your user settings to use this.
+
+This setting takes prefernce over the remote installation.
 
 ```
 "solidity.compileUsingLocalVersion" : "C:\\Users\\JuanFran\\Downloads\\soljson-v0.4.15%2Bcommit.bbb8e64f.js"
 ```
 
+![Screenshot](screenshots/change-compiler-version-gui-setting.png)
+
 ### Npm / node installation
-If you need to use an specific version for a project, you can also install solc locally in your solidity project folder.
+Another option, is to use the solc npm package in your project, if this setting is enabled it will try to find the compiler in your node_modules.
 
 ```
 npm install solc 
+```
+
+```json
+"solidity.enableLocalNodeCompiler": false
 ```
 
 **Note:** The above compilers, have an order of preference when using different settings are: Local node installation (Npm / node installation) will be used first, Local file second and finally remote. 
@@ -73,6 +80,19 @@ In case one of your dependencies has a nested dependency on a solc version, effe
 ```json
 "solidity.enableLocalNodeCompiler": false
 ```
+
+## ERC, ERC drafts and Smart contracts snippets / reference
+It is pretty hard sometimes to find interfaces or information about an EIP (ERC) or specific libraries to simply get started working with Solidity. 
+Just type ```erc`` and select the erc example or interface you want.
+
+![Screenshot](screenshots/ercautocomplete1.png)
+![Screenshot](screenshots/ercautocomplete2.png)
+
+#### Smart contract project interfaces (Uniswap)
+![Screenshot](screenshots/unigen1.png) 
+![Screenshot](screenshots/unigen2.png)
+
+Note: If an ERC or your project is not included, please create a pull request. Note: Only established projets will be included.
 
 ## Compiler optimization
 Optimize for how many times you intend to run the code. Lower values will optimize more for initial deployment cost, higher values will optimize more for high-frequency usage. The default value is **200**.
@@ -149,8 +169,11 @@ Auto compilation of files and error highlighting can be enabled or disabled usin
 "solidity.validationDelay": 1500
 ```
 
-
 ## Linting
+
+There are two linters included with the extension, solhint and solium / ethlint. You can chose your preferred linter using this setting, or disable it by typing ''
+
+![Screenshot](screenshots/select-linter.png)
 
 ### Solhint
 
@@ -173,7 +196,7 @@ NOTE: Solhint plugins are not supported yet.
 
 ### Solium / Ethlint
 
-Solium is the default linter of supported by the extension https://github.com/duaraghav8/Solium, you can configure it using the following user settings:
+Solium is also supported by the extension https://github.com/duaraghav8/Solium, you can configure it using the following user settings:
 
 ```json
 "solidity.linter": "solium",
@@ -182,11 +205,6 @@ Solium is the default linter of supported by the extension https://github.com/du
     "indentation": ["error", 4]
 },
 ```
-
-# Analysis of smart contracts with Mythx
-Mythx analysis tool, has been moved to its own stand alone extension, [please download it here](https://marketplace.visualstudio.com/items?itemName=MythX.mythxvsc).
-
-
 # Formatting using Prettier and the Prettier Solidity Plugin
 Formatting is provided thanks to the Prettier plugin for Solidity for more info check https://prettier.io/ and https://github.com/prettier-solidity/prettier-plugin-solidity
 
@@ -217,8 +235,12 @@ If you would like to format on save, add this entry to your user / workspace set
 # Code generation Nethereum
 The extension integrates with the Nethereum code generator to create Contract integration definitions. You can either generate the api for a single contract, all compiled contracts, or automatically every time you compile a smart contract solidity file.
 
+The simplest way to code generate a the contract definition for a smart contract is to right click and select the project / language you require:
+
+![Screenshot](screenshots/compile-codegnerate-nethereum.png)
+
 ## Automatic code generation and the Nethereum Code generation settings file.
-The simplest way is to automatically code generate your api, for this you need to create a file called "nethereum-gen.settings" at the root of your project, with the following contents.
+If you want to automatically code generate your api, every time to you compile, you can do this creating a file "nethereum-gen.settings" at the root of your project, with the following contents. You can create it automatically using the context menu too.
 
 ```json
 {
@@ -229,17 +251,28 @@ The simplest way is to automatically code generate your api, for this you need t
     "projectPath": "../SoliditySamples"
 }
 ```
+
+
 "lang" indicates what language to generate the code, 0 = CSharp, 1 = Vb.Net and 3 = FSharp
 
 The "projectName" and "namespace" settings will be used for the manual code generation also.
 
 Use the "projectPath" to set the relative path of your .Net project, this allows to work in a "solution" mode so you can work as an both in Visual Studio Code and Visual Studio (Fat) with your .Net project, or two windows of vscode.
 
+## Abi contract code generation
+You may have only the abi of a smart contract and want to code generate the contract definition. Just create a file containing the abi, with the extension ```.abi``` and another with the ```.bin``` content (if needed) and use this context menu. 
+
+![Screenshot](screenshots/abigeneration.png)
+
+
 ## Single smart contract manual code generation
 To code generate the Nethereum contract api from a single smart contract, you need to select the compiled "json" output file from the "bin" folder, press F1 and start typing "Solidity: Code generate" and select what language you want to generate for the current selected file.
 
 ## All smart contracts manual code generation
 To code generate the Nethereum contract for all smart contracts already compiled, just press F1, and start typing "Solidity: Code generate" and select the option for all contracts for your desired language.
+
+### (Depricated) Analysis of smart contracts with Mythx
+Mythx analysis tool, has been moved to its own stand alone extension, [please download it here](https://marketplace.visualstudio.com/items?itemName=MythX.mythxvsc).
 
 ## Contributing / Issues / Requests
 
