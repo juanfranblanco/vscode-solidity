@@ -16,7 +16,7 @@ export class Compiler {
 
     constructor(solcCachePath: string) {
         this.solcCachePath = solcCachePath;
-        this.outputChannel = vscode.window.createOutputChannel('solidity compilation');
+        this.outputChannel = vscode.window.createOutputChannel('Solidity compiler');
     }
 
     public outputCompilerInfoEnsuringInitialised() {

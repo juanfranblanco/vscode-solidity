@@ -97,19 +97,15 @@ export class SolcCompiler {
                             resolve();
                         } else {
                             // remote
+
                             if (typeof remoteInstallationVersion !== 'undefined' && remoteInstallationVersion !== null && remoteInstallationVersion !== '') {
                                 const solcService = this;
-                                this.loadRemoteWasmVersion(remoteInstallationVersion, function (err, solcSnapshot) {
-                                    if (err) {
-                                        reject('There was an error loading the remote version: ' + remoteInstallationVersion);
-                                    } else {
+                                this.loadRemoteWasmVersionRetry(remoteInstallationVersion, 1, 3).then((solcSnapshot) => {
                                         solcService.currentCompilerType = compilerType.Remote;
                                         solcService.currentCompilerSetting = remoteInstallationVersion;
                                         solcService.localSolc = solcSnapshot;
                                         resolve();
-                                    }
-                                });
-                                // default
+                                }).catch((error) => reject('There was an error loading the remote version: ' + remoteInstallationVersion + ',' + error));
                             } else {
                                 this.localSolc = require('solc');
                                 this.currentCompilerType = compilerType.default;
@@ -170,30 +166,61 @@ export class SolcCompiler {
         return [];
     }
 
-    private loadRemoteWasmVersion (versionString, cb) {
-        const pathVersion = path.resolve(path.join(this.solcCachePath, 'soljson-' + versionString + '.js'));
-        if (fs.existsSync(pathVersion) && versionString !== 'latest') {
-            const solidityfile = require(pathVersion);
-                const solcConfigured = solc.setupMethods(solidityfile);
-                cb(null, solcConfigured);
-        } else {
-            const file = fs.createWriteStream(pathVersion);
-            // the files have a redirection.. so we are not using the wasm path for the time being until i check with Christian
-            const url = 'https://raw.githubusercontent.com/ethereum/solc-bin/gh-pages/bin/soljson-' + versionString + '.js';
-            https.get(url, function (response) {
+    private downloadCompilationFile(version:string, path:string): Promise<void> {
+        const file = fs.createWriteStream(path);
+        const url = 'https://raw.githubusercontent.com/ethereum/solc-bin/gh-pages/bin/soljson-' + version + '.js';
+        return new Promise((resolve, reject) => {
+           const request = https.get(url, function (response) {
                 if (response.statusCode !== 200) {
-                cb(new Error('Error retrieving binary: ' + response.statusMessage));
+                    reject('Error retrieving solidity compiler: ' + response.statusMessage);
                 } else {
-                response.pipe(file);
-                response.on('end', function () {
-                    const solidityfile = require(pathVersion);
-                    const solcConfigured = solc.setupMethods(solidityfile);
-                    cb(null, solcConfigured);
-                });
+                    response.pipe(file);    
+                    file.on("finish", function(){
+                        file.close();
+                        resolve();
+                    });
                 }
-            }).on('error', function (error) {
-                cb(error);
-            });
-        }
+        }).on('error', function (error) {
+            reject(error);
+        }); 
+        request.end(); 
+    });
     }
+
+    private loadRemoteWasmVersionRetry (versionString: string, retryNumber: number, maxRetries: number): Promise<any> {
+        return new Promise((resolve, reject) => { 
+            this.loadRemoteWasmVersion(versionString).then((solcConfigured) => resolve(solcConfigured)).catch((reason) =>
+            {
+                if(retryNumber <= maxRetries) {
+                    return this.loadRemoteWasmVersionRetry(versionString, retryNumber + 1, maxRetries);
+                }else{
+                    reject(reason);
+                }
+            }
+        );
+        });
+    }
+
+    private loadRemoteWasmVersion (versionString: string): Promise<any> {
+        const pathVersion = path.resolve(path.join(this.solcCachePath, 'soljson-' + versionString + '.js'));
+        return new Promise((resolve, reject) => { 
+                try {
+                        if (fs.existsSync(pathVersion) && versionString !== 'latest') {
+                                const solidityfile = require(pathVersion);
+                                const solcConfigured = solc.setupMethods(solidityfile);
+                                resolve(solcConfigured);
+                        } else {
+                            this.downloadCompilationFile(versionString, pathVersion).then(() => {
+                                const solidityfile = require(pathVersion);
+                                const solcConfigured = solc.setupMethods(solidityfile);
+                                resolve(solcConfigured);
+                            }).catch((reason) => reject(reason));
+                        }
+                } catch (error) { 
+                    reject(error);
+                }
+            }
+        );
+    }
+
 }
