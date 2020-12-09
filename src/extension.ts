@@ -19,7 +19,7 @@ let diagnosticCollection: vscode.DiagnosticCollection;
 let compiler: Compiler;
 
 export async function activate(context: vscode.ExtensionContext) {
-    const ws: WorkspaceFolder[] | undefined = workspace.workspaceFolders;
+    const ws = workspace.workspaceFolders;
     diagnosticCollection = vscode.languages.createDiagnosticCollection('solidity');
     compiler = new Compiler(context.extensionPath);
 

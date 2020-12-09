@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as solparse from 'solparse';
 import * as vscode from 'vscode-languageserver';
-import Uri from 'vscode-uri';
+import { URI } from 'vscode-uri';
 
 import { Contract } from './model/contract';
 import { ContractCollection } from './model/contractsCollection';
@@ -47,7 +47,7 @@ export class SolidityDefinitionProvider {
     position: vscode.Position,
   ): Thenable<vscode.Location | vscode.Location[]> {
     const documentText = document.getText();
-    const contractPath = Uri.parse(document.uri).fsPath;
+    const contractPath = URI.parse(document.uri).fsPath;
 
     const contracts = new ContractCollection();
     if (this.project !== undefined) {
@@ -69,7 +69,7 @@ export class SolidityDefinitionProvider {
         case 'ImportStatement':
           return Promise.resolve(
             vscode.Location.create(
-              Uri.file(this.resolveImportPath(element.from, contract)).toString(),
+              URI.file(this.resolveImportPath(element.from, contract)).toString(),
               vscode.Range.create(0, 0, 0, 0),
             ),
           );
@@ -360,7 +360,7 @@ export class SolidityDefinitionProvider {
         }),
       );
 
-      const uri = Uri.file(contract.absolutePath).toString();
+      const uri = URI.file(contract.absolutePath).toString();
       const document = vscode.TextDocument.create(uri, null, null, contract.code);
       elements.forEach(contractElement =>
         locations.push(
@@ -467,7 +467,7 @@ export class SolidityDefinitionProvider {
     for (let i = 0; location === undefined && i < contract.imports.length; i++) {
       const importPath = this.resolveImportPath(contract.imports[i], contract);
       const importContract = contracts.contracts.find(e => e.absolutePath === importPath);
-      const uri = Uri.file(importContract.absolutePath).toString();
+      const uri = URI.file(importContract.absolutePath).toString();
       document = vscode.TextDocument.create(uri, null, null, importContract.code);
       statements = solparse.parse(importContract.code).body;
       location = this.findStatementLocationByNameType(document, statements, name, type);

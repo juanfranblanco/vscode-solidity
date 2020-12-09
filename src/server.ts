@@ -14,9 +14,12 @@ import {
     TextDocuments, InitializeResult,
     Files, Diagnostic,
     TextDocumentPositionParams,
-    CompletionItem, Location, SignatureHelp,
+    CompletionItem, Location, SignatureHelp, TextDocumentSyncKind,
 } from 'vscode-languageserver';
-import Uri from 'vscode-uri';
+
+import { TextDocument } from 'vscode-languageserver-textdocument';
+
+import {URI} from 'vscode-uri';
 
 interface Settings {
     solidity: SoliditySettings;
@@ -46,7 +49,7 @@ const connection: IConnection = createConnection(
 console.log = connection.console.log.bind(connection.console);
 console.error = connection.console.error.bind(connection.console);
 
-const documents: TextDocuments = new TextDocuments();
+const documents = new TextDocuments(TextDocument);
 
 let rootPath: string;
 let solcCompiler: SolcCompiler;
@@ -91,7 +94,7 @@ function validate(document) {
                                                 packageDefaultDependenciesDirectory,
                                                 packageDefaultDependenciesContractsDirectory);
                 errors.forEach(errorItem => {
-                    const uriCompileError = Uri.file(errorItem.fileName);
+                    const uriCompileError = URI.file(errorItem.fileName);
                     if (uriCompileError.toString() === uri) {
                         compileErrorDiagnostics.push(errorItem.diagnostic);
                     }
@@ -237,7 +240,7 @@ connection.onInitialize((result): InitializeResult => {
                 triggerCharacters: [ '.' ],
             },
            definitionProvider: true,
-           textDocumentSync: documents.syncKind,
+           textDocumentSync: TextDocumentSyncKind.Full,
         },
     };
 });
