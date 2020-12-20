@@ -1,5 +1,5 @@
 'use strict';
-import * as solparse from 'solparse';
+import * as solparse from 'solparse-exp-jb';
 import {ContractCollection} from './model/contractsCollection';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { initialiseProject } from './projectService';

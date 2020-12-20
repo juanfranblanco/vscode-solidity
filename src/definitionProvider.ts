@@ -1,5 +1,4 @@
 import * as path from 'path';
-import * as solparse from 'solparse';
 import * as vscode from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 
@@ -7,6 +6,7 @@ import { Contract } from './model/contract';
 import { ContractCollection } from './model/contractsCollection';
 import { Project } from './model/project';
 import { initialiseProject } from './projectService';
+import * as solparse from 'solparse-exp-jb';
 
 export class SolidityDefinitionProvider {
   private rootPath: string;

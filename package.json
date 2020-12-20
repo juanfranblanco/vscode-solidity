@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.76",
+  "version": "0.0.78",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.50.1"
@@ -65,11 +65,11 @@
     "solc": "^0.7.4",
     "solhint": "^3.3.2",
     "solium": "^1.2.5",
-    "solparse": "^2.2.8",
-    "vscode-uri": "2.1.2",
+    "solparse-exp-jb": "2.2.9",
     "vscode-languageclient": "^6.1.3",
     "vscode-languageserver": "^6.1.1",
     "vscode-languageserver-textdocument": "^1.0.1",
+    "vscode-uri": "2.1.2",
     "yaml-js": "0.2.3"
   },
   "devDependencies": {
