@@ -296,7 +296,7 @@ export class SolidityDefinitionProvider {
           contractElement.name === name && (
             contractElement.type === 'FunctionDeclaration' ||
             contractElement.type === 'EventDeclaration' ||
-            contractElement.type === 'StructDeclaration'
+            contractElement.type === 'StructDeclaration' 
           ),
         );
 

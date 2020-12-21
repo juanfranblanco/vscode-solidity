@@ -136,6 +136,24 @@ export class CompletionService {
                                                                     + typeString + ' ' + contractElement.name;
                                 completionItems.push(completionItem);
                             }
+
+                            if (contractElement.type === 'EnumDeclaration') {
+                                const completionItem =  CompletionItem.create(contractElement.name);
+                                completionItem.kind = CompletionItemKind.Enum;
+                                completionItem.insertText = contractName + '.' + contractElement.name;
+                                completionItem.detail = '(Enum in ' + contractName + ') '
+                                                                    + contractElement.name;
+                                completionItems.push(completionItem);
+                            }
+
+                            if (contractElement.type === 'StructDeclaration') {
+                                const completionItem =  CompletionItem.create(contractElement.name);
+                                completionItem.kind = CompletionItemKind.Struct;
+                                completionItem.insertText = contractName + '.' + contractElement.name;
+                                completionItem.detail = '(Struct in ' + contractName + ') '
+                                                                    + contractElement.name;
+                                completionItems.push(completionItem);
+                            }
                         });
                     }
                 }
