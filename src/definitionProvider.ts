@@ -296,7 +296,8 @@ export class SolidityDefinitionProvider {
           contractElement.name === name && (
             contractElement.type === 'FunctionDeclaration' ||
             contractElement.type === 'EventDeclaration' ||
-            contractElement.type === 'StructDeclaration' 
+            contractElement.type === 'StructDeclaration' ||
+            contractElement.type === "EnumDeclaration"
           ),
         );
 
@@ -426,12 +427,23 @@ export class SolidityDefinitionProvider {
       if (structLocation !== undefined) {
         return Promise.resolve(structLocation);
       }
+
+      const enumLocation = this.findStatementLocationByNameType(
+        document,
+        contractStatement.body,
+        literal.literal,
+        'EnumDeclaration',
+      );
+      if (enumLocation !== undefined) {
+        return Promise.resolve(enumLocation);
+      }
+
       // TODO: only search inheritance chain
       return this.provideDefinitionForContractMember(
         contracts,
         (element) =>
           element.body.filter(contractElement =>
-            contractElement.name === literal.literal && contractElement.type === 'StructDeclaration',
+            contractElement.name === literal.literal && (contractElement.type === 'StructDeclaration' || contractElement.type === 'EnumDeclaration'),
           ),
       );
     }
