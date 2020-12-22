@@ -328,7 +328,7 @@ export class SolidityDefinitionProvider {
       contracts,
       (element) =>
         element.body.filter(contractElement =>
-          contractElement.name === name && contractElement.type === 'StateVariableDeclaration',
+          contractElement.name === name && (contractElement.type === 'StateVariableDeclaration')
         ),
     );
   }
