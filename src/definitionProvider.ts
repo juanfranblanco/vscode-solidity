@@ -77,13 +77,24 @@ export class SolidityDefinitionProvider {
           // find definition for inheritance
           const isBlock = this.findElementByOffset(element.is, offset);
           if (isBlock !== undefined) {
-            return Promise.resolve(this.findDirectImport(
+             let directImport = this.findDirectImport(
               document,
               result.body,
               isBlock.name,
               'ContractStatement',
               contracts,
-            ).location);
+            );
+            
+            if(directImport.location === undefined) {
+              directImport = this.findDirectImport(
+                document,
+                result.body,
+                isBlock.name,
+                'InterfaceStatement',
+                contracts,
+              );
+            }
+            return Promise.resolve(directImport.location);
           }
 
           // find definition in contract body recursively
@@ -102,6 +113,21 @@ export class SolidityDefinitionProvider {
         }
         case 'LibraryStatement': {
           // find definition in library body recursively
+          const statement = this.findElementByOffset(element.body, offset);
+          if (statement !== undefined) {
+            return this.provideDefinitionInStatement(
+              document,
+              result.body,
+              statement,
+              element,
+              offset,
+              contracts,
+            );
+          }
+          break;
+        }
+        case 'InterfaceStatement': {
+          // find definition in interface body recursively
           const statement = this.findElementByOffset(element.body, offset);
           if (statement !== undefined) {
             return this.provideDefinitionInStatement(

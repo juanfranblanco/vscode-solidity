@@ -112,7 +112,7 @@ export class CompletionService {
             // console.log(JSON.stringify(result));
             // TODO struct, modifier
             result.body.forEach(element => {
-                if (element.type === 'ContractStatement' ||  element.type === 'LibraryStatement') {
+                if (element.type === 'ContractStatement' ||  element.type === 'LibraryStatement' || element.type == 'InterfaceStatement') {
                     const contractName = element.name;
                     if (typeof element.body !== 'undefined' && element.body !== null) {
                         element.body.forEach(contractElement => {
