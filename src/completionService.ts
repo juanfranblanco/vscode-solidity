@@ -3,6 +3,9 @@ import * as solparse from 'solparse-exp-jb';
 import {ContractCollection} from './model/contractsCollection';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { initialiseProject } from './projectService';
+import * as vscode from 'vscode-languageserver';
+import {SolidityCodeWalker} from './codeWalkerService';
+import { finished } from 'stream';
 
 // TODO implement caching, dirty on document change, reload, etc.
 // store
@@ -105,6 +108,67 @@ export class CompletionService {
         return completionItem;
     }
 
+    public createParameterCompletionItem(contractElement: any, type: string, contractName: string): CompletionItem {
+
+        const completionItem =  CompletionItem.create(contractElement.id);
+        completionItem.kind = CompletionItemKind.Variable;
+        const typeString = this.getTypeString(contractElement.literal);
+        completionItem.detail = '(' + type + ' in ' + contractName + ') '
+                                            + typeString + ' ' + contractElement.id;
+        return completionItem;
+    }
+
+    public createVariableCompletionItem(contractElement: any, type: string, contractName: string): CompletionItem {
+
+        const completionItem =  CompletionItem.create(contractElement.name);
+        completionItem.kind = CompletionItemKind.Field;
+        const typeString = this.getTypeString(contractElement.literal);
+        completionItem.detail = '(' + type + ' in ' + contractName + ') '
+                                            + typeString + ' ' + contractElement.name;
+        return completionItem;
+    }
+
+    public createStructCompletionItem(contractElement: any, contractName: string): CompletionItem {
+
+        const completionItem =  CompletionItem.create(contractElement.name);
+        completionItem.kind = CompletionItemKind.Struct;
+        completionItem.insertText = contractName + '.' + contractElement.name;
+        completionItem.detail = '(Struct in ' + contractName + ') '
+                                            + contractElement.name;
+        return completionItem;
+    }
+
+    public createEnumCompletionItem(contractElement: any, contractName: string): CompletionItem {
+
+        const completionItem =  CompletionItem.create(contractElement.name);
+        completionItem.kind = CompletionItemKind.Enum;
+        completionItem.insertText = contractName + '.' + contractElement.name;
+        completionItem.detail = '(Enum in ' + contractName + ') '
+                                            + contractElement.name;
+        return completionItem;
+    }
+    
+    // type "Contract, Libray, Abstract contract"
+    public createContractCompletionItem(contractName: string, type: string): CompletionItem {
+
+        const completionItem =  CompletionItem.create(contractName);
+        completionItem.kind = CompletionItemKind.Class;
+        completionItem.insertText = contractName;
+        completionItem.detail = '(' + type + ' : ' + contractName + ') '
+                        
+        return completionItem;
+    }
+
+    public createInterfaceCompletionItem(contractName: string): CompletionItem {
+
+        const completionItem =  CompletionItem.create(contractName);
+        completionItem.kind = CompletionItemKind.Interface;
+        completionItem.insertText = contractName;
+        completionItem.detail = '( Interface : ' + contractName + ') '               
+        return completionItem;
+    }
+  
+
     public getDocumentCompletionItems(documentText: string): CompletionItem[] {
         const completionItems = [];
         try {
@@ -129,30 +193,15 @@ export class CompletionService {
                             }
 
                             if (contractElement.type === 'StateVariableDeclaration') {
-                                const completionItem =  CompletionItem.create(contractElement.name);
-                                completionItem.kind = CompletionItemKind.Field;
-                                const typeString = this.getTypeString(contractElement.literal);
-                                completionItem.detail = '(state variable in ' + contractName + ') '
-                                                                    + typeString + ' ' + contractElement.name;
-                                completionItems.push(completionItem);
+                                completionItems.push(this.createVariableCompletionItem(contractElement, 'state variable', contractName));
                             }
 
                             if (contractElement.type === 'EnumDeclaration') {
-                                const completionItem =  CompletionItem.create(contractElement.name);
-                                completionItem.kind = CompletionItemKind.Enum;
-                                completionItem.insertText = contractName + '.' + contractElement.name;
-                                completionItem.detail = '(Enum in ' + contractName + ') '
-                                                                    + contractElement.name;
-                                completionItems.push(completionItem);
+                                completionItems.push(this.createEnumCompletionItem(contractElement, contractName));
                             }
 
                             if (contractElement.type === 'StructDeclaration') {
-                                const completionItem =  CompletionItem.create(contractElement.name);
-                                completionItem.kind = CompletionItemKind.Struct;
-                                completionItem.insertText = contractName + '.' + contractElement.name;
-                                completionItem.detail = '(Struct in ' + contractName + ') '
-                                                                    + contractElement.name;
-                                completionItems.push(completionItem);
+                                completionItems.push(this.createStructCompletionItem(contractElement, contractName));
                             }
                         });
                     }
@@ -164,6 +213,247 @@ export class CompletionService {
         }
         // console.log('file completion items' + completionItems.length);
         return completionItems;
+    }
+
+
+    public getAllCompletionItems2(packageDefaultDependenciesDirectory: string,
+        packageDefaultDependenciesContractsDirectory: string,
+        document: vscode.TextDocument,
+        position: vscode.Position,
+      ): CompletionItem[] {
+        let completionItems = [];
+        try {
+        var walker = new SolidityCodeWalker(this.rootPath,  packageDefaultDependenciesDirectory,
+            packageDefaultDependenciesContractsDirectory,
+        );
+        const offset = document.offsetAt(position);
+
+        var documentContractSelected = walker.getAllContracts(document, position);
+        const lines = document.getText().split(/\r?\n/g);
+        var triggeredByDotStart = this.getTriggeredByDotStart(lines, position);
+        if(triggeredByDotStart > 0) {
+            const globalVariableContext = GetContextualAutoCompleteByGlobalVariable(lines[position.line], triggeredByDotStart);
+            if (globalVariableContext != null) {
+                completionItems = completionItems.concat(globalVariableContext);
+            } else {
+                let variableName = getAutocompleteTriggerByDotVariableName(lines[position.line], triggeredByDotStart - 1);
+                if(variableName !== '') {
+
+                    if(documentContractSelected.selectedContract !== undefined && documentContractSelected.selectedContract !== null )
+                    {
+
+                        if(variableName === 'this') {
+                            let allfunctions = documentContractSelected.selectedContract.getAllFunctions();
+                            allfunctions.forEach(item => {
+                                completionItems.push(
+                                    this.createFunctionEventCompletionItem(item.element, 'function', item.contract.name));
+                            });
+
+                            let allStateVariables = documentContractSelected.selectedContract.getAllStateVariables();
+                            allStateVariables.forEach(item => {
+                                completionItems.push(
+                                    this.createVariableCompletionItem(item.element, 'state variable', item.contract.name));
+                            });
+
+                        }else {
+                            let allStructs = documentContractSelected.selectedContract.getAllStructs();
+                            let found = false;
+                            let allStateVariables = documentContractSelected.selectedContract.getAllStateVariables();
+                            
+                            allStateVariables.forEach(item => {
+                                if(item.name === variableName) {
+                                    found = true;
+                                    let foundStruct = allStructs.find(x => x.name === item.type.name);
+                                    if(foundStruct !== undefined) {
+                                        foundStruct.variables.forEach(property => {
+                                            let completitionItem =  CompletionItem.create(property.name);
+                                            completionItems.push(completitionItem);
+                                        })
+                                    }
+
+                                    let foundContract = documentContractSelected.allContracts.find(x => x.name === item.type.name);
+                                    if(foundContract !== undefined) {
+                                        foundContract.initialiseExtendContracts(documentContractSelected.allContracts);
+                                        let allfunctions = foundContract.getAllFunctions();
+                                        allfunctions.forEach(item => {
+                                            completionItems.push(
+                                                this.createFunctionEventCompletionItem(item.element, 'function', item.contract.name));
+                                        });
+            
+                                        let allStateVariables = foundContract.getAllStateVariables();
+                                        allStateVariables.forEach(item => {
+                                            completionItems.push(
+                                                this.createVariableCompletionItem(item.element, 'state variable', item.contract.name));
+                                        });
+                                    }
+                                }
+                            });
+
+                            if(!found) {
+
+                                let selectedFunction = documentContractSelected.selectedContract.getSelectedFunction(offset);
+                                if(selectedFunction !== undefined) {
+                                    selectedFunction.findVariableDeclarations();
+                                    selectedFunction.input.forEach(parameter => {
+                                        if(parameter.name === variableName) {
+                                            found = true;
+                                            let foundStruct = allStructs.find(x => x.name === parameter.type.name);
+                                            if(foundStruct !== undefined) {
+                                                foundStruct.variables.forEach(property => {
+                                                    let completitionItem =  CompletionItem.create(property.name);
+                                                    completionItems.push(completitionItem);
+                                                })
+                                            }
+
+                                            let foundContract = documentContractSelected.allContracts.find(x => x.name === parameter.type.name);
+                                            if(foundContract !== undefined) {
+                                                foundContract.initialiseExtendContracts(documentContractSelected.allContracts);
+                                                let allfunctions = foundContract.getAllFunctions();
+                                                allfunctions.forEach(item => {
+                                                    completionItems.push(
+                                                        this.createFunctionEventCompletionItem(item.element, 'function', item.contract.name));
+                                                });
+                    
+                                                let allStateVariables = foundContract.getAllStateVariables();
+                                                allStateVariables.forEach(item => {
+                                                    completionItems.push(
+                                                        this.createVariableCompletionItem(item.element, 'state variable', item.contract.name));
+                                                });
+                                            }
+                                        }
+                                    });
+
+                                    if(!found) {
+                                        selectedFunction.variables.forEach(variable => {
+                                            if(variable.name === variableName) {
+                                                found = true;
+                                                let foundStruct = allStructs.find(x => x.name === variable.type.name);
+                                                if(foundStruct !== undefined) {
+                                                    foundStruct.variables.forEach(property => {
+                                                        let completitionItem =  CompletionItem.create(property.name);
+                                                        completionItems.push(completitionItem);
+                                                    })
+                                                }
+
+                                                let foundContract = documentContractSelected.allContracts.find(x => x.name === variable.type.name);
+                                                if(foundContract !== undefined) {
+                                                    foundContract.initialiseExtendContracts(documentContractSelected.allContracts);
+                                                    let allfunctions = foundContract.getAllFunctions();
+                                                    allfunctions.forEach(item => {
+                                                        completionItems.push(
+                                                            this.createFunctionEventCompletionItem(item.element, 'function', item.contract.name));
+                                                    });
+                        
+                                                    let allStateVariables = foundContract.getAllStateVariables();
+                                                    allStateVariables.forEach(item => {
+                                                        completionItems.push(
+                                                            this.createVariableCompletionItem(item.element, 'state variable', item.contract.name));
+                                                    });
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+
+                        }
+
+                    }
+                }
+            }
+            return completionItems;
+        }
+
+
+        if(documentContractSelected.selectedContract !== undefined && documentContractSelected.selectedContract !== null ) {
+            let allfunctions = documentContractSelected.selectedContract.getAllFunctions();
+            allfunctions.forEach(item => {
+                completionItems.push(
+                    this.createFunctionEventCompletionItem(item.element, 'function', item.contract.name));
+            });
+            let allevents = documentContractSelected.selectedContract.getAllEvents();
+            allevents.forEach(item => {
+                completionItems.push(
+                    this.createFunctionEventCompletionItem(item.element, 'event', item.contract.name));
+            });
+            let allStateVariables = documentContractSelected.selectedContract.getAllStateVariables();
+            allStateVariables.forEach(item => {
+                completionItems.push(
+                    this.createVariableCompletionItem(item.element, 'state variable', item.contract.name));
+            });
+
+            let allStructs = documentContractSelected.selectedContract.getAllStructs();
+            allStructs.forEach(item => {
+                completionItems.push(
+                    this.createStructCompletionItem(item.element, item.contract.name));
+            });
+
+            let allEnums = documentContractSelected.selectedContract.getAllEnums();
+            allEnums.forEach(item => {
+                completionItems.push(
+                    this.createEnumCompletionItem(item.element, item.contract.name));
+            });
+            
+            let selectedFunction = documentContractSelected.selectedContract.getSelectedFunction(offset);
+            if(selectedFunction !== undefined) {
+                selectedFunction.findVariableDeclarations();
+                selectedFunction.input.forEach(parameter => {
+                    completionItems.push(this.createParameterCompletionItem(parameter.element, "function parameter", selectedFunction.contract.name));
+                });
+                selectedFunction.output.forEach(parameter => {
+                    completionItems.push(this.createParameterCompletionItem(parameter.element, "return parameter", selectedFunction.contract.name));
+                });
+
+                selectedFunction.variables.forEach(variable => {
+                    completionItems.push(this.createVariableCompletionItem(variable.element, "function variable", selectedFunction.contract.name));
+                })
+            }
+        }
+
+        documentContractSelected.allContracts.forEach(x => {
+           if(x.contractType === "ContractStatement") {
+               completionItems.push(this.createContractCompletionItem(x.name, "Contract"));
+           }
+           
+           if(x.contractType === "LibraryStatement") {
+                completionItems.push(this.createContractCompletionItem(x.name, "Library"));
+            }
+
+            if(x.contractType === "InterfaceStatement") {
+                completionItems.push(this.createInterfaceCompletionItem(x.name));
+            }
+        })
+
+    } catch (error) {
+        // graceful catch
+       // console.log(error);
+    } finally {
+
+        completionItems = completionItems.concat(GetCompletionTypes());
+        completionItems = completionItems.concat(GetCompletionKeywords());
+        completionItems = completionItems.concat(GeCompletionUnits());
+        completionItems = completionItems.concat(GetGlobalFunctions());
+        completionItems = completionItems.concat(GetGlobalVariables());
+    }
+    return completionItems;
+    }
+
+    public getTriggeredByDotStart(lines:string[], position: vscode.Position):number {
+        let start = 0;
+        let triggeredByDot = false;
+        for (let i = position.character; i >= 0; i--) {
+            if (lines[position.line[i]] === ' ') {
+                triggeredByDot = false;
+                i = 0;
+                start = 0;
+            }
+            if (lines[position.line][i] === '.') {
+                start = i;
+                i = 0;
+                triggeredByDot = true;
+            }
+        }
+        return start;
     }
 
     public getAllCompletionItems(documentText: string,
@@ -429,6 +719,50 @@ function isAutocompleteTrigeredByVariableName(variableName: string, lineText: st
         }
     return false;
 }
+
+function getAutocompleteTriggerByDotVariableName(lineText: string, wordEndPosition:number): string {
+    let searching = true;
+    let result: string = '';
+    if(lineText[wordEndPosition] == ']' ) {
+        let arrayBeginFound = false;
+        while(!arrayBeginFound && wordEndPosition >= 0 ) {
+            if(lineText[wordEndPosition] === '[') {
+                arrayBeginFound = true;
+            }
+            wordEndPosition = wordEndPosition - 1;
+        }
+    }
+
+    while(searching && wordEndPosition >= 0) {
+        let currentChar = lineText[wordEndPosition];
+        if(isAlphaNumeric(currentChar)) {
+            result = currentChar + result;
+            wordEndPosition = wordEndPosition - 1;
+        } else {
+            if(currentChar === ' ') { // we only want a full word for a variable // this cannot be parsed due incomplete statements
+                searching = false;
+                return result;
+            }
+            searching = false;
+            return '';
+        }
+    }
+    return result;
+}
+
+function isAlphaNumeric(str) {
+    var code, i, len;
+  
+    for (i = 0, len = str.length; i < len; i++) {
+      code = str.charCodeAt(i);
+      if (!(code > 47 && code < 58) && // numeric (0-9)
+          !(code > 64 && code < 91) && // upper alpha (A-Z)
+          !(code > 96 && code < 123)) { // lower alpha (a-z)
+        return false;
+      }
+    }
+    return true;
+  };
 
 function getBlockCompletionItems(): CompletionItem[] {
     return [

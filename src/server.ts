@@ -21,6 +21,8 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 
 import {URI} from 'vscode-uri';
 
+import {SolidityCodeWalker} from './codeWalkerService';
+
 interface Settings {
     solidity: SoliditySettings;
 }
@@ -118,58 +120,16 @@ connection.onSignatureHelp((): SignatureHelp => {
 });
 
 connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-    // The pass parameter contains the position of the text document in
-    // which code complete got requested. For the example we ignore this
-    // info and always provide the same completion items
     let completionItems = [];
-    try {
         const document = documents.get(textDocumentPosition.textDocument.uri);
-        const documentPath = Files.uriToFilePath(textDocumentPosition.textDocument.uri);
-        const documentText = document.getText();
-        const lines = documentText.split(/\r?\n/g);
-        const position = textDocumentPosition.position;
-
-        let start = 0;
-        let triggeredByDot = false;
-        for (let i = position.character; i >= 0; i--) {
-            if (lines[position.line[i]] === ' ') {
-                triggeredByDot = false;
-                i = 0;
-                start = 0;
-            }
-            if (lines[position.line][i] === '.') {
-                start = i;
-                i = 0;
-                triggeredByDot = true;
-            }
-        }
-
-        if (triggeredByDot) {
-            const globalVariableContext = GetContextualAutoCompleteByGlobalVariable(lines[position.line], start);
-            if (globalVariableContext != null) {
-                completionItems = completionItems.concat(globalVariableContext);
-            }
-            return completionItems;
-        }
-
         const service = new CompletionService(rootPath);
+
         completionItems = completionItems.concat(
-                service.getAllCompletionItems(documentText,
-                                             documentPath,
-                                             packageDefaultDependenciesDirectory,
-                                             packageDefaultDependenciesContractsDirectory));
-
-    } catch (error) {
-        // graceful catch
-       // console.log(error);
-    } finally {
-
-        completionItems = completionItems.concat(GetCompletionTypes());
-        completionItems = completionItems.concat(GetCompletionKeywords());
-        completionItems = completionItems.concat(GeCompletionUnits());
-        completionItems = completionItems.concat(GetGlobalFunctions());
-        completionItems = completionItems.concat(GetGlobalVariables());
-    }
+        service.getAllCompletionItems2( packageDefaultDependenciesDirectory,
+                                        packageDefaultDependenciesContractsDirectory,
+                                        document,
+                                        textDocumentPosition.position,
+                                       ));
     return completionItems;
 });
 
