@@ -7,6 +7,7 @@ import { ContractCollection } from './model/contractsCollection';
 import { Project } from './model/project';
 import { initialiseProject } from './projectService';
 import * as solparse from 'solparse-exp-jb';
+import { EndOfLine } from 'vscode';
 
 export class ParsedCode {
     public element: any;
@@ -428,8 +429,9 @@ export class SolidityCodeWalker {
         }
         const contract = contracts.contracts[0];
         const offset = document.offsetAt(position);
-        documentContract = this.getSelectedContracts(contract.code, offset);
-
+ 
+        documentContract = this.getSelectedContracts(contract.code, offset, position.line);
+ 
         contracts.contracts.forEach(contractItem => {
             if(contractItem !== contract) {
                 let contractsParsed = this.getContracts(contractItem.code);
@@ -452,7 +454,7 @@ export class SolidityCodeWalker {
   }
 
 
-  public getSelectedContracts(documentText: string, offset: number): DocumentContract {
+  public getSelectedContracts(documentText: string, offset: number, line: number): DocumentContract {
     let contracts : DocumentContract = new DocumentContract();
     try {
 
@@ -469,8 +471,13 @@ export class SolidityCodeWalker {
             }
         });
     } catch (error) {
-      // gracefule catch
-      // console.log(error.message);
+        //if we error parsing (cannot cater for all combos) we fix by removing current line.
+        const lines = documentText.split(/\r?\n/g);
+        if(lines[line].trim() !== '') { //have we done it already?
+            lines[line] = ''.padStart(lines[line].length, ' '); //adding the same number of characters so the position matches where we are at the moment
+            let code = lines.join('\r\n');
+            return this.getSelectedContracts(code, offset, line);
+        }
     }
     return contracts;
   }

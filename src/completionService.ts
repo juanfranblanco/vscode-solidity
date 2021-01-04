@@ -229,6 +229,7 @@ export class CompletionService {
         const offset = document.offsetAt(position);
 
         var documentContractSelected = walker.getAllContracts(document, position);
+
         const lines = document.getText().split(/\r?\n/g);
         var triggeredByDotStart = this.getTriggeredByDotStart(lines, position);
         //triggered by emit is only possible with ctrl space
@@ -749,7 +750,7 @@ function getAutocompleteTriggerByDotVariableName(lineText: string, wordEndPositi
 
     while(searching && wordEndPosition >= 0) {
         let currentChar = lineText[wordEndPosition];
-        if(isAlphaNumeric(currentChar)) {
+        if(isAlphaNumeric(currentChar) || currentChar === '_' || currentChar === '$') {
             result = currentChar + result;
             wordEndPosition = wordEndPosition - 1;
         } else {
@@ -780,7 +781,7 @@ function getAutocompleteVariableNameTrimmingSpaces(lineText: string, wordEndPosi
 
     while(searching && wordEndPosition >= 0) {
         let currentChar = lineText[wordEndPosition];
-        if(isAlphaNumeric(currentChar)) {
+        if(isAlphaNumeric(currentChar) || currentChar === '_' || currentChar === '$') {
             result = currentChar + result;
             wordEndPosition = wordEndPosition - 1;
         } else {
