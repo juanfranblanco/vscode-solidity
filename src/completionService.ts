@@ -231,6 +231,8 @@ export class CompletionService {
         var documentContractSelected = walker.getAllContracts(document, position);
         const lines = document.getText().split(/\r?\n/g);
         var triggeredByDotStart = this.getTriggeredByDotStart(lines, position);
+        //triggered by emit is only possible with ctrl space
+        var triggeredByEmit = getAutocompleteVariableNameTrimmingSpaces(lines[position.line], position.character - 1) === 'emit';
         if(triggeredByDotStart > 0) {
             const globalVariableContext = GetContextualAutoCompleteByGlobalVariable(lines[position.line], triggeredByDotStart);
             if (globalVariableContext != null) {
@@ -292,6 +294,7 @@ export class CompletionService {
                             if(!found) {
 
                                 let selectedFunction = documentContractSelected.selectedContract.getSelectedFunction(offset);
+                                
                                 if(selectedFunction !== undefined) {
                                     selectedFunction.findVariableDeclarations();
                                     selectedFunction.input.forEach(parameter => {
@@ -364,6 +367,16 @@ export class CompletionService {
             return completionItems;
         }
 
+        if(triggeredByEmit) {
+            let allevents = documentContractSelected.selectedContract.getAllEvents();
+            allevents.forEach(item => {
+                completionItems.push(
+                    this.createFunctionEventCompletionItem(item.element, 'event', item.contract.name));
+            });
+
+            return completionItems;
+        }
+
 
         if(documentContractSelected.selectedContract !== undefined && documentContractSelected.selectedContract !== null ) {
             let allfunctions = documentContractSelected.selectedContract.getAllFunctions();
@@ -395,6 +408,7 @@ export class CompletionService {
             });
             
             let selectedFunction = documentContractSelected.selectedContract.getSelectedFunction(offset);
+   
             if(selectedFunction !== undefined) {
                 selectedFunction.findVariableDeclarations();
                 selectedFunction.input.forEach(parameter => {
@@ -406,7 +420,7 @@ export class CompletionService {
 
                 selectedFunction.variables.forEach(variable => {
                     completionItems.push(this.createVariableCompletionItem(variable.element, "function variable", selectedFunction.contract.name));
-                })
+                });
             }
         }
 
@@ -730,6 +744,37 @@ function getAutocompleteTriggerByDotVariableName(lineText: string, wordEndPositi
                 arrayBeginFound = true;
             }
             wordEndPosition = wordEndPosition - 1;
+        }
+    }
+
+    while(searching && wordEndPosition >= 0) {
+        let currentChar = lineText[wordEndPosition];
+        if(isAlphaNumeric(currentChar)) {
+            result = currentChar + result;
+            wordEndPosition = wordEndPosition - 1;
+        } else {
+            if(currentChar === ' ') { // we only want a full word for a variable // this cannot be parsed due incomplete statements
+                searching = false;
+                return result;
+            }
+            searching = false;
+            return '';
+        }
+    }
+    return result;
+}
+
+
+function getAutocompleteVariableNameTrimmingSpaces(lineText: string, wordEndPosition:number): string {
+    let searching = true;
+    let result: string = '';
+    if(lineText[wordEndPosition] === ' ' ) {
+        let spaceFound = true;
+        while(spaceFound && wordEndPosition >= 0 ) {
+            wordEndPosition = wordEndPosition - 1;
+            if(lineText[wordEndPosition] !== ' ') {
+                spaceFound = false;
+            }
         }
     }
 

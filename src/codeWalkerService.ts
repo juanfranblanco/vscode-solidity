@@ -45,7 +45,9 @@ export class Contract2 extends ParsedCode
     public stateVariables: StateVariable[] = []
     public structs: Struct[] = [];
     public contractType: string;
-    public constructorFunction: Function;
+    public constructorFunction: Function = new Function();
+    public fallbackFunction: Function = new Function();
+    public receiveFunction: Function = new Function();
     public extendsContracts: Contract2[] = [];
     public extendsContractNames: string[] = [];
 
@@ -69,8 +71,31 @@ export class Contract2 extends ParsedCode
         }
     }
 
+    private isElementedSelected(element:any, offset:number): boolean{
+        if(element !== undefined && element !== null) {
+            if(element.start <= offset && offset <= element.end) 
+                return true;;
+        }
+        return false;
+    }
+
+    public isConstructorSelected(offset:number) {
+        let element = this.constructorFunction.element;
+        return this.isElementedSelected(element, offset);
+    }
+
+    public isFallbackSelected(offset:number) {
+        let element = this.fallbackFunction.element;
+        return this.isElementedSelected(element, offset);
+    }
+
+    public isReceivableSelected(offset:number) {
+        let element = this.receiveFunction.element;
+        return this.isElementedSelected(element, offset);
+    }
+
     public getSelectedFunction(offset:number) {
-        let x =  this.functions.find(x => {
+        let selectedFunction =  this.functions.find(x => {
             let element = x.element;
             if(element !== undefined || element !== null) {
                if(element.start <= offset && offset <= element.end) 
@@ -78,7 +103,20 @@ export class Contract2 extends ParsedCode
             }
             return false;
         });
-        return x;
+        if(selectedFunction === undefined) { //nothing
+            if(this.isConstructorSelected(offset)) {
+                selectedFunction = this.constructorFunction;
+            } else {
+                if(this.isFallbackSelected(offset)) {
+                    selectedFunction = this.fallbackFunction;
+                } else {
+                    if(this.isReceivableSelected(offset)) {
+                        selectedFunction = this.receiveFunction;
+                    }
+                }
+            }
+        }
+        return selectedFunction;
     }
 
     public getAllFunctions() : Function[] {
@@ -145,6 +183,24 @@ export class Contract2 extends ParsedCode
                     }
                 }
 
+                if (contractElement.type === 'ConstructorDeclaration') {
+                    const functionContract = new Function();
+                    functionContract.initialise(contractElement, this);
+                    this.constructorFunction = functionContract;
+                }
+
+                if (contractElement.type === 'FallbackDeclaration') {
+                    const functionContract = new Function();
+                    functionContract.initialise(contractElement, this);
+                    this.fallbackFunction = functionContract;
+                }
+
+                if (contractElement.type === 'ReceiveDeclaration') {
+                    const functionContract = new Function();
+                    functionContract.initialise(contractElement, this);
+                    this.receiveFunction = functionContract;
+                }
+
                 if (contractElement.type === 'EventDeclaration') {
                     let eventContract = new Event();
                     eventContract.initialise(contractElement, this);
@@ -192,7 +248,7 @@ export class Function extends ParsedCode {
     }
 
     public findVariableDeclarations(){
-        if(this.element.is_abstract === false) {
+        if(this.element.is_abstract === false || this.element.is_abstract === undefined) {
             if(this.element.body.body !== 'undefined') {
                 this.element.body.body.forEach(functionBodyElement => {
                     if (functionBodyElement.type === 'ExpressionStatement') {
