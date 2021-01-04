@@ -64,7 +64,7 @@ export class Contract2 extends ParsedCode
         if(this.extendsContracts.length === 0 && this.extendsContractNames.length > 0) {
             this.extendsContractNames.forEach(contractName => {
                let contractMatched =  contracts.find(x => x.name === contractName);
-               if(contractMatched !== undefined || contractMatched !== null) {
+               if(contractMatched !== undefined && contractMatched !== null) {
                     contractMatched.initialiseExtendContracts(contracts);
                     this.extendsContracts.push(contractMatched);
                }

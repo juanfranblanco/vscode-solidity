@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.86",
+  "version": "0.0.87",
   "publisher": "JuanBlanco",
   "engines": {
     "vscode": "^1.50.1"
