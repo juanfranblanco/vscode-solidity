@@ -4,8 +4,8 @@ import {ContractCollection} from './model/contractsCollection';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { initialiseProject } from './projectService';
 import * as vscode from 'vscode-languageserver';
-import {Contract2, DocumentContract, SolidityCodeWalker, Variable} from './codeWalkerService';
-import { finished } from 'stream';
+import {Contract2, DocumentContract, Function, SolidityCodeWalker, Variable} from './codeWalkerService';
+
 
 // TODO implement caching, dirty on document change, reload, etc.
 // store
@@ -247,78 +247,124 @@ export class CompletionService {
             if (globalVariableContext != null) {
                 completionItems = completionItems.concat(globalVariableContext);
             } else {
-                let variableName = getAutocompleteTriggerByDotVariableName(lines[position.line], triggeredByDotStart - 1);
+                let autocompleteByDot = getAutocompleteTriggerByDotVariableName(lines[position.line], triggeredByDotStart - 1);
                 // if triggered by variable
-                // todo triggered by method
+                // todo triggered by method (get return type)
                 // todo triggered by property
-                // todo variable is an array.
-                if(variableName !== '') {
+                // todo variable // method return is an array (push, length etc)
+                // variable / method / property is an address or other specific type functionality (balance, etc)
+                // variable / method / property type is extended by a library
+                if(autocompleteByDot.name !== '') {
 
+                    
                     // have we got a selected contract 
                     if(documentContractSelected.selectedContract !== undefined && documentContractSelected.selectedContract !== null )
                     {
                         let selectedContract = documentContractSelected.selectedContract;
 
-                        //is triggered by this
-                        if(variableName === 'this') {
+                        if(autocompleteByDot.isVariable) {
+                            //is triggered by this
+                            if(autocompleteByDot.name === 'this') {
 
-                            //add selectd contract completion items
-                            this.addContractCompletionItems(selectedContract, completionItems);
+                                //add selectd contract completion items
+                                this.addContractCompletionItems(selectedContract, completionItems);
 
-                        } else {
-                            // start finding the variable name
+                            } else {
+                                // start finding the variable name
 
-                            // get all structs to match type
+                                // get all structs to match type
+                                let allStructs = documentContractSelected.selectedContract.getAllStructs();
+                                let allContracts = documentContractSelected.allContracts;
+                                let allEnums = documentContractSelected.selectedContract.getAllEnums();
+                                let found = false;
+
+                                let allVariables: Variable[] = documentContractSelected.selectedContract.getAllStateVariables();
+                                let selectedFunction = documentContractSelected.selectedContract.getSelectedFunction(offset);
+                                if(selectedFunction !== undefined) {
+                                    selectedFunction.findVariableDeclarationsInScope(offset, null);
+                                    //adding input parameters
+                                    allVariables = allVariables.concat(selectedFunction.input);
+                                    //ading all variables
+                                    allVariables = allVariables.concat(selectedFunction.variablesInScope);
+                                }
+
+                                allVariables.forEach(item => {
+                                    if(item.name === autocompleteByDot.name && !found) {
+                                        found = true;
+                                        //todo item arrays
+                                        let foundStruct = allStructs.find(x => x.name === item.type.name);
+                                        if(foundStruct !== undefined) {
+                                            foundStruct.variables.forEach(property => {
+                                                //own method refactor
+                                                let completitionItem =  CompletionItem.create(property.name);
+                                                const typeString = this.getTypeString(property.element.literal);
+                                                completitionItem.detail = '(' + property.name + ' in ' + foundStruct.name + ') '
+                                                + typeString + ' ' + foundStruct.name;
+                                                completionItems.push(completitionItem);
+                                            })
+                                        } else {
+
+                                            let foundContract = allContracts.find(x => x.name === item.type.name);
+                                            if(foundContract !== undefined) {
+                                                foundContract.initialiseExtendContracts(allContracts);
+                                                this.addContractCompletionItems(foundContract, completionItems);
+                                            }
+                                        } //find in enum types
+                                    }
+                                });
+
+                                if(!found) {
+                                    allEnums.forEach(item => {
+                                        if(item.name === autocompleteByDot.name) {
+                                            found = true;
+                                                item.items.forEach(property => {
+                                                    let completitionItem =  CompletionItem.create(property);
+                                                    completionItems.push(completitionItem);
+                                                })
+                                        }
+                                    });
+                                }
+                            }
+
+                        } // end is variable
+
+                        if(autocompleteByDot.isMethod) {
                             let allStructs = documentContractSelected.selectedContract.getAllStructs();
                             let allContracts = documentContractSelected.allContracts;
                             let allEnums = documentContractSelected.selectedContract.getAllEnums();
+
+                            let allfunctions: Function[] = documentContractSelected.selectedContract.getAllFunctions();
                             let found = false;
 
-                            let allVariables: Variable[] = documentContractSelected.selectedContract.getAllStateVariables();
-                            let selectedFunction = documentContractSelected.selectedContract.getSelectedFunction(offset);
-                            if(selectedFunction !== undefined) {
-                                selectedFunction.findVariableDeclarationsInScope(offset, null);
-                                //adding input parameters
-                                allVariables = allVariables.concat(selectedFunction.input);
-                                //ading all variables
-                                allVariables = allVariables.concat(selectedFunction.variablesInScope);
-                            }
-
-                            allVariables.forEach(item => {
-                                if(item.name === variableName) {
+                            allfunctions.forEach(item => {
+                                if(item.name === autocompleteByDot.name) {
                                     found = true;
-                                    //todo item arrays
-                                    let foundStruct = allStructs.find(x => x.name === item.type.name);
-                                    if(foundStruct !== undefined) {
-                                        foundStruct.variables.forEach(property => {
-                                            //what about the type of 
-                                            let completitionItem =  CompletionItem.create(property.name);
-                                            completionItems.push(completitionItem);
-                                        })
-                                    } else {
+                                    if(item.output.length === 1) {
+                                        //todo return array
+                                        let typeName = item.output[0].type.name;
 
-                                        let foundContract = allContracts.find(x => x.name === item.type.name);
-                                        if(foundContract !== undefined) {
-                                            foundContract.initialiseExtendContracts(allContracts);
-                                            this.addContractCompletionItems(foundContract, completionItems);
+                                        let foundStruct = allStructs.find(x => x.name === typeName);
+                                        if(foundStruct !== undefined) {
+                                            foundStruct.variables.forEach(property => {
+                                                //own method refactor
+                                                let completitionItem =  CompletionItem.create(property.name);
+                                                const typeString = this.getTypeString(property.element.literal);
+                                                completitionItem.detail = '(' + property.name + ' in ' + foundStruct.name + ') '
+                                                + typeString + ' ' + foundStruct.name;
+                                                completionItems.push(completitionItem);
+                                            })
+                                        } else {
+
+                                            let foundContract = allContracts.find(x => x.name === typeName);
+                                            if(foundContract !== undefined) {
+                                                foundContract.initialiseExtendContracts(allContracts);
+                                                this.addContractCompletionItems(foundContract, completionItems);
+                                            }
                                         }
                                     }
                                 }
                             });
-
-                            if(!found) {
-                                allEnums.forEach(item => {
-                                    if(item.name === variableName) {
-                                        found = true;
-                                            item.items.forEach(property => {
-                                                let completitionItem =  CompletionItem.create(property);
-                                                completionItems.push(completitionItem);
-                                            })
-                                    }
-                                });
-                            }
                         }
-
                     }
                 }
             }
@@ -725,10 +771,24 @@ function isAutocompleteTrigeredByVariableName(variableName: string, lineText: st
     return false;
 }
 
-function getAutocompleteTriggerByDotVariableName(lineText: string, wordEndPosition:number): string {
+export class AutocompleteByDot {
+    public isVariable: boolean = false;
+    public isMethod: boolean = false;
+    public isArray: boolean = false;
+    public isProperty: boolean = false;
+    public innerName: string[]; // could be a property or a method
+    public name: string = '';
+}
+
+function getAutocompleteTriggerByDotVariableName(lineText: string, wordEndPosition:number): AutocompleteByDot {
     let searching = true;
-    let result: string = '';
+    let result: AutocompleteByDot = new AutocompleteByDot();
+    //simpler way might be to find the first space or beginning of line
+    //and from there split / match (but for now kiss or slowly)
+
+    //todo multiple dimentions
     if(lineText[wordEndPosition] == ']' ) {
+        result.isArray = true;
         let arrayBeginFound = false;
         while(!arrayBeginFound && wordEndPosition >= 0 ) {
             if(lineText[wordEndPosition] === '[') {
@@ -738,18 +798,33 @@ function getAutocompleteTriggerByDotVariableName(lineText: string, wordEndPositi
         }
     }
 
+    if(lineText[wordEndPosition] == ')' ) {
+        result.isMethod = true;
+        let methodParamBeginFound = false;
+        while(!methodParamBeginFound && wordEndPosition >= 0 ) {
+            if(lineText[wordEndPosition] === '(') {
+                methodParamBeginFound = true;
+            }
+            wordEndPosition = wordEndPosition - 1;
+        }
+    }
+
+    if(!result.isMethod && !result.isArray) {
+        result.isVariable = true;
+    }
+
     while(searching && wordEndPosition >= 0) {
         let currentChar = lineText[wordEndPosition];
         if(isAlphaNumeric(currentChar) || currentChar === '_' || currentChar === '$') {
-            result = currentChar + result;
+            result.name = currentChar + result.name;
             wordEndPosition = wordEndPosition - 1;
         } else {
-            if(currentChar === ' ') { // we only want a full word for a variable // this cannot be parsed due incomplete statements
+            if(currentChar === ' ') { // we only want a full word for a variable / method // this cannot be parsed due incomplete statements
                 searching = false;
                 return result;
             }
             searching = false;
-            return '';
+            return result;
         }
     }
     return result;

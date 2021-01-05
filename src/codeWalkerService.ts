@@ -7,8 +7,7 @@ import { ContractCollection } from './model/contractsCollection';
 import { Project } from './model/project';
 import { initialiseProject } from './projectService';
 import * as solparse from 'solparse-exp-jb';
-import { EndOfLine } from 'vscode';
-import { MissingRefError } from 'ajv';
+
 
 export class ParsedCode {
     public element: any;
@@ -35,7 +34,11 @@ export class DeclarationType extends ParsedCode {
 
     public initialise(literal: any) {
         this.element = literal;
-        this.name = literal.literal;
+        if(literal.members !== undefined && literal.members.length > 0) {
+            this.name = literal.members[0];    
+        } else {
+            this.name = literal.literal;
+        }
         const isArray = literal.array_parts.length > 0;
         this.isMapping = false;
         const literalType = literal.literal;
