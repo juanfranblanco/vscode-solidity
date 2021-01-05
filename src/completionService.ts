@@ -314,10 +314,10 @@ export class CompletionService {
                                                 this.addContractCompletionItems(foundContract, completionItems);
                                             } else {
                                                 let allUsing = documentContractSelected.selectedContract.getAllUsing(item.type.name);
-                                                allUsing.forEach(item => {
-                                                    let foundLibrary = allContracts.find(x => x.name === item.name);
+                                                allUsing.forEach(usingItem => {
+                                                    let foundLibrary = allContracts.find(x => x.name === usingItem.name);
                                                     if(foundLibrary !== undefined) {
-                                                        this.addAllLibraryExtensionsAsCompletionItems(foundLibrary, completionItems);
+                                                        this.addAllLibraryExtensionsAsCompletionItems(foundLibrary, completionItems, item.type.name);
                                                     }
                                                 });
                                             }
@@ -379,7 +379,7 @@ export class CompletionService {
                                                 allUsing.forEach(item => {
                                                     let foundLibrary = allContracts.find(x => x.name === item.name);
                                                     if(foundLibrary !== undefined) {
-                                                        this.addAllLibraryExtensionsAsCompletionItems(foundLibrary, completionItems);
+                                                        this.addAllLibraryExtensionsAsCompletionItems(foundLibrary, completionItems, typeName);
                                                     }
                                                 });
                                             }
@@ -512,9 +512,16 @@ export class CompletionService {
         });
     }
 
-    private addAllLibraryExtensionsAsCompletionItems(documentContractSelected: Contract2, completionItems: any[]) {
+    private addAllLibraryExtensionsAsCompletionItems(documentContractSelected: Contract2, completionItems: any[], typeName: string) {
         let allfunctions = documentContractSelected.getAllFunctions();
-        allfunctions.forEach(item => {
+        let filteredFunctions = allfunctions.filter( x => {
+            if(x.input.length > 0 ) {
+                return x.input[0].type.name === typeName;
+            }
+            return false;
+        });
+
+        filteredFunctions.forEach(item => {
             completionItems.push(
                 this.createFunctionEventCompletionItem(item.element, 'function', item.contract.name, true));
         });
