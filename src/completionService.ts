@@ -248,9 +248,9 @@ export class CompletionService {
                 completionItems = completionItems.concat(globalVariableContext);
             } else {
                 let autocompleteByDot = getAutocompleteTriggerByDotVariableName(lines[position.line], triggeredByDotStart - 1);
-                // if triggered by variable
-                // todo triggered by method (get return type)
-                // todo triggered by property
+                // if triggered by variable //done
+                // todo triggered by method (get return type) // done
+                // todo triggered by property 
                 // todo variable // method return is an array (push, length etc)
                 // variable / method / property is an address or other specific type functionality (balance, etc)
                 // variable / method / property type is extended by a library

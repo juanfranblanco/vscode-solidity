@@ -74,6 +74,26 @@
 			"prefix": "for",
 			"body": "for (var ${1:index} = 0; $1 < ${2:array}.length; $1${3:++}) {\n\t$0\n}"
 		},
+		"natspec contract": {
+			"prefix": "\/\/\/nat_contract",
+			"body": "\/\/\/ @title A title that should describe the contract\/interface\r\n\/\/\/ @author The name of the author\r\n\/\/\/ @notice Explain to an end user what this does\r\n\/\/\/ @dev Explain to a developer any extra details",
+			"description": "natspec for contract"
+		},
+		"natspec variable": {
+			"prefix": "\/\/\/nat_statevariable",
+			"body": "\/\/\/ @notice Explain to an end user what this does\r\n\/\/\/ @dev Explain to a developer any extra details\r\n\/\/\/ @return Documents the return variables of a contract\u2019s function state variable\r\n\/\/\/ @inheritdoc\tCopies all missing tags from the base function (must be followed by the contract name)",
+			"description": "natspec for state variable"
+		},
+		"natspec function": {
+			"prefix": "\/\/\/nat_function",
+			"body": "\/\/\/ @notice Explain to an end user what this does\r\n\/\/\/ @dev Explain to a developer any extra details\r\n\/\/\/ @param Documents a parameter just like in doxygen (must be followed by parameter name)\r\n\/\/\/ @return Documents the return variables of a contract\u2019s function state variable\r\n\/\/\/ @inheritdoc\tCopies all missing tags from the base function (must be followed by the contract name)",
+			"description": "natspec for function"
+		},
+		"natspec event": {
+			"prefix": "\/\/\/nat_event",
+			"body": "\/\/\/ @notice Explain to an end user what this does\r\n\/\/\/ @dev Explain to a developer any extra details\r\n\/\/\/ @param Documents a parameter just like in doxygen (must be followed by parameter name)",
+			"description": "natspec for event"
+		},
 		"erc20 interface": {
 			"prefix": "erc20i",
 			"body": "\/\/ https:\/\/eips.ethereum.org\/EIPS\/eip-20\r\n\/\/ SPDX-License-Identifier: MIT\r\npragma solidity >=0.5.0 <0.8.0;\r\n\r\ninterface Token {\r\n\r\n    \/\/\/ @param _owner The address from which the balance will be retrieved\r\n    \/\/\/ @return balance the balance\r\n    function balanceOf(address _owner) external view returns (uint256 balance);\r\n\r\n    \/\/\/ @notice send `_value` token to `_to` from `msg.sender`\r\n    \/\/\/ @param _to The address of the recipient\r\n    \/\/\/ @param _value The amount of token to be transferred\r\n    \/\/\/ @return success Whether the transfer was successful or not\r\n    function transfer(address _to, uint256 _value) external returns (bool success);\r\n\r\n    \/\/\/ @notice send `_value` token to `_to` from `_from` on the condition it is approved by `_from`\r\n    \/\/\/ @param _from The address of the sender\r\n    \/\/\/ @param _to The address of the recipient\r\n    \/\/\/ @param _value The amount of token to be transferred\r\n    \/\/\/ @return success Whether the transfer was successful or not\r\n    function transferFrom(address _from, address _to, uint256 _value) external returns (bool success);\r\n\r\n    \/\/\/ @notice `msg.sender` approves `_addr` to spend `_value` tokens\r\n    \/\/\/ @param _spender The address of the account able to transfer the tokens\r\n    \/\/\/ @param _value The amount of wei to be approved for transfer\r\n    \/\/\/ @return success Whether the approval was successful or not\r\n    function approve(address _spender, uint256 _value) external returns (bool success);\r\n\r\n    \/\/\/ @param _owner The address of the account owning tokens\r\n    \/\/\/ @param _spender The address of the account able to transfer the tokens\r\n    \/\/\/ @return remaining Amount of remaining tokens allowed to spent\r\n    function allowance(address _owner, address _spender) external view returns (uint256 remaining);\r\n\r\n    event Transfer(address indexed _from, address indexed _to, uint256 _value);\r\n    event Approval(address indexed _owner, address indexed _spender, uint256 _value);\r\n}",
