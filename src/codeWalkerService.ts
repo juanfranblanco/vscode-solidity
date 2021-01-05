@@ -50,6 +50,18 @@ export class DeclarationType extends ParsedCode {
     }
 }
 
+export class Using extends ParsedCode {
+    public for: DeclarationType;
+    public contract: Contract2;
+    public initialise(element:any, contract:Contract2) {
+        this.contract = contract;
+        this.element = element;
+        this.name = element.library;
+        this.for = DeclarationType.create(element.for);
+        this.location; //             
+    }
+}
+
 export class Contract2 extends ParsedCode 
 {
     public functions: Function[] = [];
@@ -63,6 +75,7 @@ export class Contract2 extends ParsedCode
     public receiveFunction: Function = new Function();
     public extendsContracts: Contract2[] = [];
     public extendsContractNames: string[] = [];
+    public using: Using[] = [];
 
     public initialise(element:any) {
         this.element = element;
@@ -108,6 +121,7 @@ export class Contract2 extends ParsedCode
             }
             return false;
         });
+
         if(selectedFunction === undefined) { //nothing
             if(this.isConstructorSelected(offset)) {
                 selectedFunction = this.constructorFunction;
@@ -165,6 +179,16 @@ export class Contract2 extends ParsedCode
         returnItems = returnItems.concat(this.events);
         this.extendsContracts.forEach(contract => {
             returnItems = returnItems.concat(contract.getAllEvents());
+         });
+        return returnItems;
+    }
+
+    public getAllUsing(type: string) : Using[] {
+        let returnItems: Using[] = [];
+        this.using.filter(x => x.for.name === type);
+        returnItems = returnItems.concat(this.using.filter(x => x.for.name === type));
+        this.extendsContracts.forEach(contract => {
+            returnItems = returnItems.concat(contract.getAllUsing(type));
          });
         return returnItems;
     }
@@ -228,6 +252,12 @@ export class Contract2 extends ParsedCode
                     let struct = new Struct();
                     struct.initialise(contractElement, this);
                     this.structs.push(struct);
+                }
+
+                if (contractElement.type === 'UsingStatement') {
+                    let using = new Using();
+                    using.initialise(contractElement, this);
+                    this.using.push(using);
                 }
             });
         }

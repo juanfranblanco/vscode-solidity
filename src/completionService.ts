@@ -48,18 +48,22 @@ export class CompletionService {
         return literalType + suffixType;
     }
 
-    public createFunctionParamsSnippet(params: any): string {
+    public createFunctionParamsSnippet(params: any, skipFirst: boolean = false): string {
         let paramsSnippet = '';
         let counter = 0;
         if (typeof params !== 'undefined' && params !== null) {
             params.forEach( parameterElement => {
-               const typeString = this.getTypeString(parameterElement.literal);
-               counter = counter + 1;
-               const currentParamSnippet = '${' + counter + ':' + parameterElement.id + '}';
-                if (paramsSnippet === '') {
-                    paramsSnippet = currentParamSnippet;
-                } else {
-                    paramsSnippet = paramsSnippet + ', ' + currentParamSnippet;
+               if(skipFirst && counter === 0) {
+                  skipFirst = false; 
+               } else {
+                const typeString = this.getTypeString(parameterElement.literal);
+                counter = counter + 1;
+                const currentParamSnippet = '${' + counter + ':' + parameterElement.id + '}';
+                    if (paramsSnippet === '') {
+                        paramsSnippet = currentParamSnippet;
+                    } else {
+                        paramsSnippet = paramsSnippet + ', ' + currentParamSnippet;
+                    }
                 }
             });
         }
@@ -90,12 +94,12 @@ export class CompletionService {
         return paramsInfo;
     }
 
-    public createFunctionEventCompletionItem(contractElement: any, type: string, contractName: string): CompletionItem {
+    public createFunctionEventCompletionItem(contractElement: any, type: string, contractName: string, skipFirstParamSnipppet: boolean = false): CompletionItem {
 
         const completionItem =  CompletionItem.create(contractElement.name);
         completionItem.kind = CompletionItemKind.Function;
         const paramsInfo = this.createParamsInfo(contractElement.params);
-        const paramsSnippet = this.createFunctionParamsSnippet(contractElement.params);
+        const paramsSnippet = this.createFunctionParamsSnippet(contractElement.params, skipFirstParamSnipppet);
         let returnParamsInfo = this.createParamsInfo(contractElement.returnParams);
         if (returnParamsInfo !== '') {
             returnParamsInfo = ' returns (' + returnParamsInfo + ')';
@@ -308,8 +312,19 @@ export class CompletionService {
                                             if(foundContract !== undefined) {
                                                 foundContract.initialiseExtendContracts(allContracts);
                                                 this.addContractCompletionItems(foundContract, completionItems);
+                                            } else {
+                                                let allUsing = documentContractSelected.selectedContract.getAllUsing(item.type.name);
+                                                allUsing.forEach(item => {
+                                                    let foundLibrary = allContracts.find(x => x.name === item.name);
+                                                    if(foundLibrary !== undefined) {
+                                                        this.addAllLibraryExtensionsAsCompletionItems(foundLibrary, completionItems);
+                                                    }
+                                                });
                                             }
-                                        } //find in enum types
+                                        } 
+                                        
+                                        
+                                        //find in enum types
                                     }
                                 });
 
@@ -359,6 +374,14 @@ export class CompletionService {
                                             if(foundContract !== undefined) {
                                                 foundContract.initialiseExtendContracts(allContracts);
                                                 this.addContractCompletionItems(foundContract, completionItems);
+                                            } else {
+                                                let allUsing = documentContractSelected.selectedContract.getAllUsing(typeName);
+                                                allUsing.forEach(item => {
+                                                    let foundLibrary = allContracts.find(x => x.name === item.name);
+                                                    if(foundLibrary !== undefined) {
+                                                        this.addAllLibraryExtensionsAsCompletionItems(foundLibrary, completionItems);
+                                                    }
+                                                });
                                             }
                                         }
                                     }
@@ -486,6 +509,14 @@ export class CompletionService {
         allfunctions.forEach(item => {
             completionItems.push(
                 this.createFunctionEventCompletionItem(item.element, 'function', item.contract.name));
+        });
+    }
+
+    private addAllLibraryExtensionsAsCompletionItems(documentContractSelected: Contract2, completionItems: any[]) {
+        let allfunctions = documentContractSelected.getAllFunctions();
+        allfunctions.forEach(item => {
+            completionItems.push(
+                this.createFunctionEventCompletionItem(item.element, 'function', item.contract.name, true));
         });
     }
 
