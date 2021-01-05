@@ -356,7 +356,7 @@ export class StateVariable extends Variable {
     public contract: Contract2;
 }
 
-export class Parameter extends ParsedCode {
+export class Parameter extends Variable {
     
     static extractParameters(params: any) : Parameter[] {
         const parameters: Parameter[] = [];
@@ -377,8 +377,6 @@ export class Parameter extends ParsedCode {
         }
         return parameters;
     }
-
-    public type:  DeclarationType;
 }
 
 export class DocumentContract {
