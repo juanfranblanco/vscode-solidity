@@ -8,11 +8,20 @@ import { Project } from './model/project';
 import { initialiseProject } from './projectService';
 import * as solparse from 'solparse-exp-jb';
 import { EndOfLine } from 'vscode';
+import { MissingRefError } from 'ajv';
 
 export class ParsedCode {
     public element: any;
     public name: string;
     public location: vscode.Location;
+
+    protected isElementedSelected(element:any, offset:number): boolean{
+        if(element !== undefined && element !== null) {
+            if(element.start <= offset && offset <= element.end) 
+                return true;;
+        }
+        return false;
+    }
 }
 
 export class DeclarationType extends ParsedCode {
@@ -70,14 +79,6 @@ export class Contract2 extends ParsedCode
                }
             });
         }
-    }
-
-    private isElementedSelected(element:any, offset:number): boolean{
-        if(element !== undefined && element !== null) {
-            if(element.start <= offset && offset <= element.end) 
-                return true;;
-        }
-        return false;
     }
 
     public isConstructorSelected(offset:number) {
@@ -233,7 +234,7 @@ export class Contract2 extends ParsedCode
 export class Function extends ParsedCode {
     public input:     Parameter[] = [];
     public output:    Parameter[] = [];
-    public variables: FunctionVariable[] = [];
+    public variablesInScope: FunctionVariable[] = [];
     public contract:  Contract2;
 
     public initialise(element:any, contract:Contract2) {
@@ -248,33 +249,65 @@ export class Function extends ParsedCode {
         this.output = Parameter.extractParameters(this.element.returnParams);
     }
 
-    public findVariableDeclarations(){
+    public findVariableDeclarationsInScope(offset:number, block:any){
+    
         if(this.element.is_abstract === false || this.element.is_abstract === undefined) {
-            if(this.element.body.body !== 'undefined') {
-                this.element.body.body.forEach(functionBodyElement => {
-                    if (functionBodyElement.type === 'ExpressionStatement') {
-                        var declarationStatement = null;
-                        if(functionBodyElement.expression.type === 'AssignmentExpression'){
-                            if(functionBodyElement.expression.left.type === 'DeclarativeExpression') {
-                                declarationStatement = functionBodyElement.expression.left;
-                            }
-                        }
-                        
-                        if(functionBodyElement.expression.type === 'DeclarativeExpression'){
-                            declarationStatement = functionBodyElement.expression;
-                        }
-
-                        if(declarationStatement !== null) {
-                            let variable = new FunctionVariable();
-                            variable.element = declarationStatement;
-                            variable.name = declarationStatement.name;
-                            variable.type = DeclarationType.create(declarationStatement.literal);
-                            variable.function = this;
-                            this.variables.push(variable);
-                        }
-                    }
-                });
+            if(this.element.body !== 'undefined' && this.element.body.type === 'BlockStatement') {
+                this.findVariableDeclarationsInInnerScope(offset, this.element.body);
             }
+        }
+    }
+
+    public findVariableDeclarationsInInnerScope(offset:number, block:any){
+        
+        if(block !== undefined && block !== null) {
+            if(this.isElementedSelected(block, offset)) {
+                if(block.body !== 'undefined') {
+                        block.body.forEach(blockBodyElement => {
+                            if (blockBodyElement.type === 'ExpressionStatement') {
+                                let expression = blockBodyElement.expression;
+                                this.addVariableInScopeFromExpression(expression);
+                            }
+
+                            if (blockBodyElement.type === 'ForStatement') {
+                                if(this.isElementedSelected(blockBodyElement, offset)) {
+                                    this.addVariableInScopeFromExpression(blockBodyElement.init);
+                                    this.findVariableDeclarationsInInnerScope(offset, blockBodyElement.body);
+                                }
+                            }
+
+                            if (blockBodyElement.type === 'IfStatement') {
+                                if(this.isElementedSelected(blockBodyElement, offset)) {
+                                    this.findVariableDeclarationsInInnerScope(offset, blockBodyElement.consequent);
+                                    this.findVariableDeclarationsInInnerScope(offset, blockBodyElement.alternate);
+                                }
+                            }
+                        });
+                }
+            }
+                
+        }
+    }
+
+    private addVariableInScopeFromExpression(expression: any) {
+        let declarationStatement = null;
+        if (expression.type === 'AssignmentExpression') {
+            if (expression.left.type === 'DeclarativeExpression') {
+                declarationStatement = expression.left;
+            }
+        }
+
+        if (expression.type === 'DeclarativeExpression') {
+            declarationStatement = expression;
+        }
+
+        if (declarationStatement !== null) {
+            let variable = new FunctionVariable();
+            variable.element = declarationStatement;
+            variable.name = declarationStatement.name;
+            variable.type = DeclarationType.create(declarationStatement.literal);
+            variable.function = this;
+            this.variablesInScope.push(variable);
         }
     }
 }
@@ -428,7 +461,7 @@ export class SolidityCodeWalker {
         const contract = contracts.contracts[0];
         const offset = document.offsetAt(position);
  
-        documentContract = this.getSelectedContracts(contract.code, offset, position.line);
+        documentContract = this.getSelectedContracts(documentText, offset, position.line);
  
         contracts.contracts.forEach(contractItem => {
             if(contractItem !== contract) {

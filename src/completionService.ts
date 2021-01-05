@@ -277,11 +277,11 @@ export class CompletionService {
                             let allVariables: Variable[] = documentContractSelected.selectedContract.getAllStateVariables();
                             let selectedFunction = documentContractSelected.selectedContract.getSelectedFunction(offset);
                             if(selectedFunction !== undefined) {
-                                selectedFunction.findVariableDeclarations();
+                                selectedFunction.findVariableDeclarationsInScope(offset, null);
                                 //adding input parameters
                                 allVariables = allVariables.concat(selectedFunction.input);
                                 //ading all variables
-                                allVariables = allVariables.concat(selectedFunction.variables);
+                                allVariables = allVariables.concat(selectedFunction.variablesInScope);
                             }
 
                             allVariables.forEach(item => {
@@ -389,7 +389,7 @@ export class CompletionService {
         let selectedFunction = selectedContract.getSelectedFunction(offset);
 
         if (selectedFunction !== undefined) {
-            selectedFunction.findVariableDeclarations();
+            selectedFunction.findVariableDeclarationsInScope(offset, null);
             selectedFunction.input.forEach(parameter => {
                 completionItems.push(this.createParameterCompletionItem(parameter.element, "function parameter", selectedFunction.contract.name));
             });
@@ -397,7 +397,7 @@ export class CompletionService {
                 completionItems.push(this.createParameterCompletionItem(parameter.element, "return parameter", selectedFunction.contract.name));
             });
 
-            selectedFunction.variables.forEach(variable => {
+            selectedFunction.variablesInScope.forEach(variable => {
                 completionItems.push(this.createVariableCompletionItem(variable.element, "function variable", selectedFunction.contract.name));
             });
         }
