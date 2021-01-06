@@ -312,16 +312,16 @@ export class CompletionService {
                                             if(foundContract !== undefined) {
                                                 foundContract.initialiseExtendContracts(allContracts);
                                                 this.addContractCompletionItems(foundContract, completionItems);
-                                            } else {
-                                                let allUsing = documentContractSelected.selectedContract.getAllUsing(item.type.name);
+                                            }
+                                        }
+                                        
+                                        let allUsing = documentContractSelected.selectedContract.getAllUsing(item.type.name);
                                                 allUsing.forEach(usingItem => {
                                                     let foundLibrary = allContracts.find(x => x.name === usingItem.name);
                                                     if(foundLibrary !== undefined) {
                                                         this.addAllLibraryExtensionsAsCompletionItems(foundLibrary, completionItems, item.type.name);
                                                     }
                                                 });
-                                            }
-                                        } 
                                         
                                         
                                         //find in enum types
@@ -374,16 +374,16 @@ export class CompletionService {
                                             if(foundContract !== undefined) {
                                                 foundContract.initialiseExtendContracts(allContracts);
                                                 this.addContractCompletionItems(foundContract, completionItems);
-                                            } else {
-                                                let allUsing = documentContractSelected.selectedContract.getAllUsing(typeName);
+                                            } 
+                                        }
+
+                                        let allUsing = documentContractSelected.selectedContract.getAllUsing(typeName);
                                                 allUsing.forEach(item => {
                                                     let foundLibrary = allContracts.find(x => x.name === item.name);
                                                     if(foundLibrary !== undefined) {
                                                         this.addAllLibraryExtensionsAsCompletionItems(foundLibrary, completionItems, typeName);
                                                     }
                                                 });
-                                            }
-                                        }
                                     }
                                 }
                             });
