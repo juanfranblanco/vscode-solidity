@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.95",
+  "version": "0.0.96",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -61,7 +61,7 @@
     "mkdirp": "^0.5.1",
     "nethereum-codegen": "^1.0.12",
     "prettier": "^2.0.2",
-    "prettier-plugin-solidity": "1.0.0-alpha.60",
+    "prettier-plugin-solidity": "1.0.0-beta.2",
     "require-from-string": "^2.0.2",
     "solc": "^0.7.4",
     "solhint": "^3.3.2",
