@@ -6,19 +6,19 @@
 			"description": "SDPX License"
 		},
 		"pragma solidity":{
-			"prefix": "pra",
+			"prefix": "pragm",
 			"body": "pragma solidity ${1:version};"
 		},
 		"pragma solidity example":{
-			"prefix": "pra-ex",
+			"prefix": "pragm-ex",
 			"body": "pragma solidity >=0.5.0 <0.8.0;"
 		},
 		"pragma abicoder":{
-			"prefix": "pra-abicoder",
+			"prefix": "pragm-abicoder",
 			"body": "pragma abicoder v2;"
 		},
 		"import contract": {
-			"prefix": "im",
+			"prefix": "imp",
 			"body": "import '${1:contract}';"
 		},
         "contract declaration": {

@@ -478,7 +478,7 @@
                     }
                 },
                 {
-                    "match": "\\b(private|public|internal|external|constant|pure|view|payable|nonpayable|inherited|indexed|storage|memory|virtual|calldata|override|abstract)\\b",
+                    "match": "\\b(private|public|internal|external|constant|immutable|pure|view|payable|nonpayable|inherited|indexed|storage|memory|virtual|calldata|override|abstract)\\b",
                     "name": "storage.type.mofifier.solidity"
                 }
             ]

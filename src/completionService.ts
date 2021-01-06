@@ -611,6 +611,7 @@ export function GetCompletionKeywords(): CompletionItem[] {
     completionItems.push(CreateCompletionItem('memory', CompletionItemKind.Field, null));
     completionItems.push(CreateCompletionItem('var', CompletionItemKind.Field, null));
     completionItems.push(CreateCompletionItem('constant', CompletionItemKind.Constant, null));
+    completionItems.push(CreateCompletionItem('immutable', CompletionItemKind.Keyword, null));
     completionItems.push(CreateCompletionItem('constructor', CompletionItemKind.Constructor, null));
     completionItems.push(CreateCompletionItem('event', CompletionItemKind.Event, null));
     completionItems.push(CreateCompletionItem('import', CompletionItemKind.Module, null));
