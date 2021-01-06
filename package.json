@@ -10,8 +10,9 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.94",
+  "version": "0.0.95",
   "publisher": "JuanBlanco",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.50.1"
   },
