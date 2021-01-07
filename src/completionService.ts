@@ -4,16 +4,7 @@ import {ContractCollection} from './model/contractsCollection';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { initialiseProject } from './projectService';
 import * as vscode from 'vscode-languageserver';
-import {Contract2, DocumentContract, Function, SolidityCodeWalker, Variable} from './codeWalkerService';
-
-
-// TODO implement caching, dirty on document change, reload, etc.
-// store
-// export class CompletionFile {
-//    public path: string;
-//    public imports: string[]
-//    public inspectionResult : any
-// }
+import {Contract2, DeclarationType, DocumentContract, Function, SolidityCodeWalker, Variable} from './codeWalkerService';
 
 
 export class CompletionService {
@@ -315,11 +306,11 @@ export class CompletionService {
                                             }
                                         }
                                         
-                                        let allUsing = documentContractSelected.selectedContract.getAllUsing(item.type.name);
+                                        let allUsing = documentContractSelected.selectedContract.getAllUsing(item.type);
                                                 allUsing.forEach(usingItem => {
                                                     let foundLibrary = allContracts.find(x => x.name === usingItem.name);
                                                     if(foundLibrary !== undefined) {
-                                                        this.addAllLibraryExtensionsAsCompletionItems(foundLibrary, completionItems, item.type.name);
+                                                        this.addAllLibraryExtensionsAsCompletionItems(foundLibrary, completionItems, item.type);
                                                     }
                                                 });
                                         
@@ -356,9 +347,9 @@ export class CompletionService {
                                     found = true;
                                     if(item.output.length === 1) {
                                         //todo return array
-                                        let typeName = item.output[0].type.name;
+                                        let type = item.output[0].type;
 
-                                        let foundStruct = allStructs.find(x => x.name === typeName);
+                                        let foundStruct = allStructs.find(x => x.name === type.name);
                                         if(foundStruct !== undefined) {
                                             foundStruct.variables.forEach(property => {
                                                 //own method refactor
@@ -370,18 +361,18 @@ export class CompletionService {
                                             })
                                         } else {
 
-                                            let foundContract = allContracts.find(x => x.name === typeName);
+                                            let foundContract = allContracts.find(x => x.name === type.name);
                                             if(foundContract !== undefined) {
                                                 foundContract.initialiseExtendContracts(allContracts);
                                                 this.addContractCompletionItems(foundContract, completionItems);
                                             } 
                                         }
 
-                                        let allUsing = documentContractSelected.selectedContract.getAllUsing(typeName);
+                                        let allUsing = documentContractSelected.selectedContract.getAllUsing(type);
                                                 allUsing.forEach(item => {
                                                     let foundLibrary = allContracts.find(x => x.name === item.name);
                                                     if(foundLibrary !== undefined) {
-                                                        this.addAllLibraryExtensionsAsCompletionItems(foundLibrary, completionItems, typeName);
+                                                        this.addAllLibraryExtensionsAsCompletionItems(foundLibrary, completionItems, type);
                                                     }
                                                 });
                                     }
@@ -512,11 +503,16 @@ export class CompletionService {
         });
     }
 
-    private addAllLibraryExtensionsAsCompletionItems(documentContractSelected: Contract2, completionItems: any[], typeName: string) {
+    private addAllLibraryExtensionsAsCompletionItems(documentContractSelected: Contract2, completionItems: any[], type: DeclarationType) {
         let allfunctions = documentContractSelected.getAllFunctions();
         let filteredFunctions = allfunctions.filter( x => {
             if(x.input.length > 0 ) {
-                return x.input[0].type.name === typeName;
+                let typex = x.input[0].type;
+                let validTypeName = false;
+                if(typex.name === type.name || (type.name === "address_payable" && typex.name === "address")) {
+                    validTypeName = true;
+                }
+                 return typex.isArray === type.isArray && validTypeName && typex.isMapping === type.isMapping;
             }
             return false;
         });

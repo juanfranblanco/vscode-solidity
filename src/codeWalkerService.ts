@@ -39,7 +39,7 @@ export class DeclarationType extends ParsedCode {
         } else {
             this.name = literal.literal;
         }
-        const isArray = literal.array_parts.length > 0;
+        this.isArray = literal.array_parts.length > 0;
         this.isMapping = false;
         const literalType = literal.literal;
         if (typeof literalType.type !== 'undefined')  {
@@ -52,12 +52,19 @@ export class DeclarationType extends ParsedCode {
 
 export class Using extends ParsedCode {
     public for: DeclarationType;
+    public forStar: boolean = false;
     public contract: Contract2;
     public initialise(element:any, contract:Contract2) {
         this.contract = contract;
         this.element = element;
         this.name = element.library;
-        this.for = DeclarationType.create(element.for);
+        if(element.for === "*") {
+            this.forStar = true;
+            this.for = null;
+        }else {
+            this.for = DeclarationType.create(element.for);
+        }
+        
         this.location; //             
     }
 }
@@ -183,14 +190,28 @@ export class Contract2 extends ParsedCode
         return returnItems;
     }
 
-    public getAllUsing(type: string) : Using[] {
+    public getAllUsing(type: DeclarationType) : Using[] {
         let returnItems: Using[] = [];
-        this.using.filter(x => x.for.name === type);
-        returnItems = returnItems.concat(this.using.filter(x => x.for.name === type));
+        returnItems = returnItems.concat(this.using.filter(x => 
+            {
+                if(x.forStar === true) return true;
+                if(x.for !== null) {
+                    let validTypeName = false;
+                    if(x.for.name === type.name || (type.name === "address_payable" && x.for.name === "address")) {
+                        validTypeName = true;
+                    }
+                    return x.for.isArray === type.isArray && validTypeName && x.for.isMapping === type.isMapping;
+                }
+                return false;
+
+            }));
+        
         this.extendsContracts.forEach(contract => {
             returnItems = returnItems.concat(contract.getAllUsing(type));
          });
-        return returnItems;
+        return returnItems.filter((v,i) => {
+             return returnItems.map(mapObj => mapObj["name"]).indexOf(v["name"]) === i;
+        });
     }
 
     public initialiseChildren(){
