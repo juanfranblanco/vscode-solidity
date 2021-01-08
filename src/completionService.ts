@@ -267,6 +267,9 @@ export class CompletionService {
                         } else  {
                             /// the types 
                             let topParent = autocompleteByDot.getTopParent();
+                            if (topParent.name === "this") {
+                                topParent = topParent.childAutocomplete;
+                            }
 
                             this.findDotCompletionItemsForSelectedContract(topParent, completionItems, documentContractSelected, documentContractSelected.selectedContract, offset);
                         }
@@ -848,8 +851,8 @@ export class AutocompleteByDot {
     public isMethod: boolean = false;
     public isArray: boolean = false;
     public isProperty: boolean = false;
-    public parentAutocomplete: AutocompleteByDot; // could be a property or a method
-    public childAutocomplete: AutocompleteByDot;
+    public parentAutocomplete: AutocompleteByDot = null;// could be a property or a method
+    public childAutocomplete: AutocompleteByDot = null;
     public name: string = '';
 
     getTopParent(): AutocompleteByDot {
