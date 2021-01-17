@@ -102,8 +102,8 @@
       "properties": {
         "solidity.enableLocalNodeCompiler": {
           "type": "boolean",
-          "default": true,
-          "description": "If enabled (default true) and a solc version is found in the workspace folder 'node_modules', it will use that version of solc, overriding local or remote settings'"
+          "default": false,
+          "description": "If enabled (default false) and a solc version is found in the workspace folder 'node_modules', it will use that version of solc, overriding local or remote settings'"
         },
         "solidity.compileUsingRemoteVersion": {
           "type": "string",
