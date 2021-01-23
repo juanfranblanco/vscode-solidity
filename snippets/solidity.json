@@ -193,7 +193,12 @@
 			"prefix": "uniV2Router02",
 			"body": "\/\/ https:\/\/uniswap.org\/docs\/v2\/smart-contracts\/router02\/\r\n\/\/ https:\/\/github.com\/Uniswap\/uniswap-v2-periphery\/blob\/master\/contracts\/UniswapV2Router02.sol implementation\r\n\/\/ UniswapV2Router02 is deployed at 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D on the Ethereum mainnet, and the Ropsten, Rinkeby, G\u00F6rli, and Kovan testnets.\r\n\r\n\/\/ SPDX-License-Identifier: MIT\r\npragma solidity >=0.6.2;\r\n\r\n\/\/ You can add this typing \"uniV2Router01\" \r\nimport '.\/IUniswapV2Router01.sol';\r\n\r\ninterface IUniswapV2Router02 is IUniswapV2Router01 {\r\n    function removeLiquidityETHSupportingFeeOnTransferTokens(\r\n        address token,\r\n        uint liquidity,\r\n        uint amountTokenMin,\r\n        uint amountETHMin,\r\n        address to,\r\n        uint deadline\r\n    ) external returns (uint amountETH);\r\n    function removeLiquidityETHWithPermitSupportingFeeOnTransferTokens(\r\n        address token,\r\n        uint liquidity,\r\n        uint amountTokenMin,\r\n        uint amountETHMin,\r\n        address to,\r\n        uint deadline,\r\n        bool approveMax, uint8 v, bytes32 r, bytes32 s\r\n    ) external returns (uint amountETH);\r\n\r\n    function swapExactTokensForTokensSupportingFeeOnTransferTokens(\r\n        uint amountIn,\r\n        uint amountOutMin,\r\n        address[] calldata path,\r\n        address to,\r\n        uint deadline\r\n    ) external;\r\n    function swapExactETHForTokensSupportingFeeOnTransferTokens(\r\n        uint amountOutMin,\r\n        address[] calldata path,\r\n        address to,\r\n        uint deadline\r\n    ) external payable;\r\n    function swapExactTokensForETHSupportingFeeOnTransferTokens(\r\n        uint amountIn,\r\n        uint amountOutMin,\r\n        address[] calldata path,\r\n        address to,\r\n        uint deadline\r\n    ) external;\r\n}",
 			"description": "Uniswap Router02"	
+		},
+		"solidityTips": {	
+			"prefix": "solidityTips",
+			"body": "\/\/Paul Razvan Berg tips @PaulRBerg \r\n1\uFE0F\u20E3 Use \"type(uint256).max\" instead of \"uint256(-1)\"\r\n2\uFE0F\u20E3 Surround code with {} to avoid \"stack too deep\"\r\n3\uFE0F\u20E3 Skip tuple vars with commas: \"uint a, , ,\"\r\n4\uFE0F\u20E3 Swap vars in one line: \"(a,b)=(b,a)\"\r\n5\uFE0F\u20E3 Use \"assert\" and get built-in formal verification with SMTChecker",
+			"description": "solidity tips"	
 		}
-
+		
     }
 }
