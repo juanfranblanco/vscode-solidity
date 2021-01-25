@@ -196,7 +196,7 @@
 		},
 		"solidityTips": {	
 			"prefix": "solidityTips",
-			"body": "\/\/Paul Razvan Berg tips @PaulRBerg \r\n1\uFE0F\u20E3 Use \"type(uint256).max\" instead of \"uint256(-1)\"\r\n2\uFE0F\u20E3 Surround code with {} to avoid \"stack too deep\"\r\n3\uFE0F\u20E3 Skip tuple vars with commas: \"uint a, , ,\"\r\n4\uFE0F\u20E3 Swap vars in one line: \"(a,b)=(b,a)\"\r\n5\uFE0F\u20E3 Use \"assert\" and get built-in formal verification with SMTChecker",
+			"body": "\/\/Paul Razvan Berg tips (@PaulRBerg)\r\n1\uFE0F\u20E3 Use \"type(uint256).max\" instead of \"uint256(-1)\"\r\n2\uFE0F\u20E3 Surround code with {} to avoid \"stack too deep\"\r\n3\uFE0F\u20E3 Skip tuple vars with commas: \"uint a, , ,\"\r\n4\uFE0F\u20E3 Swap vars in one line: \"(a,b)=(b,a)\"\r\n5\uFE0F\u20E3 Use \"assert\" and get built-in formal verification with SMTChecker\r\n\r\n-----------------------------------------------\r\n\r\n\/\/ Daniel Luca tips (CleanUnicorn.eth)\r\n1\uFE0F\u20E3  You can format numbers in Solidity using underscores.\r\ni.e.,\r\n1_000 is a thousand\r\n1_0_0_0 is a thousand\r\n1_000e0_3 is a million\r\n\r\nPython spec https:\/\/www.python.org\/dev\/peps\/pep-0515\/\r\n\r\n------------------------------\r\nContribute tips here: https:\/\/github.com\/juanfranblanco\/vscode-solidity\/blob\/master\/snippets\/solidity.json#L197-L201 \r\nEscape the text using: https:\/\/www.freeformatter.com\/json-escape.html\r\n------------------------------\r\n",
 			"description": "solidity tips"	
 		}
 		
