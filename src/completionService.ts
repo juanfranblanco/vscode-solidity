@@ -368,7 +368,7 @@ export class CompletionService {
                 }
             });
 
-            if (!found &&  autocompleteByDot.childAutocomplete === undefined && autocompleteByDot.childAutocomplete === null) {
+            if (!found &&  (autocompleteByDot.childAutocomplete === undefined || autocompleteByDot.childAutocomplete === null)) {
                 allEnums.forEach(item => {
                     if (item.name === autocompleteByDot.name) {
                         found = true;
@@ -376,6 +376,15 @@ export class CompletionService {
                             let completitionItem = CompletionItem.create(property);
                             completionItems.push(completitionItem);
                         });
+                    }
+                });
+            }
+
+            if (!found && (autocompleteByDot.childAutocomplete === undefined || autocompleteByDot.childAutocomplete === null) ) {
+                allContracts.forEach(item => {
+                    if (item.name === autocompleteByDot.name) {
+                        found = true;
+                        this.addContractCompletionItems(item, completionItems);
                     }
                 });
             }
@@ -398,6 +407,16 @@ export class CompletionService {
                     }
                 }
             });
+
+            //contract declaration as IMyContract(address)
+            if (!found && (autocompleteByDot.childAutocomplete === undefined || autocompleteByDot.childAutocomplete === null) ) {
+                allContracts.forEach(item => {
+                    if (item.name === autocompleteByDot.name) {
+                        found = true;
+                        this.addContractCompletionItems(item, completionItems);
+                    }
+                });
+            }
         }
     }
 
