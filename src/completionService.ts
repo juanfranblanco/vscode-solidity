@@ -5,6 +5,10 @@ import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { initialiseProject } from './projectService';
 import * as vscode from 'vscode-languageserver';
 import {Contract2, DeclarationType, DocumentContract, Function, SolidityCodeWalker, Variable, Struct} from './codeWalkerService';
+import * as glob from 'glob';
+import { relative } from 'path';
+import { fileURLToPath } from 'url';
+import * as path from 'path';
 
 
 export class CompletionService {
@@ -220,6 +224,7 @@ export class CompletionService {
       ): CompletionItem[] {
         let completionItems = [];
         let triggeredByEmit = false;
+        let triggeredByImport = false;
         let triggeredByDotStart = 0;
         try {
         var walker = new SolidityCodeWalker(this.rootPath,  packageDefaultDependenciesDirectory,
@@ -234,6 +239,8 @@ export class CompletionService {
         
         //triggered by emit is only possible with ctrl space
         triggeredByEmit = getAutocompleteVariableNameTrimmingSpaces(lines[position.line], position.character - 1) === 'emit';
+        triggeredByImport = getAutocompleteVariableNameTrimmingSpaces(lines[position.line], position.character - 1) === 'import';
+
         
         if(triggeredByDotStart > 0) {
             
@@ -276,6 +283,34 @@ export class CompletionService {
                     }
                 }
             }
+            return completionItems;
+        }
+
+        if(triggeredByImport) {
+            let files = glob.sync(this.rootPath + '/**/*.sol');
+            files.forEach(item => {
+                let dependenciesDir = path.join(this.rootPath, packageDefaultDependenciesDirectory);
+                item = path.join(item);
+                if(item.startsWith(dependenciesDir)) {
+                    let pathLibrary = item.substr(dependenciesDir.length + 1);
+                    pathLibrary = pathLibrary.split('\\').join('/');
+                    let completionItem = CompletionItem.create(pathLibrary);
+                    completionItem.kind = CompletionItemKind.Reference;
+                    completionItem.insertText = '"' + pathLibrary + '";';
+                    completionItems.push(completionItem);
+                } else {
+                    let rel = relative(fileURLToPath(document.uri), item);
+                    rel = rel.split('\\').join('/');
+                    if(!rel.startsWith('../.'))
+                    {
+                        rel = rel.substr(1);
+                    }
+                    let completionItem = CompletionItem.create(rel);
+                    completionItem.kind = CompletionItemKind.Reference;
+                    completionItem.insertText = '"' + rel + '";';
+                    completionItems.push(completionItem);
+                }
+            });
             return completionItems;
         }
 
