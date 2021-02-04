@@ -162,9 +162,9 @@ The user settings for this structure is:
 
 ## Code completion
 
-Just press Ctrl + Space or Command + Space to autocomplete statements, currently supported all the storage variables, functions and events (with snippets) included in the current document and every document in the import chain. Also supported all the global variables, global functions, types and units.
+Autocomplete is generally supported across for smart contracts, structs, functions, events, variables, using, inheritance. Autocomplete should happen automatically or press Ctrl+Space or Command+Space in areas like "import".
 
-![Screenshot](screenshots/autocompletedemo.gif)
+![Screenshot](screenshots/simpleDemoAutocomplete.gif)
 
 ## Auto compilation and error highlighting
 
