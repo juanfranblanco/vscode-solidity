@@ -301,7 +301,7 @@ export class CompletionService {
                 } else {
                     let rel = relative(fileURLToPath(document.uri), item);
                     rel = rel.split('\\').join('/');
-                    if(!rel.startsWith('../.'))
+                    if(rel.startsWith('../'))
                     {
                         rel = rel.substr(1);
                     }
