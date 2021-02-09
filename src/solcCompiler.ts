@@ -168,7 +168,7 @@ export class SolcCompiler {
 
     private downloadCompilationFile(version:string, path:string): Promise<void> {
         const file = fs.createWriteStream(path);
-        const url = 'https://raw.githubusercontent.com/ethereum/solc-bin/gh-pages/bin/soljson-' + version + '.js';
+        const url = 'https://binaries.soliditylang.org/bin/soljson-' + version + '.js';
         return new Promise((resolve, reject) => {
            const request = https.get(url, function (response) {
                 if (response.statusCode !== 200) {

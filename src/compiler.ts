@@ -49,7 +49,7 @@ export class Compiler {
     }
 
     public getSolcReleases(): Promise<any> {
-        const url = 'https://solc-bin.ethereum.org/bin/list.json';
+        const url = 'https://binaries.soliditylang.org/bin/list.json';
         return new Promise((resolve, reject) => {
             https.get(url, (res) => {
                 let body = '';
