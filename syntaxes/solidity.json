@@ -198,6 +198,9 @@
                     "include": "#control-underscore"
                 },
                 {
+                    "include": "#control-unchecked"
+                },
+                {
                     "include": "#control-other"
                 }
             ]
@@ -213,6 +216,10 @@
         "control-import": {
             "match": "\\b(import)\\b",
             "name": "keyword.control.import.solidity"
+        },
+        "control-unchecked": {
+            "match": "\\b(unchecked)\\b",
+            "name": "keyword.control.unchecked.solidity"
         },
         "control-pragma": {
             "match": "\\b(pragma)(?:\\s+([A-Za-z_]\\w+)\\s+([^\\s]+))?\\b",

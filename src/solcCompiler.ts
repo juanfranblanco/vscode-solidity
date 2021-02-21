@@ -104,6 +104,7 @@ export class SolcCompiler {
                                         solcService.currentCompilerType = compilerType.Remote;
                                         solcService.currentCompilerSetting = remoteInstallationVersion;
                                         solcService.localSolc = solcSnapshot;
+                                        
                                         resolve();
                                 }).catch((error) => reject('There was an error loading the remote version: ' + remoteInstallationVersion + ',' + error));
                             } else {

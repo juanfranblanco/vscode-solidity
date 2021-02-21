@@ -22,7 +22,7 @@ export class ContractCollection {
         const compilerOutputSelection = {
             '*': {
                 '': ['ast'],
-                '*': ['abi', 'devdoc', 'userdoc', 'metadata', 'evm.bytecode', 'evm.deployedBytecode', 'evm.methodIdentifiers', 'evm.gasEstimates'],
+                '*': ['abi', 'devdoc', 'userdoc', 'storageLayout', 'metadata', 'evm.bytecode', 'evm.deployedBytecode', 'evm.methodIdentifiers', 'evm.gasEstimates'],
             },
         };
 

@@ -74,6 +74,10 @@
 			"prefix": "for",
 			"body": "for (uint256 ${1:index} = 0; $1 < ${2:array}.length; $1${3:++}) {\n\t$0\n}"
 		},
+		"unchecked" : {
+			"prefix": "unchecked",
+			"body": "unchecked {\n\t$0\n}"
+		},
 		"natspec contract": {
 			"prefix": "\/\/\/nat_contract",
 			"body": "\/\/\/ @title A title that should describe the contract\/interface\r\n\/\/\/ @author The name of the author\r\n\/\/\/ @notice Explain to an end user what this does\r\n\/\/\/ @dev Explain to a developer any extra details",
