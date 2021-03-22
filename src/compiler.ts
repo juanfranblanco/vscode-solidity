@@ -86,16 +86,16 @@ export class Compiler {
 
     public async compile(contracts: any,
         diagnosticCollection: vscode.DiagnosticCollection,
-        buildDir: string, rootDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string): Promise<Array<string>> {
+        buildDir: string, rootDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string, overrideDefaultCompiler: compilerType = null): Promise<Array<string>> {
         // Did we find any sol files after all?
         if (Object.keys(contracts).length === 0) {
             vscode.window.showWarningMessage('No solidity files (*.sol) found');
             return;
         }
         return new Promise((resolve, reject) => {
-            this.initialiseCompiler().then(() => {
+            this.initialiseCompiler(overrideDefaultCompiler).then(() => {
                 try {
-                    const output = this.solc.compile(JSON.stringify(contracts));
+                    const output = this.solc.compile(JSON.stringify(contracts), overrideDefaultCompiler);
                     resolve(this.processCompilationOutput(output, this.outputChannel, diagnosticCollection, buildDir,
                         sourceDir, excludePath, singleContractFilePath));
                 } catch (reason) {
@@ -114,28 +114,29 @@ export class Compiler {
         outputChannel.show();
     }
 
-    private outputCompilerInfo() {
+    private outputCompilerInfo(overrideDefaultCompiler: compilerType = null) {
         this.outputChannel.clear();
         this.outputChannel.show();
         this.outputChannel.appendLine('Retrieving compiler information:');
-        if (this.solc.currentCompilerType === compilerType.localFile) {
-            this.outputChannel.appendLine("Compiler using local file: '" + this.solc.currentCompilerSetting + "', solidity version: " + this.solc.getVersion());
+        let compiler = this.solc.getCompiler(overrideDefaultCompiler);
+        if (compiler.compilerType === compilerType.localFile) {
+            this.outputChannel.appendLine("Compiler using local file: '" + compiler.getConfiguration() + "', solidity version: " + compiler.getVersion());
         }
 
-        if (this.solc.currentCompilerType === compilerType.localNode) {
-            this.outputChannel.appendLine('Compiler using solidity from node_modules, solidity version: ' + this.solc.getVersion());
+        if (compiler.compilerType === compilerType.localNodeModule) {
+            this.outputChannel.appendLine('Compiler using solidity from node_module: ' + compiler.getConfiguration() + ' solidity version: ' + compiler.getVersion());
         }
 
-        if (this.solc.currentCompilerType === compilerType.Remote) {
-            this.outputChannel.appendLine("Compiler using remote version: '" + this.solc.currentCompilerSetting + "', solidity version: " + this.solc.getVersion());
+        if (compiler.compilerType === compilerType.remote) {
+            this.outputChannel.appendLine("Compiler using remote version: '" + compiler.getConfiguration() + "', solidity version: " + compiler.getVersion());
         }
 
-        if (this.solc.currentCompilerType === compilerType.default) {
-            this.outputChannel.appendLine('Compiler using default compiler (embedded on extension), solidity version: ' + this.solc.getVersion());
+        if (compiler.compilerType === compilerType.embedded) {
+            this.outputChannel.appendLine('Compiler using default compiler (embedded on extension), solidity version: ' + compiler.getVersion());
         }
     }
 
-    private initialiseCompiler(): Promise<void> {
+    private initialiseCompiler(overrideDefaultCompiler: compilerType = null): Promise<void> {
         const rootPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
         if (typeof this.solc === 'undefined' || this.solc === null) {
             this.solc = new SolcCompiler(rootPath);
@@ -146,20 +147,39 @@ export class Compiler {
         this.outputChannel.show();
         const remoteCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingRemoteVersion');
         const localCompiler = vscode.workspace.getConfiguration('solidity').get<string>('compileUsingLocalVersion');
-        const enableNodeCompiler = vscode.workspace.getConfiguration('solidity').get<boolean>('enableLocalNodeCompiler');
+        const nodeModulePackage = vscode.workspace.getConfiguration('solidity').get<string>('nodemodulespackage');
+        const compilerSetting = vscode.workspace.getConfiguration('solidity').get<string>('defaultCompiler');
+        const defaultCompiler = compilerType[compilerSetting];
         this.outputChannel.appendLine('Initialising compiler with settings:');
         this.outputChannel.appendLine('Remote compiler: ' + remoteCompiler);
         this.outputChannel.appendLine('Local compiler: ' + localCompiler);
-        this.outputChannel.appendLine('Node compiler enabled: ' + enableNodeCompiler);
+        this.outputChannel.appendLine('Node compiler module: ' + nodeModulePackage);
+        this.outputChannel.appendLine('Default compiler: ' + compilerSetting);
+
+        if(overrideDefaultCompiler != null) {
+            this.outputChannel.appendLine('Compiling with compiler: ' + compilerType[overrideDefaultCompiler]);
+        }
         this.outputChannel.appendLine('This may take a couple of seconds as we may need to download the solc binaries...');
         return new Promise((resolve, reject) => {
-            this.solc.intialiseCompiler(localCompiler, remoteCompiler, enableNodeCompiler).then(() => {
-                this.outputCompilerInfo();
-                resolve();
-            }).catch((reason: any) => {
-                vscode.window.showWarningMessage(reason);
-                reject(reason);
-            });
+            this.solc.initialiseAllCompilerSettings(remoteCompiler, localCompiler, nodeModulePackage, defaultCompiler)
+
+            if(overrideDefaultCompiler == null) {
+                this.solc.initialiseSelectedCompiler().then(() => {
+                    this.outputCompilerInfo();
+                    resolve();
+                }).catch((reason: any) => {
+                    vscode.window.showWarningMessage(reason);
+                    reject(reason);
+                });
+            } else {
+                this.solc.initialiseCompiler(overrideDefaultCompiler).then(() => {
+                    this.outputCompilerInfo(overrideDefaultCompiler);
+                    resolve();
+                }).catch((reason: any) => {
+                    vscode.window.showWarningMessage(reason);
+                    reject(reason);
+                });
+            }
         });
     }
 

@@ -5,6 +5,7 @@ import {Compiler} from './compiler';
 import {ContractCollection} from './model/contractsCollection';
 import { initialiseProject } from './projectService';
 import { formatPath } from './util';
+import { compilerType } from './solcCompiler';
 
 
 let diagnosticCollection: vscode.DiagnosticCollection;
@@ -13,7 +14,7 @@ export function initDiagnosticCollection(diagnostics: vscode.DiagnosticCollectio
     diagnosticCollection = diagnostics;
 }
 
-export function compileActiveContract(compiler: Compiler): Promise<Array<string>> {
+export function compileActiveContract(compiler: Compiler, overrideDefaultCompiler: compilerType = null): Promise<Array<string>> {
     const editor = vscode.window.activeTextEditor;
 
     if (!editor) {
@@ -48,5 +49,6 @@ export function compileActiveContract(compiler: Compiler): Promise<Array<string>
             project.projectPackage.absoluletPath,
             null,
             packagesPath,
-            contract.absolutePath);
+            contract.absolutePath, 
+            overrideDefaultCompiler);
 }

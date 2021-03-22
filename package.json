@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.108",
+  "version": "0.0.109",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -100,15 +100,15 @@
       "type": "object",
       "title": "Solidity configuration",
       "properties": {
-        "solidity.enableLocalNodeCompiler": {
-          "type": "boolean",
-          "default": false,
-          "description": "If enabled (default false) and a solc version is found in the workspace folder 'node_modules', it will use that version of solc, overriding local or remote settings'"
+        "solidity.nodemodulespackage": {
+          "type": "string",
+          "default": "solc",
+          "description": "The node modules package to find the solcjs compiler"
         },
         "solidity.compileUsingRemoteVersion": {
           "type": "string",
-          "default": "",
-          "description": "Compile downloading a remote solc binary file, for example: 'latest' or 'v0.4.3+commit.2353da71', use the command 'Solidity: Get solidity releases' to list all versions"
+          "default": "latest",
+          "description": "Compile downloading a remote solc binary file, for example: 'latest' or 'v0.4.3+commit.2353da71', use the command 'Solidity: Get solidity releases' to list all versions, or just rigth click in a solidity file to simply select the version"
         },
         "solidity.compilerOptimization": {
           "type": "number",
@@ -119,6 +119,17 @@
           "type": "string",
           "default": "",
           "description": "Compile using a local solc binary file, please include the path of the file if wanted: 'C://v0.4.3+commit.2353da71.js'"
+        },
+        "solidity.defaultCompiler": {
+          "type": "string",
+          "enum": [
+            "remote",
+            "localFile",
+            "localNodeModule",
+            "embedded"
+          ],
+          "default": "remote",
+          "description": "Sets the default compiler to use"
         },
         "solidity.linter": {
           "type": "string",
@@ -203,6 +214,18 @@
       {
         "command": "solidity.compile.active",
         "title": "Solidity: Compile Contract"
+      },
+      {
+        "command": "solidity.compile.activeUsingRemote",
+        "title": "Solidity: Compile with configured Remote version"
+      },
+      {
+        "command": "solidity.compile.activeUsingLocalFile",
+        "title": "Solidity: Compile with configured Local solc file"
+      },
+      {
+        "command": "solidity.compile.activeUsingNodeModule",
+        "title": "Solidity: Compile with configured Node module"
       },
       {
         "command": "solidity.compile",
@@ -318,6 +341,21 @@
         {
           "when": "editorLangId == 'solidity'",
           "command": "solidity.compilerInfo",
+          "group": "1_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.compile.activeUsingRemote",
+          "group": "1_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.compile.activeUsingLocalFile",
+           "group": "1_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.compile.activeUsingNodeModule",
           "group": "1_solidity"
         },
         {

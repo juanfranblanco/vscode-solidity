@@ -160,20 +160,22 @@ export function codeGenerateCQS(fileName: string, lang: number, args: any, diagn
         const outputPathInfo = path.parse(fileName);
         const contractName = outputPathInfo.name;
         let compilationOutput;
+        let abi = undefined;
+        let bytecode = '0x';
         if (outputPathInfo.ext === '.abi') {
-            const abi = JSON.parse(fs.readFileSync(fileName, 'utf8'));
+            abi = fs.readFileSync(fileName, 'utf8');
             compilationOutput = { 'abi': abi, 'bytecode': '0x' };
             const binFile = fileName.substr(0, fileName.lastIndexOf('.')) + '.bin';
             if (fs.existsSync(binFile)) {
-                const bin = fs.readFileSync(binFile, 'utf8');
-                compilationOutput.bytecode = bin;
+                let bytecode = fs.readFileSync(binFile, 'utf8');
             }
         } else {
             compilationOutput = JSON.parse(fs.readFileSync(fileName, 'utf8'));
+            abi = JSON.stringify(compilationOutput.abi);
+            bytecode = compilationOutput.bytecode;
         }
-        if (compilationOutput.abi !== undefined) {
-            const abi = JSON.stringify(compilationOutput.abi);
-            const contractByteCode = compilationOutput.bytecode;
+        if (abi !== undefined) {
+           
             const projectFullPath = path.join(projectPath, projectName + extension);
 
             if (!fs.existsSync(projectFullPath)) {
@@ -181,7 +183,7 @@ export function codeGenerateCQS(fileName: string, lang: number, args: any, diagn
             }
 
             codegen.generateAllClasses(abi,
-                contractByteCode,
+                bytecode,
                 contractName,
                 baseNamespace,
                 projectPath,

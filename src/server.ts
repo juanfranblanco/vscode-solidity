@@ -1,5 +1,5 @@
 'use strict';
-import {SolcCompiler} from './solcCompiler';
+import {compilerType, SolcCompiler} from './solcCompiler';
 import Linter from './linter/linter';
 import SolhintService from './linter/solhint';
 import SoliumService from './linter/solium';
@@ -33,7 +33,8 @@ interface SoliditySettings {
     enabledAsYouTypeCompilationErrorCheck: boolean;
     compileUsingLocalVersion: string;
     compileUsingRemoteVersion: string;
-    enableLocalNodeCompiler: boolean;
+    nodemodulespackage: string;
+    defaultCompiler: string;
     soliumRules: any;
     solhintRules: any;
     validationDelay: number;
@@ -60,7 +61,8 @@ let linter: Linter = null;
 let enabledAsYouTypeErrorCheck = false;
 let compileUsingRemoteVersion = '';
 let compileUsingLocalVersion = '';
-let enableNodeCompiler = true;
+let nodeModulePackage = '';
+let defaultCompiler = compilerType.embedded;
 let solhintDefaultRules = {};
 let soliumDefaultRules = {};
 let validationDelay = 1500;
@@ -161,7 +163,8 @@ function validateAllDocuments() {
 
 function startValidation() {
     if (enabledAsYouTypeErrorCheck) {
-        solcCompiler.intialiseCompiler(compileUsingLocalVersion, compileUsingRemoteVersion, enableNodeCompiler).then(() => {
+        solcCompiler.initialiseAllCompilerSettings(compileUsingRemoteVersion, compileUsingLocalVersion, nodeModulePackage, defaultCompiler)
+        this.solc.initialiseSelectedCompiler().then(() => {
             validateAllDocuments();
         });
     } else {
@@ -213,7 +216,8 @@ connection.onDidChangeConfiguration((change) => {
     solhintDefaultRules = settings.solidity.solhintRules;
     soliumDefaultRules = settings.solidity.soliumRules;
     validationDelay = settings.solidity.validationDelay;
-    enableNodeCompiler = settings.solidity.enableLocalNodeCompiler;
+    nodeModulePackage = settings.solidity.nodemodulespackage;
+    defaultCompiler = compilerType[settings.solidity.defaultCompiler];
     packageDefaultDependenciesContractsDirectory = settings.solidity.packageDefaultDependenciesContractsDirectory;
     packageDefaultDependenciesDirectory = settings.solidity.packageDefaultDependenciesDirectory;
 

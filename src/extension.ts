@@ -14,6 +14,7 @@ import { lintAndfixCurrentDocument } from './linter/soliumClientFixer';
 // tslint:disable-next-line:no-duplicate-imports
 import { workspace, WorkspaceFolder } from 'vscode';
 import { formatDocument } from './formatter/prettierFormatter';
+import { compilerType } from './solcCompiler';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 let compiler: Compiler;
@@ -49,6 +50,25 @@ export async function activate(context: vscode.ExtensionContext) {
         autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection);
         return compiledResults;
     }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.activeUsingRemote', async () => {
+        const compiledResults = await compileActiveContract(compiler, compilerType.remote);
+        autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection);
+        return compiledResults;
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.activeUsingLocalFile', async () => {
+        const compiledResults = await compileActiveContract(compiler, compilerType.localFile);
+        autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection);
+        return compiledResults;
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.activeUsingNodeModule', async () => {
+        const compiledResults = await compileActiveContract(compiler, compilerType.localNodeModule);
+        autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection);
+        return compiledResults;
+    }));
+
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile', () => {
         compileAllContracts(compiler, diagnosticCollection);
