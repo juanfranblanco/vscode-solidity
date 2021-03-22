@@ -22,7 +22,12 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
 
 Sometimes you may want to use a different compiler than the one provided. You can find all the different versions in the solc-bin repository https://github.com/ethereum/solc-bin/tree/gh-pages/bin
 
-Currently we support three ways supported to use a different version of the solidity compiler.
+Currently we support four ways supported to use a different version of the solidity compiler. Remote, Local, NodeModule and Embedded
+
+You can change the compiler, in your user settings or workspace settings.
+
+![image](https://user-images.githubusercontent.com/562371/112019635-85d13d80-8b27-11eb-9e91-dc74dcf9e2fa.png)
+
 
 ### Remote download
 When selecting remote download the compiler gets download from the solc-bin repository. 
@@ -64,22 +69,14 @@ npm install solc
 ```json
 "solidity.enableLocalNodeCompiler": false
 ```
+### Compiling a specific contract using a different compiler than the default one.
+There might be scenarios, that you want to use a different compiler for a specific file, you may be using by default in your project the "Remote" "Latest", but you have downloaded locally a compiler for a specific contract (an scenario might be you are compiling for the OVM).
 
-**Note:** The above compilers, have an order of preference when using different settings are: Local node installation (Npm / node installation) will be used first, Local file second and finally remote. 
+A simple way to compile this file, given your configurations are set will be to use the context menu option to compile.
+![image](https://user-images.githubusercontent.com/562371/112020727-7f8f9100-8b28-11eb-91ca-0a43ef491e57.png)
 
-If you are working on an specific project using an older version, you can use npm install locally to target that specefic version, without affecting the global setting.
+![image](https://user-images.githubusercontent.com/562371/112020877-a3eb6d80-8b28-11eb-895d-bbee7665e38d.png)
 
-But if you want to use the latest version of solidity for all the projects and have online connectivity all the time, use the setting:
-
-```json
-"solidity.compileUsingRemoteVersion" : "latest"
-```
-
-In case one of your dependencies has a nested dependency on a solc version, effectively breaking the remote version setting from above, you have to disable the node compiler like so:
-
-```json
-"solidity.enableLocalNodeCompiler": false
-```
 
 ## ERC, ERC drafts and Smart contracts snippets / reference
 
