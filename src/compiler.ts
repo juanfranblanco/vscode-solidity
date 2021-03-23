@@ -5,8 +5,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as fsex from 'fs-extra';
 import * as https from 'https';
-import { SolcCompiler, compilerType } from './solcCompiler';
+import { SolcCompiler, compilerType, RemoteCompilerDownloader } from './solcCompiler';
 import { errorsToDiagnostics } from './solErrorsToDiaganosticsClient';
+import { resolve } from 'vscode-languageserver/lib/files';
 
 
 export class Compiler {
@@ -22,6 +23,48 @@ export class Compiler {
     public outputCompilerInfoEnsuringInitialised() {
         // initialise compiler outputs the information and validates existing settings
         this.initialiseCompiler();
+    }
+
+    public async changeDefaultCompilerType(target: vscode.ConfigurationTarget) {
+        try {
+            const compilers: string[] = [compilerType[compilerType.remote], compilerType[compilerType.localFile], compilerType[compilerType.localNodeModule], compilerType[compilerType.embedded]];
+            const selectedCompiler : string = await vscode.window.showQuickPick(compilers);
+            vscode.workspace.getConfiguration('solidity').update('defaultCompiler', selectedCompiler, target);
+            vscode.window.showInformationMessage("Compiler changed to: " + selectedCompiler);
+        } catch (e) {
+            vscode.window.showErrorMessage("Error changing default compiler: " + e);
+        }
+    }
+
+    public async downloadRemoteVersionAndSetLocalPathSetting(target: vscode.ConfigurationTarget, folderPath: string) {
+        const path = await this.downloadRemoteVersion(folderPath);
+        vscode.workspace.getConfiguration('solidity').update('compileUsingLocalVersion', path, target);      
+    }
+
+    public async downloadRemoteVersion(folderPath: string) : Promise<string> {
+        try {
+            const releases = await this.getSolcReleases();
+            const releasesToSelect: string[] = [];
+            // tslint:disable-next-line: forin
+            for (const release in releases) {
+                releasesToSelect.push(release);
+            }
+            const selectedVersion : string = await vscode.window.showQuickPick(releasesToSelect);
+            let version = '';
+            
+            const value: string = releases[selectedVersion];
+            if (value !== 'undefined') {
+                version = value.replace('soljson-', '');
+                version = version.replace('.js', '');
+            }
+            const pathVersion = path.resolve(path.join(folderPath, 'soljson-' + version + '.js'));
+            await new RemoteCompilerDownloader().downloadCompilationFile(version, pathVersion);
+            vscode.window.showInformationMessage("Compiler downloaded: " + pathVersion);
+            return pathVersion;
+        } catch (e) {
+            vscode.window.showErrorMessage("Error downloading compiler: " + e);
+        }
+        
     }
 
     public async selectRemoteVersion(target: vscode.ConfigurationTarget) {

@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.110",
+  "version": "0.0.111",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -63,7 +63,7 @@
     "prettier": "^2.0.2",
     "prettier-plugin-solidity": "1.0.0-beta.2",
     "require-from-string": "^2.0.2",
-    "solc": "^0.7.4",
+    "solc": "^0.8.2",
     "solhint": "^3.3.3",
     "solium": "^1.2.5",
     "solparse-exp-jb": "2.2.19",
@@ -302,6 +302,18 @@
       {
         "command": "solidity.selectGlobalRemoteSolcVersion",
         "title": "Solidity: Change global compiler version (Remote)"
+      },
+      {
+        "command": "solidity.downloadRemoteSolcVersion",
+        "title": "Solidity: Download compiler"
+      },
+      {
+        "command": "solidity.downloadRemoteVersionAndSetLocalPathSetting",
+        "title": "Solidity: Download compiler and set workspace local Path"
+      },
+      {
+        "command": "solidity.changeDefaultCompilerType",
+        "title": "Solidity: Change the default workspace compiler to Remote, Local, NodeModule, Embedded"
       }
     ],
     "menus": {
@@ -351,12 +363,17 @@
         {
           "when": "editorLangId == 'solidity'",
           "command": "solidity.compile.activeUsingLocalFile",
-           "group": "1_solidity"
+          "group": "1_solidity"
         },
         {
           "when": "editorLangId == 'solidity'",
           "command": "solidity.compile.activeUsingNodeModule",
           "group": "1_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.changeDefaultCompilerType",
+          "group": "2_solidity"
         },
         {
           "when": "editorLangId == 'solidity'",
@@ -371,6 +388,16 @@
         {
           "when": "editorLangId == 'solidity'",
           "command": "solidity.selectWorkspaceRemoteSolcVersion",
+          "group": "2_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.downloadRemoteSolcVersion",
+          "group": "2_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.downloadRemoteVersionAndSetLocalPathSetting",
           "group": "2_solidity"
         },
         {

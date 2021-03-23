@@ -151,9 +151,25 @@ export async function activate(context: vscode.ExtensionContext) {
         compiler.selectRemoteVersion(vscode.ConfigurationTarget.Workspace);
     }));
 
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.downloadRemoteSolcVersion', async () => {
+        const root = vscode.workspace.workspaceFolders[0];
+        compiler.downloadRemoteVersion(root.uri.fsPath);
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.downloadRemoteVersionAndSetLocalPathSetting', async () => {
+        const root = vscode.workspace.workspaceFolders[0];
+        compiler.downloadRemoteVersionAndSetLocalPathSetting(vscode.ConfigurationTarget.Workspace, root.uri.fsPath);
+    }));
+    
+
     context.subscriptions.push(vscode.commands.registerCommand('solidity.selectGlobalRemoteSolcVersion', async () => {
         compiler.selectRemoteVersion(vscode.ConfigurationTarget.Global);
     }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.changeDefaultCompilerType', async () => {
+        compiler.changeDefaultCompilerType(vscode.ConfigurationTarget.Workspace);
+    }));
+    
 
     context.subscriptions.push(
         vscode.languages.registerDocumentFormattingEditProvider('solidity', {

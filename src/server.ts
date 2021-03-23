@@ -14,7 +14,7 @@ import {
     TextDocuments, InitializeResult,
     Files, Diagnostic,
     TextDocumentPositionParams,
-    CompletionItem, Location, SignatureHelp, TextDocumentSyncKind,
+    CompletionItem, Location, SignatureHelp, TextDocumentSyncKind, VersionedTextDocumentIdentifier,
 } from 'vscode-languageserver';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -109,8 +109,6 @@ function validate(document) {
         }
 
         const diagnostics = linterDiagnostics.concat(compileErrorDiagnostics);
-
-        console.log(uri);
         connection.sendDiagnostics({diagnostics, uri});
     } finally {
         validatingDocument = false;
@@ -166,6 +164,12 @@ function startValidation() {
         solcCompiler.initialiseAllCompilerSettings(compileUsingRemoteVersion, compileUsingLocalVersion, nodeModulePackage, defaultCompiler);
         solcCompiler.initialiseSelectedCompiler().then(() => {
             validateAllDocuments();
+        }).catch(reason => {
+            connection.console.error("An error has occurred initialising the compiler selected " + compilerType[defaultCompiler] + ", please check your settings, reverting to the embedded compiler. Error: " + reason);
+            solcCompiler.initialiseAllCompilerSettings(compileUsingRemoteVersion, compileUsingLocalVersion, nodeModulePackage, compilerType.embedded);
+            solcCompiler.initialiseSelectedCompiler().then(() => {
+                validateAllDocuments();
+            }).catch(reason => {});
         });
     } else {
         validateAllDocuments();
