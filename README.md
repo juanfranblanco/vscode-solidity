@@ -49,30 +49,32 @@ You can simply change this setting using the context menu:
 
 ### Using a Local file
 
-If you don't have an internet connection, you can download the compiler from https://github.com/ethereum/solc-bin/tree/gh-pages/bin and change your user settings to use this.
-
-This setting takes prefernce over the remote installation.
+If you want to keep a compiler version locally, you can download the compiler from https://binaries.soliditylang.org/ and change your user settings to use this.
 
 ```
 "solidity.compileUsingLocalVersion" : "C:\\Users\\JuanFran\\Downloads\\soljson-v0.4.15%2Bcommit.bbb8e64f.js"
 ```
 
-![Screenshot](screenshots/change-compiler-version-gui-setting.png)
+The simplest way ti download a compiler is to use the context menu, this will download your desired version at the root of the project and configure your workspace accordingly.
+
+![image](https://user-images.githubusercontent.com/562371/112136733-435f3d80-8bc7-11eb-91e5-e1d04a51cd72.png)
 
 ### Npm / node installation
-Another option, is to use the solc npm package in your project, if this setting is enabled it will try to find the compiler in your node_modules.
+Another option, is to use the solc npm package in your project, if this is enabled it will try to find the compiler in your configured node_modules at root.
 
+You can install solc using npm at the root of your project as follows.
 ```
 npm install solc 
 ```
 
-```json
-"solidity.enableLocalNodeCompiler": false
-```
-### Compiling a specific contract using a different compiler than the default one.
-There might be scenarios, that you want to use a different compiler for a specific file, you may be using by default in your project the "Remote" "Latest", but you have downloaded locally a compiler for a specific contract (an scenario might be you are compiling for the OVM).
+The default module package is "solc", but you may want to use other node module containing a compiler, this can be configured in the settings:
+![image](https://user-images.githubusercontent.com/562371/112137067-b668b400-8bc7-11eb-90bc-73e972da98d6.png)
 
-A simple way to compile this file, given your configurations are set will be to use the context menu option to compile.
+
+### Compiling a specific contract using a different compiler than the default one.
+
+There might be scenarios, that you want to use a different compiler for a specific file, using one of the other configured compilers. 
+
 ![image](https://user-images.githubusercontent.com/562371/112020727-7f8f9100-8b28-11eb-91ca-0a43ef491e57.png)
 
 ![image](https://user-images.githubusercontent.com/562371/112020877-a3eb6d80-8b28-11eb-895d-bbee7665e38d.png)
