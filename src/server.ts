@@ -104,8 +104,8 @@ function validate(document) {
                     }
                 });
             }
-        } catch {
-            // gracefull catch
+        } catch (e) {
+            //let x = e;// gracefull catch
         }
 
         const diagnostics = linterDiagnostics.concat(compileErrorDiagnostics);
@@ -163,8 +163,8 @@ function validateAllDocuments() {
 
 function startValidation() {
     if (enabledAsYouTypeErrorCheck) {
-        solcCompiler.initialiseAllCompilerSettings(compileUsingRemoteVersion, compileUsingLocalVersion, nodeModulePackage, defaultCompiler)
-        this.solc.initialiseSelectedCompiler().then(() => {
+        solcCompiler.initialiseAllCompilerSettings(compileUsingRemoteVersion, compileUsingLocalVersion, nodeModulePackage, defaultCompiler);
+        solcCompiler.initialiseSelectedCompiler().then(() => {
             validateAllDocuments();
         });
     } else {
