@@ -20,7 +20,7 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
 
 ## Using a different version of the solidity compiler
 
-Sometimes you may want to use a different compiler than the one provided. You can find all the different versions in the solc-bin repository https://github.com/ethereum/solc-bin/tree/gh-pages/bin
+Sometimes you may want to use a different compiler than the one provided. You can find all the different versions in the solc-bin repository https://binaries.soliditylang.org/ 
 
 Currently we support four ways supported to use a different version of the solidity compiler. Remote, Local, NodeModule and Embedded
 
@@ -30,7 +30,7 @@ You can change the compiler, in your user settings or workspace settings.
 
 
 ### Remote download
-When selecting remote download the compiler gets download from the solc-bin repository. 
+When selecting remote download the compiler gets downloaded from the solc-bin repository. 
 
 You will need to change the following user setting, with the version required, for example ```'latest'``` or ```'v0.4.3+commit.2353da71'```, for your workspace user setting (current project) or global user setting (all projects)
 
