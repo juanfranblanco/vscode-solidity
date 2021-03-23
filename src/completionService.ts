@@ -786,6 +786,13 @@ export function GetGlobalFunctions(): CompletionItem[] {
             label: 'gasleft',
         },
         {
+            detail: 'unicode: converts string into unicode',
+            insertText: 'unicode"${1:text}"',
+            insertTextFormat: 2,
+            kind: CompletionItemKind.Function,
+            label: 'unicode',
+        },
+        {
             detail: 'blockhash(uint blockNumber): hash of the given block - only works for 256 most recent, excluding current, blocks',
             insertText: 'blockhash(${1:blockNumber});',
             insertTextFormat: 2,

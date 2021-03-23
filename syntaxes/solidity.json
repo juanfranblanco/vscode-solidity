@@ -346,7 +346,7 @@
                     "name": "keyword.control.contract.solidity"
                 },
                 {
-                    "match": "\\b(addmod|mulmod|keccak256|sha256|sha3|ripemd160|ecrecover)\\b",
+                    "match": "\\b(addmod|mulmod|keccak256|sha256|sha3|ripemd160|ecrecover|unicode)\\b",
                     "name": "support.function.math.solidity"
                 },
                 {
