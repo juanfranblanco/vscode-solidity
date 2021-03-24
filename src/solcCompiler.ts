@@ -230,7 +230,7 @@ export class RemoteCompilerLoader extends SolcCompilerLoader {
 
     constructor() {
         super();
-        this.compilerType = compilerType.localFile
+        this.compilerType = compilerType.remote;
     }
 
     public init(version:string) {

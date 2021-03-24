@@ -206,7 +206,7 @@
             ]
         },
         "control-flow": {
-            "match": "\\b(if|else|for|while|do|break|continue|throw|returns?)\\b",
+            "match": "\\b(if|else|for|while|do|break|continue|try|catch|finally|throw|returns?)\\b",
             "name": "keyword.control.flow.solidity"
         },
         "control-using": {

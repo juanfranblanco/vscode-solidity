@@ -382,7 +382,7 @@ export class SolidityDefinitionProvider {
             if (typeof element.body !== 'undefined' && element.body !== null) {
               return extractElements(element);
             }
-          }
+          } 
           return [];
         }),
       );
