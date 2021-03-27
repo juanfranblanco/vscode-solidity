@@ -146,6 +146,8 @@ export function codeGenerateCQS(fileName: string, lang: number, args: any, diagn
         let baseNamespace = prettyRootName + '.Contracts';
         let projectName = baseNamespace;
         let projectPath = path.join(root.uri.fsPath);
+        let useFolderAsNamespace = false;
+        let ignorePrefixFolder = '';
 
         if (settings !== undefined) {
             if (settings.projectName !== undefined) {
@@ -155,6 +157,14 @@ export function codeGenerateCQS(fileName: string, lang: number, args: any, diagn
 
             if (settings.projectPath !== undefined) {
                 projectPath = path.join(projectPath, settings.projectPath);
+            }
+
+            if(settings.useFolderAsNamespace !== undefined) {
+                useFolderAsNamespace = settings.useFolderAsNamespace;
+            }
+
+            if(settings.ignorePrefixFolder !== undefined) {
+                ignorePrefixFolder = settings.ignorePrefixFolder;
             }
         }
         const outputPathInfo = path.parse(fileName);
@@ -182,6 +192,23 @@ export function codeGenerateCQS(fileName: string, lang: number, args: any, diagn
                 codegen.generateNetStandardClassLibrary(projectName, projectPath, lang);
             }
 
+            if(useFolderAsNamespace) {
+                let pathFullIgnore = path.join(getBuildPath(), ignorePrefixFolder);
+                let dirPath = path.dirname(fileName);
+                let testPath = '';
+                if(dirPath.startsWith(pathFullIgnore)) {
+                    testPath = path.relative(pathFullIgnore, path.dirname(fileName));
+                    //make upper case the first char in a folder
+                    testPath = prettifyRootNameAsNamespaceWithSplitString(testPath, path.sep, path.sep);
+                }
+                projectPath = path.join(projectPath, testPath);
+                let trailingNameSpace = prettifyRootNameAsNamespaceWithSplitString(testPath, path.sep, '.').trim();
+                if(trailingNameSpace != '') {
+                    baseNamespace = baseNamespace + '.' + trailingNameSpace;
+                }
+                
+            }
+
             codegen.generateAllClasses(abi,
                 bytecode,
                 contractName,
@@ -200,8 +227,12 @@ export function codeGenerateCQS(fileName: string, lang: number, args: any, diagn
 
 // remove - and make upper case
 function prettifyRootNameAsNamespace(value: string) {
-    return value.split('-').map(function capitalize(part) {
+   return prettifyRootNameAsNamespaceWithSplitString(value, '-', '');
+}
+
+function prettifyRootNameAsNamespaceWithSplitString(value: string, splitChar: string, joinChar: string) {
+    return value.split(splitChar).map(function capitalize(part) {
         return part.charAt(0).toUpperCase() + part.slice(1);
-    }).join('');
+    }).join(joinChar);
 }
 
