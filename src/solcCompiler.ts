@@ -6,6 +6,8 @@ import * as path from 'path';
 import * as https from 'https';
 import { ContractCollection } from './model/contractsCollection';
 import { initialiseProject } from './projectService';
+import { resolve, resolveModulePath } from 'vscode-languageserver/lib/files';
+import { fileURLToPath } from 'url';
 
 export enum compilerType {
     localNodeModule,
@@ -211,6 +213,62 @@ export class RemoteCompilerDownloader {
 }
 
 
+export class RemoteReleases {
+    public getSolcReleases(): Promise<any> {
+        const url = 'https://binaries.soliditylang.org/bin/list.json';
+        return new Promise((resolve, reject) => {
+            https.get(url, (res) => {
+                let body = '';
+                res.on('data', (chunk) => {
+                    body += chunk;
+                });
+                res.on('end', () => {
+                    try {
+                        const binList = JSON.parse(body);
+                        resolve(binList.releases);
+                    } catch (error) {
+                        reject(error.message);
+                    }
+                });
+            }).on('error', (error) => {
+                reject(error.message);
+            });
+        });
+    }
+
+    public getFullVersionFromFileName(fileName: string): string {
+        let version = '';    
+        const value: string = fileName;
+        if (value !== 'undefined') {
+            version = value.replace('soljson-', '');
+            version = version.replace('.js', '');
+        } else { 
+            throw("Remote version: Invalid file name");
+        }
+        return version;
+    }
+
+    public async resolveRelease(version: string): Promise<string> {
+        return new Promise(async (resolve, reject) => {
+                try {
+                    let releases = await this.getSolcReleases();
+                    for (const release in releases) {
+                        let fullVersion = this.getFullVersionFromFileName(releases[release]);
+                        if(version == fullVersion) resolve(fullVersion);
+                        if(version == release) resolve(fullVersion);
+                        if(version == releases[release]) resolve(fullVersion);
+                        if("v" + release == version) resolve(fullVersion);
+                        if(version.startsWith("v" + release + "+commit")) resolve(fullVersion);
+                    }
+                    reject("Remote version: invalid version");
+                }
+                catch(error) {
+                    reject(error);
+                }
+        });
+    }
+}
+
 export class RemoteCompilerLoader extends SolcCompilerLoader {
     
     private version: string;
@@ -256,17 +314,21 @@ export class RemoteCompilerLoader extends SolcCompilerLoader {
             }
             if(this.canCompilerBeLoaded()) {
                 const solcService = this;
-                this.loadRemoteVersionRetry(this.version, 1, 3).then((solcSnapshot) => {
-                        solcService.localSolc = solcSnapshot;
-                        resolve();
-                }).catch((error) =>
-                {
-                    reject('There was an error loading the remote version: ' + this.version + ',' + error)
-                });;
-                    
+                new RemoteReleases().resolveRelease(this.version).then(resolvedVersion => 
+                    this.loadRemoteVersionRetry(resolvedVersion, 1, 3).then((solcSnapshot) => {
+                            solcService.localSolc = solcSnapshot;
+                            resolve();
+                        }).catch((error) =>
+                        {
+                            reject('There was an error loading the remote version: ' + this.version + ',' + error)
+                        })
+                    ).catch((error) =>
+                    {
+                        reject('There was an error loading the remote version: ' + this.version + ',' + error)
+                    })
             } else {
                 this.localSolc = null;
-                reject("Compiler cannot remotely using version:" + this.version);
+                reject("Compiler cannot load remote version:" + this.version);
             }
         });
     }

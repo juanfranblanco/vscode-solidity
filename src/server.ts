@@ -163,6 +163,7 @@ function startValidation() {
     if (enabledAsYouTypeErrorCheck) {
         solcCompiler.initialiseAllCompilerSettings(compileUsingRemoteVersion, compileUsingLocalVersion, nodeModulePackage, defaultCompiler);
         solcCompiler.initialiseSelectedCompiler().then(() => {
+            connection.console.info("Validating using the compiler selected: " + compilerType[defaultCompiler]);
             validateAllDocuments();
         }).catch(reason => {
             connection.console.error("An error has occurred initialising the compiler selected " + compilerType[defaultCompiler] + ", please check your settings, reverting to the embedded compiler. Error: " + reason);

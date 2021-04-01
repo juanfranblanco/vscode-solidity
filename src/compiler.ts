@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as fsex from 'fs-extra';
 import * as https from 'https';
-import { SolcCompiler, compilerType, RemoteCompilerDownloader } from './solcCompiler';
+import { SolcCompiler, compilerType, RemoteCompilerDownloader, RemoteReleases } from './solcCompiler';
 import { errorsToDiagnostics } from './solErrorsToDiaganosticsClient';
 import { resolve } from 'vscode-languageserver/lib/files';
 
@@ -92,25 +92,7 @@ export class Compiler {
     }
 
     public getSolcReleases(): Promise<any> {
-        const url = 'https://binaries.soliditylang.org/bin/list.json';
-        return new Promise((resolve, reject) => {
-            https.get(url, (res) => {
-                let body = '';
-                res.on('data', (chunk) => {
-                    body += chunk;
-                });
-                res.on('end', () => {
-                    try {
-                        const binList = JSON.parse(body);
-                        resolve(binList.releases);
-                    } catch (error) {
-                        reject(error.message);
-                    }
-                });
-            }).on('error', (error) => {
-                reject(error.message);
-            });
-        });
+        return new RemoteReleases().getSolcReleases();
     }
 
     public async outputSolcReleases() {
