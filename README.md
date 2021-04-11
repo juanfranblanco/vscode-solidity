@@ -85,7 +85,7 @@ There might be scenarios, that you want to use a different compiler for a specif
 It is pretty hard sometimes to find interfaces or information about an EIP (ERC) or specific libraries to simply get started working with Solidity. 
 The solidity extension now includes ERC approved and most drafts (wip) to help get you started.
 
-Just type ```erc`` and select the erc example or interface you want.
+Just type ```erc``` and select the erc example or interface you want.
 
 ![Screenshot](screenshots/ercautocomplete1.png)
 ![Screenshot](screenshots/ercautocomplete2.png)
