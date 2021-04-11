@@ -93,7 +93,7 @@ Just type ```erc``` and select the erc example or interface you want.
 ### Smart contract project interfaces 
 In a similar to way to ERCs and as we work towards to more interoperable smart contracts, being able to quickly examine those interfaces that you want to integrate is a time saver.
 
-The current release includes the interfaces for Uniswap V2 (to get started), just type ```uni`` to list them all.
+The current release includes the interfaces for Uniswap V2 (to get started), just type ```uni``` to list them all.
 ![Screenshot](screenshots/unigen1.png) 
 ![Screenshot](screenshots/unigen2.png)
 
