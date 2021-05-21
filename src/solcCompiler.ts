@@ -250,6 +250,7 @@ export class RemoteReleases {
 
     public async resolveRelease(version: string): Promise<string> {
         return new Promise(async (resolve, reject) => {
+                if(version === 'latest') resolve(version);
                 try {
                     let releases = await this.getSolcReleases();
                     for (const release in releases) {
