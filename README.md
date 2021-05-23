@@ -55,7 +55,7 @@ If you want to keep a compiler version locally, you can download the compiler fr
 "solidity.compileUsingLocalVersion" : "C:\\Users\\JuanFran\\Downloads\\soljson-v0.4.15%2Bcommit.bbb8e64f.js"
 ```
 
-The simplest way ti download a compiler is to use the context menu, this will download your desired version at the root of the project and configure your workspace accordingly.
+The simplest way to download a compiler is to use the context menu, this will download your desired version at the root of the project and configure your workspace accordingly.
 
 ![image](https://user-images.githubusercontent.com/562371/112136733-435f3d80-8bc7-11eb-91e5-e1d04a51cd72.png)
 
