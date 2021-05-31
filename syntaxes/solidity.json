@@ -373,6 +373,9 @@
                     "include": "#declaration-event"
                 },
                 {
+                    "include": "#declaration-error"
+                },
+                {
                     "include": "#declaration-enum"
                 },
                 {
@@ -449,6 +452,17 @@
                 },
                 "3": {
                     "name": "entity.name.type.event.solidity"
+                }
+            }
+        },
+        "declaration-error": {
+            "match": "\\b(error)(\\s+([A-Za-z_]\\w*))?\\b",
+            "captures": {
+                "1": {
+                    "name": "storage.type.error.solidity"
+                },
+                "3": {
+                    "name": "entity.name.type.error.solidity"
                 }
             }
         },

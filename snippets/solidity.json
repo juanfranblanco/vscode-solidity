@@ -62,6 +62,10 @@
 			"prefix": "ev",
 			"body": "event ${1:name}(${2:type} ${3:name} $0);"
         },
+		"error declaration": {
+			"prefix": "error",
+			"body": "error ${1:name}(${2:type} ${3:name} $0);"
+        },
         "modifier declaration": {
 			"prefix": "mod",
 			"body": "modifier ${1:name}($2) {\n\t$0_\n}"
