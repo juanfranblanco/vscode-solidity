@@ -304,11 +304,13 @@ Bram Hoven for starting the multiple package dependency support for different en
 
 Piotr Szlachciak for refactoring the syntaxes
 
+James Lefrere for further refactoring the syntaxes.
+
 Forest Fang for providing the implementation of the "Go to definition", allowing you to navigate to structs, contracts, functions calls, etc
 
 Bernardo Vieira for adding the capability to read the solium settings from a file in the workspace root directory.
 
-Mirko Garozzo and Rocky Bernstein for the work on creating and integrating the Mythx api to analyse smart contracts.
+Mirko Garozzo and Rocky Bernstein for the work on creating and integrating the Mythx api to analyse smart contracts (OBSOLETE NOW)
 
 Nick Addison, Elazar Gershuni, Joe Whittles, Iñigo Villalba, Thien Toan, Jonathan Carter, Stefan Lew, Nikita Savchenko, Josh Stevens, Paul Berg for their contributions.
 
