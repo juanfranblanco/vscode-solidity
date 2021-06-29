@@ -613,15 +613,40 @@
             ]
         },
         "declaration-interface": {
-            "match": "\\b(interface)\\s+(\\w+)\\b",
-            "captures": {
-                "1": {
-                    "name": "storage.type.interface"
+            "patterns": [ 
+                {
+                    "match": "\\b(interface)\\b\\s+(\\w+)\\b\\s*(?=\\{)",
+                    "captures": {
+                        "1": {
+                            "name": "storage.type.interface"
+                        },
+                        "2": {
+                            "name": "entity.name.type.interface"
+                        }
+                    }
                 },
-                "2": {
-                    "name": "entity.name.type.interface"
+                {
+                    "begin": "\\b(interface)\\b\\s+(\\w+)\\b\\s+\\b(is)\\b\\s+",
+                    "end": "(?=\\{)",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "storage.type.interface"
+                        },
+                        "2": {
+                            "name": "entity.name.type.interface"
+                        },
+                        "3": {
+                            "name": "storage.modifier.is"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "match": "\\b(\\w+)\\b",
+                            "name": "entity.name.type.interface.extend"
+                        }
+                    ]
                 }
-            }
+            ]
         },
         "declaration-library": {
             "match": "\\b(library)\\s+(\\w+)\\b",
@@ -663,7 +688,7 @@
                     "name": "entity.name.function"
                 }
             },
-            "end": "(?=\\{)",
+            "end": "(?=\\{|;)",
             "patterns": [
                 { "include": "#natspec" },
                 { "include": "#global" },
