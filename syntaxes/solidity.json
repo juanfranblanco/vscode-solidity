@@ -249,7 +249,7 @@
             "name": "constant.numeric.hexadecimal"
         },
         "number-scientific": {
-            "match": "\\b(?:0\\.(?:0[1-9]|[1-9]\\d?)|[1-9]\\d*(?:\\.\\d{1,2})?)(?:e[+-]?\\d+)?",
+            "match": "\\b(?:0\\.(?:0[1-9]|[1-9][0-9_]?)|[1-9][0-9_]*(?:\\.\\d{1,2})?)(?:e[+-]?[0-9_]+)?",
             "name": "constant.numeric.scientific"
         },
         "string": {
