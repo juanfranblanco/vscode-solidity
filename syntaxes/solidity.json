@@ -649,7 +649,8 @@
                     }
                 },
                 { "include": "#variable" },
-                { "include": "#punctuation" }
+                { "include": "#punctuation" },
+                { "include": "#comment"}
             ]
         },
         "declaration-function": {
