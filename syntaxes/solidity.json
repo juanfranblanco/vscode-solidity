@@ -276,8 +276,7 @@
             "patterns": [
                 { "include": "#constant-boolean" },
                 { "include": "#constant-time" },
-                { "include": "#constant-currency" },
-                { "include": "#constant-ucase" }
+                { "include": "#constant-currency" }
             ]
         },
         "constant-boolean": {
@@ -292,10 +291,7 @@
             "match": "\\b(ether|wei|finney|szabo)\\b",
             "name": "constant.language.currency"
         },
-        "constant-ucase": {
-            "match": "\\b([A-Z09_]+)\\b",
-            "name": "constant.language.ucase"
-        },
+        
         "assembly": {
             "patterns": [
                 {
