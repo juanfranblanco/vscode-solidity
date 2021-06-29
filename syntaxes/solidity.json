@@ -606,7 +606,7 @@
                     "patterns": [
                         {
                             "match": "\\b(\\w+)\\b",
-                            "name": "entity.name.type.contract"
+                            "name": "entity.name.type.contract.extend"
                         }
                     ]
                 }
