@@ -241,7 +241,7 @@
             "name": "storage.type.modifier.extendedscope"
         },
         "number-decimal": {
-            "match": "\\b(\\d+(\\.\\d+)?)\\b",
+            "match": "\\b([0-9_]+(\\.[0-9_]+)?)\\b",
             "name": "constant.numeric.decimal"
         },
         "number-hex": {
