@@ -2,10 +2,9 @@
 **Table of Contents**
 
 - [Prerequisites...](#prerequisites)
-    - [Dependency hell](#dependency-hell)
 - [How to run code in this github repository](#how-to-run-code-in-this-github-repository)
-    - [Running](#running)
-    - [Debugging](#debugging)
+  - [Running](#running)
+  - [Debugging](#debugging)
 - [See also:](#see-also)
 
 <!-- markdown-toc end -->
@@ -21,18 +20,6 @@ You need to have installed
 
 There are a number of nodejs packages are needed, like [typescript](https://www.typescriptlang.org/), but you can get those via `npm`,
 which is described in a below [section](#how-to-run-code-in-this-github-repository).
-
-
-## Dependency hell / Current Issues
-There is a dependency on isomorphic-fetch
-if having issues compiling, replace the index.d.ts file with this
-
-```typescript
-declare namespace _fetch { }
-declare const _fetch: any;
-export = _fetch;
-```
-
 
 # How to run code in this github repository
 
