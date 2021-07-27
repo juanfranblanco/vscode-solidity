@@ -29,6 +29,9 @@
             "include": "#type-primitive"
         },
         {
+            "include": "#type-modifier-extended-scope"
+        }
+        {
             "include": "#declaration"
         },
         {
@@ -715,7 +718,7 @@
                     "patterns": [
                         {
                             "match": "\\b(\\w+)\\b",
-                            "name": "entity.name.type.contract.extend"
+                            "name": "entity.name.type.interface.extend"
                         }
                     ]
                 }
@@ -984,27 +987,100 @@
                             "name": "entity.name.function"
                         }
                     }
-                },
-                {
-                    "match": "\\b(private|public|internal|external|constant|immutable|pure|view|payable|nonpayable|inherited|indexed|storage|memory|virtual|calldata|override|abstract)\\b",
-                    "name": "storage.type.mofifier"
                 }
             ]
         },
         "declaration-modifier": {
-            "match": "\\b(modifier)(\\s+([A-Za-z_]\\w*))?\\b",
-            "captures": {
-                "1": {
-                    "name": "storage.type.modifier"
+            "patterns": [
+                {
+                    "begin": "\\b(modifier)\\b\\s*(\\w+)",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "storage.type.function.modifier"
+                        },
+                        "2": {
+                            "name": "entity.name.function.modifier"
+                        }
+                    },
+                    "end": "(?=\\{)",
+                    "patterns": [
+                        {
+                            "include": "#declaration-function-parameters"
+                        },
+                        {
+                            "begin": "(?<=\\))",
+                            "end": "(?=\\{)",
+                            "patterns": [
+                                {
+                                    "include": "#declaration-function-parameters"
+                                },
+                                {
+                                    "include": "#type-modifier-access"
+                                },
+                                {
+                                    "include": "#type-modifier-payable"
+                                },
+                                {
+                                    "include": "#type-modifier-immutable"
+                                },
+                                {
+                                    "include": "#type-modifier-extended-scope"
+                                },
+                                {
+                                    "include": "#function-call"
+                                },
+                                {
+                                    "include": "#modifier-call"
+                                },
+                                {
+                                    "include": "#control-flow"
+                                }
+                            ]
+                        }
+                    ]
                 },
-                "3": {
-                    "name": "entity.name.function"
+                {
+                    "match": "\\b(modifier)(\\s+([A-Za-z_]\\w*))?\\b",
+                    "captures": {
+                        "1": {
+                            "name": "storage.type.modifier"
+                        },
+                        "3": {
+                            "name": "entity.name.function"
+                        }
+                    }
                 }
-            }
+            ]
         },
         "declaration-storage-mapping": {
-            "match": "\\b(mapping)\\b",
-            "name": "storage.type.mapping"
+            "patterns":[
+                {
+                    "begin": "\\b(mapping)\\b",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "storage.type.mapping"
+                        }
+                    },
+                    "end": "(?=\\))",
+                    "patterns": [
+                        {
+                            "include": "#declaration-storage-mapping"
+                        },
+                        {
+                            "include": "#type-primitive"
+                        },
+                        {
+                            "include": "#punctuation"
+                        },
+                        {
+                            "include": "#operator"
+                        }
+                    ]
+                },{
+                    "match": "\\b(mapping)\\b",
+                    "name": "storage.type.mapping"
+                }
+            ]
         },
         "declaration-error": {
             "match": "\\b(error)(\\s+([A-Za-z_]\\w*))?\\b",

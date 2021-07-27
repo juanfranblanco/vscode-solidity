@@ -935,72 +935,80 @@
             ]
         },
         "declaration-modifier": {
-            "begin": "\\b(modifier)\\b\\s*(\\w+)",
-            "beginCaptures": {
-                "1": {
-                    "name": "storage.type.function.modifier"
-                },
-                "2": {
-                    "name": "entity.name.function.modifier"
-                }
-            },
-            "end": "(?=\\{)",
             "patterns": [
                 {
-                    "include": "#declaration-function-parameters"
-                },
-                {
-                    "begin": "(?<=\\))",
+                    "begin": "\\b(modifier)\\b\\s*(\\w+)",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "storage.type.function.modifier"
+                        },
+                        "2": {
+                            "name": "entity.name.function.modifier"
+                        }
+                    },
                     "end": "(?=\\{)",
                     "patterns": [
                         {
                             "include": "#declaration-function-parameters"
                         },
                         {
-                            "include": "#type-modifier-access"
-                        },
-                        {
-                            "include": "#type-modifier-payable"
-                        },
-                        {
-                            "include": "#type-modifier-immutable"
-                        },
-                        {
-                            "include": "#type-modifier-extended-scope"
-                        },
-                        {
-                            "include": "#function-call"
-                        },
-                        {
-                            "include": "#modifier-call"
-                        },
-                        {
-                            "include": "#control-flow"
+                            "begin": "(?<=\\))",
+                            "end": "(?=\\{)",
+                            "patterns": [
+                                {
+                                    "include": "#declaration-function-parameters"
+                                },
+                                {
+                                    "include": "#type-modifier-access"
+                                },
+                                {
+                                    "include": "#type-modifier-payable"
+                                },
+                                {
+                                    "include": "#type-modifier-immutable"
+                                },
+                                {
+                                    "include": "#type-modifier-extended-scope"
+                                },
+                                {
+                                    "include": "#function-call"
+                                },
+                                {
+                                    "include": "#modifier-call"
+                                },
+                                {
+                                    "include": "#control-flow"
+                                }
+                            ]
                         }
                     ]
                 }
             ]
         },
         "declaration-storage-mapping": {
-            "begin": "\\b(mapping)\\b",
-            "beginCaptures": {
-                "1": {
-                    "name": "storage.type.mapping"
-                }
-            },
-            "end": "(?=\\))",
             "patterns": [
                 {
-                    "include": "#declaration-storage-mapping"
-                },
-                {
-                    "include": "#type-primitive"
-                },
-                {
-                    "include": "#punctuation"
-                },
-                {
-                    "include": "#operator"
+                    "begin": "\\b(mapping)\\b",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "storage.type.mapping"
+                        }
+                    },
+                    "end": "(?=\\))",
+                    "patterns": [
+                        {
+                            "include": "#declaration-storage-mapping"
+                        },
+                        {
+                            "include": "#type-primitive"
+                        },
+                        {
+                            "include": "#punctuation"
+                        },
+                        {
+                            "include": "#operator"
+                        }
+                    ]
                 }
             ]
         },
