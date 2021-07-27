@@ -245,10 +245,6 @@
         "control-using": {
             "patterns": [
                 {
-                    "match": "\\b(using)\\b",
-                    "name": "keyword.control.using"
-                },
-                {
                     "match": "\\b(using)\\b\\s+\\b([A-Za-z\\d_]+)\\b\\s+\\b(for)\\b\\s+\\b([A-Za-z\\d_]+)",
                     "captures": {
                         "1": {
@@ -264,6 +260,10 @@
                             "name": "entity.name.type"
                         }
                     }
+                }, 
+                {
+                    "match": "\\b(using)\\b",
+                    "name": "keyword.control.using"
                 }
             ]
         },
