@@ -733,15 +733,45 @@
             }
         },
         "declaration-struct": {
-            "match": "\\b(struct)(\\s+([A-Za-z_]\\w*))?\\b",
-            "captures": {
-                "1": {
-                    "name": "storage.type.struct"
+            "patterns": [
+                {
+                    "match": "\\b(struct)(\\s+([A-Za-z_]\\w*))?\\b",
+                    "captures": {
+                        "1": {
+                            "name": "storage.type.struct"
+                        },
+                        "3": {
+                            "name": "entity.name.type.struct"
+                        }
+                    }
                 },
-                "3": {
-                    "name": "entity.name.type.struct"
+                {
+                    "begin": "\\b(struct)\\b\\s*(\\w+)?\\b\\s*(?=\\{)",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "storage.type.struct"
+                        },
+                        "2": {
+                            "name": "entity.name.type.struct"
+                        }
+                    },
+                    "end": "(?=\\})",
+                    "patterns": [
+                        {
+                            "include": "#type-primitive"
+                        },
+                        {
+                            "include": "#variable"
+                        },
+                        {
+                            "include": "#punctuation"
+                        },
+                        {
+                            "include": "#comment"
+                        }
+                    ]
                 }
-            }
+            ]
         },
         "declaration-event": {
             "match": "\\b(event)(\\s+([A-Za-z_]\\w*))?\\b",
