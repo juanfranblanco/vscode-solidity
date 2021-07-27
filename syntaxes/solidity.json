@@ -30,7 +30,7 @@
         },
         {
             "include": "#type-modifier-extended-scope"
-        }
+        },
         {
             "include": "#declaration"
         },
@@ -1053,7 +1053,7 @@
             ]
         },
         "declaration-storage-mapping": {
-            "patterns":[
+            "patterns": [
                 {
                     "begin": "\\b(mapping)\\b",
                     "beginCaptures": {
@@ -1076,7 +1076,8 @@
                             "include": "#operator"
                         }
                     ]
-                },{
+                },
+                {
                     "match": "\\b(mapping)\\b",
                     "name": "storage.type.mapping"
                 }
