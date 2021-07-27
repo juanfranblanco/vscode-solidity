@@ -260,7 +260,7 @@
                             "name": "entity.name.type"
                         }
                     }
-                }, 
+                },
                 {
                     "match": "\\b(using)\\b",
                     "name": "keyword.control.using"
@@ -299,7 +299,7 @@
                             "include": "#punctuation"
                         }
                     ]
-                }, 
+                },
                 {
                     "match": "\\b(import)\\b",
                     "name": "keyword.control.import"
@@ -775,7 +775,6 @@
         },
         "declaration-event": {
             "patterns": [
-               
                 {
                     "begin": "\\b(event)\\b(?:\\s+(\\w+)\\b)?",
                     "end": "(?=\\))",
@@ -818,27 +817,87 @@
                         }
                     }
                 }
-                
             ]
         },
         "declaration-constructor": {
-            "match": "\\b(constructor)\\b",
-            "captures": {
-                "1": {
-                    "name": "storage.type.constructor"
+            "patterns": [
+                {
+                    "begin": "\\b(constructor)\\b",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "storage.type.constructor"
+                        }
+                    },
+                    "end": "(?=\\{)",
+                    "patterns": [
+                        {
+                            "begin": "\\G\\s*(?=\\()",
+                            "end": "(?=\\))",
+                            "patterns": [
+                                {
+                                    "include": "#declaration-function-parameters"
+                                }
+                            ]
+                        },
+                        {
+                            "begin": "(?<=\\))",
+                            "end": "(?=\\{)",
+                            "patterns": [
+                                {
+                                    "include": "#type-modifier-access"
+                                },
+                                {
+                                    "include": "#function-call"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "match": "\\b(constructor)\\b",
+                    "captures": {
+                        "1": {
+                            "name": "storage.type.constructor"
+                        }
+                    }
                 }
-            }
+            ]
         },
         "declaration-enum": {
-            "match": "\\b(enum)(\\s+([A-Za-z_]\\w*))?\\b",
-            "captures": {
-                "1": {
-                    "name": "storage.type.enum"
+            "patterns": [
+                {
+                    "begin": "\\b(enum)\\s+(\\w+)\\b",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "storage.type.enum"
+                        },
+                        "2": {
+                            "name": "entity.name.type.enum"
+                        }
+                    },
+                    "end": "(?=\\})",
+                    "patterns": [
+                        {
+                            "match": "\\b(\\w+)\\b",
+                            "name": "variable.other.enummember"
+                        },
+                        {
+                            "include": "#punctuation"
+                        }
+                    ]
                 },
-                "3": {
-                    "name": "entity.name.type.enum"
+                {
+                    "match": "\\b(enum)(\\s+([A-Za-z_]\\w*))?\\b",
+                    "captures": {
+                        "1": {
+                            "name": "storage.type.enum"
+                        },
+                        "3": {
+                            "name": "entity.name.type.enum"
+                        }
+                    }
                 }
-            }
+            ]
         },
         "declaration-function-parameters": {
             "begin": "\\G\\s*(?=\\()",

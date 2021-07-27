@@ -797,55 +797,63 @@
             ]
         },
         "declaration-constructor": {
-            "begin": "\\b(constructor)\\b",
-            "beginCaptures": {
-                "1": {
-                    "name": "storage.type.constructor"
-                }
-            },
-            "end": "(?=\\{)",
             "patterns": [
                 {
-                    "begin": "\\G\\s*(?=\\()",
-                    "end": "(?=\\))",
-                    "patterns": [
-                        {
-                            "include": "#declaration-function-parameters"
+                    "begin": "\\b(constructor)\\b",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "storage.type.constructor"
                         }
-                    ]
-                },
-                {
-                    "begin": "(?<=\\))",
+                    },
                     "end": "(?=\\{)",
                     "patterns": [
                         {
-                            "include": "#type-modifier-access"
+                            "begin": "\\G\\s*(?=\\()",
+                            "end": "(?=\\))",
+                            "patterns": [
+                                {
+                                    "include": "#declaration-function-parameters"
+                                }
+                            ]
                         },
                         {
-                            "include": "#function-call"
+                            "begin": "(?<=\\))",
+                            "end": "(?=\\{)",
+                            "patterns": [
+                                {
+                                    "include": "#type-modifier-access"
+                                },
+                                {
+                                    "include": "#function-call"
+                                }
+                            ]
                         }
                     ]
                 }
             ]
         },
         "declaration-enum": {
-            "begin": "\\b(enum)\\s+(\\w+)\\b",
-            "beginCaptures": {
-                "1": {
-                    "name": "storage.type.enum"
-                },
-                "2": {
-                    "name": "entity.name.type.enum"
-                }
-            },
-            "end": "(?=\\})",
             "patterns": [
                 {
-                    "match": "\\b(\\w+)\\b",
-                    "name": "variable.other.enummember"
-                },
-                {
-                    "include": "#punctuation"
+                    "begin": "\\b(enum)\\s+(\\w+)\\b",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "storage.type.enum"
+                        },
+                        "2": {
+                            "name": "entity.name.type.enum"
+                        }
+                    },
+                    "end": "(?=\\})",
+                    "patterns": [
+                        {
+                            "match": "\\b(\\w+)\\b",
+                            "name": "variable.other.enummember"
+                        },
+                        {
+                            "include": "#punctuation"
+                        }
+                    ]
                 }
             ]
         },
