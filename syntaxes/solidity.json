@@ -774,15 +774,52 @@
             ]
         },
         "declaration-event": {
-            "match": "\\b(event)(\\s+([A-Za-z_]\\w*))?\\b",
-            "captures": {
-                "1": {
-                    "name": "storage.type.event"
+            "patterns": [
+               
+                {
+                    "begin": "\\b(event)\\b(?:\\s+(\\w+)\\b)?",
+                    "end": "(?=\\))",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "storage.type.event"
+                        },
+                        "2": {
+                            "name": "entity.name.type.event"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "#type-primitive"
+                        },
+                        {
+                            "match": "\\b(?:(indexed)\\s)?(\\w+)(?:,\\s*|)",
+                            "captures": {
+                                "1": {
+                                    "name": "storage.type.modifier.indexed"
+                                },
+                                "2": {
+                                    "name": "variable.parameter.event"
+                                }
+                            }
+                        },
+                        {
+                            "include": "#punctuation"
+                        }
+                    ]
                 },
-                "3": {
-                    "name": "entity.name.type.event"
+                {
+                    "match": "\\b(event)(\\s+([A-Za-z_]\\w*))?\\b",
+                    "captures": {
+                        "1": {
+                            "name": "storage.type.event"
+                        },
+                        "3": {
+                            "name": "entity.name.type.event"
+                        }
+                    }
                 }
-            }
+                
+            ]
         },
         "declaration-constructor": {
             "match": "\\b(constructor)\\b",
@@ -834,6 +871,50 @@
         },
         "declaration-function": {
             "patterns": [
+                {
+                    "begin": "\\b(function)\\s+(\\w+)\\b",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "storage.type.function"
+                        },
+                        "2": {
+                            "name": "entity.name.function"
+                        }
+                    },
+                    "end": "(?=\\{|;)",
+                    "patterns": [
+                        {
+                            "include": "#natspec"
+                        },
+                        {
+                            "include": "#global"
+                        },
+                        {
+                            "include": "#declaration-function-parameters"
+                        },
+                        {
+                            "include": "#type-modifier-access"
+                        },
+                        {
+                            "include": "#type-modifier-payable"
+                        },
+                        {
+                            "include": "#type-modifier-immutable"
+                        },
+                        {
+                            "include": "#type-modifier-extended-scope"
+                        },
+                        {
+                            "include": "#control-flow"
+                        },
+                        {
+                            "include": "#function-call"
+                        },
+                        {
+                            "include": "#modifier-call"
+                        }
+                    ]
+                },
                 {
                     "match": "\\b(function)\\s+([A-Za-z_]\\w*)\\b",
                     "captures": {
