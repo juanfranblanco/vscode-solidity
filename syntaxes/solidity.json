@@ -773,6 +773,35 @@
                 }
             }
         },
+        "declaration-function-parameters": {
+            "begin": "\\G\\s*(?=\\()",
+            "end": "(?=\\))",
+            "patterns": [
+                {
+                    "include": "#type-primitive"
+                },
+                {
+                    "include": "#type-modifier-extended-scope"
+                },
+                {
+                    "match": "\\b([A-Z]\\w*)\\b",
+                    "captures": {
+                        "1": {
+                            "name": "storage.type.struct"
+                        }
+                    }
+                },
+                {
+                    "include": "#variable"
+                },
+                {
+                    "include": "#punctuation"
+                },
+                {
+                    "include": "#comment"
+                }
+            ]
+        },
         "declaration-function": {
             "patterns": [
                 {
