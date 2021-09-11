@@ -107,7 +107,7 @@
         "solidity.compileUsingRemoteVersion": {
           "type": "string",
           "default": "latest",
-          "description": "Compile downloading a remote solc binary file, for example: 'latest' or 'v0.4.3+commit.2353da71', use the command 'Solidity: Get solidity releases' to list all versions, or just rigth click in a solidity file to simply select the version"
+          "description": "Compile downloading a remote solc binary file, for example: 'latest' or 'v0.4.3+commit.2353da71', use the command 'Solidity: Get solidity releases' to list all versions, or just right click in a solidity file to simply select the version"
         },
         "solidity.compilerOptimization": {
           "type": "number",
