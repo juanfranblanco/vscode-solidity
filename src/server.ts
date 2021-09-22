@@ -45,9 +45,9 @@ interface SoliditySettings {
 
 // import * as path from 'path';
 // Create a connection for the server
-const connection: IConnection = createConnection(
+const connection: IConnection = process.argv.length <= 2 ? createConnection(
     new IPCMessageReader(process),
-    new IPCMessageWriter(process));
+    new IPCMessageWriter(process)) : createConnection();
 
 console.log = connection.console.log.bind(connection.console);
 console.error = connection.console.error.bind(connection.console);
