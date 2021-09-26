@@ -6,8 +6,6 @@ import * as path from 'path';
 import * as https from 'https';
 import { ContractCollection } from './model/contractsCollection';
 import { initialiseProject } from './projectService';
-import { resolve, resolveModulePath } from 'vscode-languageserver/lib/files';
-import { fileURLToPath } from 'url';
 
 export enum compilerType {
     localNodeModule,
@@ -90,11 +88,14 @@ export class NpmModuleCompilerLoader extends SolcCompilerLoader {
     }
 
     public init(rootPath: string, npmModule:string = "solc") {
-        this.rootPath = rootPath;
+        if(rootPath !== this.rootPath){
+            this.localSolc = null;
+            this.rootPath = rootPath;
+        }
+        
         if(!this.matchesConfiguration(npmModule)) {
             this.npmModule = npmModule;
             this.localSolc = null;
-
         }
     }
 

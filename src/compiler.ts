@@ -1,13 +1,13 @@
 'use strict';
 
 import * as vscode from 'vscode';
+import * as workspaceUtil from './workspaceUtil';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as fsex from 'fs-extra';
 import * as https from 'https';
 import { SolcCompiler, compilerType, RemoteCompilerDownloader, RemoteReleases } from './solcCompiler';
 import { errorsToDiagnostics } from './solErrorsToDiaganosticsClient';
-import { resolve } from 'vscode-languageserver/lib/files';
 
 
 export class Compiler {
@@ -162,7 +162,8 @@ export class Compiler {
     }
 
     private initialiseCompiler(overrideDefaultCompiler: compilerType = null): Promise<void> {
-        const rootPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+        const rootPath = workspaceUtil.getCurrentWorkspaceRootFsPath();
+        
         if (typeof this.solc === 'undefined' || this.solc === null) {
             this.solc = new SolcCompiler(rootPath);
             this.solc.setSolcCache(this.solcCachePath);
@@ -262,7 +263,7 @@ export class Compiler {
 
     private writeCompilationOutputToBuildDirectory(output: any, buildDir: string, sourceDir: string,
         excludePath?: string, singleContractFilePath?: string): Array<string> {
-        const rootPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+        const rootPath = workspaceUtil.getCurrentWorkspaceRootFsPath();
         const binPath = path.join(rootPath, buildDir);
         const compiledFiles: Array<string> = new Array<string>();
 

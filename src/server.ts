@@ -4,24 +4,24 @@ import Linter from './linter/linter';
 import SolhintService from './linter/solhint';
 import SoliumService from './linter/solium';
 import {CompilerError} from './solErrorsToDiagnostics';
-import {CompletionService, GetCompletionTypes,
-        GetContextualAutoCompleteByGlobalVariable, GeCompletionUnits,
-        GetGlobalFunctions, GetGlobalVariables, GetCompletionKeywords} from './completionService';
+import {CompletionService} from './completionService';
 import {SolidityDefinitionProvider} from './definitionProvider';
 import {
-    createConnection, IConnection,
-    IPCMessageReader, IPCMessageWriter,
+    createConnection,
     TextDocuments, InitializeResult,
-    Files, Diagnostic,
+
+    Diagnostic,
+    ProposedFeatures,
     TextDocumentPositionParams,
     CompletionItem, Location, SignatureHelp, TextDocumentSyncKind, VersionedTextDocumentIdentifier,
-} from 'vscode-languageserver';
+    WorkspaceFolder
+} from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
-
-import {URI} from 'vscode-uri';
+import {URI, } from 'vscode-uri';
 
 import {SolidityCodeWalker} from './codeWalkerService';
+import { Uri } from 'vscode';
 
 interface Settings {
     solidity: SoliditySettings;
@@ -45,9 +45,7 @@ interface SoliditySettings {
 
 // import * as path from 'path';
 // Create a connection for the server
-const connection: IConnection = createConnection(
-    new IPCMessageReader(process),
-    new IPCMessageWriter(process));
+let connection = createConnection(ProposedFeatures.all);
 
 console.log = connection.console.log.bind(connection.console);
 console.error = connection.console.error.bind(connection.console);
@@ -73,13 +71,33 @@ let validatingDocument = false;
 let validatingAllDocuments = false;
 let packageDefaultDependenciesDirectory = 'lib';
 let packageDefaultDependenciesContractsDirectory = 'src';
+let workspaceFolders: WorkspaceFolder[];
 
-function validate(document) {
+function initWorkspaceRootFolder(uri: string){
+    if(rootPath !== 'undefined'){
+      if(!uri.startsWith(rootPath)){
+          if(workspaceFolders){
+              
+                const newRootFolder = workspaceFolders.find(x => uri.startsWith(x.uri)); 
+                if(newRootFolder !== undefined) {
+                    rootPath = URI.parse(newRootFolder.uri).fsPath;
+                    solcCompiler.rootPath = rootPath;
+                }
+                
+        }
+      }
+    }
+}
+
+function validate(document: TextDocument) {
     try {
+
+        initWorkspaceRootFolder(document.uri);
         validatingDocument = true;
         const uri = document.uri;
-        const filePath = Files.uriToFilePath(uri);
+        const filePath = URI.parse(uri).fsPath;
 
+        
         const documentText = document.getText();
         let linterDiagnostics: Diagnostic[] = [];
         const compileErrorDiagnostics: Diagnostic[] = [];
@@ -114,6 +132,8 @@ function validate(document) {
         validatingDocument = false;
     }
 }
+
+
 
 connection.onSignatureHelp((): SignatureHelp => {
     return null;
@@ -197,6 +217,34 @@ documents.listen(connection);
 
 connection.onInitialize((result): InitializeResult => {
     rootPath = result.rootPath;
+    if(result.workspaceFolders){
+        workspaceFolders = result.workspaceFolders;
+       // connection.console.info("1");
+            /*
+        if(connection.workspace !== undefined) {
+          
+            connection.workspace.onDidChangeWorkspaceFolders((event) => {
+                connection.console.info("here!");
+                event.removed.forEach( workspaceFolder => {
+                     
+                    const index = workspaceFolders.findIndex((folder) => folder.uri === workspaceFolder.uri);
+                    if (index !== -1) {
+                        workspaceFolders.splice(index, 1);
+                    }
+                    
+                });
+                   
+                event.added.forEach( workspaceFolder => {
+                    
+               workspaceFolders.push(workspaceFolder);
+               
+                });
+                  
+                
+            });
+           
+        } */
+    }
     solcCachePath = result.initializationOptions;
     solcCompiler = new SolcCompiler(rootPath);
     solcCompiler.setSolcCache(solcCachePath);
@@ -212,6 +260,7 @@ connection.onInitialize((result): InitializeResult => {
         },
     };
 });
+
 
 connection.onDidChangeConfiguration((change) => {
     const settings = <Settings>change.settings;

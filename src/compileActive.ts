@@ -6,6 +6,8 @@ import {ContractCollection} from './model/contractsCollection';
 import { initialiseProject } from './projectService';
 import { formatPath } from './util';
 import { compilerType } from './solcCompiler';
+import * as workspaceUtil from './workspaceUtil';
+
 
 
 let diagnosticCollection: vscode.DiagnosticCollection;
@@ -27,7 +29,7 @@ export function compileActiveContract(compiler: Compiler, overrideDefaultCompile
     }
 
     // Check if is folder, if not stop we need to output to a bin folder on rootPath
-    if (vscode.workspace.workspaceFolders[0] === undefined) {
+    if (workspaceUtil.getCurrentWorkspaceRootFolder() === undefined) {
         vscode.window.showWarningMessage('Please open a folder in Visual Studio Code as a workspace');
         return;
     }
@@ -39,7 +41,7 @@ export function compileActiveContract(compiler: Compiler, overrideDefaultCompile
     const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
     const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
     const compilationOptimisation = vscode.workspace.getConfiguration('solidity').get<number>('compilerOptimization');
-    const project = initialiseProject(vscode.workspace.workspaceFolders[0].uri.fsPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
+    const project = initialiseProject(workspaceUtil.getCurrentWorkspaceRootFsPath(), packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
     const contract = contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
     const packagesPath = formatPath(project.packagesDir);
 

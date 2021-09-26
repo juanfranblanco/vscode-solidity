@@ -9,12 +9,19 @@ import {
     codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll, autoCodeGenerateAfterCompilation,
     codeGenerateCQS, codeGenerateAllFilesFromAbiInCurrentFolder,
 } from './codegen';
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind, RevealOutputChannelOn, WorkspaceChange } from 'vscode-languageclient';
+import { LanguageClientOptions, RevealOutputChannelOn } from 'vscode-languageclient';
+import {
+    LanguageClient,
+    ServerOptions,
+    TransportKind
+  } from 'vscode-languageclient/node';
+  
 import { lintAndfixCurrentDocument } from './linter/soliumClientFixer';
 // tslint:disable-next-line:no-duplicate-imports
 import { workspace, WorkspaceFolder } from 'vscode';
 import { formatDocument } from './formatter/prettierFormatter';
 import { compilerType } from './solcCompiler';
+import * as workspaceUtil from './workspaceUtil';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 let compiler: Compiler;
@@ -152,12 +159,12 @@ export async function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.downloadRemoteSolcVersion', async () => {
-        const root = vscode.workspace.workspaceFolders[0];
+        const root = workspaceUtil.getCurrentWorkspaceRootFolder();
         compiler.downloadRemoteVersion(root.uri.fsPath);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.downloadRemoteVersionAndSetLocalPathSetting', async () => {
-        const root = vscode.workspace.workspaceFolders[0];
+        const root = workspaceUtil.getCurrentWorkspaceRootFolder();
         compiler.downloadRemoteVersionAndSetLocalPathSetting(vscode.ConfigurationTarget.Workspace, root.uri.fsPath);
     }));
     

@@ -1,6 +1,6 @@
 'use strict';
 import * as Solium from 'solium';
-import { DiagnosticSeverity, IConnection,
+import { DiagnosticSeverity, Connection,
 } from 'vscode-languageserver';
 import Linter from './linter';
 import * as fs from 'fs';
@@ -14,9 +14,9 @@ export default class SoliumService implements Linter {
 
     private fileConfig: any;
     private soliumRules;
-    private vsConnection: IConnection;
+    private vsConnection: Connection;
 
-    constructor(rootPath: string, soliumRules: any, vsConnection: IConnection) {
+    constructor(rootPath: string, soliumRules: any, vsConnection: Connection) {
       this.vsConnection = vsConnection;
       this.loadFileConfig(rootPath);
       this.setIdeRules(soliumRules);

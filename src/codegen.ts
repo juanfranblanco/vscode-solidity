@@ -4,6 +4,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as codegen from 'nethereum-codegen';
 import { initialiseProject } from './projectService';
+import * as workspaceUtil from './workspaceUtil';
+
 
 export function autoCodeGenerateAfterCompilation(compiledFiles: Array<string>, args: any, diagnostics: vscode.DiagnosticCollection) {
     if (compiledFiles !== undefined && compiledFiles.length > 0) {
@@ -34,7 +36,7 @@ export function getProjectExtensionFromLang(lang: number) {
 }
 
 export function generateNethereumCodeSettingsFile() {
-    const root = vscode.workspace.workspaceFolders[0];
+    const root = workspaceUtil.getCurrentWorkspaceRootFolder();
     const settingsFile = path.join(root.uri.fsPath, 'nethereum-gen.settings');
     if (!fs.existsSync(settingsFile)) {
 
@@ -91,7 +93,7 @@ export function codeGenerateNethereumCQSCSharpAll(args: any, diagnostics: vscode
 function getBuildPath() {
     const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
     const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
-    const rootPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    const rootPath = workspaceUtil.getCurrentWorkspaceRootFsPath();
     const project = initialiseProject(rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory);
     return path.join(rootPath, project.projectPackage.build_dir);
 }
@@ -128,7 +130,7 @@ export function codeGenerateAllFilesFromAbiInCurrentFolder(lang: number, args: a
 
 
 function getCodeGenerationSettings() {
-    const root = vscode.workspace.workspaceFolders[0];
+    const root = workspaceUtil.getCurrentWorkspaceRootFolder();
     const settingsFile = path.join(root.uri.fsPath, 'nethereum-gen.settings');
     if (fs.existsSync(settingsFile)) {
         const settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
@@ -140,7 +142,7 @@ function getCodeGenerationSettings() {
 export function codeGenerateCQS(fileName: string, lang: number, args: any, diagnostics: vscode.DiagnosticCollection) {
     try {
         const extension = getProjectExtensionFromLang(lang);
-        const root = vscode.workspace.workspaceFolders[0];
+        const root = workspaceUtil.getCurrentWorkspaceRootFolder();
         const settings = getCodeGenerationSettings();
         const prettyRootName = prettifyRootNameAsNamespace(root.name);
         let baseNamespace = prettyRootName + '.Contracts';
