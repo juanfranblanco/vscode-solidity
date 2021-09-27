@@ -1,11 +1,11 @@
 'use strict';
-import {compilerType, SolcCompiler} from './solcCompiler';
+import { compilerType, SolcCompiler } from './solcCompiler';
 import Linter from './linter/linter';
 import SolhintService from './linter/solhint';
 import SoliumService from './linter/solium';
-import {CompilerError} from './solErrorsToDiagnostics';
-import {CompletionService} from './completionService';
-import {SolidityDefinitionProvider} from './definitionProvider';
+import { CompilerError } from './solErrorsToDiagnostics';
+import { CompletionService } from './completionService';
+import { SolidityDefinitionProvider } from './definitionProvider';
 import {
     createConnection,
     TextDocuments, InitializeResult,
@@ -18,9 +18,9 @@ import {
 } from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import {URI, } from 'vscode-uri';
+import { URI, } from 'vscode-uri';
 
-import {SolidityCodeWalker} from './codeWalkerService';
+import { SolidityCodeWalker } from './codeWalkerService';
 import { Uri } from 'vscode';
 
 interface Settings {
@@ -65,6 +65,7 @@ let solhintDefaultRules = {};
 let soliumDefaultRules = {};
 let validationDelay = 1500;
 let solcCachePath = '';
+let hasWorkspaceFolderCapability = false;
 
 // flags to avoid trigger concurrent validations (compiling is slow)
 let validatingDocument = false;
@@ -73,19 +74,19 @@ let packageDefaultDependenciesDirectory = 'lib';
 let packageDefaultDependenciesContractsDirectory = 'src';
 let workspaceFolders: WorkspaceFolder[];
 
-function initWorkspaceRootFolder(uri: string){
-    if(rootPath !== 'undefined'){
-      if(!uri.startsWith(rootPath)){
-          if(workspaceFolders){
-              
-                const newRootFolder = workspaceFolders.find(x => uri.startsWith(x.uri)); 
-                if(newRootFolder !== undefined) {
+function initWorkspaceRootFolder(uri: string) {
+    if (rootPath !== 'undefined') {
+        if (!uri.startsWith(rootPath)) {
+            if (workspaceFolders) {
+
+                const newRootFolder = workspaceFolders.find(x => uri.startsWith(x.uri));
+                if (newRootFolder !== undefined) {
                     rootPath = URI.parse(newRootFolder.uri).fsPath;
                     solcCompiler.rootPath = rootPath;
                 }
-                
+
+            }
         }
-      }
     }
 }
 
@@ -97,7 +98,7 @@ function validate(document: TextDocument) {
         const uri = document.uri;
         const filePath = URI.parse(uri).fsPath;
 
-        
+
         const documentText = document.getText();
         let linterDiagnostics: Diagnostic[] = [];
         const compileErrorDiagnostics: Diagnostic[] = [];
@@ -113,8 +114,8 @@ function validate(document: TextDocument) {
             if (enabledAsYouTypeErrorCheck) {
                 const errors: CompilerError[] = solcCompiler
                     .compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText,
-                                                packageDefaultDependenciesDirectory,
-                                                packageDefaultDependenciesContractsDirectory);
+                        packageDefaultDependenciesDirectory,
+                        packageDefaultDependenciesContractsDirectory);
                 errors.forEach(errorItem => {
                     const uriCompileError = URI.file(errorItem.fileName);
                     if (uriCompileError.toString() === uri) {
@@ -127,7 +128,7 @@ function validate(document: TextDocument) {
         }
 
         const diagnostics = linterDiagnostics.concat(compileErrorDiagnostics);
-        connection.sendDiagnostics({diagnostics, uri});
+        connection.sendDiagnostics({ diagnostics, uri });
     } finally {
         validatingDocument = false;
     }
@@ -141,15 +142,15 @@ connection.onSignatureHelp((): SignatureHelp => {
 
 connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
     let completionItems = [];
-        const document = documents.get(textDocumentPosition.textDocument.uri);
-        const service = new CompletionService(rootPath);
+    const document = documents.get(textDocumentPosition.textDocument.uri);
+    const service = new CompletionService(rootPath);
 
-        completionItems = completionItems.concat(
-        service.getAllCompletionItems2( packageDefaultDependenciesDirectory,
-                                        packageDefaultDependenciesContractsDirectory,
-                                        document,
-                                        textDocumentPosition.position,
-                                       ));
+    completionItems = completionItems.concat(
+        service.getAllCompletionItems2(packageDefaultDependenciesDirectory,
+            packageDefaultDependenciesContractsDirectory,
+            document,
+            textDocumentPosition.position,
+        ));
     return completionItems;
 });
 
@@ -165,9 +166,9 @@ connection.onDefinition((handler: TextDocumentPositionParams): Thenable<Location
 
 // This handler resolve additional information for the item selected in
 // the completion list.
- // connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
- //   item.
- // });
+// connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
+//   item.
+// });
 function validateAllDocuments() {
     if (!validatingAllDocuments) {
         try {
@@ -190,7 +191,7 @@ function startValidation() {
             solcCompiler.initialiseAllCompilerSettings(compileUsingRemoteVersion, compileUsingLocalVersion, nodeModulePackage, compilerType.embedded);
             solcCompiler.initialiseSelectedCompiler().then(() => {
                 validateAllDocuments();
-            }).catch(reason => {});
+            }).catch(reason => { });
         });
     } else {
         validateAllDocuments();
@@ -203,7 +204,7 @@ documents.onDidChangeContent(event => {
     if (!validatingDocument && !validatingAllDocuments) {
         validatingDocument = true; // control the flag at a higher level
         // slow down, give enough time to type (1.5 seconds?)
-        setTimeout(() =>  validate(document), validationDelay);
+        setTimeout(() => validate(document), validationDelay);
     }
 });
 
@@ -215,50 +216,64 @@ documents.onDidClose(event => connection.sendDiagnostics({
 
 documents.listen(connection);
 
-connection.onInitialize((result): InitializeResult => {
-    rootPath = result.rootPath;
-    if(result.workspaceFolders){
-        workspaceFolders = result.workspaceFolders;
-       // connection.console.info("1");
-            /*
-        if(connection.workspace !== undefined) {
-          
-            connection.workspace.onDidChangeWorkspaceFolders((event) => {
-                connection.console.info("here!");
-                event.removed.forEach( workspaceFolder => {
-                     
-                    const index = workspaceFolders.findIndex((folder) => folder.uri === workspaceFolder.uri);
-                    if (index !== -1) {
-                        workspaceFolders.splice(index, 1);
-                    }
-                    
-                });
-                   
-                event.added.forEach( workspaceFolder => {
-                    
-               workspaceFolders.push(workspaceFolder);
-               
-                });
-                  
-                
-            });
-           
-        } */
+connection.onInitialize((params): InitializeResult => {
+    rootPath = params.rootPath;
+    let capabilities = params.capabilities;
+
+    hasWorkspaceFolderCapability = !!(
+		capabilities.workspace && !!capabilities.workspace.workspaceFolders
+	);
+
+    if (params.workspaceFolders) {
+        workspaceFolders = params.workspaceFolders;
     }
-    solcCachePath = result.initializationOptions;
+    solcCachePath = params.initializationOptions;
     solcCompiler = new SolcCompiler(rootPath);
     solcCompiler.setSolcCache(solcCachePath);
 
-    return {
+    const result: InitializeResult = {
         capabilities: {
             completionProvider: {
                 resolveProvider: false,
-                triggerCharacters: [ '.' ],
+                triggerCharacters: ['.'],
             },
-           definitionProvider: true,
-           textDocumentSync: TextDocumentSyncKind.Full,
+            definitionProvider: true,
+            textDocumentSync: TextDocumentSyncKind.Full,
         },
     };
+
+    if (hasWorkspaceFolderCapability) {
+		result.capabilities.workspace = {
+			workspaceFolders: {
+				supported: true
+			}
+		};
+	}
+	return result;
+});
+
+connection.onInitialized(() => {
+
+    if (hasWorkspaceFolderCapability) {
+        connection.workspace.onDidChangeWorkspaceFolders(_event => {
+            if (connection.workspace !== undefined) {
+                connection.workspace.onDidChangeWorkspaceFolders((event) => {
+                    event.removed.forEach(workspaceFolder => {
+                        const index = workspaceFolders.findIndex((folder) => folder.uri === workspaceFolder.uri);
+                        if (index !== -1) {
+                            workspaceFolders.splice(index, 1);
+                        }
+                    });
+                    event.added.forEach(workspaceFolder => {
+
+                        workspaceFolders.push(workspaceFolder);
+
+                    });
+
+                });
+            };
+        });
+    }
 });
 
 
@@ -297,7 +312,7 @@ connection.onDidChangeConfiguration((change) => {
 });
 
 function linterName(settings: SoliditySettings) {
-     return settings.linter;
+    return settings.linter;
 }
 
 function linterRules(settings: SoliditySettings) {
