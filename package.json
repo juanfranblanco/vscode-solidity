@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.125",
+  "version": "0.0.126",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -193,6 +193,11 @@
           "type": "string",
           "default": "",
           "description": "Default directory where the Package Dependency store its contracts, i.e: 'src', 'contracts', or just a blank string '', this is used to avoid typing imports with subfolder paths"
+        },
+        "solidity.remappings": {
+          "type": "array",
+          "default": [],
+          "description": "Remappings to resolve contracts to local files / directories, i.e: [\"@openzeppelin/=lib/openzeppelin-contracts\",\"ds-test/=lib/ds-test/src/\"]"
         }
       }
     },

@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as yaml from 'yaml-js';
 import {Package} from './model/package';
 import {Project} from './model/project';
+import { Remapping } from './model/remapping';
 
 // TODO: These are temporary constants until standard agreed
 // A project standard is needed so each project can define where it store its project dependencies
@@ -56,13 +57,17 @@ function readYamlSync(filePath: string) {
     return yaml.load(fileContent);
 }
 
-export function initialiseProject(rootPath: string, packageDefaultDependenciesDirectory: string, packageDefaultDependenciesContractsDirectory: string) {
+export function initialiseProject(rootPath: string, 
+    packageDefaultDependenciesDirectory: string, 
+    packageDefaultDependenciesContractsDirectory: string,
+    remappings: string[]) {
+    
     packageDependenciesDirectory = packageDefaultDependenciesDirectory;
     packageDependenciesContractsDirectory = packageDefaultDependenciesContractsDirectory;
     const projectPackage = createProjectPackage(rootPath);
     const dependencies = loadDependencies(rootPath, projectPackage);
     const packagesDirAbsolutePath = path.join(rootPath, packageDependenciesDirectory);
-    return new Project(projectPackage, dependencies, packagesDirAbsolutePath);
+    return new Project(projectPackage, dependencies, packagesDirAbsolutePath, remappings);
 }
 
 function loadDependencies(rootPath: string, projectPackage: Package, depPackages: Array<Package> = new Array<Package>()) {

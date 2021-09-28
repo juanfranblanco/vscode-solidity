@@ -13,21 +13,25 @@ export class SolidityDefinitionProvider {
   private packageDefaultDependenciesDirectory: string;
   private packageDefaultDependenciesContractsDirectory: string;
   private project: Project;
+  private remappings : string[]
 
   constructor(
     rootPath: string,
     packageDefaultDependenciesDirectory: string,
     packageDefaultDependenciesContractsDirectory: string,
+    remappings : string[]
   ) {
     this.rootPath = rootPath;
     this.packageDefaultDependenciesDirectory = packageDefaultDependenciesDirectory;
     this.packageDefaultDependenciesContractsDirectory = packageDefaultDependenciesContractsDirectory;
+    this.remappings = remappings;
 
     if (this.rootPath !== 'undefined' && this.rootPath !== null) {
       this.project = initialiseProject(
         this.rootPath,
         this.packageDefaultDependenciesDirectory,
         this.packageDefaultDependenciesContractsDirectory,
+        this.remappings
       );
     }
   }
@@ -572,11 +576,18 @@ export class SolidityDefinitionProvider {
     if (contract.isImportLocal(importPath)) {
       return contract.formatContractPath(path.resolve(path.dirname(contract.absolutePath), importPath));
     } else if (this.project !== undefined) {
-      const depPack = this.project.findPackage(importPath);
-      if (depPack !== undefined) {
-        return contract.formatContractPath(depPack.resolveImport(importPath));
-      }
+      const remapping = this.project.findImportRemapping(importPath);
+        if(remapping !== undefined) {
+            return contract.formatContractPath(remapping.resolveImport(importPath));
+        } else {
+            const depPack = this.project.findDependencyPackage(importPath);
+            if (depPack !== undefined) {
+               return contract.formatContractPath(depPack.resolveImport(importPath));
+            }
+        }
     }
     return importPath;
   }
+
+  
 }

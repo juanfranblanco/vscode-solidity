@@ -8,8 +8,8 @@ import { CompletionService } from './completionService';
 import { SolidityDefinitionProvider } from './definitionProvider';
 import {
     createConnection,
-    TextDocuments, InitializeResult,
-
+    TextDocuments, 
+    InitializeResult,
     Diagnostic,
     ProposedFeatures,
     TextDocumentPositionParams,
@@ -40,6 +40,7 @@ interface SoliditySettings {
     validationDelay: number;
     packageDefaultDependenciesDirectory: string;
     packageDefaultDependenciesContractsDirectory: string;
+    remappings: string[]
 }
 
 
@@ -73,6 +74,7 @@ let validatingAllDocuments = false;
 let packageDefaultDependenciesDirectory = 'lib';
 let packageDefaultDependenciesContractsDirectory = 'src';
 let workspaceFolders: WorkspaceFolder[];
+let remappings: string[]
 
 function initWorkspaceRootFolder(uri: string) {
     if (rootPath !== 'undefined') {
@@ -115,7 +117,7 @@ function validate(document: TextDocument) {
                 const errors: CompilerError[] = solcCompiler
                     .compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText,
                         packageDefaultDependenciesDirectory,
-                        packageDefaultDependenciesContractsDirectory);
+                        packageDefaultDependenciesContractsDirectory, remappings);
                 errors.forEach(errorItem => {
                     const uriCompileError = URI.file(errorItem.fileName);
                     if (uriCompileError.toString() === uri) {
@@ -146,8 +148,9 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
     const service = new CompletionService(rootPath);
 
     completionItems = completionItems.concat(
-        service.getAllCompletionItems2(packageDefaultDependenciesDirectory,
+        service.getAllCompletionItems(packageDefaultDependenciesDirectory,
             packageDefaultDependenciesContractsDirectory,
+            remappings,
             document,
             textDocumentPosition.position,
         ));
@@ -159,6 +162,7 @@ connection.onDefinition((handler: TextDocumentPositionParams): Thenable<Location
         rootPath,
         packageDefaultDependenciesDirectory,
         packageDefaultDependenciesContractsDirectory,
+        remappings
     );
     return provider.provideDefinition(documents.get(handler.textDocument.uri), handler.position);
 });
@@ -289,6 +293,7 @@ connection.onDidChangeConfiguration((change) => {
     defaultCompiler = compilerType[settings.solidity.defaultCompiler];
     packageDefaultDependenciesContractsDirectory = settings.solidity.packageDefaultDependenciesContractsDirectory;
     packageDefaultDependenciesDirectory = settings.solidity.packageDefaultDependenciesDirectory;
+    remappings = settings.solidity.remappings;
 
     switch (linterName(settings.solidity)) {
         case 'solhint': {

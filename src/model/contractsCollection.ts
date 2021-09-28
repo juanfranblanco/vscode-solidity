@@ -115,18 +115,29 @@ export class ContractCollection {
     }
 
     private addContractAndResolveDependencyImport(dependencyImport: string, contract: Contract, project: Project) {
-        const depPack = project.findPackage(dependencyImport);
-        if (depPack !== undefined) {
-            const depImportPath = this.formatContractPath(depPack.resolveImport(dependencyImport));
-            if (!this.containsContract(depImportPath)) {
-                const importContractCode = this.readContractCode(depImportPath);
-                if (importContractCode != null) {
-                    this.addContractAndResolveImports(depImportPath, importContractCode, project);
-                    contract.replaceDependencyPath(dependencyImport, depImportPath);
-                }
-            } else {
-                contract.replaceDependencyPath(dependencyImport, depImportPath);
+        //find re-mapping
+        const remapping = project.findImportRemapping(dependencyImport);
+        if(remapping !== undefined) {
+            const importPath = this.formatContractPath(remapping.resolveImport(dependencyImport));
+            this.addContractAndResolveDependencyImportFromContractFullPath(importPath, project, contract, dependencyImport);
+        } else {
+            const depPack = project.findDependencyPackage(dependencyImport);
+            if (depPack !== undefined) {
+                const depImportPath = this.formatContractPath(depPack.resolveImport(dependencyImport));
+                this.addContractAndResolveDependencyImportFromContractFullPath(depImportPath, project, contract, dependencyImport);
             }
+        }
+    }
+
+    private addContractAndResolveDependencyImportFromContractFullPath(importPath: string, project: Project, contract: Contract, dependencyImport: string) {
+        if (!this.containsContract(importPath)) {
+            const importContractCode = this.readContractCode(importPath);
+            if (importContractCode != null) {
+                this.addContractAndResolveImports(importPath, importContractCode, project);
+                contract.replaceDependencyPath(dependencyImport, importPath);
+            }
+        } else {
+            contract.replaceDependencyPath(dependencyImport, importPath);
         }
     }
 }

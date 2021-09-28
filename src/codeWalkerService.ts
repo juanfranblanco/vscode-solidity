@@ -1,8 +1,6 @@
-import * as path from 'path';
 import * as vscode from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 
-import { Contract } from './model/contract';
 import { ContractCollection } from './model/contractsCollection';
 import { Project } from './model/project';
 import { initialiseProject } from './projectService';
@@ -477,22 +475,26 @@ export class SolidityCodeWalker {
   private packageDefaultDependenciesDirectory: string;
   private packageDefaultDependenciesContractsDirectory: string;
   private project: Project;
+  private remappings : string[]
 
   constructor(
     rootPath: string,
     packageDefaultDependenciesDirectory: string,
     packageDefaultDependenciesContractsDirectory: string,
+    remappings : string[]
   ) {
     this.rootPath = rootPath;
     
     this.packageDefaultDependenciesDirectory = packageDefaultDependenciesDirectory;
     this.packageDefaultDependenciesContractsDirectory = packageDefaultDependenciesContractsDirectory;
+    this.remappings = remappings;
 
     if (this.rootPath !== 'undefined' && this.rootPath !== null) {
       this.project = initialiseProject(
         this.rootPath,
         this.packageDefaultDependenciesDirectory,
         this.packageDefaultDependenciesContractsDirectory,
+        this.remappings
       );
     }
   }

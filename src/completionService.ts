@@ -1,8 +1,6 @@
 'use strict';
 import * as solparse from 'solparse-exp-jb';
-import {ContractCollection} from './model/contractsCollection';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
-import { initialiseProject } from './projectService';
 import * as vscode from 'vscode-languageserver';
 import {Contract2, DeclarationType, DocumentContract, Function, SolidityCodeWalker, Variable, Struct} from './codeWalkerService';
 import * as glob from 'glob';
@@ -168,7 +166,6 @@ export class CompletionService {
         completionItem.detail = '( Interface : ' + contractName + ') '               
         return completionItem;
     }
-  
 
     public getDocumentCompletionItems(documentText: string): CompletionItem[] {
         const completionItems = [];
@@ -217,8 +214,9 @@ export class CompletionService {
     }
 
 
-    public getAllCompletionItems2(packageDefaultDependenciesDirectory: string,
+    public getAllCompletionItems(packageDefaultDependenciesDirectory: string,
         packageDefaultDependenciesContractsDirectory: string,
+        remappings: string[],
         document: vscode.TextDocument,
         position: vscode.Position,
       ): CompletionItem[] {
@@ -228,7 +226,7 @@ export class CompletionService {
         let triggeredByDotStart = 0;
         try {
         var walker = new SolidityCodeWalker(this.rootPath,  packageDefaultDependenciesDirectory,
-            packageDefaultDependenciesContractsDirectory,
+            packageDefaultDependenciesContractsDirectory, remappings
         );
         const offset = document.offsetAt(position);
 
@@ -635,17 +633,19 @@ export class CompletionService {
         return start;
     }
 
+    /*
     public getAllCompletionItems(documentText: string,
                                 documentPath: string,
                                 packageDefaultDependenciesDirectory: string,
-                                packageDefaultDependenciesContractsDirectory: string): CompletionItem[] {
+                                packageDefaultDependenciesContractsDirectory: string,
+                                remappings: string[]): CompletionItem[] {
 
         if (this.rootPath !== 'undefined' && this.rootPath !== null) {
             const contracts = new ContractCollection();
             contracts.addContractAndResolveImports(
                 documentPath,
                 documentText,
-                initialiseProject(this.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory));
+                initialiseProject(this.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory, remappings));
             let completionItems = [];
             contracts.contracts.forEach(contract => {
                 completionItems = completionItems.concat(this.getDocumentCompletionItems(contract.code));
@@ -655,7 +655,7 @@ export class CompletionService {
         } else {
             return this.getDocumentCompletionItems(documentText);
         }
-    }
+    }*/
 }
 
 export function GetCompletionTypes(): CompletionItem[] {
