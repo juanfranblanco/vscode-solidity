@@ -14,7 +14,7 @@
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
-    "vscode": "^1.50.1"
+    "vscode": "^1.60.0"
   },
   "contributors": [
     "Juan Blanco"
