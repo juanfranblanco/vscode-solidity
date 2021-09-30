@@ -1,9 +1,9 @@
 import * as vscode from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 
-import { ContractCollection } from './model/contractsCollection';
-import { Project } from './model/project';
-import { initialiseProject } from './projectService';
+import { ContractCollection } from '../common/model/contractsCollection';
+import { Project } from '../common/model/project';
+import { initialiseProject } from '../common/projectService';
 import * as solparse from 'solparse-exp-jb';
 
 

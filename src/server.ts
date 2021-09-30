@@ -1,11 +1,11 @@
 'use strict';
-import { compilerType, SolcCompiler } from './solcCompiler';
-import Linter from './linter/linter';
-import SolhintService from './linter/solhint';
-import SoliumService from './linter/solium';
-import { CompilerError } from './solErrorsToDiagnostics';
-import { CompletionService } from './completionService';
-import { SolidityDefinitionProvider } from './definitionProvider';
+import { compilerType, SolcCompiler } from './common/solcCompiler';
+import Linter from './server/linter/linter';
+import SolhintService from './server/linter/solhint';
+import SoliumService from './server/linter/solium';
+import { CompilerError } from './server/solErrorsToDiagnostics';
+import { CompletionService } from './server/completionService';
+import { SolidityDefinitionProvider } from './server/definitionProvider';
 import {
     createConnection,
     TextDocuments, 
@@ -20,7 +20,7 @@ import {
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI, } from 'vscode-uri';
 
-import { SolidityCodeWalker } from './codeWalkerService';
+import { SolidityCodeWalker } from './server/codeWalkerService';
 import { Uri } from 'vscode';
 
 interface Settings {

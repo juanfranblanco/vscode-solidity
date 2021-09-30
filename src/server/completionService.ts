@@ -237,7 +237,9 @@ export class CompletionService {
         
         //triggered by emit is only possible with ctrl space
         triggeredByEmit = getAutocompleteVariableNameTrimmingSpaces(lines[position.line], position.character - 1) === 'emit';
-        triggeredByImport = getAutocompleteVariableNameTrimmingSpaces(lines[position.line], position.character - 1) === 'import';
+        triggeredByImport = getAutocompleteVariableNameTrimmingSpaces(lines[position.line], position.character - 1) === 'import'
+        //  TODO: this does not work due to the trigger.
+        // || (lines[position.line].trimLeft().startsWith('import "') && lines[position.line].trimLeft().lastIndexOf('"') === 7);
 
         
         if(triggeredByDotStart > 0) {

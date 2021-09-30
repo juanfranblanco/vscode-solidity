@@ -1,6 +1,6 @@
 'use strict';
 import * as vscode from 'vscode';
-import {errorToDiagnostic} from './solErrorsToDiagnostics';
+import {errorToDiagnostic} from '../server/solErrorsToDiagnostics';
 import { DiagnosticSeverity } from 'vscode-languageserver';
 
 interface ErrorWarningCounts {

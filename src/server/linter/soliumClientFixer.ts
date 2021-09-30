@@ -1,7 +1,7 @@
 'use strict';
 import SoliumService from './solium';
 import * as vscode from 'vscode';
-import * as workspaceUtil from '../workspaceUtil';
+import * as workspaceUtil from '../../client/workspaceUtil';
 
 export function lintAndfixCurrentDocument() {
     const linterType = vscode.workspace.getConfiguration('solidity').get<string>('linter');

@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as fsex from 'fs-extra';
 import * as https from 'https';
-import { SolcCompiler, compilerType, RemoteCompilerDownloader, RemoteReleases } from './solcCompiler';
+import { SolcCompiler, compilerType, RemoteCompilerDownloader, RemoteReleases } from '../common/solcCompiler';
 import { errorsToDiagnostics } from './solErrorsToDiaganosticsClient';
 
 

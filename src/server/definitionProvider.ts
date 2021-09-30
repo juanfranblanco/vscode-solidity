@@ -2,10 +2,10 @@ import * as path from 'path';
 import * as vscode from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 
-import { Contract } from './model/contract';
-import { ContractCollection } from './model/contractsCollection';
-import { Project } from './model/project';
-import { initialiseProject } from './projectService';
+import { Contract } from '../common/model/contract';
+import { ContractCollection } from '../common/model/contractsCollection';
+import { Project } from '../common/model/project';
+import { initialiseProject } from '../common/projectService';
 import * as solparse from 'solparse-exp-jb';
 
 export class SolidityDefinitionProvider {

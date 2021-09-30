@@ -17,12 +17,22 @@ export class Remapping {
 
     public resolveImport(contractDependencyImport: string) {
         const validImport = this.isImportForThis(contractDependencyImport);
-        if (validImport && this.context == undefined) {
-            return path.join(this.basePath, this.target, contractDependencyImport.substring(this.prefix.length));
-        }
+        if(path.isAbsolute(this.target)) {
+            if (validImport && this.context == undefined) {
+                return path.join(this.target, contractDependencyImport.substring(this.prefix.length));
+            }
 
-        if (validImport && this.context !== undefined) {
-            return path.join(this.basePath, this.target, contractDependencyImport.substring((this.context + ":" + this.prefix).length));
+            if (validImport && this.context !== undefined) {
+                return path.join(this.target, contractDependencyImport.substring((this.context + ":" + this.prefix).length));
+            }
+        } else {
+            if (validImport && this.context == undefined) {
+                return path.join(this.basePath, this.target, contractDependencyImport.substring(this.prefix.length));
+            }
+
+            if (validImport && this.context !== undefined) {
+                return path.join(this.basePath, this.target, contractDependencyImport.substring((this.context + ":" + this.prefix).length));
+            }
         }
         return null;
     }
@@ -40,15 +50,15 @@ export function importRemappingArray(remappings: string[], project: Project) : A
             const remapping = new Remapping();
             //TODO / NOTE modules should be matched to packages paths
             remapping.basePath = project.projectPackage.absoluletPath;
-            if(remappingElement.indexOf(':') > -1) {
-                const contextAndRemapping = remappingElement.split(':');
-                remapping.context = contextAndRemapping[0];
-                remappingElement = contextAndRemapping[1];
+            const regex = /((?<context>[\S]+)\:)?(?<prefix>[\S]+)=(?<target>.+)/g;
+            const match = regex.exec(remappingElement);
+            if(match.groups["context"]) {
+                remapping.context = match.groups["context"];
             }
-            if(remappingElement.indexOf('=') > -1){
-                const prefixAndTarget = remappingElement.split('=');
-                remapping.prefix = prefixAndTarget[0];
-                remapping.target = prefixAndTarget[1];
+            
+            if(match.groups["prefix"]){
+                remapping.prefix = match.groups["prefix"];
+                remapping.target = match.groups["target"];
                 remappingsList.push(remapping);
             }
         });

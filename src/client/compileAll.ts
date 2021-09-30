@@ -3,9 +3,9 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import {Compiler} from './compiler';
-import {ContractCollection} from './model/contractsCollection';
-import { initialiseProject } from './projectService';
-import { formatPath } from './util';
+import {ContractCollection} from '../common/model/contractsCollection';
+import { initialiseProject } from '../common/projectService';
+import { formatPath } from '../common/util';
 import * as workspaceUtil from './workspaceUtil';
 
 

@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as codegen from 'nethereum-codegen';
-import { initialiseProject } from './projectService';
+import { initialiseProject } from '../common/projectService';
 import * as workspaceUtil from './workspaceUtil';
 
 

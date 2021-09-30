@@ -1,5 +1,5 @@
 'use strict';
-import { errorToDiagnostic } from './solErrorsToDiagnostics';
+import { errorToDiagnostic } from '../server/solErrorsToDiagnostics';
 import * as solc from 'solc';
 import * as fs from 'fs';
 import * as path from 'path';

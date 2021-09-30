@@ -1,14 +1,14 @@
 'use strict';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { compileAllContracts } from './compileAll';
-import { Compiler } from './compiler';
-import { compileActiveContract, initDiagnosticCollection } from './compileActive';
+import { compileAllContracts } from './client/compileAll';
+import { Compiler } from './client/compiler';
+import { compileActiveContract, initDiagnosticCollection } from './client/compileActive';
 import {
     generateNethereumCodeSettingsFile, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
     codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll, autoCodeGenerateAfterCompilation,
     codeGenerateCQS, codeGenerateAllFilesFromAbiInCurrentFolder,
-} from './codegen';
+} from './client/codegen';
 import { LanguageClientOptions, RevealOutputChannelOn } from 'vscode-languageclient';
 import {
     LanguageClient,
@@ -16,12 +16,12 @@ import {
     TransportKind
   } from 'vscode-languageclient/node';
   
-import { lintAndfixCurrentDocument } from './linter/soliumClientFixer';
+import { lintAndfixCurrentDocument } from './server/linter/soliumClientFixer';
 // tslint:disable-next-line:no-duplicate-imports
 import { workspace, WorkspaceFolder } from 'vscode';
-import { formatDocument } from './formatter/prettierFormatter';
-import { compilerType } from './solcCompiler';
-import * as workspaceUtil from './workspaceUtil';
+import { formatDocument } from './client/formatter/prettierFormatter';
+import { compilerType } from './common/solcCompiler';
+import * as workspaceUtil from './client/workspaceUtil';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 let compiler: Compiler;
