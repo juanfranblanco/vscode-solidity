@@ -79,6 +79,7 @@ export function loadRemappings(rootPath:string, remappings: string[]): string[]{
         const fileContent = fs.readFileSync(remappingsFile, 'utf8');
         const remappingsLoaded = fileContent.split(/\r\n|\r|\n/); //split lines
         if(remappingsLoaded){
+            remappings = [];
             remappingsLoaded.forEach(element => {
                 remappings.push(element);
             });

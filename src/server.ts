@@ -204,7 +204,6 @@ function startValidation() {
 
 documents.onDidChangeContent(event => {
     const document = event.document;
-
     if (!validatingDocument && !validatingAllDocuments) {
         validatingDocument = true; // control the flag at a higher level
         // slow down, give enough time to type (1.5 seconds?)
@@ -277,9 +276,13 @@ connection.onInitialized(() => {
                 });
             };
         });
+
     }
 });
 
+connection.onDidChangeWatchedFiles(_change => {
+	validateAllDocuments();
+});
 
 connection.onDidChangeConfiguration((change) => {
     const settings = <Settings>change.settings;
