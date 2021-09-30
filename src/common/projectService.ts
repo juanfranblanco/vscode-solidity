@@ -12,6 +12,7 @@ import { Remapping } from './model/remapping';
 // also versioning (as it was defined years ago)
 
 const packageConfigFileName = 'dappFile';
+const remappingConfigFileName = 'remappings.txt';
 // These are set using user configuration settings
 let packageDependenciesDirectory = 'lib';
 let packageDependenciesContractsDirectory = 'src';
@@ -66,8 +67,24 @@ export function initialiseProject(rootPath: string,
     packageDependenciesContractsDirectory = packageDefaultDependenciesContractsDirectory;
     const projectPackage = createProjectPackage(rootPath);
     const dependencies = loadDependencies(rootPath, projectPackage);
+    remappings = loadRemappings(rootPath, remappings);
     const packagesDirAbsolutePath = path.join(rootPath, packageDependenciesDirectory);
     return new Project(projectPackage, dependencies, packagesDirAbsolutePath, remappings);
+}
+
+export function loadRemappings(rootPath:string, remappings: string[]): string[]{
+    const remappingsFile = path.join(rootPath, remappingConfigFileName);
+    if(remappings == undefined) remappings = [];
+    if (fs.existsSync(remappingsFile)) {
+        const fileContent = fs.readFileSync(remappingsFile, 'utf8');
+        const remappingsLoaded = fileContent.split(/\r\n|\r|\n/); //split lines
+        if(remappingsLoaded){
+            remappingsLoaded.forEach(element => {
+                remappings.push(element);
+            });
+        }
+    }
+    return remappings;
 }
 
 function loadDependencies(rootPath: string, projectPackage: Package, depPackages: Array<Package> = new Array<Package>()) {

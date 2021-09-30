@@ -1,5 +1,6 @@
 'use strict';
 import * as path from 'path';
+import { Remapping } from './remapping';
 
 export class Package {
     public name: string;

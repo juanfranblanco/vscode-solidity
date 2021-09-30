@@ -48,18 +48,19 @@ export function importRemappingArray(remappings: string[], project: Project) : A
     if(remappings !== undefined && remappings.length > 0) {
         remappings.forEach(remappingElement => {
             const remapping = new Remapping();
-            //TODO / NOTE modules should be matched to packages paths
             remapping.basePath = project.projectPackage.absoluletPath;
             const regex = /((?<context>[\S]+)\:)?(?<prefix>[\S]+)=(?<target>.+)/g;
             const match = regex.exec(remappingElement);
-            if(match.groups["context"]) {
-                remapping.context = match.groups["context"];
-            }
-            
-            if(match.groups["prefix"]){
-                remapping.prefix = match.groups["prefix"];
-                remapping.target = match.groups["target"];
-                remappingsList.push(remapping);
+            if(match){
+                if(match.groups["context"]) {
+                    remapping.context = match.groups["context"];
+                }
+                
+                if(match.groups["prefix"]){
+                    remapping.prefix = match.groups["prefix"];
+                    remapping.target = match.groups["target"];
+                    remappingsList.push(remapping);
+                }
             }
         });
     }
