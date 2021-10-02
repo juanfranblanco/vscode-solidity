@@ -420,7 +420,7 @@ export class SolidityDefinitionProvider {
           //remove all comments with spaces
           let code = this.replaceCommentsWithSpacesPreservingLines(contract.code);
           //we find functions, structs, enums and contracts name
-          let regexWord = new RegExp("^\\s*function\\s+(" + literalFallbackName + ")\\s*\\(|\\s*struct|contract|enum|library\\s+(" + literalFallbackName + ")\\s*{", "gm");
+          let regexWord = new RegExp("^\\s*(function|event)\\s+(" + literalFallbackName + ")\\s*\\(|\\s*(struct|contract|enum|library)\\s+(" + literalFallbackName + ")\\s*{", "gm");
           //find the first declaration
           let pos = this.regexIndexOf(code, regexWord, 0)
           if(pos > -1){
