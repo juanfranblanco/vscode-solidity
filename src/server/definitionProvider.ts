@@ -426,11 +426,13 @@ export class SolidityDefinitionProvider {
           if(pos > -1){
             //we want to get position of the name, not the start of the match
             pos = code.indexOf(literalFallbackName, pos);
-            locations.push(
-              vscode.Location.create(
-                uri,
-                vscode.Range.create(document.positionAt(pos), document.positionAt(pos + literalFallbackName.length))
-                ))
+            if(pos > -1) { // making sure..
+              locations.push(
+                vscode.Location.create(
+                  uri,
+                  vscode.Range.create(document.positionAt(pos), document.positionAt(pos + literalFallbackName.length))
+                  ))
+              }
           }
           
         }
