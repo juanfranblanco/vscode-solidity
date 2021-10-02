@@ -7,6 +7,7 @@ import { ContractCollection } from '../common/model/contractsCollection';
 import { Project } from '../common/model/project';
 import { initialiseProject } from '../common/projectService';
 import * as solparse from 'solparse-exp-jb';
+import { Range } from 'vscode';
 
 export class SolidityDefinitionProvider {
   private rootPath: string;
@@ -50,105 +51,110 @@ export class SolidityDefinitionProvider {
     document: vscode.TextDocument,
     position: vscode.Position,
   ): Thenable<vscode.Location | vscode.Location[]> {
-    const documentText = document.getText();
-    const contractPath = URI.parse(document.uri).fsPath;
+    
+      
+      const documentText = document.getText();
+      const contractPath = URI.parse(document.uri).fsPath;
 
-    const contracts = new ContractCollection();
-    if (this.project !== undefined) {
-      contracts.addContractAndResolveImports(
-        contractPath,
-        documentText,
-        this.project,
-      );
-    }
-    // this contract
-    const contract = contracts.contracts[0];
+      const contracts = new ContractCollection();
+      if (this.project !== undefined) {
+        contracts.addContractAndResolveImports(
+          contractPath,
+          documentText,
+          this.project,
+        );
+      }
+      // this contract
+      const contract = contracts.contracts[0];
 
-    const offset = document.offsetAt(position);
-    const result = solparse.parse(documentText);
-    const element = this.findElementByOffset(result.body, offset);
+      const offset = document.offsetAt(position);
 
-    if (element !== undefined) {
-      switch (element.type) {
-        case 'ImportStatement':
-          return Promise.resolve(
-            vscode.Location.create(
-              URI.file(this.resolveImportPath(element.from, contract)).toString(),
-              vscode.Range.create(0, 0, 0, 0),
-            ),
-          );
-        case 'ContractStatement': {
-          // find definition for inheritance
-          const isBlock = this.findElementByOffset(element.is, offset);
-          if (isBlock !== undefined) {
-             let directImport = this.findDirectImport(
-              document,
-              result.body,
-              isBlock.name,
-              'ContractStatement',
-              contracts,
+      const result = solparse.parse(documentText);
+      
+      const element = this.findElementByOffset(result.body, offset);
+
+      if (element !== undefined) {
+        switch (element.type) {
+          case 'ImportStatement':
+            return Promise.resolve(
+              vscode.Location.create(
+                URI.file(this.resolveImportPath(element.from, contract)).toString(),
+                vscode.Range.create(0, 0, 0, 0),
+              ),
             );
-            
-            if(directImport.location === undefined) {
-              directImport = this.findDirectImport(
+          case 'ContractStatement': {
+            // find definition for inheritance
+            const isBlock = this.findElementByOffset(element.is, offset);
+            if (isBlock !== undefined) {
+              let directImport = this.findDirectImport(
                 document,
                 result.body,
                 isBlock.name,
-                'InterfaceStatement',
+                'ContractStatement',
+                contracts,
+              );
+              
+              if(directImport.location === undefined) {
+                directImport = this.findDirectImport(
+                  document,
+                  result.body,
+                  isBlock.name,
+                  'InterfaceStatement',
+                  contracts,
+                );
+              }
+              return Promise.resolve(directImport.location);
+            }
+
+            // find definition in contract body recursively
+            const statement = this.findElementByOffset(element.body, offset);
+            if (statement !== undefined) {
+              return this.provideDefinitionInStatement(
+                document,
+                result.body,
+                statement,
+                element,
+                offset,
                 contracts,
               );
             }
-            return Promise.resolve(directImport.location);
+            break;
           }
-
-          // find definition in contract body recursively
-          const statement = this.findElementByOffset(element.body, offset);
-          if (statement !== undefined) {
-            return this.provideDefinitionInStatement(
-              document,
-              result.body,
-              statement,
-              element,
-              offset,
-              contracts,
-            );
+          case 'LibraryStatement': {
+            // find definition in library body recursively
+            const statement = this.findElementByOffset(element.body, offset);
+            if (statement !== undefined) {
+              return this.provideDefinitionInStatement(
+                document,
+                result.body,
+                statement,
+                element,
+                offset,
+                contracts,
+              );
+            }
+            break;
           }
-          break;
+          case 'InterfaceStatement': {
+            // find definition in interface body recursively
+            const statement = this.findElementByOffset(element.body, offset);
+            if (statement !== undefined) {
+              return this.provideDefinitionInStatement(
+                document,
+                result.body,
+                statement,
+                element,
+                offset,
+                contracts,
+              );
+            }
+            break;
+          }
+          default:
+            break;
         }
-        case 'LibraryStatement': {
-          // find definition in library body recursively
-          const statement = this.findElementByOffset(element.body, offset);
-          if (statement !== undefined) {
-            return this.provideDefinitionInStatement(
-              document,
-              result.body,
-              statement,
-              element,
-              offset,
-              contracts,
-            );
-          }
-          break;
-        }
-        case 'InterfaceStatement': {
-          // find definition in interface body recursively
-          const statement = this.findElementByOffset(element.body, offset);
-          if (statement !== undefined) {
-            return this.provideDefinitionInStatement(
-              document,
-              result.body,
-              statement,
-              element,
-              offset,
-              contracts,
-            );
-          }
-          break;
-        }
-        default:
-          break;
       }
-    }
+    
   }
 
   /**
@@ -321,6 +327,7 @@ export class SolidityDefinitionProvider {
   ): Promise<vscode.Location[]> {
     return this.provideDefinitionForContractMember(
       contracts,
+      name,
       (element) => {
         const elements = element.body.filter(contractElement =>
           contractElement.name === name && (
@@ -356,6 +363,7 @@ export class SolidityDefinitionProvider {
   ): Promise<vscode.Location[]> {
     return this.provideDefinitionForContractMember(
       contracts,
+      name,
       (element) =>
         element.body.filter(contractElement =>
           contractElement.name === name && (contractElement.type === 'StateVariableDeclaration')
@@ -374,38 +382,83 @@ export class SolidityDefinitionProvider {
    */
   private provideDefinitionForContractMember(
     contracts: ContractCollection,
+    literalFallbackName:string,
     extractElements: (any) => Array<any>,
   ): Promise<vscode.Location[]> {
     const locations = [];
     for (const contract of contracts.contracts) {
 
-      const result = solparse.parse(contract.code);
-      const elements =  Array.prototype.concat.apply([],
-        result.body.map(element => {
-          if (element.type === 'ContractStatement' ||  element.type === 'LibraryStatement') {
-            if (typeof element.body !== 'undefined' && element.body !== null) {
-              return extractElements(element);
-            }
-          } 
-          return [];
-        }),
-      );
-
       const uri = URI.file(contract.absolutePath).toString();
       const document = vscode.TextDocument.create(uri, null, null, contract.code);
-      elements.forEach(contractElement =>
-        locations.push(
-          vscode.Location.create(
-            uri,
-            vscode.Range.create(
-              document.positionAt(contractElement.start),
-              document.positionAt(contractElement.end),
+      try {
+        const result = solparse.parse(contract.code);
+
+        const elements =  Array.prototype.concat.apply([],
+          result.body.map(element => {
+            if (element.type === 'ContractStatement' ||  element.type === 'LibraryStatement') {
+              if (typeof element.body !== 'undefined' && element.body !== null) {
+                return extractElements(element);
+              }
+            } 
+            return [];
+          }),
+        );
+        
+        elements.forEach(contractElement =>
+          locations.push(
+            vscode.Location.create(
+              uri,
+              vscode.Range.create(
+                document.positionAt(contractElement.start),
+                document.positionAt(contractElement.end),
+              ),
             ),
           ),
-        ),
-      );
+        );
+        } catch { 
+          //FALLBACK WORKAROUND ON ERROR PARSING this could be a custom parser
+          //remove all comments with spaces
+          let code = this.replaceCommentsWithSpacesPreservingLines(contract.code);
+          //we find functions, structs, enums and contracts name
+          let regexWord = new RegExp("^\\s*function\\s+(" + literalFallbackName + ")\\s*\\(|\\s*struct|contract|enum|library\\s+(" + literalFallbackName + ")\\s*{", "gm");
+          //find the first declaration
+          let pos = this.regexIndexOf(code, regexWord, 0)
+          if(pos > -1){
+            //we want to get position of the name, not the start of the match
+            pos = code.indexOf(literalFallbackName, pos);
+            locations.push(
+              vscode.Location.create(
+                uri,
+                vscode.Range.create(document.positionAt(pos), document.positionAt(pos + literalFallbackName.length))
+                ))
+          }
+          
+        }
     }
     return Promise.resolve(locations);
+  }
+
+  private replaceCommentsWithSpacesPreservingLines(code: string):string{
+     //https://stackoverflow.com/questions/5989315/regex-for-match-replacing-javascript-comments-both-multiline-and-inline
+    return code.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, this.replacer);
+  }
+
+  private regexIndexOf(string, regex, startpos) : number {
+    var indexOf = string.substring(startpos || 0).search(regex);
+    return (indexOf >= 0) ? (indexOf + (startpos || 0)) : indexOf;
+  }
+
+  private replacer(match: string): string{
+    const lines = match.split(/\r?\n/g);
+    let hasrn = match.indexOf("\r\n") > -1;
+    for (let index = 0; index < lines.length; index++) {
+      lines[index] = ''.padStart(lines[index].length, ' ');
+    }
+    if(hasrn){
+      return lines.join('\r\n');
+    }else{
+      return lines.join('\n');
+    }
   }
 
   /**
@@ -471,6 +524,7 @@ export class SolidityDefinitionProvider {
       // TODO: only search inheritance chain
       return this.provideDefinitionForContractMember(
         contracts,
+        literal.literal,
         (element) =>
           element.body.filter(contractElement =>
             contractElement.name === literal.literal && (contractElement.type === 'StructDeclaration' || contractElement.type === 'EnumDeclaration'),
@@ -511,7 +565,11 @@ export class SolidityDefinitionProvider {
       const importContract = contracts.contracts.find(e => e.absolutePath === importPath);
       const uri = URI.file(importContract.absolutePath).toString();
       document = vscode.TextDocument.create(uri, null, null, importContract.code);
-      statements = solparse.parse(importContract.code).body;
+      try{
+        statements = solparse.parse(importContract.code).body;
+      } catch {
+        statements = [];
+      }
       location = this.findStatementLocationByNameType(document, statements, name, type);
     }
 
