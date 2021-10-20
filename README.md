@@ -104,7 +104,7 @@ Optimize for how many times you intend to run the code. Lower values will optimi
 ```"solidity.compilerOptimization": 200``` 
 
 
-## Project structure
+## Project structure and Remappings
 
 ### OpenZeppelin (Default)
 
@@ -158,6 +158,22 @@ The user settings for this structure is:
   "solidity.packageDefaultDependenciesContractsDirectory": "src",
   "solidity.packageDefaultDependenciesDirectory": "lib"
 ```
+
+### Remappings
+Another option is to use remappings to define where your dependency libraries are, this can be achieved using the settings or creating a "remappings.txt" file in the root folder. For more info on remappings check the solidity documentation here https://docs.soliditylang.org/en/latest/path-resolution.html?highlight=remapping#import-remapping
+
+If you want to use the solidity user settings for your workspace / global remappings, please include them in the ```solidity.remappings```
+
+```
+"solidity.remappings": [
+    "@chainlink/=/Users/patrick/.brownie/packages/smartcontractkit/chainlink-brownie-contracts@0.2.2",
+    "@openzeppelin/=/Users/patrick/.brownie/packages/OpenZeppelin/openzeppelin-contracts@4.3.2"
+  ]
+```
+
+Or if you want to include them in the remappings.txt file, just put the file at the root of your project folder. Note: These will override your solidity settings if included
+![image](https://user-images.githubusercontent.com/562371/136204736-be94e8d8-1954-4981-891c-278145b27cdf.png)
+
 
 ## Code completion
 
