@@ -15,7 +15,37 @@ export class Remapping {
         return contractDependencyImport.startsWith(this.prefix);
     }
 
+    public createImportFromFile(filePath: string) {
+        if(this.isFileForThis(filePath)) {
+            if(path.isAbsolute(this.target)) {
+                if (this.context == undefined) {
+                    return path.join(this.prefix, filePath.substring(this.target.length));
+                }
+                if (this.context !== undefined) {
+                    return path.join(this.context + ":" + this.prefix, filePath.substring(this.target.length));
+                }
+            } else {
+
+                if (this.context == undefined) {
+                    return path.join(this.prefix, filePath.substring(path.join(this.basePath, this.target).length));
+                }
+                if (this.context !== undefined) {
+                    return path.join(this.context + ":" + this.prefix, filePath.substring(path.join(this.basePath, this.target).length));
+                }
+            }  
+        }
+    }
+
+    public isFileForThis(filePath: string){
+        if(path.isAbsolute(this.target)) {
+            return filePath.startsWith(this.target);
+        }else{
+            return filePath.startsWith(path.join(this.basePath, this.target));
+        }
+    }
+
     public resolveImport(contractDependencyImport: string) {
+        if(contractDependencyImport ===  null || contractDependencyImport === undefined) return null;
         const validImport = this.isImportForThis(contractDependencyImport);
         if(path.isAbsolute(this.target)) {
             if (validImport && this.context == undefined) {

@@ -117,7 +117,7 @@ export class ContractCollection {
     private addContractAndResolveDependencyImport(dependencyImport: string, contract: Contract, project: Project) {
         //find re-mapping
         const remapping = project.findImportRemapping(dependencyImport);
-        if(remapping !== undefined) {
+        if(remapping !== undefined && remapping !== null) {
             const importPath = this.formatContractPath(remapping.resolveImport(dependencyImport));
             this.addContractAndResolveDependencyImportFromContractFullPath(importPath, project, contract, dependencyImport);
         } else {

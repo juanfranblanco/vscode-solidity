@@ -6,7 +6,7 @@ export class Project {
     public projectPackage: Package;
     public dependencies: Array<Package>;
     public packagesDir: string;
-    private remappings: Remapping[]
+    public remappings: Remapping[]
 
     constructor(projectPackage: Package, dependencies: Array<Package>, packagesDir: string, remappings: string[]) {
         this.projectPackage = projectPackage;
@@ -21,7 +21,37 @@ export class Project {
 
     public findImportRemapping(contractDependencyImport: string): Remapping {
         //const remappings = importRemappings("@openzeppelin/=lib/openzeppelin-contracts//\r\nds-test/=lib/ds-test/src/", this);
-        return this.remappings.find( x => x.isImportForThis(contractDependencyImport));
+        let foundRemappings = [];
+        this.remappings.forEach(element => {
+            if( element.isImportForThis(contractDependencyImport)){
+                foundRemappings.push(element);
+            }
+        });
+        
+        if(foundRemappings.length > 0) {
+            return this.sortByLength(foundRemappings)[foundRemappings.length -1];
+        }
+        return null;
+    }
+
+    public findRemappingForFile(filePath: string):Remapping {
+        let foundRemappings = [];
+        this.remappings.forEach(element => {
+            if( element.isFileForThis(filePath)){
+                foundRemappings.push(element);
+            }
+        });
+        
+        if(foundRemappings.length > 0) {
+            return this.sortByLength(foundRemappings)[foundRemappings.length -1];
+        }
+        return null;
+    }
+
+    private sortByLength(array) {
+        return array.sort(function(a, b) {
+          return a.length - b.length;
+        });
     }
 }
 

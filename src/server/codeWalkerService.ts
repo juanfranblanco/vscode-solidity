@@ -474,8 +474,8 @@ export class SolidityCodeWalker {
   private rootPath: string;
   private packageDefaultDependenciesDirectory: string;
   private packageDefaultDependenciesContractsDirectory: string;
-  private project: Project;
-  private remappings : string[]
+  public project: Project;
+  public remappings : string[]
 
   constructor(
     rootPath: string,

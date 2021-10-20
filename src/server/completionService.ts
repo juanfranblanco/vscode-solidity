@@ -7,6 +7,7 @@ import * as glob from 'glob';
 import { relative } from 'path';
 import { fileURLToPath } from 'url';
 import * as path from 'path';
+import { Project } from '../common/model/project';
 
 
 export class CompletionService {
@@ -299,18 +300,29 @@ export class CompletionService {
                     completionItem.insertText = '"' + pathLibrary + '";';
                     completionItems.push(completionItem);
                 } else {
-                    let rel = relative(fileURLToPath(document.uri), item);
-                    rel = rel.split('\\').join('/');
-                    if(rel.startsWith('../'))
-                    {
-                        rel = rel.substr(1);
+                    let remapping = walker.project.findRemappingForFile(item);
+                    if (remapping != null) {
+                        let pathLibrary = remapping.createImportFromFile(item);
+                        pathLibrary = pathLibrary.split('\\').join('/');
+                        let completionItem = CompletionItem.create(pathLibrary);
+                        completionItem.kind = CompletionItemKind.Reference;
+                        completionItem.insertText = '"' + pathLibrary + '";';
+                        completionItems.push(completionItem);
+                    } else {
+                        let rel = relative(fileURLToPath(document.uri), item);
+                        rel = rel.split('\\').join('/');
+                        if(rel.startsWith('../'))
+                        {
+                            rel = rel.substr(1);
+                        }
+                        let completionItem = CompletionItem.create(rel);
+                        completionItem.kind = CompletionItemKind.Reference;
+                        completionItem.insertText = '"' + rel + '";';
+                        completionItems.push(completionItem);
                     }
-                    let completionItem = CompletionItem.create(rel);
-                    completionItem.kind = CompletionItemKind.Reference;
-                    completionItem.insertText = '"' + rel + '";';
-                    completionItems.push(completionItem);
                 }
             });
+
             return completionItems;
         }
 
