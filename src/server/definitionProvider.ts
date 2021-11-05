@@ -635,9 +635,9 @@ export class SolidityDefinitionProvider {
   private resolveImportPath(importPath: string, contract: Contract): string {
     if (contract.isImportLocal(importPath)) {
       return contract.formatContractPath(path.resolve(path.dirname(contract.absolutePath), importPath));
-    } else if (this.project !== undefined) {
+    } else if (this.project !== undefined && this.project !== null) {
       const remapping = this.project.findImportRemapping(importPath);
-        if(remapping !== undefined) {
+        if(remapping !== undefined && remapping != null) {
             return contract.formatContractPath(remapping.resolveImport(importPath));
         } else {
             const depPack = this.project.findDependencyPackage(importPath);

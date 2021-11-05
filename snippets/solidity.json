@@ -18,8 +18,9 @@
 			"body": "pragma abicoder v2;"
 		},
 		"import contract": {
-			"prefix": "imp",
-			"body": "import '${1:contract}';"
+			"prefix": "import",
+			"body": "import ",
+			"description": "Press Ctrl+Space to autocomplete imports"
 		},
         "contract declaration": {
 			"prefix": "con",
