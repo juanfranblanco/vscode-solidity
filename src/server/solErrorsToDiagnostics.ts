@@ -50,8 +50,8 @@ export interface CompilerError {
         }
     }
 
-    function splitErrorToDiagnostic(error: any, errorSplit: any, index: number, fileName: any):  CompilerError {
-        const severity = this.getDiagnosticSeverity(error.severity);
+    export function splitErrorToDiagnostic(error: any, errorSplit: any, index: number, fileName: any):  CompilerError {
+        const severity = getDiagnosticSeverity(error.severity);
         const errorMessage = error.message;
         // tslint:disable-next-line:radix
         const line = parseInt(errorSplit[index]);
