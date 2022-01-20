@@ -60,7 +60,13 @@ export function compileAllContracts(compiler: Compiler, diagnosticCollection: vs
             }
         });
         const sourceDirPath = formatPath(project.projectPackage.getSolSourcesAbsolutePath());
-        const packagesPath = formatPath(project.packagesDir);
+        
+        let packagesPath = null;
+        if(project.packagesDir != null) 
+        {
+             packagesPath = formatPath(project.packagesDir);
+        }
+      
         compiler.compile(contractsCollection.getDefaultContractsForCompilation(compilationOptimisation),
                 diagnosticCollection,
                 project.projectPackage.build_dir,

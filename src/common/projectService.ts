@@ -68,7 +68,10 @@ export function initialiseProject(rootPath: string,
     const projectPackage = createProjectPackage(rootPath);
     const dependencies = loadDependencies(rootPath, projectPackage);
     remappings = loadRemappings(rootPath, remappings);
-    const packagesDirAbsolutePath = path.join(rootPath, packageDependenciesDirectory);
+    let packagesDirAbsolutePath = null;
+    if(packageDefaultDependenciesDirectory !== undefined && packageDefaultDependenciesDirectory !== '') {
+         packagesDirAbsolutePath = path.join(rootPath, packageDependenciesDirectory);
+    }
     return new Project(projectPackage, dependencies, packagesDirAbsolutePath, remappings);
 }
 
