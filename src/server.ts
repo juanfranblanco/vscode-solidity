@@ -8,17 +8,17 @@ import { CompletionService } from './server/completionService';
 import { SolidityDefinitionProvider } from './server/definitionProvider';
 import {
     createConnection,
-    TextDocuments, 
+    TextDocuments,
     InitializeResult,
     Diagnostic,
     ProposedFeatures,
     TextDocumentPositionParams,
     CompletionItem, Location, SignatureHelp, TextDocumentSyncKind, VersionedTextDocumentIdentifier,
-    WorkspaceFolder
+    WorkspaceFolder,
 } from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { URI, } from 'vscode-uri';
+import { URI } from 'vscode-uri';
 
 import { SolidityCodeWalker } from './server/codeWalkerService';
 import { Uri } from 'vscode';
@@ -40,13 +40,13 @@ interface SoliditySettings {
     validationDelay: number;
     packageDefaultDependenciesDirectory: string;
     packageDefaultDependenciesContractsDirectory: string;
-    remappings: string[]
+    remappings: string[];
 }
 
 
 // import * as path from 'path';
 // Create a connection for the server
-let connection = createConnection(ProposedFeatures.all);
+const connection = createConnection(ProposedFeatures.all);
 
 console.log = connection.console.log.bind(connection.console);
 console.error = connection.console.error.bind(connection.console);
@@ -74,7 +74,7 @@ let validatingAllDocuments = false;
 let packageDefaultDependenciesDirectory = 'lib';
 let packageDefaultDependenciesContractsDirectory = 'src';
 let workspaceFolders: WorkspaceFolder[];
-let remappings: string[]
+let remappings: string[];
 
 function initWorkspaceRootFolder(uri: string) {
     if (rootPath !== 'undefined') {
@@ -126,7 +126,7 @@ function validate(document: TextDocument) {
                 });
             }
         } catch (e) {
-            //let x = e;// gracefull catch
+            // let x = e;// gracefull catch
         }
 
         const diagnostics = linterDiagnostics.concat(compileErrorDiagnostics);
@@ -162,7 +162,7 @@ connection.onDefinition((handler: TextDocumentPositionParams): Thenable<Location
         rootPath,
         packageDefaultDependenciesDirectory,
         packageDefaultDependenciesContractsDirectory,
-        remappings
+        remappings,
     );
     return provider.provideDefinition(documents.get(handler.textDocument.uri), handler.position);
 });
@@ -188,13 +188,14 @@ function startValidation() {
     if (enabledAsYouTypeErrorCheck) {
         solcCompiler.initialiseAllCompilerSettings(compileUsingRemoteVersion, compileUsingLocalVersion, nodeModulePackage, defaultCompiler);
         solcCompiler.initialiseSelectedCompiler().then(() => {
-            connection.console.info("Validating using the compiler selected: " + compilerType[defaultCompiler]);
+            connection.console.info('Validating using the compiler selected: ' + compilerType[defaultCompiler]);
             validateAllDocuments();
         }).catch(reason => {
-            connection.console.error("An error has occurred initialising the compiler selected " + compilerType[defaultCompiler] + ", please check your settings, reverting to the embedded compiler. Error: " + reason);
+            connection.console.error('An error has occurred initialising the compiler selected ' + compilerType[defaultCompiler] + ', please check your settings, reverting to the embedded compiler. Error: ' + reason);
             solcCompiler.initialiseAllCompilerSettings(compileUsingRemoteVersion, compileUsingLocalVersion, nodeModulePackage, compilerType.embedded);
             solcCompiler.initialiseSelectedCompiler().then(() => {
                 validateAllDocuments();
+            // tslint:disable-next-line:no-shadowed-variable disable-next-line:no-empty
             }).catch(reason => { });
         });
     } else {
@@ -221,11 +222,10 @@ documents.listen(connection);
 
 connection.onInitialize((params): InitializeResult => {
     rootPath = params.rootPath;
-    let capabilities = params.capabilities;
+    const capabilities = params.capabilities;
 
     hasWorkspaceFolderCapability = !!(
-		capabilities.workspace && !!capabilities.workspace.workspaceFolders
-	);
+        capabilities.workspace && !!capabilities.workspace.workspaceFolders);
 
     if (params.workspaceFolders) {
         workspaceFolders = params.workspaceFolders;
@@ -246,13 +246,13 @@ connection.onInitialize((params): InitializeResult => {
     };
 
     if (hasWorkspaceFolderCapability) {
-		result.capabilities.workspace = {
-			workspaceFolders: {
-				supported: true
-			}
-		};
-	}
-	return result;
+        result.capabilities.workspace = {
+            workspaceFolders: {
+                supported: true,
+            },
+        };
+    }
+    return result;
 });
 
 connection.onInitialized(() => {
@@ -274,7 +274,7 @@ connection.onInitialized(() => {
                     });
 
                 });
-            };
+            }
         });
 
     }
