@@ -729,7 +729,7 @@ export function GetCompletionKeywords(): CompletionItem[] {
 
 export function GeCompletionUnits(): CompletionItem[] {
     const completionItems = [];
-    const etherUnits = ['wei', 'finney', 'szabo', 'ether'] ;
+    const etherUnits = ['wei', 'gwei', 'finney', 'szabo', 'ether'] ;
     etherUnits.forEach(unit => {
         const completionItem =  CompletionItem.create(unit);
         completionItem.kind = CompletionItemKind.Unit;
