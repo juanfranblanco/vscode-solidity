@@ -15,6 +15,7 @@ export default class SoliumService implements Linter {
     private fileConfig: any;
     private soliumRules;
     private vsConnection: Connection;
+    private currentWatchFile: string;
 
     constructor(rootPath: string, soliumRules: any, vsConnection: Connection) {
       this.vsConnection = vsConnection;
@@ -118,13 +119,13 @@ export default class SoliumService implements Linter {
         };
     }
 
-    private loadFileConfig(rootPath: string) {
+    public loadFileConfig(rootPath: string) {
         if (this.isRootPathSet(rootPath)) {
             const filePath = `${rootPath}/.soliumrc.json`;
             const readConfig = this.readFileConfig.bind(this, filePath);
 
             readConfig();
-            fs.watchFile(filePath, {persistent: false}, readConfig);
+            this.currentWatchFile = filePath;
         } else {
             this.fileConfig = SoliumService.EMPTY_CONFIG;
         }

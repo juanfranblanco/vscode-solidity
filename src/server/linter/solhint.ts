@@ -10,6 +10,10 @@ export default class SolhintService implements Linter {
         this.config = new ValidationConfig(rootPath, rules);
     }
 
+    public loadFileConfig(rootPath: string) {
+        this.config.loadFileConfig(rootPath);
+    }
+
     public setIdeRules(rules: any) {
         this.config.setIdeRules(rules);
     }
@@ -52,6 +56,7 @@ class ValidationConfig {
 
     private ideRules: any;
     private fileConfig: any;
+    private currentWatchFile: string;
 
     constructor(rootPath: string, ideRules: any) {
         this.setIdeRules(ideRules);
@@ -83,24 +88,25 @@ class ValidationConfig {
         return typeof rootPath !== 'undefined' && rootPath !== null;
     }
 
-    private loadFileConfig(rootPath: string) {
+    public loadFileConfig(rootPath: string) {
+
         if (this.isRootPathSet(rootPath)) {
             const filePath = `${rootPath}/.solhint.json`;
             const readConfig = this.readFileConfig.bind(this, filePath);
 
             readConfig();
-            fs.watchFile(filePath, {persistent: false}, readConfig);
+            this.currentWatchFile = filePath;
+            // fs.watchFile(filePath, {persistent: false}, readConfig);
         } else {
-                this.fileConfig = ValidationConfig.EMPTY_CONFIG;
+            this.fileConfig = ValidationConfig.EMPTY_CONFIG;
         }
     }
 
     private readFileConfig(filePath: string) {
         this.fileConfig = ValidationConfig.EMPTY_CONFIG;
-        fs.readFile(filePath, 'utf-8', this.onConfigLoaded.bind(this));
+        if (fs.existsSync(filePath)) {
+            this.fileConfig = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        }
     }
 
-    private onConfigLoaded(err: any, data: string) {
-        this.fileConfig = (!err) && JSON.parse(data);
-    }
 }

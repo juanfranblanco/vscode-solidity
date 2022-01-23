@@ -78,13 +78,16 @@ let remappings: string[];
 
 function initWorkspaceRootFolder(uri: string) {
     if (rootPath !== 'undefined') {
-        if (!uri.startsWith(rootPath)) {
+        const fullUri = URI.parse(uri);
+        if (!fullUri.fsPath.startsWith(rootPath)) {
             if (workspaceFolders) {
-
                 const newRootFolder = workspaceFolders.find(x => uri.startsWith(x.uri));
                 if (newRootFolder !== undefined) {
                     rootPath = URI.parse(newRootFolder.uri).fsPath;
                     solcCompiler.rootPath = rootPath;
+                    if (linter !== null) {
+                        linter.loadFileConfig(rootPath);
+                    }
                 }
 
             }
@@ -126,7 +129,7 @@ function validate(document: TextDocument) {
                 });
             }
         } catch (e) {
-            // let x = e;// gracefull catch
+             const x = e; // gracefull catch
         }
 
         const diagnostics = linterDiagnostics.concat(compileErrorDiagnostics);
@@ -281,7 +284,10 @@ connection.onInitialized(() => {
 });
 
 connection.onDidChangeWatchedFiles(_change => {
-	validateAllDocuments();
+    if (linter !== null) {
+        linter.loadFileConfig(rootPath);
+    }
+    validateAllDocuments();
 });
 
 connection.onDidChangeConfiguration((change) => {
@@ -297,7 +303,6 @@ connection.onDidChangeConfiguration((change) => {
     packageDefaultDependenciesContractsDirectory = settings.solidity.packageDefaultDependenciesContractsDirectory;
     packageDefaultDependenciesDirectory = settings.solidity.packageDefaultDependenciesDirectory;
     remappings = settings.solidity.remappings;
-
     switch (linterName(settings.solidity)) {
         case 'solhint': {
             linter = new SolhintService(rootPath, solhintDefaultRules);
@@ -322,6 +327,8 @@ connection.onDidChangeConfiguration((change) => {
 function linterName(settings: SoliditySettings) {
     return settings.linter;
 }
+
+
 
 function linterRules(settings: SoliditySettings) {
     const _linterName = linterName(settings);

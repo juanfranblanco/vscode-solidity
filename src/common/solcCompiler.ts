@@ -15,11 +15,11 @@ export enum compilerType {
 }
 
 export abstract class SolcCompilerLoader {
-    
+
     public compilerType: compilerType;
-    
+
     public localSolc: any;
-    
+
     public getVersion(): string {
         return this.localSolc.version();
     }
@@ -30,24 +30,24 @@ export abstract class SolcCompilerLoader {
     public abstract initialiseCompiler(): Promise<void>;
 
     public isInitialisedAlready(configuration: string = null): boolean {
-        if (this.localSolc === null) return false;
+        if (this.localSolc === null) { return false; }
         return this.matchesConfiguration(configuration);
     }
 }
 
 export class EmbeddedCompilerLoader extends SolcCompilerLoader {
-    
+
     public matchesConfiguration(configuration: string): boolean {
         return true;
     }
 
     public getConfiguration() {
-        return "";
+        return '';
     }
 
     constructor() {
         super();
-        this.compilerType = compilerType.embedded
+        this.compilerType = compilerType.embedded;
     }
 
     public init() {
@@ -59,7 +59,7 @@ export class EmbeddedCompilerLoader extends SolcCompilerLoader {
     }
 
 
-    public initialiseCompiler(): Promise<void>{ 
+    public initialiseCompiler(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.localSolc = require('solc');
             resolve();
@@ -69,7 +69,7 @@ export class EmbeddedCompilerLoader extends SolcCompilerLoader {
 
 
 export class NpmModuleCompilerLoader extends SolcCompilerLoader {
-    
+
     private npmModule: string;
     private rootPath: string;
 
@@ -83,17 +83,17 @@ export class NpmModuleCompilerLoader extends SolcCompilerLoader {
 
     constructor() {
         super();
-        this.npmModule = "solc";
-        this.compilerType = compilerType.localNodeModule
+        this.npmModule = 'solc';
+        this.compilerType = compilerType.localNodeModule;
     }
 
-    public init(rootPath: string, npmModule:string = "solc") {
-        if(rootPath !== this.rootPath){
+    public init(rootPath: string, npmModule = 'solc') {
+        if (rootPath !== this.rootPath) {
             this.localSolc = null;
             this.rootPath = rootPath;
         }
-        
-        if(!this.matchesConfiguration(npmModule)) {
+
+        if (!this.matchesConfiguration(npmModule)) {
             this.npmModule = npmModule;
             this.localSolc = null;
         }
@@ -111,23 +111,23 @@ export class NpmModuleCompilerLoader extends SolcCompilerLoader {
         return fs.existsSync(this.getLocalSolcNodeInstallation());
     }
 
-    public initialiseCompiler(): Promise<void>{ 
+    public initialiseCompiler(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            if(this.isInitialisedAlready(this.npmModule)) {
+            if (this.isInitialisedAlready(this.npmModule)) {
                 resolve();
             }
-            if(this.canCompilerBeLoaded()) {
+            if (this.canCompilerBeLoaded()) {
                 try {
-                    let solidityfile = require(this.getLocalSolcNodeInstallation());
+                    const solidityfile = require(this.getLocalSolcNodeInstallation());
                     this.localSolc = solc.setupMethods(solidityfile);
                     resolve();
-                } catch(e) {
+                } catch (e) {
                     this.localSolc = null;
-                    reject("An error has ocurred, loading the compiler from Node Modules, located at:" + this.getLocalSolcNodeInstallation() + ", " + e);
+                    reject('An error has ocurred, loading the compiler from Node Modules, located at:' + this.getLocalSolcNodeInstallation() + ', ' + e);
                 }
             } else {
                 this.localSolc = null;
-                reject("Compiler cannot be loaded from: " + this.getLocalSolcNodeInstallation());
+                reject('Compiler cannot be loaded from: ' + this.getLocalSolcNodeInstallation());
             }
         });
     }
@@ -135,7 +135,7 @@ export class NpmModuleCompilerLoader extends SolcCompilerLoader {
 
 
 export class LocalPathCompilerLoader extends SolcCompilerLoader {
-    
+
     private localPath: string;
 
     public matchesConfiguration(configuration: string): boolean {
@@ -148,18 +148,18 @@ export class LocalPathCompilerLoader extends SolcCompilerLoader {
 
     constructor() {
         super();
-        this.compilerType = compilerType.localFile
+        this.compilerType = compilerType.localFile;
     }
 
-    public init(localPath:string) {
-        if(!this.matchesConfiguration(localPath)) {
+    public init(localPath: string) {
+        if (!this.matchesConfiguration(localPath)) {
             this.localPath = localPath;
             this.localSolc = null;
         }
     }
 
     public canCompilerBeLoaded(): boolean {
-        if(typeof this.localPath !== 'undefined' && this.localPath !== null && this.localPath !== '') {
+        if (typeof this.localPath !== 'undefined' && this.localPath !== null && this.localPath !== '') {
             return this.compilerExistsAtPath(this.localPath);
         }
         return false;
@@ -168,30 +168,30 @@ export class LocalPathCompilerLoader extends SolcCompilerLoader {
         return fs.existsSync(localPath);
     }
 
-    public initialiseCompiler(): Promise<void>{ 
+    public initialiseCompiler(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            if(this.isInitialisedAlready(this.localPath)) {
+            if (this.isInitialisedAlready(this.localPath)) {
                 resolve();
             }
-            if(this.canCompilerBeLoaded()) {
+            if (this.canCompilerBeLoaded()) {
                 try {
-                    let solidityfile = require(this.localPath);
+                    const solidityfile = require(this.localPath);
                     this.localSolc = solc.setupMethods(solidityfile);
                     resolve();
-                } catch(e) {
+                } catch (e) {
                     this.localSolc = null;
-                    reject("An error has ocurred, loading the compiler located at:" + this.localPath + ", " + e);
+                    reject('An error has ocurred, loading the compiler located at:' + this.localPath + ', ' + e);
                 }
             } else {
                 this.localSolc = null;
-                reject("Compiler cannot be loaded from: " + this.localPath);
+                reject('Compiler cannot be loaded from: ' + this.localPath);
             }
         });
     }
 }
 
 export class RemoteCompilerDownloader {
-     public downloadCompilationFile(version:string, path:string): Promise<void> {
+     public downloadCompilationFile(version: string, path: string): Promise<void> {
         const file = fs.createWriteStream(path);
         const url = 'https://binaries.soliditylang.org/bin/soljson-' + version + '.js';
         return new Promise((resolve, reject) => {
@@ -199,16 +199,16 @@ export class RemoteCompilerDownloader {
                         if (response.statusCode !== 200) {
                             reject('Error retrieving solidity compiler: ' + response.statusMessage);
                         } else {
-                            response.pipe(file);    
-                            file.on("finish", function(){
+                            response.pipe(file);
+                            file.on('finish', function() {
                                 file.close();
                                 resolve();
                             });
                         }
                 }).on('error', function (error) {
                     reject(error);
-                }); 
-                request.end(); 
+                });
+                request.end();
             });
     }
 }
@@ -238,33 +238,33 @@ export class RemoteReleases {
     }
 
     public getFullVersionFromFileName(fileName: string): string {
-        let version = '';    
+        let version = '';
         const value: string = fileName;
         if (value !== 'undefined') {
             version = value.replace('soljson-', '');
             version = version.replace('.js', '');
-        } else { 
-            throw("Remote version: Invalid file name");
+        } else {
+            throw('Remote version: Invalid file name');
         }
         return version;
     }
 
     public async resolveRelease(version: string): Promise<string> {
         return new Promise(async (resolve, reject) => {
-                if(version === 'latest') resolve(version);
+                if (version === 'latest') { resolve(version); }
                 try {
-                    let releases = await this.getSolcReleases();
+                    const releases = await this.getSolcReleases();
+                    // tslint:disable-next-line:forin
                     for (const release in releases) {
-                        let fullVersion = this.getFullVersionFromFileName(releases[release]);
-                        if(version == fullVersion) resolve(fullVersion);
-                        if(version == release) resolve(fullVersion);
-                        if(version == releases[release]) resolve(fullVersion);
-                        if("v" + release == version) resolve(fullVersion);
-                        if(version.startsWith("v" + release + "+commit")) resolve(fullVersion);
+                        const fullVersion = this.getFullVersionFromFileName(releases[release]);
+                        if (version === fullVersion) { resolve(fullVersion); }
+                        if (version === release) { resolve(fullVersion); }
+                        if (version === releases[release]) { resolve(fullVersion); }
+                        if ('v' + release === version) { resolve(fullVersion); }
+                        if (version.startsWith('v' + release + '+commit')) { resolve(fullVersion); }
                     }
-                    reject("Remote version: invalid version");
-                }
-                catch(error) {
+                    reject('Remote version: invalid version');
+                } catch (error) {
                     reject(error);
                 }
         });
@@ -272,7 +272,7 @@ export class RemoteReleases {
 }
 
 export class RemoteCompilerLoader extends SolcCompilerLoader {
-    
+
     private version: string;
     private solcCachePath: string;
 
@@ -293,67 +293,64 @@ export class RemoteCompilerLoader extends SolcCompilerLoader {
         this.compilerType = compilerType.remote;
     }
 
-    public init(version:string) {
-        if(!this.matchesConfiguration(version)) {
+    public init(version: string) {
+        if (!this.matchesConfiguration(version)) {
             this.version = version;
             this.localSolc = null;
         }
     }
 
     public canCompilerBeLoaded(): boolean {
-        //this should check if the string version is valid
-        if(typeof this.version !== 'undefined' && this.version !== null && this.version !== '') {
+        // this should check if the string version is valid
+        if (typeof this.version !== 'undefined' && this.version !== null && this.version !== '') {
             return true;
         }
         return false;
     }
-   
 
-    public initialiseCompiler(): Promise<void>{ 
+
+    public initialiseCompiler(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            if(this.isInitialisedAlready(this.version)) {
+            if (this.isInitialisedAlready(this.version)) {
                 resolve();
             }
-            if(this.canCompilerBeLoaded()) {
+            if (this.canCompilerBeLoaded()) {
                 const solcService = this;
-                new RemoteReleases().resolveRelease(this.version).then(resolvedVersion => 
+                new RemoteReleases().resolveRelease(this.version).then(resolvedVersion =>
                     this.loadRemoteVersionRetry(resolvedVersion, 1, 3).then((solcSnapshot) => {
                             solcService.localSolc = solcSnapshot;
                             resolve();
-                        }).catch((error) =>
-                        {
-                            reject('There was an error loading the remote version: ' + this.version + ',' + error)
-                        })
-                    ).catch((error) =>
-                    {
-                        reject('There was an error loading the remote version: ' + this.version + ',' + error)
-                    })
+                        }).catch((error) => {
+                            reject('There was an error loading the remote version: ' + this.version + ',' + error);
+                        }),
+                    ).catch((error) => {
+                        reject('There was an error loading the remote version: ' + this.version + ',' + error);
+                    });
             } else {
                 this.localSolc = null;
-                reject("Compiler cannot load remote version:" + this.version);
+                reject('Compiler cannot load remote version:' + this.version);
             }
         });
     }
 
-   
+
 
     private loadRemoteVersionRetry (versionString: string, retryNumber: number, maxRetries: number): Promise<any> {
-        return new Promise((resolve, reject) => { 
-            this.loadRemoteVersion(versionString).then((solcConfigured) => resolve(solcConfigured)).catch((reason) =>
-            {
-                if(retryNumber <= maxRetries) {
+        return new Promise((resolve, reject) => {
+            this.loadRemoteVersion(versionString).then((solcConfigured) => resolve(solcConfigured)).catch((reason) => {
+                if (retryNumber <= maxRetries) {
                     return this.loadRemoteVersionRetry(versionString, retryNumber + 1, maxRetries);
-                }else{
+                } else {
                     reject(reason);
                 }
-            }
+            },
         );
         });
     }
 
     private loadRemoteVersion (versionString: string): Promise<any> {
         const pathVersion = path.resolve(path.join(this.solcCachePath, 'soljson-' + versionString + '.js'));
-        return new Promise((resolve, reject) => { 
+        return new Promise((resolve, reject) => {
                 try {
                         if (fs.existsSync(pathVersion) && versionString !== 'latest') {
                                 const solidityfile = require(pathVersion);
@@ -366,15 +363,15 @@ export class RemoteCompilerLoader extends SolcCompilerLoader {
                                 resolve(solcConfigured);
                             }).catch((reason) => reject(reason));
                         }
-                } catch (error) { 
-                    if(fs.existsSync(pathVersion)){
+                } catch (error) {
+                    if (fs.existsSync(pathVersion)) {
                         fs.unlinkSync(pathVersion);
-                        return this.loadRemoteVersion(versionString); 
+                        return this.loadRemoteVersion(versionString);
                     }  else {
                         reject(error);
                     }
                 }
-            }
+            },
         );
     }
 }
@@ -396,7 +393,7 @@ export class SolcCompiler {
         this.embeddedCompiler = new EmbeddedCompilerLoader();
         this.selectedCompiler = compilerType.embedded;
     }
-    
+
     public setSolcCache(solcCachePath: string): void {
         this.remoteCompiler.setSolcCache(solcCachePath);
     }
@@ -405,32 +402,32 @@ export class SolcCompiler {
         return typeof this.rootPath !== 'undefined' && this.rootPath !== null;
     }
 
-    public initialisedAlready(setting:string, compiler: compilerType): boolean {
-        if(compiler == compilerType.remote) {
+    public initialisedAlready(setting: string, compiler: compilerType): boolean {
+        if (compiler === compilerType.remote) {
             return this.remoteCompiler.isInitialisedAlready(setting);
         }
 
-        if(compiler == compilerType.localFile) {
+        if (compiler === compilerType.localFile) {
             return this.localCompiler.isInitialisedAlready(setting);
         }
 
-        if(compiler == compilerType.localNodeModule) {
+        if (compiler === compilerType.localNodeModule) {
             return this.nodeCompiler.isInitialisedAlready(setting);
         }
 
-        if(compiler == compilerType.embedded) {
+        if (compiler === compilerType.embedded) {
             return this.embeddedCompiler.isInitialisedAlready();
         }
     }
 
-    public initialiseAllCompilerSettings(remoteVersionSetting:string, localPathSetting:string, nodeModuleSetting:string, selectedCompiler:compilerType){
+    public initialiseAllCompilerSettings(remoteVersionSetting: string, localPathSetting: string, nodeModuleSetting: string, selectedCompiler: compilerType) {
         this.nodeCompiler.init(this.rootPath, nodeModuleSetting);
         this.remoteCompiler.init(remoteVersionSetting);
         this.localCompiler.init(localPathSetting);
         this.embeddedCompiler.init();
         this.selectedCompiler = selectedCompiler;
     }
-    
+
     public initialiseSelectedCompiler(): Promise<void> {
         return this.getCompiler().initialiseCompiler();
     }
@@ -440,31 +437,31 @@ export class SolcCompiler {
     }
 
     public compile(contracts: any, selectedCompiler: compilerType = null): any {
-        let compiler = this.getCompiler(selectedCompiler);
+        const compiler = this.getCompiler(selectedCompiler);
         return compiler.localSolc.compile(contracts);
     }
 
     public getCompiler(selectedCompiler: compilerType = null): SolcCompilerLoader {
-        if(selectedCompiler == null) {
+        if (selectedCompiler == null) {
             selectedCompiler = this.selectedCompiler;
         }
         switch (selectedCompiler) {
             case compilerType.embedded:
                 return this.embeddedCompiler;
             case compilerType.localNodeModule:
-                return this.nodeCompiler;       
+                return this.nodeCompiler;
             case compilerType.localFile:
                 return this.localCompiler;
             case compilerType.remote:
                 return this.remoteCompiler;
             default:
-                throw new Error("Invalid compiler");
+                throw new Error('Invalid compiler');
         }
     }
 
     public compileSolidityDocumentAndGetDiagnosticErrors(filePath: string, documentText: string,
         packageDefaultDependenciesDirectory: string, packageDefaultDependenciesContractsDirectory: string, remappings: string[], selectedCompiler: compilerType = null) {
-            if(selectedCompiler == null) {
+            if (selectedCompiler == null) {
                 selectedCompiler = this.selectedCompiler;
             }
         if (this.isRootPathSet()) {

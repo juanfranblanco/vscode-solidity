@@ -13,9 +13,9 @@ import { LanguageClientOptions, RevealOutputChannelOn } from 'vscode-languagecli
 import {
     LanguageClient,
     ServerOptions,
-    TransportKind
+    TransportKind,
   } from 'vscode-languageclient/node';
-  
+
 import { lintAndfixCurrentDocument } from './server/linter/soliumClientFixer';
 // tslint:disable-next-line:no-duplicate-imports
 import { workspace, WorkspaceFolder } from 'vscode';
@@ -167,7 +167,7 @@ export async function activate(context: vscode.ExtensionContext) {
         const root = workspaceUtil.getCurrentWorkspaceRootFolder();
         compiler.downloadRemoteVersionAndSetLocalPathSetting(vscode.ConfigurationTarget.Workspace, root.uri.fsPath);
     }));
-    
+
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.selectGlobalRemoteSolcVersion', async () => {
         compiler.selectRemoteVersion(vscode.ConfigurationTarget.Global);
@@ -176,7 +176,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand('solidity.changeDefaultCompilerType', async () => {
         compiler.changeDefaultCompilerType(vscode.ConfigurationTarget.Workspace);
     }));
-    
+
 
     context.subscriptions.push(
         vscode.languages.registerDocumentFormattingEditProvider('solidity', {
@@ -210,7 +210,7 @@ export async function activate(context: vscode.ExtensionContext) {
             // Synchronize the setting section 'solidity' to the server
             configurationSection: 'solidity',
             // Notify the server about file changes to '.sol.js files contain in the workspace (TODO node, linter)
-             fileEvents: vscode.workspace.createFileSystemWatcher('**/remappings.txt'),
+             fileEvents: vscode.workspace.createFileSystemWatcher('{**/remappings.txt,**/.solhint.json,**/.soliumrc.json}'),
         },
         initializationOptions: context.extensionPath,
     };
