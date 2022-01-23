@@ -42,7 +42,7 @@
     "no-unreachable": true,
     "no-use-before-declare": true,
     "no-var-keyword": true,
-    "object-literal-sort-keys": true,
+    "object-literal-sort-keys": false,
     "prefer-const": true,
     "one-line": [true,
       "check-open-brace",

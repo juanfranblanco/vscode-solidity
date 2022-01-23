@@ -21,9 +21,9 @@ export interface CompilerError {
 
     export function errorToDiagnostic(error: any): CompilerError {
 
-        if(error.sourceLocation.file !== undefined && error.sourceLocation.file !== null) {
-            let fileName = error.sourceLocation.file;
-            
+        if (error.sourceLocation.file !== undefined && error.sourceLocation.file !== null) {
+            const fileName = error.sourceLocation.file;
+
             const errorSplit = error.formattedMessage.substr(error.formattedMessage.indexOf(fileName)).split(':');
             let index = 1;
              // a full path in windows includes a : for the drive
