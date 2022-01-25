@@ -42,13 +42,13 @@ export class CompletionService {
         return literalType + suffixType;
     }
 
-    public createFunctionParamsSnippet(params: any, skipFirst: boolean = false): string {
+    public createFunctionParamsSnippet(params: any, skipFirst = false): string {
         let paramsSnippet = '';
         let counter = 0;
         if (typeof params !== 'undefined' && params !== null) {
             params.forEach( parameterElement => {
                if(skipFirst && counter === 0) {
-                  skipFirst = false; 
+                  skipFirst = false;
                } else {
                 const typeString = this.getTypeString(parameterElement.literal);
                 counter = counter + 1;
@@ -88,7 +88,7 @@ export class CompletionService {
         return paramsInfo;
     }
 
-    public createFunctionEventCompletionItem(contractElement: any, type: string, contractName: string, skipFirstParamSnipppet: boolean = false): CompletionItem {
+    public createFunctionEventCompletionItem(contractElement: any, type: string, contractName: string, skipFirstParamSnipppet = false): CompletionItem {
 
         const completionItem =  CompletionItem.create(contractElement.name);
         completionItem.kind = CompletionItemKind.Function;
@@ -107,12 +107,15 @@ export class CompletionService {
     }
 
     public createParameterCompletionItem(contractElement: any, type: string, contractName: string): CompletionItem {
-
-        const completionItem =  CompletionItem.create(contractElement.id);
+        let id = '[parameter name not set]';
+        if (contractElement.id !== null) {
+            id = contractElement.id;
+        }
+        const completionItem =  CompletionItem.create(id);
         completionItem.kind = CompletionItemKind.Variable;
         const typeString = this.getTypeString(contractElement.literal);
         completionItem.detail = '(' + type + ' in ' + contractName + ') '
-                                            + typeString + ' ' + contractElement.id;
+                                            + typeString + ' ' + id;
         return completionItem;
     }
 
@@ -130,7 +133,7 @@ export class CompletionService {
 
         const completionItem =  CompletionItem.create(contractElement.name);
         completionItem.kind = CompletionItemKind.Struct;
-        //completionItem.insertText = contractName + '.' + contractElement.name;
+        // completionItem.insertText = contractName + '.' + contractElement.name;
         completionItem.insertText = contractElement.name;
         completionItem.detail = '(Struct in ' + contractName + ') '
                                             + contractElement.name;
@@ -141,21 +144,21 @@ export class CompletionService {
 
         const completionItem =  CompletionItem.create(contractElement.name);
         completionItem.kind = CompletionItemKind.Enum;
-        //completionItem.insertText = contractName + '.' + contractElement.name;
+        // completionItem.insertText = contractName + '.' + contractElement.name;
         completionItem.insertText = contractElement.name;
         completionItem.detail = '(Enum in ' + contractName + ') '
                                             + contractElement.name;
         return completionItem;
     }
-    
+
     // type "Contract, Libray, Abstract contract"
     public createContractCompletionItem(contractName: string, type: string): CompletionItem {
 
         const completionItem =  CompletionItem.create(contractName);
         completionItem.kind = CompletionItemKind.Class;
         completionItem.insertText = contractName;
-        completionItem.detail = '(' + type + ' : ' + contractName + ') '
-                        
+        completionItem.detail = '(' + type + ' : ' + contractName + ') ';
+
         return completionItem;
     }
 
@@ -164,7 +167,7 @@ export class CompletionService {
         const completionItem =  CompletionItem.create(contractName);
         completionItem.kind = CompletionItemKind.Interface;
         completionItem.insertText = contractName;
-        completionItem.detail = '( Interface : ' + contractName + ') '               
+        completionItem.detail = '( Interface : ' + contractName + ') ';
         return completionItem;
     }
 
@@ -226,31 +229,31 @@ export class CompletionService {
         let triggeredByImport = false;
         let triggeredByDotStart = 0;
         try {
-        var walker = new SolidityCodeWalker(this.rootPath,  packageDefaultDependenciesDirectory,
-            packageDefaultDependenciesContractsDirectory, remappings
+        const walker = new SolidityCodeWalker(this.rootPath,  packageDefaultDependenciesDirectory,
+            packageDefaultDependenciesContractsDirectory, remappings,
         );
         const offset = document.offsetAt(position);
 
-        var documentContractSelected = walker.getAllContracts(document, position);
+        const documentContractSelected = walker.getAllContracts(document, position);
 
         const lines = document.getText().split(/\r?\n/g);
         triggeredByDotStart = this.getTriggeredByDotStart(lines, position);
-        
-        //triggered by emit is only possible with ctrl space
+
+        // triggered by emit is only possible with ctrl space
         triggeredByEmit = getAutocompleteVariableNameTrimmingSpaces(lines[position.line], position.character - 1) === 'emit';
-        triggeredByImport = getAutocompleteVariableNameTrimmingSpaces(lines[position.line], position.character - 1) === 'import'
+        triggeredByImport = getAutocompleteVariableNameTrimmingSpaces(lines[position.line], position.character - 1) === 'import';
         //  TODO: this does not work due to the trigger.
         // || (lines[position.line].trimLeft().startsWith('import "') && lines[position.line].trimLeft().lastIndexOf('"') === 7);
 
-        
-        if(triggeredByDotStart > 0) {
-            
+
+        if (triggeredByDotStart > 0) {
+
             const globalVariableContext = GetContextualAutoCompleteByGlobalVariable(lines[position.line], triggeredByDotStart);
-            
+
             if (globalVariableContext != null) {
                 completionItems = completionItems.concat(globalVariableContext);
             } else {
-                let autocompleteByDot = getAutocompleteTriggerByDotVariableName(lines[position.line], triggeredByDotStart - 1);
+                const autocompleteByDot = getAutocompleteTriggerByDotVariableName(lines[position.line], triggeredByDotStart - 1);
                 // if triggered by variable //done
                 // todo triggered by method (get return type) // done
                 // todo triggered by property // done
@@ -258,24 +261,23 @@ export class CompletionService {
                 // variable / method / property is an address or other specific type functionality (balance, etc)
                 // variable / method / property type is extended by a library
 
-                if(autocompleteByDot.name !== '') {
+                if (autocompleteByDot.name !== '') {
 
-                    
+
                     // have we got a selected contract (assuming not type.something)
-                    if(documentContractSelected.selectedContract !== undefined && documentContractSelected.selectedContract !== null )
-                    {
-                        let selectedContract = documentContractSelected.selectedContract;
+                    if (documentContractSelected.selectedContract !== undefined && documentContractSelected.selectedContract !== null ) {
+                        const selectedContract = documentContractSelected.selectedContract;
 
-                        //this contract
-                        if(autocompleteByDot.name === 'this' && autocompleteByDot.isVariable && autocompleteByDot.parentAutocomplete === null) {
+                        // this contract
+                        if (autocompleteByDot.name === 'this' && autocompleteByDot.isVariable && autocompleteByDot.parentAutocomplete === null) {
 
-                            //add selectd contract completion items
+                            // add selectd contract completion items
                             this.addContractCompletionItems(selectedContract, completionItems);
 
                         } else  {
-                            /// the types 
+                            /// the types
                             let topParent = autocompleteByDot.getTopParent();
-                            if (topParent.name === "this") {
+                            if (topParent.name === 'this') {
                                 topParent = topParent.childAutocomplete;
                             }
 
@@ -287,35 +289,34 @@ export class CompletionService {
             return completionItems;
         }
 
-        if(triggeredByImport) {
-            let files = glob.sync(this.rootPath + '/**/*.sol');
+        if (triggeredByImport) {
+            const files = glob.sync(this.rootPath + '/**/*.sol');
             files.forEach(item => {
-                let dependenciesDir = path.join(this.rootPath, packageDefaultDependenciesDirectory);
+                const dependenciesDir = path.join(this.rootPath, packageDefaultDependenciesDirectory);
                 item = path.join(item);
-                if(item.startsWith(dependenciesDir)) {
+                if (item.startsWith(dependenciesDir)) {
                     let pathLibrary = item.substr(dependenciesDir.length + 1);
                     pathLibrary = pathLibrary.split('\\').join('/');
-                    let completionItem = CompletionItem.create(pathLibrary);
+                    const completionItem = CompletionItem.create(pathLibrary);
                     completionItem.kind = CompletionItemKind.Reference;
                     completionItem.insertText = '"' + pathLibrary + '";';
                     completionItems.push(completionItem);
                 } else {
-                    let remapping = walker.project.findRemappingForFile(item);
+                    const remapping = walker.project.findRemappingForFile(item);
                     if (remapping != null) {
                         let pathLibrary = remapping.createImportFromFile(item);
                         pathLibrary = pathLibrary.split('\\').join('/');
-                        let completionItem = CompletionItem.create(pathLibrary);
+                        const completionItem = CompletionItem.create(pathLibrary);
                         completionItem.kind = CompletionItemKind.Reference;
                         completionItem.insertText = '"' + pathLibrary + '";';
                         completionItems.push(completionItem);
                     } else {
                         let rel = relative(fileURLToPath(document.uri), item);
                         rel = rel.split('\\').join('/');
-                        if(rel.startsWith('../'))
-                        {
+                        if (rel.startsWith('../')) {
                             rel = rel.substr(1);
                         }
-                        let completionItem = CompletionItem.create(rel);
+                        const completionItem = CompletionItem.create(rel);
                         completionItem.kind = CompletionItemKind.Reference;
                         completionItem.insertText = '"' + rel + '";';
                         completionItems.push(completionItem);
@@ -326,34 +327,34 @@ export class CompletionService {
             return completionItems;
         }
 
-        if(triggeredByEmit) {
-           
-            if(documentContractSelected.selectedContract !== undefined && documentContractSelected.selectedContract !== null ) {
+        if (triggeredByEmit) {
+
+            if (documentContractSelected.selectedContract !== undefined && documentContractSelected.selectedContract !== null ) {
                 this.addAllEventsAsCompletionItems(documentContractSelected.selectedContract, completionItems);
             }
 
         } else {
 
-            if(documentContractSelected.selectedContract !== undefined && documentContractSelected.selectedContract !== null ) {
-                
-                let selectedContract = documentContractSelected.selectedContract;
+            if (documentContractSelected.selectedContract !== undefined && documentContractSelected.selectedContract !== null ) {
+
+                const selectedContract = documentContractSelected.selectedContract;
                 this.addSelectedContractCompletionItems(selectedContract, completionItems, offset);
             }
 
             documentContractSelected.allContracts.forEach(x => {
-            
-                if(x.contractType === "ContractStatement") {
-                completionItems.push(this.createContractCompletionItem(x.name, "Contract"));
+
+                if (x.contractType === 'ContractStatement') {
+                completionItems.push(this.createContractCompletionItem(x.name, 'Contract'));
             }
-            
-            if(x.contractType === "LibraryStatement") {
-                    completionItems.push(this.createContractCompletionItem(x.name, "Library"));
+
+            if (x.contractType === 'LibraryStatement') {
+                    completionItems.push(this.createContractCompletionItem(x.name, 'Library'));
                 }
 
-                if(x.contractType === "InterfaceStatement") {
+                if (x.contractType === 'InterfaceStatement') {
                     completionItems.push(this.createInterfaceCompletionItem(x.name));
                 }
-            })
+            });
         }
 
     } catch (error) {
@@ -370,44 +371,62 @@ export class CompletionService {
     return completionItems;
     }
 
+    public getTriggeredByDotStart(lines: string[], position: vscode.Position): number {
+        let start = 0;
+        let triggeredByDot = false;
+        for (let i = position.character; i >= 0; i--) {
+            if (lines[position.line[i]] === ' ') {
+                triggeredByDot = false;
+                i = 0;
+                start = 0;
+            }
+            if (lines[position.line][i] === '.') {
+                start = i;
+                i = 0;
+                triggeredByDot = true;
+            }
+        }
+        return start;
+    }
 
 
-    private findDotCompletionItemsForSelectedContract(autocompleteByDot:AutocompleteByDot, completionItems: any[], documentContractSelected: DocumentContract, currentContract: Contract2, offset:number) {
-        
-        if(currentContract === documentContractSelected.selectedContract) {
-            let selectedFunction = documentContractSelected.selectedContract.getSelectedFunction(offset);
+
+    private findDotCompletionItemsForSelectedContract(autocompleteByDot: AutocompleteByDot, completionItems: any[], documentContractSelected: DocumentContract, currentContract: Contract2, offset: number) {
+
+        if (currentContract === documentContractSelected.selectedContract) {
+            const selectedFunction = documentContractSelected.selectedContract.getSelectedFunction(offset);
             this.findDotCompletionItemsForContract(autocompleteByDot, completionItems, documentContractSelected.allContracts, documentContractSelected.selectedContract, selectedFunction, offset);
         } else {
             this.findDotCompletionItemsForContract(autocompleteByDot, completionItems, documentContractSelected.allContracts, documentContractSelected.selectedContract);
-        }      
-   
+        }
+
     }
 
-    private findDotCompletionItemsForContract(autocompleteByDot:AutocompleteByDot, completionItems: any[], allContracts: Contract2[], currentContract: Contract2, selectedFunction: Function = null, offset:number = null) {
-        
-        let allStructs = currentContract.getAllStructs();
-        let allEnums = currentContract.getAllEnums();
+    private findDotCompletionItemsForContract(autocompleteByDot: AutocompleteByDot, completionItems: any[], allContracts: Contract2[], currentContract: Contract2, selectedFunction: Function = null, offset: number = null) {
+
+        const allStructs = currentContract.getAllStructs();
+        const allEnums = currentContract.getAllEnums();
         let allVariables: Variable[] = currentContract.getAllStateVariables();
-        let allfunctions: Function[] = currentContract.getAllFunctions();
+        const allfunctions: Function[] = currentContract.getAllFunctions();
 
 
-        if(selectedFunction !== undefined && selectedFunction !== null)  {
+        if (selectedFunction !== undefined && selectedFunction !== null)  {
             selectedFunction.findVariableDeclarationsInScope(offset, null);
-            //adding input parameters
+            // adding input parameters
             allVariables = allVariables.concat(selectedFunction.input);
-            //ading all variables
+            // ading all variables
             allVariables = allVariables.concat(selectedFunction.variablesInScope);
         }
-        
-        
+
+
         let found = false;
 
         if (autocompleteByDot.isVariable) {
-            
+
             allVariables.forEach(item => {
                 if (item.name === autocompleteByDot.name && !found) {
                     found = true;
-                    if(autocompleteByDot.childAutocomplete !== undefined && autocompleteByDot.childAutocomplete !== null) {
+                    if (autocompleteByDot.childAutocomplete !== undefined && autocompleteByDot.childAutocomplete !== null) {
                         this.findDotType(allStructs, item.type, autocompleteByDot.childAutocomplete, completionItems, allContracts, currentContract);
                     } else {
                         this.findDotTypeCompletion(allStructs, item.type, completionItems, allContracts, currentContract);
@@ -420,7 +439,7 @@ export class CompletionService {
                     if (item.name === autocompleteByDot.name) {
                         found = true;
                         item.items.forEach(property => {
-                            let completitionItem = CompletionItem.create(property);
+                            const completitionItem = CompletionItem.create(property);
                             completionItems.push(completitionItem);
                         });
                     }
@@ -443,10 +462,10 @@ export class CompletionService {
                 if (item.name === autocompleteByDot.name) {
                     found = true;
                     if (item.output.length === 1) {
-                        //todo return array
-                        let type = item.output[0].type;
+                        // todo return array
+                        const type = item.output[0].type;
 
-                        if(autocompleteByDot.childAutocomplete !== undefined && autocompleteByDot.childAutocomplete !== null) {
+                        if (autocompleteByDot.childAutocomplete !== undefined && autocompleteByDot.childAutocomplete !== null) {
                             this.findDotType(allStructs, type, autocompleteByDot.childAutocomplete, completionItems, allContracts, currentContract);
                         } else {
                             this.findDotTypeCompletion(allStructs, type, completionItems, allContracts, currentContract);
@@ -455,7 +474,7 @@ export class CompletionService {
                 }
             });
 
-            //contract declaration as IMyContract(address)
+            // contract declaration as IMyContract(address)
             if (!found && (autocompleteByDot.childAutocomplete === undefined || autocompleteByDot.childAutocomplete === null) ) {
                 allContracts.forEach(item => {
                     if (item.name === autocompleteByDot.name) {
@@ -467,14 +486,14 @@ export class CompletionService {
         }
     }
 
-  
+
 
     private findDotTypeCompletion(allStructs: Struct[], type: DeclarationType, completionItems: any[], allContracts: Contract2[], currentContract: Contract2) {
-        let foundStruct = allStructs.find(x => x.name === type.name);
+        const foundStruct = allStructs.find(x => x.name === type.name);
         if (foundStruct !== undefined) {
             foundStruct.variables.forEach(property => {
-                //own method refactor
-                let completitionItem = CompletionItem.create(property.name);
+                // own method refactor
+                const completitionItem = CompletionItem.create(property.name);
                 const typeString = this.getTypeString(property.element.literal);
                 completitionItem.detail = '(' + property.name + ' in ' + foundStruct.name + ') '
                     + typeString + ' ' + foundStruct.name;
@@ -482,16 +501,16 @@ export class CompletionService {
             });
         } else {
 
-            let foundContract = allContracts.find(x => x.name === type.name);
+            const foundContract = allContracts.find(x => x.name === type.name);
             if (foundContract !== undefined) {
                 foundContract.initialiseExtendContracts(allContracts);
                 this.addContractCompletionItems(foundContract, completionItems);
             }
         }
 
-        let allUsing = currentContract.getAllUsing(type);
+        const allUsing = currentContract.getAllUsing(type);
         allUsing.forEach(usingItem => {
-            let foundLibrary = allContracts.find(x => x.name === usingItem.name);
+            const foundLibrary = allContracts.find(x => x.name === usingItem.name);
             if (foundLibrary !== undefined) {
                 this.addAllLibraryExtensionsAsCompletionItems(foundLibrary, completionItems, type);
             }
@@ -500,12 +519,12 @@ export class CompletionService {
 
 
     private findDotType(allStructs: Struct[], type: DeclarationType, autocompleteByDot: AutocompleteByDot, completionItems: any[], allContracts: Contract2[], currentContract: Contract2) {
-        let foundStruct = allStructs.find(x => x.name === type.name);
+        const foundStruct = allStructs.find(x => x.name === type.name);
         if (foundStruct !== undefined) {
             foundStruct.variables.forEach(property => {
-                //own method refactor
-                if(autocompleteByDot.name === property.name) {
-                    if(autocompleteByDot.childAutocomplete !== undefined && autocompleteByDot.childAutocomplete !== null)  {
+                // own method refactor
+                if (autocompleteByDot.name === property.name) {
+                    if (autocompleteByDot.childAutocomplete !== undefined && autocompleteByDot.childAutocomplete !== null)  {
                         this.findDotType(allStructs, property.type, autocompleteByDot.childAutocomplete, completionItems, allContracts, currentContract);
                     } else {
                         this.findDotTypeCompletion(allStructs, property.type, completionItems, allContracts, currentContract);
@@ -514,11 +533,11 @@ export class CompletionService {
             });
         } else {
 
-            let foundContract = allContracts.find(x => x.name === type.name);
+            const foundContract = allContracts.find(x => x.name === type.name);
             if (foundContract !== undefined) {
                 foundContract.initialiseExtendContracts(allContracts);
                 this.findDotCompletionItemsForContract(autocompleteByDot, completionItems, allContracts, foundContract);
-                
+
             }
         }
 
@@ -552,25 +571,25 @@ export class CompletionService {
 
         this.addAllEnumsAsCompletionItems(selectedContract, completionItems);
 
-        let selectedFunction = selectedContract.getSelectedFunction(offset);
+        const selectedFunction = selectedContract.getSelectedFunction(offset);
 
         if (selectedFunction !== undefined) {
             selectedFunction.findVariableDeclarationsInScope(offset, null);
             selectedFunction.input.forEach(parameter => {
-                completionItems.push(this.createParameterCompletionItem(parameter.element, "function parameter", selectedFunction.contract.name));
+                completionItems.push(this.createParameterCompletionItem(parameter.element, 'function parameter', selectedFunction.contract.name));
             });
             selectedFunction.output.forEach(parameter => {
-                completionItems.push(this.createParameterCompletionItem(parameter.element, "return parameter", selectedFunction.contract.name));
+                completionItems.push(this.createParameterCompletionItem(parameter.element, 'return parameter', selectedFunction.contract.name));
             });
 
             selectedFunction.variablesInScope.forEach(variable => {
-                completionItems.push(this.createVariableCompletionItem(variable.element, "function variable", selectedFunction.contract.name));
+                completionItems.push(this.createVariableCompletionItem(variable.element, 'function variable', selectedFunction.contract.name));
             });
         }
     }
 
     private addAllEnumsAsCompletionItems(documentContractSelected: Contract2, completionItems: any[]) {
-        let allEnums = documentContractSelected.getAllEnums();
+        const allEnums = documentContractSelected.getAllEnums();
         allEnums.forEach(item => {
             completionItems.push(
                 this.createEnumCompletionItem(item.element, item.contract.name));
@@ -578,7 +597,7 @@ export class CompletionService {
     }
 
     private addAllStructsAsCompletionItems(documentContractSelected: Contract2, completionItems: any[]) {
-        let allStructs = documentContractSelected.getAllStructs();
+        const allStructs = documentContractSelected.getAllStructs();
         allStructs.forEach(item => {
             completionItems.push(
                 this.createStructCompletionItem(item.element, item.contract.name));
@@ -586,7 +605,7 @@ export class CompletionService {
     }
 
     private addAllEventsAsCompletionItems(documentContractSelected: Contract2, completionItems: any[]) {
-        let allevents = documentContractSelected.getAllEvents();
+        const allevents = documentContractSelected.getAllEvents();
         allevents.forEach(item => {
             completionItems.push(
                 this.createFunctionEventCompletionItem(item.element, 'event', item.contract.name));
@@ -594,7 +613,7 @@ export class CompletionService {
     }
 
     private addAllStateVariablesAsCompletionItems(documentContractSelected: Contract2, completionItems: any[]) {
-        let allStateVariables = documentContractSelected.getAllStateVariables();
+        const allStateVariables = documentContractSelected.getAllStateVariables();
         allStateVariables.forEach(item => {
             completionItems.push(
                 this.createVariableCompletionItem(item.element, 'state variable', item.contract.name));
@@ -602,7 +621,7 @@ export class CompletionService {
     }
 
     private addAllFunctionsAsCompletionItems(documentContractSelected: Contract2, completionItems: any[]) {
-        let allfunctions = documentContractSelected.getAllFunctions();
+        const allfunctions = documentContractSelected.getAllFunctions();
         allfunctions.forEach(item => {
             completionItems.push(
                 this.createFunctionEventCompletionItem(item.element, 'function', item.contract.name));
@@ -610,12 +629,12 @@ export class CompletionService {
     }
 
     private addAllLibraryExtensionsAsCompletionItems(documentContractSelected: Contract2, completionItems: any[], type: DeclarationType) {
-        let allfunctions = documentContractSelected.getAllFunctions();
-        let filteredFunctions = allfunctions.filter( x => {
-            if(x.input.length > 0 ) {
-                let typex = x.input[0].type;
+        const allfunctions = documentContractSelected.getAllFunctions();
+        const filteredFunctions = allfunctions.filter( x => {
+            if (x.input.length > 0 ) {
+                const typex = x.input[0].type;
                 let validTypeName = false;
-                if(typex.name === type.name || (type.name === "address_payable" && typex.name === "address")) {
+                if (typex.name === type.name || (type.name === 'address_payable' && typex.name === 'address')) {
                     validTypeName = true;
                 }
                  return typex.isArray === type.isArray && validTypeName && typex.isMapping === type.isMapping;
@@ -627,24 +646,6 @@ export class CompletionService {
             completionItems.push(
                 this.createFunctionEventCompletionItem(item.element, 'function', item.contract.name, true));
         });
-    }
-
-    public getTriggeredByDotStart(lines:string[], position: vscode.Position):number {
-        let start = 0;
-        let triggeredByDot = false;
-        for (let i = position.character; i >= 0; i--) {
-            if (lines[position.line[i]] === ' ') {
-                triggeredByDot = false;
-                i = 0;
-                start = 0;
-            }
-            if (lines[position.line][i] === '.') {
-                start = i;
-                i = 0;
-                triggeredByDot = true;
-            }
-        }
-        return start;
     }
 
     /*
@@ -922,16 +923,16 @@ function isAutocompleteTrigeredByVariableName(variableName: string, lineText: st
 }
 
 export class AutocompleteByDot {
-    public isVariable: boolean = false;
-    public isMethod: boolean = false;
-    public isArray: boolean = false;
-    public isProperty: boolean = false;
-    public parentAutocomplete: AutocompleteByDot = null;// could be a property or a method
+    public isVariable = false;
+    public isMethod = false;
+    public isArray = false;
+    public isProperty = false;
+    public parentAutocomplete: AutocompleteByDot = null; // could be a property or a method
     public childAutocomplete: AutocompleteByDot = null;
-    public name: string = '';
+    public name = '';
 
-    getTopParent(): AutocompleteByDot {
-        if(this.parentAutocomplete != null) {
+    public getTopParent(): AutocompleteByDot {
+        if (this.parentAutocomplete != null) {
             return this.parentAutocomplete.getTopParent();
         }
         return this;
@@ -939,40 +940,40 @@ export class AutocompleteByDot {
 }
 
 
-function getAutocompleteTriggerByDotVariableName(lineText: string, wordEndPosition:number): AutocompleteByDot {
+function getAutocompleteTriggerByDotVariableName(lineText: string, wordEndPosition: number): AutocompleteByDot {
     let searching = true;
-    let result: AutocompleteByDot = new AutocompleteByDot();
-    //simpler way might be to find the first space or beginning of line
-    //and from there split / match (but for now kiss or slowly)
+    const result: AutocompleteByDot = new AutocompleteByDot();
+    // simpler way might be to find the first space or beginning of line
+    // and from there split / match (but for now kiss or slowly)
 
     wordEndPosition = getArrayStart(lineText, wordEndPosition, result);
 
-    if(lineText[wordEndPosition] == ')' ) {
+    if (lineText[wordEndPosition] === ')' ) {
         result.isMethod = true;
         let methodParamBeginFound = false;
-        while(!methodParamBeginFound && wordEndPosition >= 0 ) {
-            if(lineText[wordEndPosition] === '(') {
+        while (!methodParamBeginFound && wordEndPosition >= 0 ) {
+            if (lineText[wordEndPosition] === '(') {
                 methodParamBeginFound = true;
             }
             wordEndPosition = wordEndPosition - 1;
         }
     }
 
-    if(!result.isMethod && !result.isArray) {
+    if (!result.isMethod && !result.isArray) {
         result.isVariable = true;
     }
 
-    while(searching && wordEndPosition >= 0) {
-        let currentChar = lineText[wordEndPosition];
-        if(isAlphaNumeric(currentChar) || currentChar === '_' || currentChar === '$') {
+    while (searching && wordEndPosition >= 0) {
+        const currentChar = lineText[wordEndPosition];
+        if (isAlphaNumeric(currentChar) || currentChar === '_' || currentChar === '$') {
             result.name = currentChar + result.name;
             wordEndPosition = wordEndPosition - 1;
         } else {
-            if(currentChar === ' ') { // we only want a full word for a variable / method // this cannot be parsed due incomplete statements
+            if (currentChar === ' ') { // we only want a full word for a variable / method // this cannot be parsed due incomplete statements
                 searching = false;
                 return result;
             } else {
-                if(currentChar === '.') {
+                if (currentChar === '.') {
                     result.parentAutocomplete = getAutocompleteTriggerByDotVariableName(lineText, wordEndPosition - 1);
                     result.parentAutocomplete.childAutocomplete = result;
                 }
@@ -986,7 +987,7 @@ function getAutocompleteTriggerByDotVariableName(lineText: string, wordEndPositi
 
 
 function getArrayStart(lineText: string, wordEndPosition: number, result: AutocompleteByDot) {
-    if (lineText[wordEndPosition] == ']') {
+    if (lineText[wordEndPosition] === ']') {
         result.isArray = true;
         let arrayBeginFound = false;
         while (!arrayBeginFound && wordEndPosition >= 0) {
@@ -996,32 +997,32 @@ function getArrayStart(lineText: string, wordEndPosition: number, result: Autoco
             wordEndPosition = wordEndPosition - 1;
         }
     }
-    if(lineText[wordEndPosition] == ']') {
+    if (lineText[wordEndPosition] === ']') {
         wordEndPosition = getArrayStart(lineText, wordEndPosition, result);
     }
     return wordEndPosition;
 }
 
-function getAutocompleteVariableNameTrimmingSpaces(lineText: string, wordEndPosition:number): string {
+function getAutocompleteVariableNameTrimmingSpaces(lineText: string, wordEndPosition: number): string {
     let searching = true;
-    let result: string = '';
-    if(lineText[wordEndPosition] === ' ' ) {
+    let result = '';
+    if (lineText[wordEndPosition] === ' ' ) {
         let spaceFound = true;
-        while(spaceFound && wordEndPosition >= 0 ) {
+        while (spaceFound && wordEndPosition >= 0 ) {
             wordEndPosition = wordEndPosition - 1;
-            if(lineText[wordEndPosition] !== ' ') {
+            if (lineText[wordEndPosition] !== ' ') {
                 spaceFound = false;
             }
         }
     }
 
-    while(searching && wordEndPosition >= 0) {
-        let currentChar = lineText[wordEndPosition];
-        if(isAlphaNumeric(currentChar) || currentChar === '_' || currentChar === '$') {
+    while (searching && wordEndPosition >= 0) {
+        const currentChar = lineText[wordEndPosition];
+        if (isAlphaNumeric(currentChar) || currentChar === '_' || currentChar === '$') {
             result = currentChar + result;
             wordEndPosition = wordEndPosition - 1;
         } else {
-            if(currentChar === ' ') { // we only want a full word for a variable // this cannot be parsed due incomplete statements
+            if (currentChar === ' ') { // we only want a full word for a variable // this cannot be parsed due incomplete statements
                 searching = false;
                 return result;
             }
@@ -1033,8 +1034,8 @@ function getAutocompleteVariableNameTrimmingSpaces(lineText: string, wordEndPosi
 }
 
 function isAlphaNumeric(str) {
-    var code, i, len;
-  
+    let code, i, len;
+
     for (i = 0, len = str.length; i < len; i++) {
       code = str.charCodeAt(i);
       if (!(code > 47 && code < 58) && // numeric (0-9)
@@ -1044,7 +1045,7 @@ function isAlphaNumeric(str) {
       }
     }
     return true;
-  };
+  }
 
 function getBlockCompletionItems(): CompletionItem[] {
     return [

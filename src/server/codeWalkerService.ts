@@ -12,28 +12,29 @@ export class ParsedCode {
     public name: string;
     public location: vscode.Location;
 
-    protected isElementedSelected(element:any, offset:number): boolean{
-        if(element !== undefined && element !== null) {
-            if(element.start <= offset && offset <= element.end) 
-                return true;;
+    protected isElementedSelected(element: any, offset: number): boolean {
+        if (element !== undefined && element !== null) {
+            if (element.start <= offset && offset <= element.end) {
+                return true;
+            }
         }
         return false;
     }
 }
 
 export class DeclarationType extends ParsedCode {
-    static create(literal: any): DeclarationType {
+    public isArray: boolean;
+    public isMapping: boolean;
+    public static create(literal: any): DeclarationType {
         const declarationType = new DeclarationType();
         declarationType.initialise(literal);
         return declarationType;
     }
-    public isArray: boolean;
-    public isMapping: boolean;
 
     public initialise(literal: any) {
         this.element = literal;
-        if(literal.members !== undefined && literal.members.length > 0) {
-            this.name = literal.members[0];    
+        if (literal.members !== undefined && literal.members.length > 0) {
+            this.name = literal.members[0];
         } else {
             this.name = literal.literal;
         }
@@ -50,29 +51,28 @@ export class DeclarationType extends ParsedCode {
 
 export class Using extends ParsedCode {
     public for: DeclarationType;
-    public forStar: boolean = false;
+    public forStar = false;
     public contract: Contract2;
-    public initialise(element:any, contract:Contract2) {
+    public initialise(element: any, contract: Contract2) {
         this.contract = contract;
         this.element = element;
         this.name = element.library;
-        if(element.for === "*") {
+        if (element.for === '*') {
             this.forStar = true;
             this.for = null;
-        }else {
+        } else {
             this.for = DeclarationType.create(element.for);
         }
-        
-        this.location; //             
+
+        this.location; //
     }
 }
 
-export class Contract2 extends ParsedCode 
-{
+export class Contract2 extends ParsedCode {
     public functions: Function[] = [];
     public enums: Enum[] = [];
     public events: Event[] = [];
-    public stateVariables: StateVariable[] = []
+    public stateVariables: StateVariable[] = [];
     public structs: Struct[] = [];
     public contractType: string;
     public constructorFunction: Function = new Function();
@@ -82,19 +82,19 @@ export class Contract2 extends ParsedCode
     public extendsContractNames: string[] = [];
     public using: Using[] = [];
 
-    public initialise(element:any) {
+    public initialise(element: any) {
         this.element = element;
         this.name = element.name;
         this.location; //
         this.contractType = element.type;
-        this.initialiseChildren();                
+        this.initialiseChildren();
     }
 
-    public initialiseExtendContracts(contracts:Contract2[]){
-        if(this.extendsContracts.length === 0 && this.extendsContractNames.length > 0) {
+    public initialiseExtendContracts(contracts: Contract2[]) {
+        if (this.extendsContracts.length === 0 && this.extendsContractNames.length > 0) {
             this.extendsContractNames.forEach(contractName => {
-               let contractMatched =  contracts.find(x => x.name === contractName);
-               if(contractMatched !== undefined && contractMatched !== null) {
+               const contractMatched =  contracts.find(x => x.name === contractName);
+               if (contractMatched !== undefined && contractMatched !== null) {
                     contractMatched.initialiseExtendContracts(contracts);
                     this.extendsContracts.push(contractMatched);
                }
@@ -102,39 +102,40 @@ export class Contract2 extends ParsedCode
         }
     }
 
-    public isConstructorSelected(offset:number) {
-        let element = this.constructorFunction.element;
+    public isConstructorSelected(offset: number) {
+        const element = this.constructorFunction.element;
         return this.isElementedSelected(element, offset);
     }
 
-    public isFallbackSelected(offset:number) {
-        let element = this.fallbackFunction.element;
+    public isFallbackSelected(offset: number) {
+        const element = this.fallbackFunction.element;
         return this.isElementedSelected(element, offset);
     }
 
-    public isReceivableSelected(offset:number) {
-        let element = this.receiveFunction.element;
+    public isReceivableSelected(offset: number) {
+        const element = this.receiveFunction.element;
         return this.isElementedSelected(element, offset);
     }
 
-    public getSelectedFunction(offset:number) {
+    public getSelectedFunction(offset: number) {
         let selectedFunction =  this.functions.find(x => {
-            let element = x.element;
-            if(element !== undefined || element !== null) {
-               if(element.start <= offset && offset <= element.end) 
-                    return true;;
+            const element = x.element;
+            if (element !== undefined || element !== null) {
+               if (element.start <= offset && offset <= element.end) {
+                    return true;
+               }
             }
             return false;
         });
 
-        if(selectedFunction === undefined) { //nothing
-            if(this.isConstructorSelected(offset)) {
+        if (selectedFunction === undefined) { // nothing
+            if (this.isConstructorSelected(offset)) {
                 selectedFunction = this.constructorFunction;
             } else {
-                if(this.isFallbackSelected(offset)) {
+                if (this.isFallbackSelected(offset)) {
                     selectedFunction = this.fallbackFunction;
                 } else {
-                    if(this.isReceivableSelected(offset)) {
+                    if (this.isReceivableSelected(offset)) {
                         selectedFunction = this.receiveFunction;
                     }
                 }
@@ -143,7 +144,7 @@ export class Contract2 extends ParsedCode
         return selectedFunction;
     }
 
-    public getAllFunctions() : Function[] {
+    public getAllFunctions(): Function[] {
         let returnItems: Function[] = [];
         returnItems = returnItems.concat(this.functions);
         this.extendsContracts.forEach(contract => {
@@ -152,7 +153,7 @@ export class Contract2 extends ParsedCode
         return returnItems;
     }
 
-    public getAllStructs() : Struct[] {
+    public getAllStructs(): Struct[] {
         let returnItems: Struct[] = [];
         returnItems = returnItems.concat(this.structs);
         this.extendsContracts.forEach(contract => {
@@ -161,7 +162,7 @@ export class Contract2 extends ParsedCode
         return returnItems;
     }
 
-    public getAllEnums() : Enum[] {
+    public getAllEnums(): Enum[] {
         let returnItems: Enum[] = [];
         returnItems = returnItems.concat(this.enums);
         this.extendsContracts.forEach(contract => {
@@ -170,7 +171,7 @@ export class Contract2 extends ParsedCode
         return returnItems;
     }
 
-    public getAllStateVariables() : StateVariable[] {
+    public getAllStateVariables(): StateVariable[] {
         let returnItems: StateVariable[] = [];
         returnItems = returnItems.concat(this.stateVariables);
         this.extendsContracts.forEach(contract => {
@@ -179,7 +180,7 @@ export class Contract2 extends ParsedCode
         return returnItems;
     }
 
-    public getAllEvents() : Event[] {
+    public getAllEvents(): Event[] {
         let returnItems: Event[] = [];
         returnItems = returnItems.concat(this.events);
         this.extendsContracts.forEach(contract => {
@@ -188,14 +189,13 @@ export class Contract2 extends ParsedCode
         return returnItems;
     }
 
-    public getAllUsing(type: DeclarationType) : Using[] {
+    public getAllUsing(type: DeclarationType): Using[] {
         let returnItems: Using[] = [];
-        returnItems = returnItems.concat(this.using.filter(x => 
-            {
-                if(x.forStar === true) return true;
-                if(x.for !== null) {
+        returnItems = returnItems.concat(this.using.filter(x => {
+                if (x.forStar === true) { return true; }
+                if (x.for !== null) {
                     let validTypeName = false;
-                    if(x.for.name === type.name || (type.name === "address_payable" && x.for.name === "address")) {
+                    if (x.for.name === type.name || (type.name === 'address_payable' && x.for.name === 'address')) {
                         validTypeName = true;
                     }
                     return x.for.isArray === type.isArray && validTypeName && x.for.isMapping === type.isMapping;
@@ -203,18 +203,18 @@ export class Contract2 extends ParsedCode
                 return false;
 
             }));
-        
+
         this.extendsContracts.forEach(contract => {
             returnItems = returnItems.concat(contract.getAllUsing(type));
          });
-        return returnItems.filter((v,i) => {
-             return returnItems.map(mapObj => mapObj["name"]).indexOf(v["name"]) === i;
+        return returnItems.filter((v, i) => {
+             return returnItems.map(mapObj => mapObj['name']).indexOf(v['name']) === i;
         });
     }
 
-    public initialiseChildren(){
+    public initialiseChildren() {
         if (typeof this.element.is !== 'undefined' && this.element.is !== null) {
-            this.element.is.forEach(isElement => { 
+            this.element.is.forEach(isElement => {
                 this.extendsContractNames.push(isElement.name);
             });
         }
@@ -250,31 +250,31 @@ export class Contract2 extends ParsedCode
                 }
 
                 if (contractElement.type === 'EventDeclaration') {
-                    let eventContract = new Event();
+                    const eventContract = new Event();
                     eventContract.initialise(contractElement, this);
                     this.events.push(eventContract);
                 }
 
                 if (contractElement.type === 'StateVariableDeclaration') {
-                    let stateVariable = new StateVariable();
+                    const stateVariable = new StateVariable();
                     stateVariable.initialise(contractElement, this);
                     this.stateVariables.push(stateVariable);
                 }
 
                 if (contractElement.type === 'EnumDeclaration') {
-                    let enumContract = new Enum();
+                    const enumContract = new Enum();
                     enumContract.initialise(contractElement, this);
                     this.enums.push(enumContract);
                 }
 
                 if (contractElement.type === 'StructDeclaration') {
-                    let struct = new Struct();
+                    const struct = new Struct();
                     struct.initialise(contractElement, this);
                     this.structs.push(struct);
                 }
 
                 if (contractElement.type === 'UsingStatement') {
-                    let using = new Using();
+                    const using = new Using();
                     using.initialise(contractElement, this);
                     this.using.push(using);
                 }
@@ -289,47 +289,47 @@ export class Function extends ParsedCode {
     public variablesInScope: FunctionVariable[] = [];
     public contract:  Contract2;
 
-    public initialise(element:any, contract:Contract2) {
+    public initialise(element: any, contract: Contract2) {
         this.contract = contract;
         this.element = element;
         this.name = element.name;
         this.location; //
-        this.initialiseParamters();                
+        this.initialiseParamters();
     }
-    public initialiseParamters(){
+    public initialiseParamters() {
         this.input = Parameter.extractParameters(this.element.params);
         this.output = Parameter.extractParameters(this.element.returnParams);
     }
 
-    public findVariableDeclarationsInScope(offset:number, block:any){
-    
-        if(this.element.is_abstract === false || this.element.is_abstract === undefined) {
-            if(this.element.body !== 'undefined' && this.element.body.type === 'BlockStatement') {
+    public findVariableDeclarationsInScope(offset: number, block: any) {
+
+        if (this.element.is_abstract === false || this.element.is_abstract === undefined) {
+            if (this.element.body !== 'undefined' && this.element.body.type === 'BlockStatement') {
                 this.findVariableDeclarationsInInnerScope(offset, this.element.body);
             }
         }
     }
 
-    public findVariableDeclarationsInInnerScope(offset:number, block:any){
-        
-        if(block !== undefined && block !== null) {
-            if(this.isElementedSelected(block, offset)) {
-                if(block.body !== 'undefined') {
+    public findVariableDeclarationsInInnerScope(offset: number, block: any) {
+
+        if (block !== undefined && block !== null) {
+            if (this.isElementedSelected(block, offset)) {
+                if (block.body !== 'undefined') {
                         block.body.forEach(blockBodyElement => {
                             if (blockBodyElement.type === 'ExpressionStatement') {
-                                let expression = blockBodyElement.expression;
+                                const expression = blockBodyElement.expression;
                                 this.addVariableInScopeFromExpression(expression);
                             }
 
                             if (blockBodyElement.type === 'ForStatement') {
-                                if(this.isElementedSelected(blockBodyElement, offset)) {
+                                if (this.isElementedSelected(blockBodyElement, offset)) {
                                     this.addVariableInScopeFromExpression(blockBodyElement.init);
                                     this.findVariableDeclarationsInInnerScope(offset, blockBodyElement.body);
                                 }
                             }
 
                             if (blockBodyElement.type === 'IfStatement') {
-                                if(this.isElementedSelected(blockBodyElement, offset)) {
+                                if (this.isElementedSelected(blockBodyElement, offset)) {
                                     this.findVariableDeclarationsInInnerScope(offset, blockBodyElement.consequent);
                                     this.findVariableDeclarationsInInnerScope(offset, blockBodyElement.alternate);
                                 }
@@ -337,7 +337,7 @@ export class Function extends ParsedCode {
                         });
                 }
             }
-                
+
         }
     }
 
@@ -354,7 +354,7 @@ export class Function extends ParsedCode {
         }
 
         if (declarationStatement !== null) {
-            let variable = new FunctionVariable();
+            const variable = new FunctionVariable();
             variable.element = declarationStatement;
             variable.name = declarationStatement.name;
             variable.type = DeclarationType.create(declarationStatement.literal);
@@ -365,36 +365,36 @@ export class Function extends ParsedCode {
 }
 
 export class Event extends ParsedCode {
-    public initialise(element:any, contract:Contract2) {
+
+    public input:     Parameter[] = [];
+    public contract:  Contract2;
+    public initialise(element: any, contract: Contract2) {
         this.contract = contract;
         this.element = element;
         this.name = element.name;
         this.location; //
-        this.initialiseParamters();                
+        this.initialiseParamters();
     }
 
-    public initialiseParamters(){
+    public initialiseParamters() {
         this.input = Parameter.extractParameters(this.element.params);
     }
-
-    public input:     Parameter[] = [];
-    public contract:  Contract2;
 }
 
 export class Struct extends ParsedCode {
     public variables:     StructVariable[] = [];
     public contract:  Contract2;
 
-    public initialise(element:any, contract:Contract2) {
+    public initialise(element: any, contract: Contract2) {
         this.contract = contract;
         this.element = element;
         this.name = element.name;
-        this.location; // 
+        this.location; //
 
-        if(this.element.body !== 'undefined') {
+        if (this.element.body !== 'undefined') {
             this.element.body.forEach(structBodyElement => {
-                    if(structBodyElement.type === 'DeclarativeExpression'){
-                        let variable = new StructVariable();
+                    if (structBodyElement.type === 'DeclarativeExpression') {
+                        const variable = new StructVariable();
                         variable.element = structBodyElement;
                         variable.name = structBodyElement.name;
                         variable.type = DeclarationType.create(structBodyElement.literal);
@@ -409,12 +409,12 @@ export class Struct extends ParsedCode {
 export class Enum extends ParsedCode {
     public items:     string[] = [];
     public contract:  Contract2;
-    public initialise(element:any, contract:Contract2) {
+    public initialise(element: any, contract: Contract2) {
         this.contract = contract;
         this.element = element;
         this.name = element.name;
         this.location; //
-        element.members.forEach(member => { this.items.push(member) });    
+        element.members.forEach(member => { this.items.push(member); });
     }
 }
 
@@ -431,19 +431,19 @@ export class FunctionVariable extends Variable {
 }
 
 export class StateVariable extends Variable {
-    public initialise(element:any, contract:Contract2) {
+    public contract: Contract2;
+    public initialise(element: any, contract: Contract2) {
         this.contract = contract;
         this.element = element;
         this.name = element.name;
-        this.location; //  
-        this.type = DeclarationType.create(element.literal);            
+        this.location; //
+        this.type = DeclarationType.create(element.literal);
     }
-    public contract: Contract2;
 }
 
 export class Parameter extends Variable {
-    
-    static extractParameters(params: any) : Parameter[] {
+
+    public static extractParameters(params: any): Parameter[] {
         const parameters: Parameter[] = [];
         if (typeof params !== 'undefined' && params !== null) {
             if (params.hasOwnProperty('params')) {
@@ -457,7 +457,7 @@ export class Parameter extends Variable {
                if (typeof parameterElement.id !== 'undefined' && parameterElement.id !== null ) { // no name on return parameters
                     parameter.name = parameterElement.id;
                }           parameters.push(parameter);
-    
+
             });
         }
         return parameters;
@@ -465,26 +465,26 @@ export class Parameter extends Variable {
 }
 
 export class DocumentContract {
-    public allContracts: Contract2[] = []; 
+    public allContracts: Contract2[] = [];
     public selectedContract: Contract2;
 }
 
 
 export class SolidityCodeWalker {
+  public project: Project;
+  public remappings: string[];
   private rootPath: string;
   private packageDefaultDependenciesDirectory: string;
   private packageDefaultDependenciesContractsDirectory: string;
-  public project: Project;
-  public remappings : string[]
 
   constructor(
     rootPath: string,
     packageDefaultDependenciesDirectory: string,
     packageDefaultDependenciesContractsDirectory: string,
-    remappings : string[]
+    remappings: string[],
   ) {
     this.rootPath = rootPath;
-    
+
     this.packageDefaultDependenciesDirectory = packageDefaultDependenciesDirectory;
     this.packageDefaultDependenciesContractsDirectory = packageDefaultDependenciesContractsDirectory;
     this.remappings = remappings;
@@ -494,16 +494,16 @@ export class SolidityCodeWalker {
         this.rootPath,
         this.packageDefaultDependenciesDirectory,
         this.packageDefaultDependenciesContractsDirectory,
-        this.remappings
+        this.remappings,
       );
     }
   }
 
   public getAllContracts(
     document: vscode.TextDocument,
-    position: vscode.Position,): DocumentContract {
-      
-        let documentContract:DocumentContract = new DocumentContract();
+    position: vscode.Position): DocumentContract {
+
+        let documentContract: DocumentContract = new DocumentContract();
         const documentText = document.getText();
         const contractPath = URI.parse(document.uri).fsPath;
         const contracts = new ContractCollection();
@@ -516,53 +516,46 @@ export class SolidityCodeWalker {
         }
         const contract = contracts.contracts[0];
         const offset = document.offsetAt(position);
- 
+
         documentContract = this.getSelectedContracts(documentText, offset, position.line);
- 
+
         contracts.contracts.forEach(contractItem => {
-            if(contractItem !== contract) {
-                let contractsParsed = this.getContracts(contractItem.code);
+            if (contractItem !== contract) {
+                const contractsParsed = this.getContracts(contractItem.code);
                 documentContract.allContracts = documentContract.allContracts.concat(contractsParsed);
             }
         });
 
-        if(documentContract.selectedContract !== undefined && documentContract.selectedContract !== null ) {
-            documentContract.selectedContract.initialiseExtendContracts(documentContract.allContracts); 
+        if (documentContract.selectedContract !== undefined && documentContract.selectedContract !== null ) {
+            documentContract.selectedContract.initialiseExtendContracts(documentContract.allContracts);
         }
 
         return documentContract;
   }
 
 
-  private findElementByOffset(elements: Array<any>, offset: number): any {
-    return elements.find(
-      element => element.start <= offset && offset <= element.end,
-    );
-  }
-
-
   public getSelectedContracts(documentText: string, offset: number, line: number): DocumentContract {
-    let contracts : DocumentContract = new DocumentContract();
+    const contracts: DocumentContract = new DocumentContract();
     try {
 
         const result = solparse.parse(documentText);
-        let selectedElement = this.findElementByOffset(result.body, offset);
+        const selectedElement = this.findElementByOffset(result.body, offset);
         result.body.forEach(element => {
-            if (element.type === 'ContractStatement' ||  element.type === 'LibraryStatement' || element.type == 'InterfaceStatement') {
-                var contract = new Contract2();
+            if (element.type === 'ContractStatement' ||  element.type === 'LibraryStatement' || element.type === 'InterfaceStatement') {
+                const contract = new Contract2();
                 contract.initialise(element);
-                if(selectedElement === element) {
+                if (selectedElement === element) {
                     contracts.selectedContract = contract;
                 }
                 contracts.allContracts.push(contract);
             }
         });
     } catch (error) {
-        //if we error parsing (cannot cater for all combos) we fix by removing current line.
+        // if we error parsing (cannot cater for all combos) we fix by removing current line.
         const lines = documentText.split(/\r?\n/g);
-        if(lines[line].trim() !== '') { //have we done it already?
-            lines[line] = ''.padStart(lines[line].length, ' '); //adding the same number of characters so the position matches where we are at the moment
-            let code = lines.join('\r\n');
+        if (lines[line].trim() !== '') { // have we done it already?
+            lines[line] = ''.padStart(lines[line].length, ' '); // adding the same number of characters so the position matches where we are at the moment
+            const code = lines.join('\r\n');
             return this.getSelectedContracts(code, offset, line);
         }
     }
@@ -570,13 +563,13 @@ export class SolidityCodeWalker {
   }
 
   public getContracts(documentText: string): Contract2[] {
-    let contracts : Contract2[] = [];
+    const contracts: Contract2[] = [];
     try {
 
         const result = solparse.parse(documentText);
         result.body.forEach(element => {
-            if (element.type === 'ContractStatement' ||  element.type === 'LibraryStatement' || element.type == 'InterfaceStatement') {
-                var contract = new Contract2();
+            if (element.type === 'ContractStatement' ||  element.type === 'LibraryStatement' || element.type === 'InterfaceStatement') {
+                const contract = new Contract2();
                 contract.initialise(element);
                 contracts.push(contract);
             }
@@ -589,5 +582,12 @@ export class SolidityCodeWalker {
   }
 
 
-  
+  private findElementByOffset(elements: Array<any>, offset: number): any {
+    return elements.find(
+      element => element.start <= offset && offset <= element.end,
+    );
+  }
+
+
+
 }
