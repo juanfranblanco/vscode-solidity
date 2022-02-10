@@ -18,7 +18,7 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
 
 # Instructions
 
-**Warning** We recommend using npm as a package manager. Other package manager like pnpm and possibly yarn cause complications with resolving solidity import paths. Until this is not solved, **please use npm**.
+*Warning:* We recommend using npm as a package manager. Other package manager like pnpm and possibly yarn cause complications with resolving solidity import paths. Until this is not solved, **please use npm**.
 
 ## Using a different version of the solidity compiler
 
