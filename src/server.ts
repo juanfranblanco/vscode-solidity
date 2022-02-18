@@ -22,6 +22,7 @@ import { URI } from 'vscode-uri';
 
 import { SolidityCodeWalker } from './server/codeWalkerService';
 import { Uri } from 'vscode';
+import { replaceRemappings } from './common/util';
 
 interface Settings {
     solidity: SoliditySettings;
@@ -307,9 +308,9 @@ connection.onDidChangeConfiguration((change) => {
     remappings = settings.solidity.remappings;
 
     if (process.platform === 'win32') {
-        remappings = remappings.concat(settings.solidity.remappingsWindows);
+        remappings = replaceRemappings(remappings, settings.solidity.remappingsWindows);
     } else {
-        remappings = remappings.concat(settings.solidity.remappingsUnix);
+        remappings = replaceRemappings(remappings, settings.solidity.remappingsUnix);
     }
 
     switch (linterName(settings.solidity)) {
