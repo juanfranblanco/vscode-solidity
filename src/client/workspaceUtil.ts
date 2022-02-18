@@ -9,3 +9,11 @@ export function getCurrentWorkspaceRootFolder(){
     const currentDocument = editor.document.uri;
     return vscode.workspace.getWorkspaceFolder(currentDocument);
 }
+
+export function getSolidityRemappings(): string[] {
+    const remappings = vscode.workspace.getConfiguration('solidity').get<string[]>('remappings');
+    if (process.platform === 'win32') {
+            return remappings.concat(vscode.workspace.getConfiguration('solidity').get<string[]>('remappingsWindows'));
+    }
+    return remappings.concat(vscode.workspace.getConfiguration('solidity').get<string[]>('remappingsUnix'));
+}

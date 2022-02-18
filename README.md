@@ -174,6 +174,18 @@ If you want to use the solidity user settings for your workspace / global remapp
 Or if you want to include them in the remappings.txt file, just put the file at the root of your project folder. Note: These will override your solidity settings if included
 ![image](https://user-images.githubusercontent.com/562371/136204736-be94e8d8-1954-4981-891c-278145b27cdf.png)
 
+#### Platform specific remappings
+
+There are situations when cross-platform paths are needed, in this case you can use the ```solidity.remappingsWindows``` or ```solidity.remappingsUnix``` settings.
+
+```
+  "solidity.remappingsWindows": [
+    "@openzeppelin/=C:/Users/<USERNAME>/.brownie/packages/OpenZeppelin/openzeppelin-contracts@4.4.2"
+  ],
+  "solidity.remappingsUnix": [
+    "@openzeppelin/=/Users/<USERNAME>/.brownie/packages/OpenZeppelin/openzeppelin-contracts@4.4.2"
+  ]
+```
 
 ## Code completion
 

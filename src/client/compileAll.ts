@@ -20,7 +20,7 @@ export function compileAllContracts(compiler: Compiler, diagnosticCollection: vs
     const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
     const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
     const compilationOptimisation = vscode.workspace.getConfiguration('solidity').get<number>('compilerOptimization');
-    const remappings = vscode.workspace.getConfiguration('solidity').get<string[]>('remappings');
+    const remappings = workspaceUtil.getSolidityRemappings();
 
     const contractsCollection = new ContractCollection();
     const project = initialiseProject(rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory, remappings);

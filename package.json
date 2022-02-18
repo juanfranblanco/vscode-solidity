@@ -197,6 +197,16 @@
           "type": "array",
           "default": [],
           "description": "Remappings to resolve contracts to local files / directories, i.e: [\"@openzeppelin/=lib/openzeppelin-contracts\",\"ds-test/=lib/ds-test/src/\"]"
+        },
+        "solidity.remappingsWindows": {
+          "type": "array",
+          "default": [],
+          "description": "Remappings to resolve contracts to local Windows files / directories, i.e: [\"@openzeppelin/=C:/lib/openzeppelin-contracts\",\"ds-test/=C:/lib/ds-test/src/\"]"
+        },
+        "solidity.remappingsUnix": {
+          "type": "array",
+          "default": [],
+          "description": "Remappings to resolve contracts to local Unix files / directories, i.e: [\"@openzeppelin/=/opt/lib/openzeppelin-contracts\",\"ds-test/=/opt/lib/ds-test/src/\"]"
         }
       }
     },

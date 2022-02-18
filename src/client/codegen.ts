@@ -94,7 +94,7 @@ function getBuildPath() {
     const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
     const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
     const rootPath = workspaceUtil.getCurrentWorkspaceRootFsPath();
-    const remappings = vscode.workspace.getConfiguration('solidity').get<string[]>('remappings');
+    const remappings = workspaceUtil.getSolidityRemappings();
     const project = initialiseProject(rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory, remappings);
     return path.join(rootPath, project.projectPackage.build_dir);
 }

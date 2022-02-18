@@ -41,6 +41,8 @@ interface SoliditySettings {
     packageDefaultDependenciesDirectory: string;
     packageDefaultDependenciesContractsDirectory: string;
     remappings: string[];
+    remappingsWindows: string[];
+    remappingsUnix: string[];
 }
 
 
@@ -303,6 +305,13 @@ connection.onDidChangeConfiguration((change) => {
     packageDefaultDependenciesContractsDirectory = settings.solidity.packageDefaultDependenciesContractsDirectory;
     packageDefaultDependenciesDirectory = settings.solidity.packageDefaultDependenciesDirectory;
     remappings = settings.solidity.remappings;
+
+    if (process.platform === 'win32') {
+        remappings = remappings.concat(settings.solidity.remappingsWindows);
+    } else {
+        remappings = remappings.concat(settings.solidity.remappingsUnix);
+    }
+
     switch (linterName(settings.solidity)) {
         case 'solhint': {
             linter = new SolhintService(rootPath, solhintDefaultRules);
