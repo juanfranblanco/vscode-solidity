@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { replaceRemappings } from '../common/util';
 
 export function getCurrentWorkspaceRootFsPath(){
     return getCurrentWorkspaceRootFolder().uri.fsPath;
@@ -13,7 +14,7 @@ export function getCurrentWorkspaceRootFolder(){
 export function getSolidityRemappings(): string[] {
     const remappings = vscode.workspace.getConfiguration('solidity').get<string[]>('remappings');
     if (process.platform === 'win32') {
-            return remappings.concat(vscode.workspace.getConfiguration('solidity').get<string[]>('remappingsWindows'));
+        return replaceRemappings(remappings, vscode.workspace.getConfiguration('solidity').get<string[]>('remappingsWindows'));
     }
-    return remappings.concat(vscode.workspace.getConfiguration('solidity').get<string[]>('remappingsUnix'));
+    return replaceRemappings(remappings, vscode.workspace.getConfiguration('solidity').get<string[]>('remappingsUnix'));
 }
