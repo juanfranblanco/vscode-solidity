@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.136",
+  "version": "0.0.137",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -58,7 +58,7 @@
     "find-cache-dir": "^2.1.0",
     "fs-extra": "^4.0.3",
     "mkdirp": "^0.5.1",
-    "nethereum-codegen": "^1.0.20",
+    "nethereum-codegen": "^1.0.21",
     "prettier": "^2.3.1",
     "prettier-plugin-solidity": "1.0.0-beta.17",
     "require-from-string": "^2.0.2",
@@ -201,12 +201,12 @@
         "solidity.remappingsWindows": {
           "type": "array",
           "default": [],
-          "description": "Remappings to resolve contracts to local Windows files / directories, i.e: [\"@openzeppelin/=C:/lib/openzeppelin-contracts\",\"ds-test/=C:/lib/ds-test/src/\"]"
+          "description": "Windows Remappings to resolve contracts to local Windows files / directories (Note this overrides the generic remapping settings if the OS is Windows) , i.e: [\"@openzeppelin/=C:/lib/openzeppelin-contracts\",\"ds-test/=C:/lib/ds-test/src/\"]"
         },
         "solidity.remappingsUnix": {
           "type": "array",
           "default": [],
-          "description": "Remappings to resolve contracts to local Unix files / directories, i.e: [\"@openzeppelin/=/opt/lib/openzeppelin-contracts\",\"ds-test/=/opt/lib/ds-test/src/\"]"
+          "description": "Unix Remappings to resolve contracts to local Unix files / directories (Note this overrides the generic remapping settings if the OS is Unix based), i.e: [\"@openzeppelin/=/opt/lib/openzeppelin-contracts\",\"ds-test/=/opt/lib/ds-test/src/\"]"
         }
       }
     },

@@ -15,6 +15,7 @@ export function getSolidityRemappings(): string[] {
     const remappings = vscode.workspace.getConfiguration('solidity').get<string[]>('remappings');
     if (process.platform === 'win32') {
         return replaceRemappings(remappings, vscode.workspace.getConfiguration('solidity').get<string[]>('remappingsWindows'));
+    } else {
+        return replaceRemappings(remappings, vscode.workspace.getConfiguration('solidity').get<string[]>('remappingsUnix'));
     }
-    return replaceRemappings(remappings, vscode.workspace.getConfiguration('solidity').get<string[]>('remappingsUnix'));
 }
