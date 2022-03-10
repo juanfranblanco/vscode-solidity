@@ -18,8 +18,11 @@ export function formatDocument(document: vscode.TextDocument, context: vscode.Ex
         'pluginSearchDirs': [context.extensionPath],
         'plugins': [pluginPath],
       };
-      prettier.clearConfigCache();
+      //
       const config = prettier.resolveConfig.sync(document.uri.fsPath, options);
+      if (config !== null) {
+        prettier.clearConfigCache();
+      }
       Object.assign(options, config);
       const firstLine = document.lineAt(0);
       const lastLine = document.lineAt(document.lineCount - 1);
