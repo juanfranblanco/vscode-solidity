@@ -5,16 +5,16 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
 
 * Syntax highlighting
 * Snippets
-* Compilation of the current contract (Press F1 Solidity : Compile Current Solidity Contract), or F5 
-* Compilation of all the contracts (Press F1 Solidity : Compile all Solidity Contracts), or Ctrl+F5 / Cmd+F5
+* Compilation of the current contract (Press <kbd>F1</kbd> Solidity : Compile Current Solidity Contract), or <kbd>F5</kbd>
+* Compilation of all the contracts (Press <kbd>F1</kbd> Solidity : Compile all Solidity Contracts), or <kbd>Ctrl</kbd> + <kbd>F5</kbd> or <kbd>Cmd</kbd> + <kbd>F5</kbd>
 * Code completion for all contracts / libraries in the current file and all referenced imports
-* Default project structure (solidity files needs to be in the 'src' directory, and libraries in the 'lib' directory). Libraries will follow the same structure.
+* Default project structure (solidity files needs to be in the `src/` directory, and libraries in the `lib/` directory). Libraries will follow the same structure.
 * Compilation supporting EIP82 (dappfile and dependency packages)
 * Support for different solidity versions (Remote and local)
-* Code generation using https://github.com/Nethereum/Nethereum, it includes currently the default template for Nethereum service, dtos generation. 
-  (Open 'contractName.json' after compilation from the bin folder. Press F1 and press Solidity: Code generate from compilation output..)
-  Auto generation of Nethereun files on compilation
-* Linting using Solhint or Solium
+* Code generation using [Nethereum](https://github.com/Nethereum/Nethereum), it includes currently the default template for Nethereum service, dtos generation. 
+  (Open 'contractName.json' after compilation from the bin folder. Press <kbd>F1</kbd> and press Solidity: Code generate from compilation output..)
+  Auto generation of Nethereum files on compilation
+* Linting using [Solhint](https://github.com/protofire/solhint) or [Ethlint](https://github.com/duaraghav8/Ethlint)
 
 # Instructions
 
