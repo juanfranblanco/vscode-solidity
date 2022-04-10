@@ -1,5 +1,6 @@
 'use strict';
 import * as fs from 'fs';
+import * as os from 'os'
 import * as path from 'path';
 import * as yaml from 'yaml-js';
 import {Package} from './model/package';
@@ -13,6 +14,7 @@ import { Remapping } from './model/remapping';
 
 const packageConfigFileName = 'dappFile';
 const remappingConfigFileName = 'remappings.txt';
+const brownieConfigFileName = 'brownie-config.yaml';
 // These are set using user configuration settings
 let packageDependenciesDirectory = 'lib';
 let packageDependenciesContractsDirectory = 'src';
@@ -75,18 +77,40 @@ export function initialiseProject(rootPath: string,
     return new Project(projectPackage, dependencies, packagesDirAbsolutePath, remappings);
 }
 
+function getRemappingFromBrownieConfig(rootPath:string): string[] {
+    const brownieConfigFile = path.join(rootPath, brownieConfigFileName);
+    const config = readYamlSync(brownieConfigFile);
+    let remappingsLoaded: string[];
+    try {
+        remappingsLoaded = config.compiler.solc.remappings
+    } catch (TypeError) {
+        return [];
+    }
+    const remappings = remappingsLoaded.map(i => {
+        const [alias, packageID] = i.split('=')
+        return `${alias}=${path.join(os.homedir(), ".brownie", "packages", packageID)}`;
+    });
+    return remappings
+}
+
 export function loadRemappings(rootPath:string, remappings: string[]): string[]{
+    console.log("Here")
     const remappingsFile = path.join(rootPath, remappingConfigFileName);
+    const brownieRemappings = getRemappingFromBrownieConfig(rootPath);
+    
     if(remappings == undefined) remappings = [];
     if (fs.existsSync(remappingsFile)) {
         const fileContent = fs.readFileSync(remappingsFile, 'utf8');
-        const remappingsLoaded = fileContent.split(/\r\n|\r|\n/); //split lines
+        const remappingsLoaded = fileContent.split(/\r\n|\r|\n/); //split linses
         if(remappingsLoaded){
             remappings = [];
             remappingsLoaded.forEach(element => {
                 remappings.push(element);
             });
         }
+    }
+    else if (brownieRemappings.length) {
+        remappings =  brownieRemappings;
     }
     return remappings;
 }
