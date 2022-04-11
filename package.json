@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.137",
+  "version": "0.0.138",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -58,7 +58,7 @@
     "find-cache-dir": "^2.1.0",
     "fs-extra": "^4.0.3",
     "mkdirp": "^0.5.1",
-    "nethereum-codegen": "^1.0.21",
+    "nethereum-codegen": "^1.0.22",
     "prettier": "^2.3.1",
     "prettier-plugin-solidity": "1.0.0-beta.17",
     "require-from-string": "^2.0.2",
