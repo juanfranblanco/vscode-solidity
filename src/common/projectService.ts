@@ -77,14 +77,17 @@ export function initialiseProject(rootPath: string,
     return new Project(projectPackage, dependencies, packagesDirAbsolutePath, remappings);
 }
 
-function getRemappingFromBrownieConfig(rootPath:string): string[] {
+function getRemappingsFromBrownieConfig(rootPath:string): string[] {
     const brownieConfigFile = path.join(rootPath, brownieConfigFileName);
     const config = readYamlSync(brownieConfigFile);
     let remappingsLoaded: string[];
     try {
         remappingsLoaded = config.compiler.solc.remappings
+        if (!remappingsLoaded) {
+            return;
+        }
     } catch (TypeError) {
-        return [];
+        return;
     }
     const remappings = remappingsLoaded.map(i => {
         const [alias, packageID] = i.split('=')
@@ -93,25 +96,30 @@ function getRemappingFromBrownieConfig(rootPath:string): string[] {
     return remappings
 }
 
-export function loadRemappings(rootPath:string, remappings: string[]): string[]{
-    console.log("Here")
+function getRemappingsFromRemappingsFile(rootPath) {
     const remappingsFile = path.join(rootPath, remappingConfigFileName);
-    const brownieRemappings = getRemappingFromBrownieConfig(rootPath);
-    
-    if(remappings == undefined) remappings = [];
+    const remappings = [];
     if (fs.existsSync(remappingsFile)) {
         const fileContent = fs.readFileSync(remappingsFile, 'utf8');
         const remappingsLoaded = fileContent.split(/\r\n|\r|\n/); //split linses
         if(remappingsLoaded){
-            remappings = [];
             remappingsLoaded.forEach(element => {
                 remappings.push(element);
             });
         }
+        return remappings;
     }
-    else if (brownieRemappings.length) {
-        remappings =  brownieRemappings;
-    }
+    return
+}
+
+export function loadRemappings(rootPath:string, remappings: string[]): string[]{
+    if(remappings == undefined) remappings = [];
+
+    // Brownie prioritezes brownie-config.yml over remappings.txt
+    remappings = getRemappingsFromBrownieConfig(rootPath) ??
+                 getRemappingsFromRemappingsFile(rootPath) ??
+                 remappings;
+    
     return remappings;
 }
 
