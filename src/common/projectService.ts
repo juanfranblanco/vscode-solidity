@@ -98,10 +98,10 @@ function getRemappingsFromBrownieConfig(rootPath:string): string[] {
 
 function getRemappingsFromRemappingsFile(rootPath) {
     const remappingsFile = path.join(rootPath, remappingConfigFileName);
-    const remappings = [];
     if (fs.existsSync(remappingsFile)) {
+        const remappings = [];
         const fileContent = fs.readFileSync(remappingsFile, 'utf8');
-        const remappingsLoaded = fileContent.split(/\r\n|\r|\n/); //split linses
+        const remappingsLoaded = fileContent.split(/\r\n|\r|\n/); //split lines
         if(remappingsLoaded){
             remappingsLoaded.forEach(element => {
                 remappings.push(element);

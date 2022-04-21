@@ -14,7 +14,7 @@ import {
     LanguageClient,
     ServerOptions,
     TransportKind,
-} from 'vscode-languageclient/node';
+  } from 'vscode-languageclient/node';
 
 import { lintAndfixCurrentDocument } from './server/linter/soliumClientFixer';
 // tslint:disable-next-line:no-duplicate-imports
