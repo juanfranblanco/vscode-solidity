@@ -260,6 +260,7 @@ Formatting uses the default formatting settings provided by prettier, if you wan
   ]
 }
 ```
+> :information_source: You will need to restart vscode for this to take effect
 
 If you would like to format on save, add this entry to your user / workspace settings:
 
