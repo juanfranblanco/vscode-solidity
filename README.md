@@ -186,8 +186,8 @@ There are situations when cross-platform paths are needed, in this case you can 
   "solidity.remappingsUnix": [
     "@openzeppelin/=/Users/<USERNAME>/.brownie/packages/OpenZeppelin/openzeppelin-contracts@4.4.2"
   ]
-  OR 
-   "solidity.remappingsUnix": [
+  <<<OR>>> 
+  "solidity.remappingsUnix": [
     "@openzeppelin/=/home/<USERNAME>/.brownie/packages/OpenZeppelin/openzeppelin-contracts@4.4.2"
   ]
 ```
