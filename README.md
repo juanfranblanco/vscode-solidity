@@ -265,6 +265,7 @@ Formatting uses the default formatting settings provided by prettier, if you wan
   ]
 }
 ```
+> :information_source: Settings are applied immediately on the latest version of the plugin. If your settings are not reflected immediately consider updating to the latest version, if it still doesn't work please restart visual studio code.
 
 If you would like to format on save, add this entry to your user / workspace settings:
 
