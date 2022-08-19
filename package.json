@@ -47,6 +47,7 @@
   "main": "./out/src/extension",
   "scripts": {
     "vscode:prepublish": "npm run compile",
+    "package": "vsce package",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "test": "nyc --require ts-node/register --require source-map-support/register mocha test/**/*.spec.ts"
@@ -77,7 +78,8 @@
     "ts-node": "^7.0.1",
     "tslint": "^5.20.1",
     "typescript": "^3.7.3",
-    "@types/vscode": "^1.60.0"
+    "@types/vscode": "^1.60.0",
+    "vsce": "^2.10.2"
   },
   "nyc": {
     "extension": [
