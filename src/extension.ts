@@ -19,7 +19,7 @@ import {
 import { lintAndfixCurrentDocument } from './server/linter/soliumClientFixer';
 // tslint:disable-next-line:no-duplicate-imports
 import { workspace, WorkspaceFolder } from 'vscode';
-import { formatDocument } from './client/formatter/prettierFormatter';
+import { formatDocument } from './client/formatter/formatter';
 import { compilerType } from './common/solcCompiler';
 import * as workspaceUtil from './client/workspaceUtil';
 
@@ -180,7 +180,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(
         vscode.languages.registerDocumentFormattingEditProvider('solidity', {
-            provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.TextEdit[] {
+            async provideDocumentFormattingEdits(document: vscode.TextDocument): Promise<vscode.TextEdit[]> {
                 return formatDocument(document, context);
             },
         }));

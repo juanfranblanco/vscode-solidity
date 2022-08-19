@@ -4,8 +4,6 @@ import * as path from 'path';
 import * as workspaceUtil from '../workspaceUtil';
 
 export function formatDocument(document: vscode.TextDocument, context: vscode.ExtensionContext): vscode.TextEdit[] {
-  const formatter = vscode.workspace.getConfiguration('solidity').get<string>('formatter');
-  if (formatter === 'prettier') {
     const rootPath = workspaceUtil.getCurrentWorkspaceRootFsPath();
     const ignoreOptions = { ignorePath: path.join(rootPath, '.prettierignore') };
     const fileInfo = prettier.getFileInfo.sync(document.uri.fsPath, ignoreOptions);
@@ -30,6 +28,4 @@ export function formatDocument(document: vscode.TextDocument, context: vscode.Ex
       const formatted = prettier.format(source, options);
       return [vscode.TextEdit.replace(fullTextRange, formatted)];
     }
-  }
-  return null;
 }

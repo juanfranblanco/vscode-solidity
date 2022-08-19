@@ -148,12 +148,13 @@
         },
         "solidity.formatter": {
           "type": "string",
-          "default": "prettier",
+          "default": "forge",
           "enum": [
             "none",
-            "prettier"
+            "prettier",
+            "forge"
           ],
-          "description": "Enables / disables the solidity formatter (prettier solidity default)"
+          "description": "Enables / disables the solidity formatter (foundry forge default)"
         },
         "solidity.soliumRules": {
           "type": [
