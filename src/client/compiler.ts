@@ -132,6 +132,10 @@ export class Compiler {
         });
     }
 
+    public getCompilerVersion(): string {
+        return this.solc.getCompiler().getVersion()
+    }
+
     private outputErrorsToChannel(outputChannel: vscode.OutputChannel, errors: any) {
         errors.forEach(error => {
             outputChannel.appendLine(error.formattedMessage);

@@ -52,6 +52,16 @@ export async function activate(context: vscode.ExtensionContext) {
 
     initDiagnosticCollection(diagnosticCollection);
 
+    context.subscriptions.push(workspace.onDidSaveTextDocument(async (document: vscode.TextDocument) => {
+        if (document.languageId === "solidity" && document.uri.scheme === "file") {
+            const runOnSave = vscode.workspace.getConfiguration('solidity').get<boolean>('test.runOnSave');
+            if (!runOnSave) {
+                return;
+            }
+            await vscode.commands.executeCommand("solidity.runTests");
+        }
+    }));
+
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.active', async () => {
         const compiledResults = await compileActiveContract(compiler);
         autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection);
@@ -177,6 +187,15 @@ export async function activate(context: vscode.ExtensionContext) {
         compiler.changeDefaultCompilerType(vscode.ConfigurationTarget.Workspace);
     }));
 
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.runTests', async () => {
+        const testCommand = vscode.workspace.getConfiguration('solidity').get<string>('test.command');
+        if (!testCommand) {
+            return;
+        }
+        const execution = new vscode.ShellExecution(testCommand);
+        const task = new vscode.Task({type: "solidity"}, vscode.TaskScope.Workspace, "test", "solidity", execution)
+        await vscode.tasks.executeTask(task);
+    }));
 
     context.subscriptions.push(
         vscode.languages.registerDocumentFormattingEditProvider('solidity', {

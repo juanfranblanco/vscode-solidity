@@ -100,6 +100,16 @@
       "type": "object",
       "title": "Solidity configuration",
       "properties": {
+        "solidity.test.command": {
+          "type": "string",
+          "default": "",
+          "description": "Command to run to invoke tests"
+        },
+        "solidity.test.runOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Execute #solidity.testCommand# when saving solidity files."
+        },
         "solidity.nodemodulespackage": {
           "type": "string",
           "default": "solc",
@@ -330,6 +340,10 @@
       {
         "command": "solidity.changeDefaultCompilerType",
         "title": "Solidity: Change the default workspace compiler to Remote, Local, NodeModule, Embedded"
+      },
+      {
+        "command": "solidity.runTests",
+        "title": "Solidity: Run tests"
       }
     ],
     "menus": {
