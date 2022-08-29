@@ -108,7 +108,7 @@
         "solidity.test.runOnSave": {
           "type": "boolean",
           "default": false,
-          "description": "Execute #solidity.testCommand# when saving solidity files."
+          "markdownDescription": "Execute `#solidity.test.command#` when saving solidity files."
         },
         "solidity.nodemodulespackage": {
           "type": "string",

@@ -18,13 +18,15 @@ import {
 
 import { lintAndfixCurrentDocument } from './server/linter/soliumClientFixer';
 // tslint:disable-next-line:no-duplicate-imports
-import { workspace, WorkspaceFolder } from 'vscode';
+import { workspace } from 'vscode';
 import { formatDocument } from './client/formatter/formatter';
 import { compilerType } from './common/solcCompiler';
 import * as workspaceUtil from './client/workspaceUtil';
+import * as cp from "child_process";
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 let compiler: Compiler;
+let testOutputChannel: vscode.OutputChannel;
 
 export async function activate(context: vscode.ExtensionContext) {
     const ws = workspace.workspaceFolders;
@@ -58,7 +60,7 @@ export async function activate(context: vscode.ExtensionContext) {
             if (!runOnSave) {
                 return;
             }
-            await vscode.commands.executeCommand("solidity.runTests");
+            await vscode.commands.executeCommand("solidity.runTests", {uri: document.uri});
         }
     }));
 
@@ -187,14 +189,41 @@ export async function activate(context: vscode.ExtensionContext) {
         compiler.changeDefaultCompilerType(vscode.ConfigurationTarget.Workspace);
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.runTests', async () => {
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.runTests', async ({uri}) => {
         const testCommand = vscode.workspace.getConfiguration('solidity').get<string>('test.command');
         if (!testCommand) {
             return;
         }
-        const execution = new vscode.ShellExecution(testCommand);
-        const task = new vscode.Task({type: "solidity"}, vscode.TaskScope.Workspace, "test", "solidity", execution)
-        await vscode.tasks.executeTask(task);
+        if (!testOutputChannel) {
+            testOutputChannel = vscode.window.createOutputChannel("Solidity Tests");
+        }
+        // If no URI supplied to task, use the current active editor.
+        if (!uri) {
+            const editor = vscode.window.activeTextEditor;
+            if (editor && editor.document) {
+                uri = editor.document.uri;
+            }
+        }
+
+        const rootFolder = getFileRootPath(uri);
+        if (!rootFolder) {
+            console.error("Couldn't determine root folder for document", {uri})
+            return;
+        }
+
+        testOutputChannel.show()
+        testOutputChannel.appendLine(`Running '${testCommand}'...`);
+        try {
+            const result = await executeTask(rootFolder, testCommand);
+            testOutputChannel.appendLine(result);
+        } catch ({out, err}) {
+            // When tests fail, we still want to write the output
+            if (err && err.code === 1) {
+                testOutputChannel.appendLine(out);
+                return;
+            }
+            console.log("Unexpected error running tests:", err)
+        }
     }));
 
     context.subscriptions.push(
@@ -246,4 +275,25 @@ export async function activate(context: vscode.ExtensionContext) {
     // Push the disposable to the context's subscriptions so that the
     // client can be deactivated on extension deactivation
     context.subscriptions.push(clientDisposable);
+}
+
+const getFileRootPath = (uri: vscode.Uri): string | null => {
+    const folders = vscode.workspace.workspaceFolders;
+    for (const f of folders) {
+        if (uri.path.startsWith(f.uri.path)) {
+            return f.uri.path
+        }
+    }
+    return null
+}
+
+const executeTask = (dir: string, cmd: string) => {
+    return new Promise<string>((resolve, reject) => {
+        cp.exec(cmd, {cwd: dir}, (err, out) => {
+            if (err) {
+                return reject({out, err});
+            }
+            return resolve(out);
+        });
+    });
 }
