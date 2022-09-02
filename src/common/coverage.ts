@@ -49,13 +49,13 @@ export const computeDecoratorsForDocuments = (docs: vscode.TextDocument[], data:
                 new vscode.Position(detail.line-1, 0),
                 new vscode.Position(detail.line-1, 1),
             );
-            if (detail.hit === 1) {
-                covered.push({
+            if (detail.hit === 0) {
+                uncovered.push({
                     range
-                })
+                });
                 return;
             }
-            uncovered.push({
+            covered.push({
                 range
             });
         });
