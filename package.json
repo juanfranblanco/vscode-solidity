@@ -53,6 +53,7 @@
     "test": "nyc --require ts-node/register --require source-map-support/register mocha test/**/*.spec.ts"
   },
   "dependencies": {
+    "@connectis/coverage-parser": "^1.0.8",
     "ajv": "^6.10.2",
     "ajv-keywords": "^3.4.1",
     "chai": "^4.2.0",
@@ -75,10 +76,10 @@
   },
   "devDependencies": {
     "@types/node": "^11.15.3",
+    "@types/vscode": "^1.60.0",
     "ts-node": "^7.0.1",
     "tslint": "^5.20.1",
     "typescript": "^3.7.3",
-    "@types/vscode": "^1.60.0",
     "vsce": "^2.10.2"
   },
   "nyc": {
@@ -105,10 +106,20 @@
           "default": "",
           "description": "Command to run to invoke tests"
         },
+        "solidity.test.coverageCommand": {
+          "type": "string",
+          "default": "",
+          "description": "Command to run to generate coverage report"
+        },
         "solidity.test.runOnSave": {
           "type": "boolean",
           "default": false,
           "markdownDescription": "Execute `#solidity.test.command#` when saving solidity files."
+        },
+        "solidity.test.coverOnSave": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Execute `#solidity.test.coverageCommand#` when saving solidity files."
         },
         "solidity.nodemodulespackage": {
           "type": "string",
