@@ -6,12 +6,18 @@ export async function formatDocument(document: vscode.TextDocument, context: vsc
   const lastLine = document.lineAt(document.lineCount - 1);
   const fullTextRange = new vscode.Range(firstLine.range.start, lastLine.range.end);
 
-  const p = cp.execFile('forge', ['fmt', '--check', '--raw', document.uri.fsPath]);
+  const formatted = await new Promise<string>((resolve, reject) => {
+    const forge = cp.execFile('forge', ['fmt', '--raw', '-'], (err, stdout) => {
+      if (err !== null) {
+        return reject(err);
+      }
 
-  let formatted = '';
-  for await (const chunk of p.stdout) {
-    formatted += chunk;
-  }
+      resolve(stdout);
+    });
+
+    forge.stdin?.write(document.getText());
+    forge.stdin?.end();
+  });
 
   return [vscode.TextEdit.replace(fullTextRange, formatted)];
 }
