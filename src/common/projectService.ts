@@ -1,6 +1,6 @@
 'use strict';
 import * as fs from 'fs';
-import * as os from 'os'
+import * as os from 'os';
 import * as path from 'path';
 import * as yaml from 'yaml-js';
 import {Package} from './model/package';
@@ -60,40 +60,43 @@ function readYamlSync(filePath: string) {
     return yaml.load(fileContent);
 }
 
-export function initialiseProject(rootPath: string, 
-    packageDefaultDependenciesDirectory: string, 
+export function initialiseProject(rootPath: string,
+    packageDefaultDependenciesDirectory: string,
     packageDefaultDependenciesContractsDirectory: string,
     remappings: string[]) {
-    
+
     packageDependenciesDirectory = packageDefaultDependenciesDirectory;
     packageDependenciesContractsDirectory = packageDefaultDependenciesContractsDirectory;
     const projectPackage = createProjectPackage(rootPath);
     const dependencies = loadDependencies(rootPath, projectPackage);
     remappings = loadRemappings(rootPath, remappings);
     let packagesDirAbsolutePath = null;
-    if(packageDefaultDependenciesDirectory !== undefined && packageDefaultDependenciesDirectory !== '') {
+    if (packageDefaultDependenciesDirectory !== undefined && packageDefaultDependenciesDirectory !== '') {
          packagesDirAbsolutePath = path.join(rootPath, packageDependenciesDirectory);
     }
     return new Project(projectPackage, dependencies, packagesDirAbsolutePath, remappings);
 }
 
-function getRemappingsFromBrownieConfig(rootPath:string): string[] {
+function getRemappingsFromBrownieConfig(rootPath: string): string[] {
     const brownieConfigFile = path.join(rootPath, brownieConfigFileName);
-    const config = readYamlSync(brownieConfigFile);
-    let remappingsLoaded: string[];
-    try {
-        remappingsLoaded = config.compiler.solc.remappings
-        if (!remappingsLoaded) {
+    if (fs.existsSync(brownieConfigFile)) {
+        const config = readYamlSync(brownieConfigFile);
+        let remappingsLoaded: string[];
+        try {
+            remappingsLoaded = config.compiler.solc.remappings;
+            if (!remappingsLoaded) {
+                return;
+            }
+        } catch (TypeError) {
             return;
         }
-    } catch (TypeError) {
-        return;
+        const remappings = remappingsLoaded.map(i => {
+            const [alias, packageID] = i.split('=') ;
+            return `${alias}=${path.join(os.homedir(), '.brownie', 'packages', packageID)}`;
+        });
+        return remappings;
     }
-    const remappings = remappingsLoaded.map(i => {
-        const [alias, packageID] = i.split('=')
-        return `${alias}=${path.join(os.homedir(), ".brownie", "packages", packageID)}`;
-    });
-    return remappings
+    return null;
 }
 
 function getRemappingsFromRemappingsFile(rootPath) {
@@ -102,24 +105,24 @@ function getRemappingsFromRemappingsFile(rootPath) {
         const remappings = [];
         const fileContent = fs.readFileSync(remappingsFile, 'utf8');
         const remappingsLoaded = fileContent.split(/\r\n|\r|\n/); //split lines
-        if(remappingsLoaded){
+        if (remappingsLoaded) {
             remappingsLoaded.forEach(element => {
                 remappings.push(element);
             });
         }
         return remappings;
     }
-    return
+    return null;
 }
 
-export function loadRemappings(rootPath:string, remappings: string[]): string[]{
-    if(remappings == undefined) remappings = [];
+export function loadRemappings(rootPath: string, remappings: string[]): string[]{
+    if (remappings === undefined) { remappings = []; }
 
     // Brownie prioritezes brownie-config.yml over remappings.txt
     remappings = getRemappingsFromBrownieConfig(rootPath) ??
                  getRemappingsFromRemappingsFile(rootPath) ??
                  remappings;
-    
+
     return remappings;
 }
 
