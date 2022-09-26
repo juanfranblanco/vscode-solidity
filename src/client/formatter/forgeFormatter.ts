@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
+import * as workspaceUtil from '../workspaceUtil';
 
 export async function formatDocument(document: vscode.TextDocument, context: vscode.ExtensionContext): Promise<vscode.TextEdit[]> {
   const firstLine = document.lineAt(0);
@@ -7,13 +8,11 @@ export async function formatDocument(document: vscode.TextDocument, context: vsc
   const fullTextRange = new vscode.Range(firstLine.range.start, lastLine.range.end);
 
   const formatted = await new Promise<string>((resolve, reject) => {
-    const workspaceFolder = vscode.workspace.workspaceFolders?.find((folder) =>
-        document.uri.fsPath.startsWith(folder?.uri.fsPath)
-    );
+    const rootPath = workspaceUtil.getCurrentWorkspaceRootFsPath();
     const forge = cp.execFile(
         'forge',
         ['fmt', '--raw', '-'],
-        { cwd: workspaceFolder?.uri?.fsPath },
+        { cwd: rootPath },
         (err, stdout) => {
           if (err !== null) {
             return reject(err);
