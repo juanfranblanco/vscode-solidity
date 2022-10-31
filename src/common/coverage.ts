@@ -30,7 +30,7 @@ export type CoverageDecorationPair = {
     options: vscode.DecorationOptions[];
 };
 
-export const computeDecoratorsForDocuments = (docs: vscode.TextDocument[], data: coverageDataByFile, fileRoot: string): Record<string, CoverageDecorationPair[]> => {
+export const computeDecoratorsForFiles = (data: coverageDataByFile, fileRoot: string): Record<string, CoverageDecorationPair[]> => {
     const allFiles: Record<string, CoverageDecorationPair[]> = {}
 
     Object.entries(data).forEach(([file, coverage]) => {
@@ -38,12 +38,6 @@ export const computeDecoratorsForDocuments = (docs: vscode.TextDocument[], data:
         const covered: vscode.DecorationOptions[] = [];
         const uncovered: vscode.DecorationOptions[] = [];
 
-        const document = docs.find((d) => {
-            return d.fileName.replace(fileRoot, "") === file;
-        })
-        if (!document) {
-            return;
-        }
         coverage.lines.details.forEach((detail) => {
             const range = new vscode.Range(
                 new vscode.Position(detail.line-1, 0),
@@ -60,7 +54,8 @@ export const computeDecoratorsForDocuments = (docs: vscode.TextDocument[], data:
             });
         });
 
-        allFiles[document.uri.path] = [
+        const fullPath = [fileRoot, file].join("");
+        allFiles[fullPath] = [
             {
                 decorator: vscode.window.createTextEditorDecorationType({
                     backgroundColor: 'rgba(0, 200, 0, 0.3)',

@@ -23,9 +23,9 @@ import { formatDocument } from './client/formatter/formatter';
 import { compilerType } from './common/solcCompiler';
 import * as workspaceUtil from './client/workspaceUtil';
 import * as cp from "child_process";
-import { parseForgeTestResults } from './common/forge';
+import { constructTestResultOutput, parseForgeTestResults } from './common/forge';
 import * as parseCoverage from '@connectis/coverage-parser';
-import { computeDecoratorsForDocuments, CoverageData, CoverageDecorationPair } from './common/coverage';
+import { computeDecoratorsForFiles, CoverageData, CoverageDecorationPair } from './common/coverage';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 let compiler: Compiler;
@@ -76,6 +76,10 @@ export async function activate(context: vscode.ExtensionContext) {
             }
             await vscode.commands.executeCommand("solidity.runCoverage", {uri: document.uri});
         }
+    }));
+
+    context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(editor => {
+        applyDecorators(editor);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.active', async () => {
@@ -225,35 +229,23 @@ export async function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        testOutputChannel.show()
+        testOutputChannel.clear();
+        testOutputChannel.show();
         testOutputChannel.appendLine(`Running '${testCommand}'...`);
         testOutputChannel.appendLine("");
         try {
-            const result = await executeTask(rootFolder, testCommand);
+            const result = await executeTask(rootFolder, testCommand, false);
             const parsed = parseForgeTestResults(result);
             // If we couldn't parse the output, just write it to the window.
             if (!parsed) {
                 testOutputChannel.appendLine(result);
                 return;
             }
-            
-            parsed.contracts.forEach((c) => {
-                testOutputChannel.appendLine(`${c.contract} in ${c.file}:`);
-                c.results.forEach((r) => {
-                    if (r.pass) {
-                        testOutputChannel.appendLine(`\tPASS ${r.name}`);
-                        return
-                    }
-                    testOutputChannel.appendLine(`\tFAIL ${r.name}`);
-                })
-            })
 
-        } catch ({out, err}) {
-            // When tests fail, we still want to write the output
-            if (err && err.code === 1) {
-                testOutputChannel.appendLine(out);
-                return;
-            }
+            const out = constructTestResultOutput(parsed);
+            out.forEach(testOutputChannel.appendLine);
+            
+        } catch (err) {
             console.log("Unexpected error running tests:", err)
         }
     }));
@@ -278,7 +270,11 @@ export async function activate(context: vscode.ExtensionContext) {
         }
 
         try {
-            await executeTask(rootFolder, coverageCommand);
+            // Clear existing decorators
+            clearDecorators();
+
+            await executeTask(rootFolder, coverageCommand, false);
+
             const coverageData = await parseCoverage.parseFile(path.join(rootFolder, "lcov.info"), {
                 type: "lcov",
             });
@@ -287,14 +283,14 @@ export async function activate(context: vscode.ExtensionContext) {
                 return memo;
             }, {});
 
-            const solFiles = vscode.workspace.textDocuments.filter((doc) => {
-                return doc.fileName.endsWith(".sol")
-            })
-            // Clear existing decorators
-            clearDecorators();
+            // const solFiles = vscode.workspace.textDocuments.filter((doc) => {
+            //     return doc.fileName.endsWith(".sol")
+            // })
+            // console.log(Object.keys(coverageByFile));
+            // console.log(solFiles.map(f => f.uri.path));
 
             // Cache our decorators so that we can apply them when we load files.
-            coverageDecorators = computeDecoratorsForDocuments(solFiles, coverageByFile, rootFolder);
+            coverageDecorators = computeDecoratorsForFiles(coverageByFile, rootFolder);
             
             // Check if the current active editor has coverage data, and apply decorators if so.
             vscode.window.visibleTextEditors.forEach(applyDecorators);
@@ -365,11 +361,14 @@ const getFileRootPath = (uri: vscode.Uri): string | null => {
     return null
 }
 
-const executeTask = (dir: string, cmd: string) => {
+const executeTask = (dir: string, cmd: string, rejectOnFailure: boolean) => {
     return new Promise<string>((resolve, reject) => {
-        cp.exec(cmd, {cwd: dir}, (err, out) => {
+        cp.exec(cmd, {cwd: dir, maxBuffer: 1024*1024*10}, (err, out) => {
             if (err) {
-                return reject({out, err});
+                if (rejectOnFailure) {
+                    return reject({out, err});
+                }
+                return resolve(out);
             }
             return resolve(out);
         });
@@ -388,6 +387,7 @@ const clearDecorators = () => {
 }
 
 const applyDecorators = (editor: vscode.TextEditor) => {
+    console.log("Applying for path", editor.document.uri.path);
     const decorators = coverageDecorators[editor.document.uri.path];
     if (!decorators) {
         return;
@@ -395,3 +395,4 @@ const applyDecorators = (editor: vscode.TextEditor) => {
     editor.setDecorations(decorators[0].decorator, decorators[0].options);
     editor.setDecorations(decorators[1].decorator, decorators[1].options);
 }
+
