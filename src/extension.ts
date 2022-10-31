@@ -207,7 +207,7 @@ export async function activate(context: vscode.ExtensionContext) {
         compiler.changeDefaultCompilerType(vscode.ConfigurationTarget.Workspace);
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.runTests', async ({uri}) => {
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.runTests', async (params) => {
         const testCommand = vscode.workspace.getConfiguration('solidity').get<string>('test.command');
         if (!testCommand) {
             return;
@@ -215,7 +215,9 @@ export async function activate(context: vscode.ExtensionContext) {
         if (!testOutputChannel) {
             testOutputChannel = vscode.window.createOutputChannel('Solidity Tests');
         }
+
         // If no URI supplied to task, use the current active editor.
+        let uri = params?.uri;
         if (!uri) {
             const editor = vscode.window.activeTextEditor;
             if (editor && editor.document) {
@@ -250,12 +252,14 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('solidity.runCoverage', async ({uri}) => {
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.runCoverage', async (params) => {
         const coverageCommand = vscode.workspace.getConfiguration('solidity').get<string>('test.coverageCommand');
         if (!coverageCommand) {
             return;
         }
+
         // If no URI supplied to task, use the current active editor.
+        let uri = params?.uri;
         if (!uri) {
             const editor = vscode.window.activeTextEditor;
             if (editor && editor.document) {
