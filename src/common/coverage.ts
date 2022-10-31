@@ -1,27 +1,25 @@
-
-
 import * as vscode from 'vscode';
 
 export type CoverageData = {
     file: string;
     lines: coverageTypeSummary<coverageDetail>;
     functions: coverageTypeSummary<coverageDetailFunction>;
-}
+};
 
 type coverageDetail = {
     line: number;
     hit: 0 | 1;
-}
+};
 
 type coverageDetailFunction = coverageDetail & {
     name: string;
-}
+};
 
 type coverageTypeSummary<Detail> = {
     found: number;
     hit: number;
     details: Detail[];
-}
+};
 
 type coverageDataByFile = Record<string, CoverageData>;
 
@@ -31,7 +29,7 @@ export type CoverageDecorationPair = {
 };
 
 export const computeDecoratorsForFiles = (data: coverageDataByFile, fileRoot: string): Record<string, CoverageDecorationPair[]> => {
-    const allFiles: Record<string, CoverageDecorationPair[]> = {}
+    const allFiles: Record<string, CoverageDecorationPair[]> = {};
 
     Object.entries(data).forEach(([file, coverage]) => {
 
@@ -40,21 +38,21 @@ export const computeDecoratorsForFiles = (data: coverageDataByFile, fileRoot: st
 
         coverage.lines.details.forEach((detail) => {
             const range = new vscode.Range(
-                new vscode.Position(detail.line-1, 0),
-                new vscode.Position(detail.line-1, 1),
+                new vscode.Position(detail.line - 1, 0),
+                new vscode.Position(detail.line - 1, 1),
             );
             if (detail.hit === 0) {
                 uncovered.push({
-                    range
+                    range,
                 });
                 return;
             }
             covered.push({
-                range
+                range,
             });
         });
 
-        const fullPath = [fileRoot, file].join("");
+        const fullPath = [fileRoot, file].join('');
         allFiles[fullPath] = [
             {
                 decorator: vscode.window.createTextEditorDecorationType({
@@ -67,8 +65,8 @@ export const computeDecoratorsForFiles = (data: coverageDataByFile, fileRoot: st
                     backgroundColor: 'rgba(200, 0, 0, 0.3)',
                 }),
                 options: uncovered,
-            }
+            },
         ];
-    })
+    });
     return allFiles;
-}
+};

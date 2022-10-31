@@ -22,7 +22,7 @@ import { workspace } from 'vscode';
 import { formatDocument } from './client/formatter/formatter';
 import { compilerType } from './common/solcCompiler';
 import * as workspaceUtil from './client/workspaceUtil';
-import * as cp from "child_process";
+import * as cp from 'child_process';
 import { constructTestResultOutput, parseForgeTestResults } from './common/forge';
 import * as parseCoverage from '@connectis/coverage-parser';
 import { computeDecoratorsForFiles, CoverageData, CoverageDecorationPair } from './common/coverage';
@@ -59,22 +59,22 @@ export async function activate(context: vscode.ExtensionContext) {
     initDiagnosticCollection(diagnosticCollection);
 
     context.subscriptions.push(workspace.onDidSaveTextDocument(async (document: vscode.TextDocument) => {
-        if (document.languageId === "solidity" && document.uri.scheme === "file") {
+        if (document.languageId === 'solidity' && document.uri.scheme === 'file') {
             const runOnSave = vscode.workspace.getConfiguration('solidity').get<boolean>('test.runOnSave');
             if (!runOnSave) {
                 return;
             }
-            await vscode.commands.executeCommand("solidity.runTests", {uri: document.uri});
+            await vscode.commands.executeCommand('solidity.runTests', {uri: document.uri});
         }
     }));
 
     context.subscriptions.push(workspace.onDidSaveTextDocument(async (document: vscode.TextDocument) => {
-        if (document.languageId === "solidity" && document.uri.scheme === "file") {
+        if (document.languageId === 'solidity' && document.uri.scheme === 'file') {
             const coverOnSave = vscode.workspace.getConfiguration('solidity').get<boolean>('test.coverOnSave');
             if (!coverOnSave) {
                 return;
             }
-            await vscode.commands.executeCommand("solidity.runCoverage", {uri: document.uri});
+            await vscode.commands.executeCommand('solidity.runCoverage', {uri: document.uri});
         }
     }));
 
@@ -213,7 +213,7 @@ export async function activate(context: vscode.ExtensionContext) {
             return;
         }
         if (!testOutputChannel) {
-            testOutputChannel = vscode.window.createOutputChannel("Solidity Tests");
+            testOutputChannel = vscode.window.createOutputChannel('Solidity Tests');
         }
         // If no URI supplied to task, use the current active editor.
         if (!uri) {
@@ -225,14 +225,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
         const rootFolder = getFileRootPath(uri);
         if (!rootFolder) {
-            console.error("Couldn't determine root folder for document", {uri})
+            console.error("Couldn't determine root folder for document", {uri});
             return;
         }
 
         testOutputChannel.clear();
         testOutputChannel.show();
         testOutputChannel.appendLine(`Running '${testCommand}'...`);
-        testOutputChannel.appendLine("");
+        testOutputChannel.appendLine('');
         try {
             const result = await executeTask(rootFolder, testCommand, false);
             const parsed = parseForgeTestResults(result);
@@ -244,9 +244,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
             const out = constructTestResultOutput(parsed);
             out.forEach(testOutputChannel.appendLine);
-            
+
         } catch (err) {
-            console.log("Unexpected error running tests:", err)
+            console.log('Unexpected error running tests:', err);
         }
     }));
 
@@ -265,7 +265,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
         const rootFolder = getFileRootPath(uri);
         if (!rootFolder) {
-            console.error("Couldn't determine root folder for document", {uri})
+            console.error("Couldn't determine root folder for document", {uri});
             return;
         }
 
@@ -275,28 +275,22 @@ export async function activate(context: vscode.ExtensionContext) {
 
             await executeTask(rootFolder, coverageCommand, false);
 
-            const coverageData = await parseCoverage.parseFile(path.join(rootFolder, "lcov.info"), {
-                type: "lcov",
+            const coverageData = await parseCoverage.parseFile(path.join(rootFolder, 'lcov.info'), {
+                type: 'lcov',
             });
             const coverageByFile: Record<string, CoverageData> = coverageData.reduce((memo, item) => {
                 memo[item.file] = item;
                 return memo;
             }, {});
 
-            // const solFiles = vscode.workspace.textDocuments.filter((doc) => {
-            //     return doc.fileName.endsWith(".sol")
-            // })
-            // console.log(Object.keys(coverageByFile));
-            // console.log(solFiles.map(f => f.uri.path));
-
             // Cache our decorators so that we can apply them when we load files.
             coverageDecorators = computeDecoratorsForFiles(coverageByFile, rootFolder);
-            
+
             // Check if the current active editor has coverage data, and apply decorators if so.
             vscode.window.visibleTextEditors.forEach(applyDecorators);
 
         } catch (err) {
-            console.log("Unexpected error running coverage:", err)
+            console.log('Unexpected error running coverage:', err);
         }
     }));
 
@@ -355,15 +349,15 @@ const getFileRootPath = (uri: vscode.Uri): string | null => {
     const folders = vscode.workspace.workspaceFolders;
     for (const f of folders) {
         if (uri.path.startsWith(f.uri.path)) {
-            return f.uri.path
+            return f.uri.path;
         }
     }
-    return null
-}
+    return null;
+};
 
 const executeTask = (dir: string, cmd: string, rejectOnFailure: boolean) => {
     return new Promise<string>((resolve, reject) => {
-        cp.exec(cmd, {cwd: dir, maxBuffer: 1024*1024*10}, (err, out) => {
+        cp.exec(cmd, {cwd: dir, maxBuffer: 1024 * 1024 * 10}, (err, out) => {
             if (err) {
                 if (rejectOnFailure) {
                     return reject({out, err});
@@ -373,7 +367,7 @@ const executeTask = (dir: string, cmd: string, rejectOnFailure: boolean) => {
             return resolve(out);
         });
     });
-}
+};
 
 const clearDecorators = () => {
     if (!coverageDecorators) {
@@ -384,15 +378,14 @@ const clearDecorators = () => {
         uncov?.decorator?.dispose();
     });
     coverageDecorators = {};
-}
+};
 
 const applyDecorators = (editor: vscode.TextEditor) => {
-    console.log("Applying for path", editor.document.uri.path);
     const decorators = coverageDecorators[editor.document.uri.path];
     if (!decorators) {
         return;
     }
     editor.setDecorations(decorators[0].decorator, decorators[0].options);
     editor.setDecorations(decorators[1].decorator, decorators[1].options);
-}
+};
 
