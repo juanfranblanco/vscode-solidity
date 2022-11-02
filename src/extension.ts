@@ -1,6 +1,7 @@
 'use strict';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import * as cp from 'child_process';
 import { compileAllContracts } from './client/compileAll';
 import { Compiler } from './client/compiler';
 import { compileActiveContract, initDiagnosticCollection } from './client/compileActive';
@@ -18,13 +19,16 @@ import {
 
 import { lintAndfixCurrentDocument } from './server/linter/soliumClientFixer';
 // tslint:disable-next-line:no-duplicate-imports
-import { workspace, WorkspaceFolder } from 'vscode';
+import { workspace } from 'vscode';
 import { formatDocument } from './client/formatter/formatter';
 import { compilerType } from './common/solcCompiler';
 import * as workspaceUtil from './client/workspaceUtil';
+import { defaultEnvironmentConfiguration, DevelopmentEnvironment } from './environments/env';
+import {  constructTestResultOutput, parseTestResults } from './environments/tests';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 let compiler: Compiler;
+let testOutputChannel: vscode.OutputChannel;
 
 export async function activate(context: vscode.ExtensionContext) {
     const ws = workspace.workspaceFolders;
@@ -47,6 +51,36 @@ export async function activate(context: vscode.ExtensionContext) {
         }
     });
     */
+
+    // Attach a handler which sets the default configuration for environment related config.
+    // This triggers both when a user sets it or when we detect it automatically.
+    context.subscriptions.push(workspace.onDidChangeConfiguration(async (event) => {
+        if (!event.affectsConfiguration('solidity.developmentEnvironment')) {
+            return;
+        }
+        const newConfig = vscode.workspace.getConfiguration('solidity')
+        const newEnv = newConfig.get<DevelopmentEnvironment>('developmentEnvironment');
+        const vaulesToSet = defaultEnvironmentConfiguration[newEnv];
+        if (!vaulesToSet) {
+            return;
+        }
+        for (const [k, v] of Object.entries(vaulesToSet)) {
+            if (newConfig.get(k) === v.default) {
+                newConfig.update(k, v.target, null);
+            }
+        }
+    }));
+
+    // Detect development environment if the configuration is not already set.
+    const loadTimeConfig = vscode.workspace.getConfiguration('solidity')
+    const existingDevEnv = loadTimeConfig.get<DevelopmentEnvironment>('developmentEnvironment');
+    console.log({existingDevEnv})
+    if (!existingDevEnv) {
+        const detectedEnv = await detectDevelopmentEnvironment();
+        if (detectedEnv) {
+            loadTimeConfig.update('developmentEnvironment', detectedEnv, null);
+        }
+    }
 
     context.subscriptions.push(diagnosticCollection);
 
@@ -185,6 +219,51 @@ export async function activate(context: vscode.ExtensionContext) {
             },
         }));
 
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.runTests', async (params) => {
+        const testCommand = vscode.workspace.getConfiguration('solidity').get<string>('test.command');
+        if (!testCommand) {
+            return;
+        }
+        if (!testOutputChannel) {
+            testOutputChannel = vscode.window.createOutputChannel('Solidity Tests');
+        }
+
+        // If no URI supplied to task, use the current active editor.
+        let uri = params?.uri;
+        if (!uri) {
+            const editor = vscode.window.activeTextEditor;
+            if (editor && editor.document) {
+                uri = editor.document.uri;
+            }
+        }
+
+        const rootFolder = getFileRootPath(uri);
+        if (!rootFolder) {
+            console.error("Couldn't determine root folder for document", {uri});
+            return;
+        }
+
+        testOutputChannel.clear();
+        testOutputChannel.show();
+        testOutputChannel.appendLine(`Running '${testCommand}'...`);
+        testOutputChannel.appendLine('');
+        try {
+            const result = await executeTask(rootFolder, testCommand, false);
+            const parsed = parseTestResults(result);
+            // If we couldn't parse the output, just write it to the window.
+            if (!parsed) {
+                testOutputChannel.appendLine(result);
+                return;
+            }
+
+            const out = constructTestResultOutput(parsed);
+            out.forEach(testOutputChannel.appendLine);
+
+        } catch (err) {
+            console.log('Unexpected error running tests:', err);
+        }
+    }));
+
     const serverModule = path.join(__dirname, 'server.js');
     const serverOptions: ServerOptions = {
         debug: {
@@ -228,3 +307,46 @@ export async function activate(context: vscode.ExtensionContext) {
     // client can be deactivated on extension deactivation
     context.subscriptions.push(clientDisposable);
 }
+
+const detectDevelopmentEnvironment = async (): Promise<string> => {
+    const foundry = await workspace.findFiles('foundry.toml');
+    const hardhat = await workspace.findFiles('hardhat.config.js');
+
+    // If we found evidence of multiple workspaces, don't select a default.
+    if (foundry.length && hardhat.length) {
+        return DevelopmentEnvironment.None;
+    }
+
+    if (foundry.length) {
+        return DevelopmentEnvironment.Forge;
+    }
+
+    if (hardhat.length) {
+        return DevelopmentEnvironment.Hardhat;
+    }
+    return DevelopmentEnvironment.None;
+}
+
+const getFileRootPath = (uri: vscode.Uri): string | null => {
+    const folders = vscode.workspace.workspaceFolders;
+    for (const f of folders) {
+        if (uri.path.startsWith(f.uri.path)) {
+            return f.uri.path;
+        }
+    }
+    return null;
+};
+
+const executeTask = (dir: string, cmd: string, rejectOnFailure: boolean) => {
+    return new Promise<string>((resolve, reject) => {
+        cp.exec(cmd, {cwd: dir, maxBuffer: 1024 * 1024 * 10}, (err, out) => {
+            if (err) {
+                if (rejectOnFailure) {
+                    return reject({out, err});
+                }
+                return resolve(out);
+            }
+            return resolve(out);
+        });
+    });
+};
