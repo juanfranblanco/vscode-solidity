@@ -1,4 +1,4 @@
-import { ContractTestResults, TestResults } from "./tests";
+import { ContractTestResults, TestResults } from './tests';
 
 type forgeTestResult = {
     success: boolean,

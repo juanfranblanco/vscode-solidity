@@ -1,6 +1,6 @@
-import { workspace } from "vscode";
-import { DevelopmentEnvironment } from "./env";
-import { parseForgeTestResults } from "./forge";
+import { workspace } from 'vscode';
+import { DevelopmentEnvironment } from './env';
+import { parseForgeTestResults } from './forge';
 
 export type TestResults = {
     contracts: ContractTestResults[];
@@ -43,8 +43,8 @@ export const parseTestResults = (data: string): TestResults | null => {
     if (devEnv === DevelopmentEnvironment.Forge) {
         return parseForgeTestResults(data);
     }
-    return null
-}
+    return null;
+};
 
 /**
  * Construct output to be printed which summarizes test results.

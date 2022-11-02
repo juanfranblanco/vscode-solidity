@@ -58,7 +58,7 @@ export async function activate(context: vscode.ExtensionContext) {
         if (!event.affectsConfiguration('solidity.developmentEnvironment')) {
             return;
         }
-        const newConfig = vscode.workspace.getConfiguration('solidity')
+        const newConfig = vscode.workspace.getConfiguration('solidity');
         const newEnv = newConfig.get<DevelopmentEnvironment>('developmentEnvironment');
         const vaulesToSet = defaultEnvironmentConfiguration[newEnv];
         if (!vaulesToSet) {
@@ -72,9 +72,8 @@ export async function activate(context: vscode.ExtensionContext) {
     }));
 
     // Detect development environment if the configuration is not already set.
-    const loadTimeConfig = vscode.workspace.getConfiguration('solidity')
+    const loadTimeConfig = vscode.workspace.getConfiguration('solidity');
     const existingDevEnv = loadTimeConfig.get<DevelopmentEnvironment>('developmentEnvironment');
-    console.log({existingDevEnv})
     if (!existingDevEnv) {
         const detectedEnv = await detectDevelopmentEnvironment();
         if (detectedEnv) {
@@ -325,7 +324,7 @@ const detectDevelopmentEnvironment = async (): Promise<string> => {
         return DevelopmentEnvironment.Hardhat;
     }
     return DevelopmentEnvironment.None;
-}
+};
 
 const getFileRootPath = (uri: vscode.Uri): string | null => {
     const folders = vscode.workspace.workspaceFolders;
