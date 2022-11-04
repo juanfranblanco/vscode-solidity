@@ -271,6 +271,12 @@ If you would like to format on save, add this entry to your user / workspace set
 
 ```"editor.formatOnSave": true```
 
+# Formatting using forge fmt
+Formatting can also be performed with `forge fmt` by [Foundry](https://getfoundry.sh/). You can configure it using a `foundry.toml` in your project directory as [explained in the Foundry book](https://book.getfoundry.sh/reference/config/formatter?highlight=fmt#formatter) and then choosing `forge` as your formatter in the extension settings:
+
+![image](https://user-images.githubusercontent.com/89424366/199959085-d7393779-801b-45d7-aebe-a9c4d25b1571.png)
+
+
 # Code generation Nethereum
 The extension integrates with the Nethereum code generator to create Contract integration definitions. You can either generate the api for a single contract, all compiled contracts, or automatically every time you compile a smart contract solidity file.
 
