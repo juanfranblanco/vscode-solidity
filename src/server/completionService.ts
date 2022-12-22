@@ -1055,7 +1055,7 @@ function getBlockCompletionItems(): CompletionItem[] {
             label: 'coinbase',
         },
         {
-            detail: '(bytes32): DEPRICATED In 0.4.22 use blockhash(uint) instead. Hash of the given block - only works for 256 most recent blocks excluding current',
+            detail: '(bytes32): DEPRECATED In 0.4.22 use blockhash(uint) instead. Hash of the given block - only works for 256 most recent blocks excluding current',
             insertText: 'blockhash(${1:blockNumber});',
             insertTextFormat: 2,
             kind: CompletionItemKind.Method,
@@ -1107,7 +1107,7 @@ function getMsgCompletionItems(): CompletionItem[] {
             label: 'data',
         },
         {
-            detail: '(uint): remaining gas DEPRICATED in 0.4.21 use gasleft()',
+            detail: '(uint): remaining gas DEPRECATED in 0.4.21 use gasleft()',
             kind: CompletionItemKind.Property,
             label: 'gas',
         },
@@ -1132,14 +1132,14 @@ function getMsgCompletionItems(): CompletionItem[] {
 function getAbiCompletionItems(): CompletionItem[] {
     return [
         {
-            detail: 'encode(..) returs (bytes): ABI-encodes the given arguments',
+            detail: 'encode(..) returns (bytes): ABI-encodes the given arguments',
             insertText: 'encode(${1:arg});',
             insertTextFormat: 2,
             kind: CompletionItemKind.Method,
             label: 'encode',
         },
         {
-            detail: 'encodePacked(..) returns (bytes): Performes packed encoding of the given arguments',
+            detail: 'encodePacked(..) returns (bytes): Performs packed encoding of the given arguments',
             insertText: 'encodePacked(${1:arg});',
             insertTextFormat: 2,
             kind: CompletionItemKind.Method,
