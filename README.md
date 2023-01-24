@@ -316,7 +316,7 @@ To code generate the Nethereum contract api from a single smart contract, you ne
 ## All smart contracts manual code generation
 To code generate the Nethereum contract for all smart contracts already compiled, just press F1, and start typing "Solidity: Code generate" and select the option for all contracts for your desired language.
 
-### (Depricated) Analysis of smart contracts with Mythx
+### (Deprecated) Analysis of smart contracts with Mythx
 Mythx analysis tool, has been moved to its own stand alone extension, [please download it here](https://marketplace.visualstudio.com/items?itemName=MythX.mythxvsc).
 
 ## Contributing / Issues / Requests
