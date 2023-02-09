@@ -32,7 +32,7 @@ You can change the compiler, in your user settings or workspace settings.
 ### Remote download
 When selecting remote download the compiler gets downloaded from the solc-bin repository. 
 
-You will need to change the following user setting, with the version required, for example ```'latest'``` or ```'v0.4.3+commit.2353da71'```, for your workspace user setting (current project) or global user setting (all projects)
+You will need to change the following user setting, with the version required, for example `'latest'` or `'v0.8.18+commit.87f61d96'`, for your workspace user setting (current project) or global user setting (all projects)
 
 ```
 "solidity.compileUsingRemoteVersion" : "latest"
@@ -52,7 +52,7 @@ You can simply change this setting using the context menu:
 If you want to keep a compiler version locally, you can download the compiler from https://binaries.soliditylang.org/ and change your user settings to use this.
 
 ```
-"solidity.compileUsingLocalVersion" : "C:\\Users\\JuanFran\\Downloads\\soljson-v0.4.15%2Bcommit.bbb8e64f.js"
+"solidity.compileUsingLocalVersion" : "C:\\Users\\JuanFran\\Downloads\\soljson-v0.8.18%2Bcommit.87f61d96.js"
 ```
 
 The simplest way to download a compiler is to use the context menu, this will download your desired version at the root of the project and configure your workspace accordingly.
