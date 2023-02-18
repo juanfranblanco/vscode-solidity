@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.141",
+  "version": "0.0.142",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -58,13 +58,14 @@
     "chai": "^4.2.0",
     "find-cache-dir": "^2.1.0",
     "fs-extra": "^4.0.3",
+    "glob": "^8.1.0",
     "mkdirp": "^0.5.1",
     "nethereum-codegen": "^1.0.22",
-    "prettier": "^2.3.1",
-    "prettier-plugin-solidity": "1.0.0",
+    "prettier": "^2.8.4",
+    "prettier-plugin-solidity": "^1.1.2",
     "require-from-string": "^2.0.2",
-    "solc": "^0.8.6",
-    "solhint": "^3.3.6",
+    "solc": "^0.8.18",
+    "solhint": "^3.4.0",
     "solium": "^1.2.5",
     "solparse-exp-jb": "2.2.23",
     "vscode-languageclient": "^7.0.0",
@@ -75,11 +76,11 @@
   },
   "devDependencies": {
     "@types/node": "^11.15.3",
+    "@types/vscode": "^1.60.0",
     "ts-node": "^7.0.1",
     "tslint": "^5.20.1",
     "typescript": "^3.7.3",
-    "@types/vscode": "^1.60.0",
-    "vsce": "^2.10.2"
+    "vsce": "^2.12.0"
   },
   "nyc": {
     "extension": [

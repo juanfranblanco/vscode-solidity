@@ -1,7 +1,9 @@
-import * as linter from 'solhint/lib/index';
-import { DiagnosticSeverity as Severity, Diagnostic, Range } from 'vscode-languageserver';
-import Linter from './linter';
 import * as fs from 'fs';
+
+import * as linter from 'solhint/lib/index';
+import { Diagnostic, Range, DiagnosticSeverity as Severity } from 'vscode-languageserver';
+
+import Linter from './linter';
 
 export default class SolhintService implements Linter {
     private config: ValidationConfig;
@@ -75,7 +77,7 @@ class ValidationConfig {
 
         return {
             extends: extendsConfig,
-           // plugins : this.fileConfig.plugins, //removed plugins as it crashes the extension until this is fully supported path etc loading in solhint
+            // plugins: ["prettier"], // removed plugins as it crashes the extension until this is fully supported path etc loading in solhint
             rules: Object.assign(
                 ValidationConfig.DEFAULT_RULES,
                 this.ideRules,
