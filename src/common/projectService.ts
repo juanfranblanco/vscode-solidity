@@ -92,7 +92,11 @@ function getRemappingsFromBrownieConfig(rootPath: string): string[] {
         }
         const remappings = remappingsLoaded.map(i => {
             const [alias, packageID] = i.split('=') ;
-            return `${alias}=${path.join(os.homedir(), '.brownie', 'packages', packageID)}`;
+            if (packageID.startsWith('/')) { // correct processing for imports defined with global path
+                return `${alias}=${packageID}`;
+            } else {
+                return `${alias}=${path.join(os.homedir(), '.brownie', 'packages', packageID)}`;
+            }
         });
         return remappings;
     }
