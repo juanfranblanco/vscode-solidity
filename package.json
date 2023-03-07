@@ -535,7 +535,10 @@
       {
         "language": "solidity",
         "scopeName": "source.solidity",
-        "path": "./syntaxes/solidity.json"
+        "path": "./syntaxes/solidity.json",
+        "balancedBracketScopes": [ "*" ],
+        "unbalancedBracketScopes": [ "meta.scope.case-pattern.solidity" ]
+       
       }
     ]
   }
