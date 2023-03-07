@@ -91,6 +91,9 @@
                 },
                 {
                     "include": "#natspec-tag-return"
+                },
+                {
+                    "include": "#natspec-custom"
                 }
             ]
         },
@@ -104,6 +107,10 @@
         },
         "natspec-tag-notice": {
             "match": "(@notice)\\b",
+            "name": "storage.type.dev.natspec"
+        },
+        "natspec-custom": {
+            "match": "(@custom:\\w*)\\b",
             "name": "storage.type.dev.natspec"
         },
         "natspec-tag-dev": {
