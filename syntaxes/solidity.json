@@ -93,7 +93,10 @@
                     "include": "#natspec-tag-return"
                 },
                 {
-                    "include": "#natspec-custom"
+                    "include": "#natspec-tag-custom"
+                },
+                {
+                    "include": "#natspec-tag-inheritdoc"
                 }
             ]
         },
@@ -101,6 +104,7 @@
             "match": "(@title)\\b",
             "name": "storage.type.title.natspec"
         },
+       
         "natspec-tag-author": {
             "match": "(@author)\\b",
             "name": "storage.type.author.natspec"
@@ -109,9 +113,13 @@
             "match": "(@notice)\\b",
             "name": "storage.type.dev.natspec"
         },
-        "natspec-custom": {
+        "natspec-tag-custom": {
             "match": "(@custom:\\w*)\\b",
             "name": "storage.type.dev.natspec"
+        },
+        "natspec-tag-inheritdoc": {
+            "match": "(@inheritdoc)\\b",
+            "name": "storage.type.author.natspec"
         },
         "natspec-tag-dev": {
             "match": "(@dev)\\b",
