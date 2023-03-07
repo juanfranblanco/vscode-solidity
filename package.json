@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.146",
+  "version": "0.0.147",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -67,7 +67,7 @@
     "solc": "^0.8.19",
     "solhint": "^3.4.0",
     "solium": "^1.2.5",
-    "solparse-exp-jb": "2.2.26",
+    "solparse-exp-jb": "2.2.27",
     "vscode-languageclient": "^7.0.0",
     "vscode-languageserver": "^7.0.0",
     "vscode-languageserver-textdocument": "^1.0.1",
