@@ -8,6 +8,9 @@
             "include": "#natspec"
         },
         {
+            "include": "#declaration-userType"
+        },
+        {
             "include": "#comment"
         },
         {
@@ -593,6 +596,9 @@
                     "include": "#declaration-contract"
                 },
                 {
+                    "include": "#declaration-userType"
+                },
+                {
                     "include": "#declaration-interface"
                 },
                 {
@@ -616,6 +622,7 @@
                 {
                     "include": "#declaration-error"
                 }
+                
             ]
         },
         "declaration-storage-field": {
@@ -674,6 +681,20 @@
                 }
             ]
         },
+        "declaration-userType": {
+            "match": "\\b(type)\\b\\s+(\\w+)\\b\\s+\\b(is)\\b",
+            "captures": {
+                "1": {
+                    "name": "storage.type.userType"
+                },
+                "2": {
+                    "name": "entity.name.type.userType"
+                },
+                "3": {
+                    "name": "storage.modifier.is"
+                }
+            }
+        },  
         "declaration-contract": {
             "patterns": [
                 {
@@ -1190,4 +1211,5 @@
     },
     "scopeName": "source.solidity",
     "uuid": "ad87d2cd-8575-4afe-984e-9421a3788933"
+
 }
