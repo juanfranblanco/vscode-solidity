@@ -251,7 +251,7 @@
         "control-flow": {
             "patterns": [
                 {
-                    "match": "\\b(if|else|for|while|do|break|continue|try|catch|finally|throw|return)\\b",
+                    "match": "\\b(if|else|for|while|do|break|continue|try|catch|finally|throw|return|global)\\b",
                     "name": "keyword.control.flow"
                 },
                 {
