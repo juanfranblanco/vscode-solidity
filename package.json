@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.149",
+  "version": "0.0.150",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -67,7 +67,7 @@
     "solc": "^0.8.19",
     "solhint": "^3.4.0",
     "solium": "^1.2.5",
-    "solparse-exp-jb": "2.2.27",
+    "solparse-exp-jb": "3.0.0",
     "vscode-languageclient": "^7.0.0",
     "vscode-languageserver": "^7.0.0",
     "vscode-languageserver-textdocument": "^1.0.1",
@@ -536,9 +536,12 @@
         "language": "solidity",
         "scopeName": "source.solidity",
         "path": "./syntaxes/solidity.json",
-        "balancedBracketScopes": [ "*" ],
-        "unbalancedBracketScopes": [ "meta.scope.case-pattern.solidity" ]
-       
+        "balancedBracketScopes": [
+          "*"
+        ],
+        "unbalancedBracketScopes": [
+          "meta.scope.case-pattern.solidity"
+        ]
       }
     ]
   }
