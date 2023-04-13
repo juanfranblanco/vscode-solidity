@@ -81,6 +81,8 @@ let packageDefaultDependenciesDirectory = 'lib';
 let packageDefaultDependenciesContractsDirectory = 'src';
 let workspaceFolders: WorkspaceFolder[];
 let remappings: string[];
+let selectedDocument = null;
+let selectedProjectFolder = null;
 
 function initWorkspaceRootFolder(uri: string) {
     if (rootPath !== 'undefined') {
@@ -100,12 +102,24 @@ function initWorkspaceRootFolder(uri: string) {
     }
 }
 
-export function getCurrentProjectInWorkspaceRootFsPath(currentDocument: string){
+export function initCurrentProjectInWorkspaceRootFsPath(currentDocument: string){
     if(monoRepoSupport) {
+        if(selectedDocument == currentDocument && selectedProjectFolder != null) {
+            return selectedProjectFolder;
+        } 
         var projectFolder = findFirstRootProjectFile(rootPath, URI.parse(currentDocument).fsPath);
-        if(projectFolder == null){
+        if(projectFolder == null) {
+            selectedProjectFolder = rootPath;
+            selectedDocument = currentDocument;
+            
             return rootPath;
-        }else{
+        } else {
+            selectedProjectFolder = projectFolder;
+            selectedDocument = currentDocument;
+            solcCompiler.rootPath = projectFolder;
+            if (linter !== null) {
+                linter.loadFileConfig(projectFolder);
+            }
             return projectFolder;
         }
     } else {
@@ -117,8 +131,9 @@ function validate(document: TextDocument) {
     try {
 
         initWorkspaceRootFolder(document.uri);
-        solcCompiler.rootPath = getCurrentProjectInWorkspaceRootFsPath(document.uri);
-
+        initCurrentProjectInWorkspaceRootFsPath(document.uri);
+       
+        
         validatingDocument = true;
         const uri = document.uri;
         const filePath = URI.parse(uri).fsPath;
@@ -168,7 +183,7 @@ connection.onSignatureHelp((): SignatureHelp => {
 connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
     let completionItems = [];
     const document = documents.get(textDocumentPosition.textDocument.uri);
-    const projectRootPath = getCurrentProjectInWorkspaceRootFsPath(document.uri);
+    const projectRootPath = initCurrentProjectInWorkspaceRootFsPath(document.uri);
     const service = new CompletionService(projectRootPath);
 
     completionItems = completionItems.concat(
@@ -182,7 +197,7 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
 });
 
 connection.onDefinition((handler: TextDocumentPositionParams): Thenable<Location | Location[]> => {
-    const projectRootPath = getCurrentProjectInWorkspaceRootFsPath(handler.textDocument.uri);
+    const projectRootPath = initCurrentProjectInWorkspaceRootFsPath(handler.textDocument.uri);
     const provider = new SolidityDefinitionProvider(
         projectRootPath,
         packageDefaultDependenciesDirectory,
