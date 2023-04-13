@@ -16,7 +16,7 @@ export function compileAllContracts(compiler: Compiler, diagnosticCollection: vs
         vscode.window.showWarningMessage('Please open a folder in Visual Studio Code as a workspace');
         return;
     }
-    const rootPath = workspaceUtil.getCurrentWorkspaceRootFsPath();
+    const rootPath = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
     const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
     const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
     const compilationOptimisation = vscode.workspace.getConfiguration('solidity').get<number>('compilerOptimization');

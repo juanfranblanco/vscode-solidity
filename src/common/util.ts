@@ -1,4 +1,6 @@
 'use strict';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export function formatPath(contractPath: string) {
         return contractPath.replace(/\\/g, '/');
@@ -25,4 +27,29 @@ export function replaceRemappings(remappings: string[], replacer: string[]): str
                 }
         });
         return [...new Set([...remappings, ...replacer])];
+}
+
+export function findDirUpwardsToCurrentDocumentThatContainsAtLeastFileNameSync(filenames: string[], currentDocument: string, rootPath: string) {
+        let currentDir = path.dirname(path.resolve(currentDocument));
+        
+        while (currentDir !== rootPath) {
+          
+          if (exitsAnyFileSync(filenames, currentDir)) {
+            return currentDir;
+          }
+      
+          currentDir = path.dirname(currentDir);
+        }
+      
+        return null;
+      }
+
+export function exitsAnyFileSync(filenames: string[], dir: string) {
+        for (const fileName of filenames) {
+                const file = path.join(dir, fileName);
+                if (fs.existsSync(file)) {
+                        return true;
+                }
+        }
+        return false;
 }

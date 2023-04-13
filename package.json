@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.150",
+  "version": "0.0.151",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -53,6 +53,7 @@
     "test": "nyc --require ts-node/register --require source-map-support/register mocha test/**/*.spec.ts"
   },
   "dependencies": {
+    "@iarna/toml": "^2.2.5",
     "ajv": "^6.10.2",
     "ajv-keywords": "^3.4.1",
     "chai": "^4.2.0",
@@ -191,6 +192,11 @@
           "type": "string",
           "default": "node_modules",
           "description": "Default directory for Packages Dependencies, i.e: 'node_modules', 'lib'. This is used to avoid typing imports with that path prefix"
+        },
+        "solidity.monoRepoSupport":{
+          "type": "boolean",
+          "default": false,
+          "description": "Enables mono repo support in the current workspace, a project folder will be signaled if a file is found on the current folder or above including: remappings.txt, truffle-config.js, brownie-config.yaml, foundry.toml, hardhat.config.js, dappfile"
         },
         "solidity.packageDefaultDependenciesContractsDirectory": {
           "type": "string",

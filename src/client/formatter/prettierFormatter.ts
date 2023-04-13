@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as workspaceUtil from '../workspaceUtil';
 
 export function formatDocument(document: vscode.TextDocument, context: vscode.ExtensionContext): vscode.TextEdit[] {
-    const rootPath = workspaceUtil.getCurrentWorkspaceRootFsPath();
+    const rootPath = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
     const ignoreOptions = { ignorePath: path.join(rootPath, '.prettierignore') };
     const fileInfo = prettier.getFileInfo.sync(document.uri.fsPath, ignoreOptions);
     if (!fileInfo.ignored) {

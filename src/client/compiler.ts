@@ -162,7 +162,7 @@ export class Compiler {
     }
 
     private initialiseCompiler(overrideDefaultCompiler: compilerType = null): Promise<void> {
-        const rootPath = workspaceUtil.getCurrentWorkspaceRootFsPath();
+        const rootPath = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
         
         if (typeof this.solc === 'undefined' || this.solc === null) {
             this.solc = new SolcCompiler(rootPath);
@@ -263,7 +263,7 @@ export class Compiler {
 
     private writeCompilationOutputToBuildDirectory(output: any, buildDir: string, sourceDir: string,
         excludePath?: string, singleContractFilePath?: string): Array<string> {
-        const rootPath = workspaceUtil.getCurrentWorkspaceRootFsPath();
+        const rootPath = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
         const binPath = path.join(rootPath, buildDir);
         const compiledFiles: Array<string> = new Array<string>();
 

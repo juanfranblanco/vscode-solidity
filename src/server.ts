@@ -23,6 +23,7 @@ import { URI } from 'vscode-uri';
 import { SolidityCodeWalker } from './server/codeWalkerService';
 import { Uri } from 'vscode';
 import { replaceRemappings } from './common/util';
+import { findFirstRootProjectFile } from './common/projectService';
 
 interface Settings {
     solidity: SoliditySettings;
@@ -44,6 +45,7 @@ interface SoliditySettings {
     remappings: string[];
     remappingsWindows: string[];
     remappingsUnix: string[];
+    monoRepoSupport: boolean;
 }
 
 
@@ -70,6 +72,7 @@ let soliumDefaultRules = {};
 let validationDelay = 1500;
 let solcCachePath = '';
 let hasWorkspaceFolderCapability = false;
+let monoRepoSupport = false;
 
 // flags to avoid trigger concurrent validations (compiling is slow)
 let validatingDocument = false;
@@ -92,16 +95,30 @@ function initWorkspaceRootFolder(uri: string) {
                         linter.loadFileConfig(rootPath);
                     }
                 }
-
             }
         }
     }
+}
+
+export function getCurrentProjectInWorkspaceRootFsPath(currentDocument: string){
+    if(monoRepoSupport) {
+        var projectFolder = findFirstRootProjectFile(rootPath, URI.parse(currentDocument).fsPath);
+        if(projectFolder == null){
+            return rootPath;
+        }else{
+            return projectFolder;
+        }
+    } else {
+        return rootPath;
+    }    
 }
 
 function validate(document: TextDocument) {
     try {
 
         initWorkspaceRootFolder(document.uri);
+        solcCompiler.rootPath = getCurrentProjectInWorkspaceRootFsPath(document.uri);
+
         validatingDocument = true;
         const uri = document.uri;
         const filePath = URI.parse(uri).fsPath;
@@ -151,7 +168,8 @@ connection.onSignatureHelp((): SignatureHelp => {
 connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
     let completionItems = [];
     const document = documents.get(textDocumentPosition.textDocument.uri);
-    const service = new CompletionService(rootPath);
+    const projectRootPath = getCurrentProjectInWorkspaceRootFsPath(document.uri);
+    const service = new CompletionService(projectRootPath);
 
     completionItems = completionItems.concat(
         service.getAllCompletionItems(packageDefaultDependenciesDirectory,
@@ -164,8 +182,9 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
 });
 
 connection.onDefinition((handler: TextDocumentPositionParams): Thenable<Location | Location[]> => {
+    const projectRootPath = getCurrentProjectInWorkspaceRootFsPath(handler.textDocument.uri);
     const provider = new SolidityDefinitionProvider(
-        rootPath,
+        projectRootPath,
         packageDefaultDependenciesDirectory,
         packageDefaultDependenciesContractsDirectory,
         remappings,
@@ -306,6 +325,7 @@ connection.onDidChangeConfiguration((change) => {
     packageDefaultDependenciesContractsDirectory = settings.solidity.packageDefaultDependenciesContractsDirectory;
     packageDefaultDependenciesDirectory = settings.solidity.packageDefaultDependenciesDirectory;
     remappings = settings.solidity.remappings;
+    monoRepoSupport = settings.solidity.monoRepoSupport;
 
     if (process.platform === 'win32') {
         remappings = replaceRemappings(remappings, settings.solidity.remappingsWindows);

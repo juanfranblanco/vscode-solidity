@@ -36,11 +36,11 @@ export function getProjectExtensionFromLang(lang: number) {
 }
 
 export function generateNethereumCodeSettingsFile() {
-    const root = workspaceUtil.getCurrentWorkspaceRootFolder();
-    const settingsFile = path.join(root.uri.fsPath, 'nethereum-gen.settings');
+    const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+    const settingsFile = path.join(root, 'nethereum-gen.settings');
     if (!fs.existsSync(settingsFile)) {
 
-        const prettyRootName = prettifyRootNameAsNamespace(root.name);
+        const prettyRootName = prettifyRootNameAsNamespace(path.basename(root));
         const baseNamespace = prettyRootName + '.Contracts';
         const jsonSettings = {
             'projectName': prettyRootName,
@@ -93,7 +93,7 @@ export function codeGenerateNethereumCQSCSharpAll(args: any, diagnostics: vscode
 function getBuildPath() {
     const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
     const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
-    const rootPath = workspaceUtil.getCurrentWorkspaceRootFsPath();
+    const rootPath = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
     const remappings = workspaceUtil.getSolidityRemappings();
     const project = initialiseProject(rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory, remappings);
     return path.join(rootPath, project.projectPackage.build_dir);
@@ -131,8 +131,8 @@ export function codeGenerateAllFilesFromAbiInCurrentFolder(lang: number, args: a
 
 
 function getCodeGenerationSettings() {
-    const root = workspaceUtil.getCurrentWorkspaceRootFolder();
-    const settingsFile = path.join(root.uri.fsPath, 'nethereum-gen.settings');
+    const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+    const settingsFile = path.join(root, 'nethereum-gen.settings');
     if (fs.existsSync(settingsFile)) {
         const settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
         return settings;
@@ -143,12 +143,12 @@ function getCodeGenerationSettings() {
 export function codeGenerateCQS(fileName: string, lang: number, args: any, diagnostics: vscode.DiagnosticCollection) {
     try {
         const extension = getProjectExtensionFromLang(lang);
-        const root = workspaceUtil.getCurrentWorkspaceRootFolder();
+        const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
         const settings = getCodeGenerationSettings();
-        const prettyRootName = prettifyRootNameAsNamespace(root.name);
+        const prettyRootName = prettifyRootNameAsNamespace(path.basename(root));
         let baseNamespace = prettyRootName + '.Contracts';
         let projectName = baseNamespace;
-        let projectPath = path.join(root.uri.fsPath);
+        let projectPath = path.join(root);
         let useFolderAsNamespace = false;
         let ignorePrefixFolder = '';
 

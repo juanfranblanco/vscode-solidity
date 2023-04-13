@@ -1,10 +1,12 @@
 'use strict';
 import * as fs from 'fs';
 import * as os from 'os';
+import * as toml from '@iarna/toml';
 import * as path from 'path';
 import * as yaml from 'yaml-js';
 import {Package} from './model/package';
 import {Project} from './model/project';
+import * as util from './util';
 import { Remapping } from './model/remapping';
 
 // TODO: These are temporary constants until standard agreed
@@ -12,12 +14,23 @@ import { Remapping } from './model/remapping';
 // and if are relative or at project source
 // also versioning (as it was defined years ago)
 
+
 const packageConfigFileName = 'dappFile';
 const remappingConfigFileName = 'remappings.txt';
 const brownieConfigFileName = 'brownie-config.yaml';
+const hardhatConfigFileName = 'hardhat.config.js';
+const truffleConfigFileName = 'truffle-config.js';
+const foundryConfigFileName = 'foundry.toml';
+
+const projectFilesAtRoot = [remappingConfigFileName, brownieConfigFileName, foundryConfigFileName, hardhatConfigFileName, truffleConfigFileName, packageConfigFileName]
+
 // These are set using user configuration settings
 let packageDependenciesDirectory = 'lib';
 let packageDependenciesContractsDirectory = 'src';
+
+export function findFirstRootProjectFile(rootPath: string, currentDocument: string) {
+    return util.findDirUpwardsToCurrentDocumentThatContainsAtLeastFileNameSync(projectFilesAtRoot, currentDocument, rootPath);
+}
 
 function createPackage(rootPath: string) {
     const projectPackageFile = path.join(rootPath, packageConfigFileName);
@@ -77,6 +90,28 @@ export function initialiseProject(rootPath: string,
     return new Project(projectPackage, dependencies, packagesDirAbsolutePath, remappings);
 }
 
+function getRemappingsFromFoundryConfig(rootPath: string): string[] {
+    const foundryConfigFile = path.join(rootPath, foundryConfigFileName);
+    if (fs.existsSync(foundryConfigFile)) {
+        
+        try {
+            const fileContent = fs.readFileSync(foundryConfigFile, 'utf8');
+            const configOutput = toml.parse(fileContent);
+            let remappingsLoaded = configOutput["profile"]["default"]["remappings"];
+            if (!remappingsLoaded) {
+                return null;
+            }
+            return remappingsLoaded;
+        } catch (error) {
+            //ignore error
+            console.log(error);
+        }
+        return ;
+    }
+    return null;
+}
+
+
 function getRemappingsFromBrownieConfig(rootPath: string): string[] {
     const brownieConfigFile = path.join(rootPath, brownieConfigFileName);
     if (fs.existsSync(brownieConfigFile)) {
@@ -124,6 +159,7 @@ export function loadRemappings(rootPath: string, remappings: string[]): string[]
 
     // Brownie prioritezes brownie-config.yml over remappings.txt
     remappings = getRemappingsFromBrownieConfig(rootPath) ??
+                 getRemappingsFromFoundryConfig(rootPath) ??
                  getRemappingsFromRemappingsFile(rootPath) ??
                  remappings;
 

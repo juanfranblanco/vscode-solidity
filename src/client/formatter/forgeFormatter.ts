@@ -8,7 +8,7 @@ export async function formatDocument(document: vscode.TextDocument, context: vsc
   const fullTextRange = new vscode.Range(firstLine.range.start, lastLine.range.end);
 
   const formatted = await new Promise<string>((resolve, reject) => {
-    const rootPath = workspaceUtil.getCurrentWorkspaceRootFsPath();
+    const rootPath = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
     const forge = cp.execFile(
         'forge',
         ['fmt', '--raw', '-'],
