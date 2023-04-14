@@ -97,8 +97,12 @@ function getRemappingsFromFoundryConfig(rootPath: string): string[] {
         try {
             const fileContent = fs.readFileSync(foundryConfigFile, 'utf8');
             const configOutput = toml.parse(fileContent);
-            let remappingsLoaded = configOutput["profile"]["default"]["remappings"];
+            let remappingsLoaded: string[];
+            remappingsLoaded = configOutput["profile"]["default"]["remappings"];
             if (!remappingsLoaded) {
+                return null;
+            }
+            if(remappingsLoaded.length ==0) {
                 return null;
             }
             return remappingsLoaded;
