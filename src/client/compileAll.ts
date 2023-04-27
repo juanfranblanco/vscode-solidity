@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import {Compiler} from './compiler';
-import {ContractCollection} from '../common/model/contractsCollection';
+import {SourceDocumentCollection} from '../common/model/sourceDocumentCollection';
 import { initialiseProject } from '../common/projectService';
 import { formatPath } from '../common/util';
 import * as workspaceUtil from './workspaceUtil';
@@ -22,7 +22,7 @@ export function compileAllContracts(compiler: Compiler, diagnosticCollection: vs
     const compilationOptimisation = vscode.workspace.getConfiguration('solidity').get<number>('compilerOptimization');
     const remappings = workspaceUtil.getSolidityRemappings();
 
-    const contractsCollection = new ContractCollection();
+    const contractsCollection = new SourceDocumentCollection();
     const project = initialiseProject(rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory, remappings);
     let solidityPath = '**/*.sol';
     if (project.projectPackage.sol_sources !== undefined && project.projectPackage.sol_sources !== '') {
@@ -41,7 +41,7 @@ export function compileAllContracts(compiler: Compiler, diagnosticCollection: vs
         if (path.extname(document.fileName) === '.sol') {
             const contractPath = document.fileName;
             const contractCode = document.getText();
-            contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
+            contractsCollection.addSourceDocumentAndResolveImports(contractPath, contractCode, project);
         }
     });
 
@@ -54,9 +54,9 @@ export function compileAllContracts(compiler: Compiler, diagnosticCollection: vs
             const contractPath = document.fsPath;
 
             // have we got this already opened? used those instead
-            if (!contractsCollection.containsContract(contractPath)) {
+            if (!contractsCollection.containsSourceDocument(contractPath)) {
                 const contractCode = fs.readFileSync(document.fsPath, 'utf8');
-                contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
+                contractsCollection.addSourceDocumentAndResolveImports(contractPath, contractCode, project);
             }
         });
         const sourceDirPath = formatPath(project.projectPackage.getSolSourcesAbsolutePath());
@@ -67,7 +67,7 @@ export function compileAllContracts(compiler: Compiler, diagnosticCollection: vs
              packagesPath = formatPath(project.packagesDir);
         }
       
-        compiler.compile(contractsCollection.getDefaultContractsForCompilation(compilationOptimisation),
+        compiler.compile(contractsCollection.getDefaultSourceDocumentsForCompilation(compilationOptimisation),
                 diagnosticCollection,
                 project.projectPackage.build_dir,
                 project.projectPackage.absoluletPath,

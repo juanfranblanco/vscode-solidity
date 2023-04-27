@@ -31,19 +31,7 @@
     "Programming Languages",
     "Snippets"
   ],
-  "activationEvents": [
-    "onLanguage:solidity",
-    "onCommand:solidity.compile",
-    "onCommand:solidity.codegenNethereumCodeGenSettings",
-    "onCommand:solidity.compile.active",
-    "onCommand:solidity.codegenCSharpProject",
-    "onCommand:solidity.codegenVbNetProject",
-    "onCommand:solidity.codegenFSharpProject",
-    "onCommand:solidity.codegenCSharpProjectAll",
-    "onCommand:solidity.codegenVbNetProjectAll",
-    "onCommand:solidity.codegenFSharpProjectAll",
-    "onCommand:solidity.fixDocument"
-  ],
+
   "main": "./out/src/extension",
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -61,7 +49,7 @@
     "fs-extra": "^4.0.3",
     "glob": "^8.1.0",
     "mkdirp": "^0.5.1",
-    "nethereum-codegen": "^1.0.22",
+    "nethereum-codegen": "^1.0.26",
     "prettier": "^2.8.4",
     "prettier-plugin-solidity": "^1.1.2",
     "require-from-string": "^2.0.2",
@@ -69,18 +57,18 @@
     "solhint": "^3.4.0",
     "solium": "^1.2.5",
     "solparse-exp-jb": "3.0.0",
-    "vscode-languageclient": "^7.0.0",
-    "vscode-languageserver": "^7.0.0",
+    "vscode-languageclient": "^8.1.0",
+    "vscode-languageserver": "^8.1.0",
     "vscode-languageserver-textdocument": "^1.0.1",
     "vscode-uri": "3.0.2",
     "yaml-js": "0.2.3"
   },
   "devDependencies": {
     "@types/node": "^11.15.3",
-    "@types/vscode": "^1.60.0",
+    "@types/vscode": "^1.77.0",
     "ts-node": "^7.0.1",
     "tslint": "^5.20.1",
-    "typescript": "^3.7.3",
+    "typescript": "^5.0.4",
     "vsce": "^2.12.0"
   },
   "nyc": {

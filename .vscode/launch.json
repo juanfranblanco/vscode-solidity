@@ -10,6 +10,7 @@
             "type": "extensionHost",
             "request": "launch",
             "preLaunchTask": "npm: compile",
+            "console": "integratedTerminal",
             "runtimeExecutable": "${execPath}",
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}"

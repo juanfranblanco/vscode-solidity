@@ -31,16 +31,16 @@ export function replaceRemappings(remappings: string[], replacer: string[]): str
 
 export function findDirUpwardsToCurrentDocumentThatContainsAtLeastFileNameSync(filenames: string[], currentDocument: string, rootPath: string) {
         let currentDir = path.dirname(path.resolve(currentDocument));
-        
+
         while (currentDir !== rootPath) {
-          
+
           if (exitsAnyFileSync(filenames, currentDir)) {
             return currentDir;
           }
-      
+
           currentDir = path.dirname(currentDir);
         }
-      
+
         return null;
       }
 

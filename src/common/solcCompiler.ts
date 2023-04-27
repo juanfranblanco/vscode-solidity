@@ -4,7 +4,7 @@ import * as solc from 'solc';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as https from 'https';
-import { ContractCollection } from './model/contractsCollection';
+import { SourceDocumentCollection } from './model/sourceDocumentCollection';
 import { initialiseProject } from './projectService';
 
 export enum compilerType {
@@ -465,12 +465,12 @@ export class SolcCompiler {
                 selectedCompiler = this.selectedCompiler;
             }
         if (this.isRootPathSet()) {
-            const contracts = new ContractCollection();
-            contracts.addContractAndResolveImports(
+            const contracts = new SourceDocumentCollection();
+            contracts.addSourceDocumentAndResolveImports(
                 filePath,
                 documentText,
                 initialiseProject(this.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory, remappings));
-            const contractsForCompilation = contracts.getDefaultContractsForCompilationDiagnostics();
+            const contractsForCompilation = contracts.getDefaultSourceDocumentsForCompilationDiagnostics();
             contractsForCompilation.settings = null;
             const outputString = this.compile(JSON.stringify(contractsForCompilation), selectedCompiler);
             const output = JSON.parse(outputString);

@@ -2,7 +2,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import {Compiler} from './compiler';
-import {ContractCollection} from '../common/model/contractsCollection';
+import {SourceDocumentCollection} from '../common/model/sourceDocumentCollection';
 import { initialiseProject } from '../common/projectService';
 import { formatPath } from '../common/util';
 import { compilerType } from '../common/solcCompiler';
@@ -34,7 +34,7 @@ export function compileActiveContract(compiler: Compiler, overrideDefaultCompile
         return;
     }
 
-    const contractsCollection = new ContractCollection();
+    const contractsCollection = new SourceDocumentCollection();
     const contractCode = editor.document.getText();
     const contractPath = editor.document.fileName;
 
@@ -43,7 +43,7 @@ export function compileActiveContract(compiler: Compiler, overrideDefaultCompile
     const compilationOptimisation = vscode.workspace.getConfiguration('solidity').get<number>('compilerOptimization');
     const remappings = workspaceUtil.getSolidityRemappings();
     const project = initialiseProject(workspaceUtil.getCurrentProjectInWorkspaceRootFsPath(), packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory, remappings);
-    const contract = contractsCollection.addContractAndResolveImports(contractPath, contractCode, project);
+    const contract = contractsCollection.addSourceDocumentAndResolveImports(contractPath, contractCode, project);
  
     let packagesPath = null;
     if(project.packagesDir != null) 
@@ -51,7 +51,7 @@ export function compileActiveContract(compiler: Compiler, overrideDefaultCompile
         packagesPath = formatPath(project.packagesDir);
     }
     
-    return compiler.compile(contractsCollection.getDefaultContractsForCompilation(compilationOptimisation),
+    return compiler.compile(contractsCollection.getDefaultSourceDocumentsForCompilation(compilationOptimisation),
             diagnosticCollection,
             project.projectPackage.build_dir,
             project.projectPackage.absoluletPath,

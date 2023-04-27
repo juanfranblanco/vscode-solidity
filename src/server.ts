@@ -20,7 +20,7 @@ import {
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 
-import { SolidityCodeWalker } from './server/codeWalkerService';
+import { CodeWalkerService } from './server/parsedCodeModel/codeWalkerService';
 import { Uri } from 'vscode';
 import { replaceRemappings } from './common/util';
 import { findFirstRootProjectFile } from './common/projectService';
@@ -83,6 +83,23 @@ let workspaceFolders: WorkspaceFolder[];
 let remappings: string[];
 let selectedDocument = null;
 let selectedProjectFolder = null;
+let codeWalkerService: CodeWalkerService = null;
+
+function getCodeWalkerService() {
+    if (codeWalkerService !== null) {
+        if (codeWalkerService.rootPath === rootPath &&
+            codeWalkerService.packageDefaultDependenciesDirectory === packageDefaultDependenciesDirectory &&
+            codeWalkerService.packageDefaultDependenciesContractsDirectory === packageDefaultDependenciesContractsDirectory &&
+            codeWalkerService.remappings.sort().join('') === remappings.sort().join('')) {
+            return codeWalkerService;
+        }
+    }
+    codeWalkerService = new CodeWalkerService(rootPath,  packageDefaultDependenciesDirectory,
+        packageDefaultDependenciesContractsDirectory, remappings,
+    );
+    return codeWalkerService;
+}
+
 
 function initWorkspaceRootFolder(uri: string) {
     if (rootPath !== 'undefined') {
@@ -102,16 +119,16 @@ function initWorkspaceRootFolder(uri: string) {
     }
 }
 
-export function initCurrentProjectInWorkspaceRootFsPath(currentDocument: string){
-    if(monoRepoSupport) {
-        if(selectedDocument == currentDocument && selectedProjectFolder != null) {
+export function initCurrentProjectInWorkspaceRootFsPath(currentDocument: string) {
+    if (monoRepoSupport) {
+        if (selectedDocument === currentDocument && selectedProjectFolder != null) {
             return selectedProjectFolder;
-        } 
-        var projectFolder = findFirstRootProjectFile(rootPath, URI.parse(currentDocument).fsPath);
-        if(projectFolder == null) {
+        }
+        const projectFolder = findFirstRootProjectFile(rootPath, URI.parse(currentDocument).fsPath);
+        if (projectFolder == null) {
             selectedProjectFolder = rootPath;
             selectedDocument = currentDocument;
-            
+
             return rootPath;
         } else {
             selectedProjectFolder = projectFolder;
@@ -123,8 +140,12 @@ export function initCurrentProjectInWorkspaceRootFsPath(currentDocument: string)
             return projectFolder;
         }
     } else {
+        // we might have changed settings
+        solcCompiler.rootPath = rootPath;
+        selectedProjectFolder = rootPath;
+        selectedDocument = currentDocument;
         return rootPath;
-    }    
+    }
 }
 
 function validate(document: TextDocument) {
@@ -132,8 +153,8 @@ function validate(document: TextDocument) {
 
         initWorkspaceRootFolder(document.uri);
         initCurrentProjectInWorkspaceRootFsPath(document.uri);
-       
-        
+
+
         validatingDocument = true;
         const uri = document.uri;
         const filePath = URI.parse(uri).fsPath;
@@ -184,6 +205,7 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
     let completionItems = [];
     const document = documents.get(textDocumentPosition.textDocument.uri);
     const projectRootPath = initCurrentProjectInWorkspaceRootFsPath(document.uri);
+    
     const service = new CompletionService(projectRootPath);
 
     completionItems = completionItems.concat(
@@ -192,6 +214,7 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
             remappings,
             document,
             textDocumentPosition.position,
+            getCodeWalkerService(),
         ));
     return completionItems;
 });
@@ -235,8 +258,8 @@ function startValidation() {
             solcCompiler.initialiseAllCompilerSettings(compileUsingRemoteVersion, compileUsingLocalVersion, nodeModulePackage, compilerType.embedded);
             solcCompiler.initialiseSelectedCompiler().then(() => {
                 validateAllDocuments();
-            // tslint:disable-next-line:no-shadowed-variable disable-next-line:no-empty
-            }).catch(reason => { });
+            // tslint:disable-next-line:no-empty
+            }).catch(() => { });
         });
     } else {
         validateAllDocuments();

@@ -2,25 +2,24 @@ import * as path from 'path';
 import * as vscode from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 
-import { Contract } from '../common/model/contract';
-import { ContractCollection } from '../common/model/contractsCollection';
+import { SourceDocument } from '../common/model/sourceDocument';
+import { SourceDocumentCollection } from '../common/model/sourceDocumentCollection';
 import { Project } from '../common/model/project';
 import { initialiseProject } from '../common/projectService';
 import * as solparse from 'solparse-exp-jb';
-import { Range } from 'vscode';
 
 export class SolidityDefinitionProvider {
   private rootPath: string;
   private packageDefaultDependenciesDirectory: string;
   private packageDefaultDependenciesContractsDirectory: string;
   private project: Project;
-  private remappings : string[]
+  private remappings: string[];
 
   constructor(
     rootPath: string,
     packageDefaultDependenciesDirectory: string,
     packageDefaultDependenciesContractsDirectory: string,
-    remappings : string[]
+    remappings: string[],
   ) {
     this.rootPath = rootPath;
     this.packageDefaultDependenciesDirectory = packageDefaultDependenciesDirectory;
@@ -32,7 +31,7 @@ export class SolidityDefinitionProvider {
         this.rootPath,
         this.packageDefaultDependenciesDirectory,
         this.packageDefaultDependenciesContractsDirectory,
-        this.remappings
+        this.remappings,
       );
     }
   }
@@ -51,26 +50,26 @@ export class SolidityDefinitionProvider {
     document: vscode.TextDocument,
     position: vscode.Position,
   ): Thenable<vscode.Location | vscode.Location[]> {
-    
-      
+
+
       const documentText = document.getText();
       const contractPath = URI.parse(document.uri).fsPath;
 
-      const contracts = new ContractCollection();
+      const contracts = new SourceDocumentCollection();
       if (this.project !== undefined) {
-        contracts.addContractAndResolveImports(
+        contracts.addSourceDocumentAndResolveImports(
           contractPath,
           documentText,
           this.project,
         );
       }
       // this contract
-      const contract = contracts.contracts[0];
+      const contract = contracts.documents[0];
 
       const offset = document.offsetAt(position);
 
       const result = solparse.parse(documentText);
-      
+
       const element = this.findElementByOffset(result.body, offset);
 
       if (element !== undefined) {
@@ -93,8 +92,8 @@ export class SolidityDefinitionProvider {
                 'ContractStatement',
                 contracts,
               );
-              
-              if(directImport.location === undefined) {
+
+              if (directImport.location === undefined) {
                 directImport = this.findDirectImport(
                   document,
                   result.body,
@@ -154,7 +153,7 @@ export class SolidityDefinitionProvider {
             break;
         }
       }
-    
+
   }
 
   /**
@@ -167,7 +166,7 @@ export class SolidityDefinitionProvider {
    * @param {*} statement current statement which contains the cursor offset
    * @param {*} parentStatement parent of the current statement
    * @param {number} offset cursor offset of the element we need to provide definition for
-   * @param {ContractCollection} contracts collection of contracts resolved by current contract
+   * @param {SourceDocumentCollection} contracts collection of contracts resolved by current contract
    * @returns {(Thenable<vscode.Location | vscode.Location[]>)}
    * @memberof SolidityDefinitionProvider
    */
@@ -177,7 +176,7 @@ export class SolidityDefinitionProvider {
     statement: any,
     parentStatement: any,
     offset: number,
-    contracts: ContractCollection,
+    contracts: SourceDocumentCollection,
   ): Thenable<vscode.Location | vscode.Location[]> {
     switch (statement.type) {
       case 'UsingStatement':
@@ -316,13 +315,13 @@ export class SolidityDefinitionProvider {
    * e.g. f(x), emit Event(x), Struct(x), Contract(address)
    *
    * @private
-   * @param {ContractCollection} contracts collection of contracts resolved by current contract
+   * @param {SourceDocumentCollection} contracts collection of contracts resolved by current contract
    * @param {string} name name of the variable
    * @returns {Promise<vscode.Location[]>}
    * @memberof SolidityDefinitionProvider
    */
   private provideDefinitionForCallee(
-    contracts: ContractCollection,
+    contracts: SourceDocumentCollection,
     name: string,
   ): Promise<vscode.Location[]> {
     return this.provideDefinitionForContractMember(
@@ -334,7 +333,7 @@ export class SolidityDefinitionProvider {
             contractElement.type === 'FunctionDeclaration' ||
             contractElement.type === 'EventDeclaration' ||
             contractElement.type === 'StructDeclaration' ||
-            contractElement.type === "EnumDeclaration"
+            contractElement.type === 'EnumDeclaration'
           ),
         );
 
@@ -352,13 +351,13 @@ export class SolidityDefinitionProvider {
    *
    * TODO: find local variable reference (locally defined, parameters and return parameters)
    * @private
-   * @param {ContractCollection} contracts collection of contracts resolved by current contract
+   * @param {SourceDocumentCollection} contracts collection of contracts resolved by current contract
    * @param {string} name name of the variable
    * @returns {Promise<vscode.Location[]>}
    * @memberof SolidityDefinitionProvider
    */
   private provideDefinitionForVariable(
-    contracts: ContractCollection,
+    contracts: SourceDocumentCollection,
     name: string,
   ): Promise<vscode.Location[]> {
     return this.provideDefinitionForContractMember(
@@ -366,7 +365,7 @@ export class SolidityDefinitionProvider {
       name,
       (element) =>
         element.body.filter(contractElement =>
-          contractElement.name === name && (contractElement.type === 'StateVariableDeclaration')
+          contractElement.name === name && (contractElement.type === 'StateVariableDeclaration'),
         ),
     );
   }
@@ -375,18 +374,18 @@ export class SolidityDefinitionProvider {
    * Provide definition for a contract member
    *
    * @private
-   * @param {ContractCollection} contracts collection of contracts resolved by current contract
+   * @param {SourceDocumentCollection} contracts collection of contracts resolved by current contract
    * @param {string} extractElements extract all relevant elements from a contract or library statement
    * @returns {Promise<vscode.Location[]>}
    * @memberof SolidityDefinitionProvider
    */
   private provideDefinitionForContractMember(
-    contracts: ContractCollection,
-    literalFallbackName:string,
+    contracts: SourceDocumentCollection,
+    literalFallbackName: string,
     extractElements: (any) => Array<any>,
   ): Promise<vscode.Location[]> {
     const locations = [];
-    for (const contract of contracts.contracts) {
+    for (const contract of contracts.documents) {
 
       const uri = URI.file(contract.absolutePath).toString();
       const document = vscode.TextDocument.create(uri, null, null, contract.code);
@@ -399,11 +398,11 @@ export class SolidityDefinitionProvider {
               if (typeof element.body !== 'undefined' && element.body !== null) {
                 return extractElements(element);
               }
-            } 
+            }
             return [];
           }),
         );
-        
+
         elements.forEach(contractElement =>
           locations.push(
             vscode.Location.create(
@@ -415,50 +414,50 @@ export class SolidityDefinitionProvider {
             ),
           ),
         );
-        } catch { 
-          //FALLBACK WORKAROUND ON ERROR PARSING this could be a custom parser
-          //remove all comments with spaces
-          let code = this.replaceCommentsWithSpacesPreservingLines(contract.code);
-          //we find functions, structs, enums and contracts name
-          let regexWord = new RegExp("^\\s*(function|event)\\s+(" + literalFallbackName + ")\\s*\\(|\\s*(struct|contract|enum|library)\\s+(" + literalFallbackName + ")\\s*{", "gm");
-          //find the first declaration
-          let pos = this.regexIndexOf(code, regexWord, 0)
-          if(pos > -1){
-            //we want to get position of the name, not the start of the match
+        } catch {
+          // FALLBACK WORKAROUND ON ERROR PARSING this could be a custom parser
+          // remove all comments with spaces
+          const code = this.replaceCommentsWithSpacesPreservingLines(contract.code);
+          // we find functions, structs, enums and contracts name
+          const regexWord = new RegExp('^\\s*(function|event)\\s+(' + literalFallbackName + ')\\s*\\(|\\s*(struct|contract|enum|library)\\s+(' + literalFallbackName + ')\\s*{', 'gm');
+          // find the first declaration
+          let pos = this.regexIndexOf(code, regexWord, 0);
+          if (pos > -1) {
+            // we want to get position of the name, not the start of the match
             pos = code.indexOf(literalFallbackName, pos);
-            if(pos > -1) { // making sure..
+            if (pos > -1) { // making sure..
               locations.push(
                 vscode.Location.create(
                   uri,
-                  vscode.Range.create(document.positionAt(pos), document.positionAt(pos + literalFallbackName.length))
-                  ))
+                  vscode.Range.create(document.positionAt(pos), document.positionAt(pos + literalFallbackName.length)),
+                  ));
               }
           }
-          
+
         }
     }
     return Promise.resolve(locations);
   }
 
-  private replaceCommentsWithSpacesPreservingLines(code: string):string{
-     //https://stackoverflow.com/questions/5989315/regex-for-match-replacing-javascript-comments-both-multiline-and-inline
+  private replaceCommentsWithSpacesPreservingLines(code: string): string {
+     // https://stackoverflow.com/questions/5989315/regex-for-match-replacing-javascript-comments-both-multiline-and-inline
     return code.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, this.replacer);
   }
 
-  private regexIndexOf(string, regex, startpos) : number {
-    var indexOf = string.substring(startpos || 0).search(regex);
+  private regexIndexOf(string, regex, startpos): number {
+    const indexOf = string.substring(startpos || 0).search(regex);
     return (indexOf >= 0) ? (indexOf + (startpos || 0)) : indexOf;
   }
 
-  private replacer(match: string): string{
+  private replacer(match: string): string {
     const lines = match.split(/\r?\n/g);
-    let hasrn = match.indexOf("\r\n") > -1;
+    const hasrn = match.indexOf('\r\n') > -1;
     for (let index = 0; index < lines.length; index++) {
       lines[index] = ''.padStart(lines[index].length, ' ');
     }
-    if(hasrn){
+    if (hasrn) {
       return lines.join('\r\n');
-    }else{
+    } else {
       return lines.join('\n');
     }
   }
@@ -471,7 +470,7 @@ export class SolidityDefinitionProvider {
    * @param {vscode.TextDocument} document text document, where statement belongs, used to convert position to/from offset
    * @param {Array<any>} documentStatements array of statements found in the current document
    * @param {*} literal type literal object
-   * @param {ContractCollection} contracts collection of contracts resolved by current contract
+   * @param {SourceDocumentCollection} contracts collection of contracts resolved by current contract
    * @returns {(Thenable<vscode.Location | vscode.Location[]>)}
    * @memberof SolidityDefinitionProvider
    */
@@ -479,7 +478,7 @@ export class SolidityDefinitionProvider {
     document: vscode.TextDocument,
     documentStatements: Array<any>,
     literal: any,
-    contracts: ContractCollection,
+    contracts: SourceDocumentCollection,
   ): Thenable<vscode.Location | vscode.Location[]> {
     if (literal.members.length > 0) {
       // handle scoped type by looking for scoping Contract or Library e.g. MyContract.Struct
@@ -545,7 +544,7 @@ export class SolidityDefinitionProvider {
    * @param {Array<any>} statements list of statements to search through
    * @param {string} name name of statement to find
    * @param {string} type type of statement to find
-   * @param {ContractCollection} contracts collection of contracts resolved by current contract
+   * @param {SourceDocumentCollection} contracts collection of contracts resolved by current contract
    * @returns location of the statement and its document and document statements
    * @memberof SolidityDefinitionProvider
    */
@@ -554,20 +553,20 @@ export class SolidityDefinitionProvider {
     statements: Array<any>,
     name: string,
     type: string,
-    contracts: ContractCollection,
+    contracts: SourceDocumentCollection,
   ) {
     // find in the current file
     let location = this.findStatementLocationByNameType(document, statements, name, type);
 
     // find in direct imports if not found in file
-    const contract = contracts.contracts[0];
+    const contract = contracts.documents[0];
     // TODO: when importing contracts with conflict names, which one will Solidity pick? first or last? or error?
     for (let i = 0; location === undefined && i < contract.imports.length; i++) {
       const importPath = this.resolveImportPath(contract.imports[i], contract);
-      const importContract = contracts.contracts.find(e => e.absolutePath === importPath);
+      const importContract = contracts.documents.find(e => e.absolutePath === importPath);
       const uri = URI.file(importContract.absolutePath).toString();
       document = vscode.TextDocument.create(uri, null, null, importContract.code);
-      try{
+      try {
         statements = solparse.parse(importContract.code).body;
       } catch {
         statements = [];
@@ -628,26 +627,26 @@ export class SolidityDefinitionProvider {
    *
    * @private
    * @param {string} importPath import statement in *.sol contract
-   * @param {Contract} contract the contract where the import statement belongs
+   * @param {SourceDocument} contract the contract where the import statement belongs
    * @returns {string} the absolute path of the imported file
    * @memberof SolidityDefinitionProvider
    */
-  private resolveImportPath(importPath: string, contract: Contract): string {
+  private resolveImportPath(importPath: string, contract: SourceDocument): string {
     if (contract.isImportLocal(importPath)) {
-      return contract.formatContractPath(path.resolve(path.dirname(contract.absolutePath), importPath));
+      return contract.formatDocumentPath(path.resolve(path.dirname(contract.absolutePath), importPath));
     } else if (this.project !== undefined && this.project !== null) {
       const remapping = this.project.findImportRemapping(importPath);
-        if(remapping !== undefined && remapping != null) {
-            return contract.formatContractPath(remapping.resolveImport(importPath));
+        if (remapping !== undefined && remapping != null) {
+            return contract.formatDocumentPath(remapping.resolveImport(importPath));
         } else {
             const depPack = this.project.findDependencyPackage(importPath);
             if (depPack !== undefined) {
-               return contract.formatContractPath(depPack.resolveImport(importPath));
+               return contract.formatDocumentPath(depPack.resolveImport(importPath));
             }
         }
     }
     return importPath;
   }
 
-  
+
 }
