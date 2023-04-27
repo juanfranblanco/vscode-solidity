@@ -78,7 +78,8 @@ export class DotCompletionService {
                         topParent = topParent.childAutocomplete;
                     }
 
-                    this.findDotCompletionItemsForSelectedContract(topParent, completionItems, documentContractSelected, documentContractSelected.selectedContract, offset);
+                    completionItems = completionItems.concat(
+                        this.getDotCompletionItemsForSelectedContract(topParent, documentContractSelected, documentContractSelected.selectedContract, offset));
                 }
             }
         }
@@ -86,21 +87,29 @@ export class DotCompletionService {
     }
 
       // tslint:disable-next-line:max-line-length
-    public static findDotCompletionItemsForSelectedContract(autocompleteByDot: AutocompleteByDot, completionItems: any[], documentContractSelected: ParsedDocument, currentContract: ParsedContract, offset: number) {
-
+    public static getDotCompletionItemsForSelectedContract(autocompleteByDot: AutocompleteByDot, documentContractSelected: ParsedDocument, currentContract: ParsedContract, offset: number): CompletionItem[] {
+        let completionItems: CompletionItem[] = [];
         if (currentContract === documentContractSelected.selectedContract) {
             const selectedFunction = documentContractSelected.selectedContract.getSelectedFunction(offset);
             // tslint:disable-next-line:max-line-length
-            this.findDotCompletionItemsForContract(autocompleteByDot, completionItems, documentContractSelected.allContracts, documentContractSelected.selectedContract, selectedFunction, offset);
+            completionItems = completionItems.concat(
+                this.getDotCompletionItemsForContract(autocompleteByDot,
+                                                     documentContractSelected.allContracts,
+                                                     documentContractSelected.selectedContract,
+                                                     selectedFunction,
+                                                     offset));
         } else {
-            this.findDotCompletionItemsForContract(autocompleteByDot, completionItems, documentContractSelected.allContracts, documentContractSelected.selectedContract);
-        }
-
+            completionItems = completionItems.concat(
+                this.getDotCompletionItemsForContract(autocompleteByDot,
+                                                     documentContractSelected.allContracts,
+                                                     documentContractSelected.selectedContract));
+            }
+        return completionItems;
     }
 
     // tslint:disable-next-line:max-line-length
-    public static findDotCompletionItemsForContract(autocompleteByDot: AutocompleteByDot, completionItems: any[], allContracts: ParsedContract[], currentContract: ParsedContract, selectedFunction: ParsedFunction = null, offset: number = null) {
-
+    public static getDotCompletionItemsForContract(autocompleteByDot: AutocompleteByDot, allContracts: ParsedContract[], currentContract: ParsedContract, selectedFunction: ParsedFunction = null, offset: number = null): CompletionItem[] {
+        let completionItems: CompletionItem[] = [];
         const allStructs = currentContract.getAllStructs();
         const allEnums = currentContract.getAllEnums();
         let allVariables: ParsedVariable[] = currentContract.getAllStateVariables();
@@ -124,9 +133,15 @@ export class DotCompletionService {
                 if (item.name === autocompleteByDot.name && !found) {
                     found = true;
                     if (autocompleteByDot.childAutocomplete !== undefined && autocompleteByDot.childAutocomplete !== null) {
-                        this.findDotType(allStructs, item.type, autocompleteByDot.childAutocomplete, completionItems, allContracts, currentContract);
+                        completionItems = completionItems.concat(
+                            this.findDotType(allStructs,
+                                item.type,
+                                autocompleteByDot.childAutocomplete,
+                                allContracts,
+                                currentContract));
                     } else {
-                        this.findDotTypeCompletion(allStructs, item.type, completionItems, allContracts, currentContract);
+                        completionItems = completionItems.concat(
+                            this.getDotTypeCompletionItems(allStructs, item.type, allContracts, currentContract));
                     }
                 }
             });
@@ -160,9 +175,10 @@ export class DotCompletionService {
                         const type = item.output[0].type;
 
                         if (autocompleteByDot.childAutocomplete !== undefined && autocompleteByDot.childAutocomplete !== null) {
-                            this.findDotType(allStructs, type, autocompleteByDot.childAutocomplete, completionItems, allContracts, currentContract);
+                            completionItems = completionItems.concat(
+                                this.findDotType(allStructs, type, autocompleteByDot.childAutocomplete, allContracts, currentContract));
                         } else {
-                            this.findDotTypeCompletion(allStructs, type, completionItems, allContracts, currentContract);
+                            completionItems = completionItems.concat(this.getDotTypeCompletionItems(allStructs, type, allContracts, currentContract));
                         }
                     }
                 }
@@ -178,12 +194,14 @@ export class DotCompletionService {
                 });
             }
         }
+        return completionItems;
     }
 
 
 
     // tslint:disable-next-line:max-line-length
-    public static findDotTypeCompletion(allStructs: ParsedStruct[], type: ParsedDeclarationType, completionItems: any[], allContracts: ParsedContract[], currentContract: ParsedContract) {
+    public static getDotTypeCompletionItems(allStructs: ParsedStruct[], type: ParsedDeclarationType, allContracts: ParsedContract[], currentContract: ParsedContract) {
+        let completionItems: CompletionItem[] = [];
         const foundStruct = allStructs.find(x => x.name === type.name);
         if (foundStruct !== undefined) {
             completionItems = completionItems.concat(foundStruct.getDotCompletionItems());
@@ -200,12 +218,14 @@ export class DotCompletionService {
         allUsing.forEach(usingItem => {
             const foundLibrary = allContracts.find(x => x.name === usingItem.name);
             if (foundLibrary !== undefined) {
-                this.addAllLibraryExtensionsAsCompletionItems(foundLibrary, completionItems, type);
+                completionItems = completionItems.concat(this.getAllLibraryExtensionsAsCompletionItems(foundLibrary, type));
             }
         });
+        return completionItems;
     }
 
-    public static addAllLibraryExtensionsAsCompletionItems(documentContractSelected: ParsedContract, completionItems: any[], type: ParsedDeclarationType) {
+    public static getAllLibraryExtensionsAsCompletionItems(documentContractSelected: ParsedContract, type: ParsedDeclarationType): CompletionItem[] {
+        const completionItems: CompletionItem[] = [];
         const allfunctions = documentContractSelected.getAllFunctions();
         const filteredFunctions = allfunctions.filter( x => {
             if (x.input.length > 0 ) {
@@ -223,20 +243,25 @@ export class DotCompletionService {
             completionItems.push(
                 item.createCompletionItem(true));
         });
+
+        return completionItems;
     }
 
 
     // tslint:disable-next-line:max-line-length
-    public static findDotType(allStructs: ParsedStruct[], type: ParsedDeclarationType, autocompleteByDot: AutocompleteByDot, completionItems: any[], allContracts: ParsedContract[], currentContract: ParsedContract) {
+    public static findDotType(allStructs: ParsedStruct[], type: ParsedDeclarationType, autocompleteByDot: AutocompleteByDot, allContracts: ParsedContract[], currentContract: ParsedContract) {
+        let completionItems: CompletionItem[] = [];
         const foundStruct = allStructs.find(x => x.name === type.name);
         if (foundStruct !== undefined) {
             foundStruct.variables.forEach(property => {
                 // own method refactor
                 if (autocompleteByDot.name === property.name) {
                     if (autocompleteByDot.childAutocomplete !== undefined && autocompleteByDot.childAutocomplete !== null)  {
-                        this.findDotType(allStructs, property.type, autocompleteByDot.childAutocomplete, completionItems, allContracts, currentContract);
+                        completionItems = completionItems.concat(
+                            this.findDotType(allStructs, property.type, autocompleteByDot.childAutocomplete, allContracts, currentContract));
                     } else {
-                        this.findDotTypeCompletion(allStructs, property.type, completionItems, allContracts, currentContract);
+                        completionItems = completionItems.concat(
+                            this.getDotTypeCompletionItems(allStructs, property.type, allContracts, currentContract));
                     }
                 }
             });
@@ -245,12 +270,13 @@ export class DotCompletionService {
             const foundContract = allContracts.find(x => x.name === type.name);
             if (foundContract !== undefined) {
                 foundContract.initialiseExtendContracts();
-                this.findDotCompletionItemsForContract(autocompleteByDot, completionItems, allContracts, foundContract);
+                completionItems = completionItems.concat(
+                    this.getDotCompletionItemsForContract(autocompleteByDot, allContracts, foundContract));
 
             }
         }
 
-
+        return completionItems;
         /*
         let allUsing = currentContract.getAllUsing(type);
         allUsing.forEach(usingItem => {

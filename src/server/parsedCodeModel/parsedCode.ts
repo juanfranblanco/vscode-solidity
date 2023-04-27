@@ -6,7 +6,7 @@ export class FindTypeReferenceLocationResult {
     public isCurrentElementSelected: boolean;
     public location: Location;
 
-    public static create(isSelected: boolean, location: Location = null){
+    public static create(isSelected: boolean, location: Location = null) {
         const result = new FindTypeReferenceLocationResult();
         result.location = location;
         result.isCurrentElementSelected = isSelected;

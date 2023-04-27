@@ -127,6 +127,7 @@ export class ParsedFunction extends ParsedCode {
             const variable = new ParsedFunctionVariable();
             variable.element = declarationStatement;
             variable.name = declarationStatement.name;
+            variable.document = this.document;
             variable.type = ParsedDeclarationType.create(declarationStatement.literal, this.contract, this.document);
             variable.function = this;
             this.variablesInScope.push(variable);

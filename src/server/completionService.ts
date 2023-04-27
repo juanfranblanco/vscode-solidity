@@ -54,7 +54,8 @@ export class CompletionService {
             if (globalVariableContext != null) {
                 completionItems = completionItems.concat(globalVariableContext);
             } else {
-                DotCompletionService.getSelectedDocumentDotCompletionItems(lines, position, triggeredByDotStart, documentContractSelected, offset);
+                completionItems = completionItems.concat(
+                    DotCompletionService.getSelectedDocumentDotCompletionItems(lines, position, triggeredByDotStart, documentContractSelected, offset));
             }
             return completionItems;
         }
@@ -113,11 +114,10 @@ export class CompletionService {
 
                 const selectedContract = documentContractSelected.selectedContract;
                 completionItems = completionItems.concat(selectedContract.getSelectedContractCompletionItems(offset));
-            }
+            } else {
 
-            documentContractSelected.allContracts.forEach(x => {
-                completionItems.push(x.createCompletionItem());
-            });
+                completionItems = completionItems.concat(documentContractSelected.getSelectedDocumentCompletionItems(offset));
+            }
         }
 
     } catch (error) {

@@ -11,9 +11,15 @@ export class ParsedFunctionVariable extends ParsedVariable {
 
         const completionItem =  CompletionItem.create(this.name);
         completionItem.kind = CompletionItemKind.Field;
+        let name = '';
+        if (this.function.isGlobal) {
+            name = this.document.getGlobalPathInfo();
+        } else {
+            name = this.function.contract.name;
+        }
         const typeString = ParsedCodeTypeHelper.getTypeString(this.element.literal);
         completionItem.detail = '(Function variable in ' + this.function.name + ') '
-                                            + typeString + ' ' + this.function.contract.name;
+                                            + typeString + ' ' + name;
         return completionItem;
     }
 }

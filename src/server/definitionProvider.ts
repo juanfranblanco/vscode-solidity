@@ -437,6 +437,7 @@ export class SolidityDefinitionProvider {
         // remove all comments with spaces
         const code = this.replaceCommentsWithSpacesPreservingLines(contract.code);
         // we find functions, structs, enums and contracts name
+        // tslint:disable-next-line:max-line-length
         const regexWord = new RegExp('^\\s*(function|event)\\s+(' + literalFallbackName + ')\\s*\\(|\\s*(struct|contract|enum|library)\\s+(' + literalFallbackName + ')\\s*{', 'gm');
         // find the first declaration
         let pos = this.regexIndexOf(code, regexWord, 0);

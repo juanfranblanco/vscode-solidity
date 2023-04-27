@@ -11,7 +11,7 @@ import { SourceDocument } from '../../common/model/sourceDocument';
 import { ParsedDeclarationType } from './parsedDeclarationType';
 import { ParsedCustomType } from './ParsedCustomType';
 import { URI } from 'vscode-uri';
-import { Location, Range, TextDocument } from 'vscode-languageserver';
+import { CompletionItem, Location, Range, TextDocument } from 'vscode-languageserver';
 import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 
 
@@ -283,6 +283,81 @@ export class ParsedDocument {
     public getGlobalPathInfo(): string {
         return this.sourceDocument.absolutePath + ' global';
     }
+
+    public getAllGlobalFunctionCompletionItems(): CompletionItem[] {
+        const completionItems: CompletionItem[] = [];
+        this.getAllGlobalFunctions().forEach(x => completionItems.push(x.createCompletionItem()));
+        return completionItems;
+    }
+
+    public getAllGlobalEventsCompletionItems(): CompletionItem[] {
+        const completionItems: CompletionItem[] = [];
+        this.getAllGlobalEvents().forEach(x => completionItems.push(x.createCompletionItem()));
+        return completionItems;
+    }
+
+    public getAllGlobalErrorsCompletionItems(): CompletionItem[] {
+        const completionItems: CompletionItem[] = [];
+        this.getAllGlobalErrors().forEach(x => completionItems.push(x.createCompletionItem()));
+        return completionItems;
+    }
+
+    public getAllGlobalStructsCompletionItems(): CompletionItem[] {
+        const completionItems: CompletionItem[] = [];
+        this.getAllGlobalStructs().forEach(x => completionItems.push(x.createCompletionItem()));
+        return completionItems;
+    }
+
+    public getAllGlobalEnumsCompletionItems(): CompletionItem[] {
+        const completionItems: CompletionItem[] = [];
+        this.getAllGlobalEnums().forEach(x => completionItems.push(x.createCompletionItem()));
+        return completionItems;
+    }
+
+    public getAllGlobalCustomTypesCompletionItems(): CompletionItem[] {
+        const completionItems: CompletionItem[] = [];
+        this.getAllGlobalCustomTypes().forEach(x => completionItems.push(x.createCompletionItem()));
+        return completionItems;
+    }
+
+    public getAllGlobalConstantCompletionItems(): CompletionItem[] {
+        const completionItems: CompletionItem[] = [];
+        this.getAllGlobalConstants().forEach(x => completionItems.push(x.createCompletionItem()));
+        return completionItems;
+    }
+
+    public getAllGlobalContractsCompletionItems(): CompletionItem[] {
+        const completionItems: CompletionItem[] = [];
+        this.allContracts.forEach(x => completionItems.push(x.createCompletionItem()));
+        return completionItems;
+    }
+
+    public getSelectedDocumentCompletionItems(offset: number): CompletionItem[] {
+        let completionItems: CompletionItem[] = [];
+        completionItems = completionItems.concat(this.getAllGlobalFunctionCompletionItems());
+        completionItems = completionItems.concat(this.getAllGlobalEventsCompletionItems());
+        completionItems = completionItems.concat(this.getAllGlobalStructsCompletionItems());
+        completionItems = completionItems.concat(this.getAllGlobalEnumsCompletionItems());
+        completionItems = completionItems.concat(this.getAllGlobalCustomTypesCompletionItems());
+        completionItems = completionItems.concat(this.getAllGlobalConstantCompletionItems());
+        completionItems = completionItems.concat(this.getAllGlobalContractsCompletionItems());
+
+        if (this.selectedFunction !== undefined) {
+            this.selectedFunction.findVariableDeclarationsInScope(offset);
+            this.selectedFunction.input.forEach(parameter => {
+                completionItems.push(parameter.createCompletionItem('function parameter', this.getGlobalPathInfo()));
+            });
+            this.selectedFunction.output.forEach(parameter => {
+                completionItems.push(parameter.createCompletionItem('return parameter', this.getGlobalPathInfo()));
+            });
+
+            this.selectedFunction.variablesInScope.forEach(variable => {
+                completionItems.push(variable.createCompletionItem());
+            });
+        }
+        return completionItems;
+    }
+
 
     private matchesElement(selectedElement: any, element: any) {
         return selectedElement !== null && selectedElement === element;

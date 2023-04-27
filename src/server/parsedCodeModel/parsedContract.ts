@@ -430,6 +430,7 @@ export class ParsedContract extends ParsedCode {
         completionItems = completionItems.concat(this.getAllEnumsCompletionItems());
         completionItems = completionItems.concat(this.getAllCustomTypesCompletionItems());
         completionItems = completionItems.concat(this.getAllConstantCompletionItems());
+        completionItems = completionItems.concat(this.document.getAllGlobalContractsCompletionItems());
 
         const selectedFunction = this.getSelectedFunction(offset);
 
