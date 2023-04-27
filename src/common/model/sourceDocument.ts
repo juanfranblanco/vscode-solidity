@@ -1,6 +1,7 @@
 'use strict';
 import * as path from 'path';
 import { formatPath } from '../util';
+import { Project } from './project';
 
 export class SourceDocument {
     public code: string;
@@ -9,11 +10,37 @@ export class SourceDocument {
     public absolutePath: string;
     public packagePath: string;
     public abi: string;
+    public project: Project;
 
-    constructor(absoulePath: string, code: string) {
+    constructor(absoulePath: string, code: string, project: Project) {
         this.absolutePath = this.formatDocumentPath(absoulePath);
         this.code = code;
+        this.project = project;
         this.imports = new Array<string>();
+    }
+
+    /**
+   * Resolve import statement to absolute file path
+   *
+   * @param {string} importPath import statement in *.sol contract
+   * @param {SourceDocument} contract the contract where the import statement belongs
+   * @returns {string} the absolute path of the imported file
+   */
+    public resolveImportPath(importPath: string): string {
+        if (this.isImportLocal(importPath)) {
+        return this.formatDocumentPath(path.resolve(path.dirname(this.absolutePath), importPath));
+        } else if (this.project !== undefined && this.project !== null) {
+        const remapping = this.project.findImportRemapping(importPath);
+            if (remapping !== undefined && remapping != null) {
+                return this.formatDocumentPath(remapping.resolveImport(importPath));
+            } else {
+                const depPack = this.project.findDependencyPackage(importPath);
+                if (depPack !== undefined) {
+                return this.formatDocumentPath(depPack.resolveImport(importPath));
+                }
+            }
+        }
+        return importPath;
     }
 
     public getAllImportFromPackages() {

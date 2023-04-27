@@ -10,6 +10,8 @@ import { ParsedConstant } from './ParsedConstant';
 import { SourceDocument } from '../../common/model/sourceDocument';
 import { ParsedDeclarationType } from './parsedDeclarationType';
 import { ParsedCustomType } from './ParsedCustomType';
+import { URI } from 'vscode-uri';
+import { Location, Range, TextDocument } from 'vscode-languageserver';
 
 
 export class ParsedDocument {
@@ -234,6 +236,16 @@ export class ParsedDocument {
             }
         }
         return null;
+    }
+
+
+    public getLocation() {
+        const uri = URI.file(this.sourceDocument.absolutePath).toString();
+        const document = TextDocument.create(uri, null, null, this.sourceDocument.code);
+        return Location.create(
+            document.uri,
+            Range.create(document.positionAt(this.element.start), document.positionAt(this.element.end)),
+          );
     }
 
     public getGlobalPathInfo(): string {

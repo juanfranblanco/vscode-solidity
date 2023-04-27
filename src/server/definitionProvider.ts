@@ -7,6 +7,34 @@ import { SourceDocumentCollection } from '../common/model/sourceDocumentCollecti
 import { Project } from '../common/model/project';
 import { initialiseProject } from '../common/projectService';
 import * as solparse from 'solparse-exp-jb';
+import { CodeWalkerService } from './parsedCodeModel/codeWalkerService';
+
+export class SolidityDefinitionProviderExperimental {
+
+  public provideDefinition(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    walker: CodeWalkerService,
+  ): Thenable<vscode.Location | vscode.Location[]> {
+
+      const offset = document.offsetAt(position);
+      const documentContractSelected = walker.getSelectedDocument(document, position);
+      if (documentContractSelected.selectedImport !== undefined && documentContractSelected.selectedImport !== null) {
+         const selectedImport = documentContractSelected.selectedImport;
+         return Promise.resolve(selectedImport.getReferenceLocation());
+      }
+      if (documentContractSelected.selectedContract !== undefined && documentContractSelected.selectedContract !== null) {
+        const selectedContract = documentContractSelected.selectedContract;
+        const selectedIsStatement = selectedContract.getSelectedIsStatement(offset);
+        if (selectedIsStatement !== undefined &&  selectedIsStatement !== null) {
+            return Promise.resolve(selectedIsStatement.getContractReferenceLocation());
+        }
+      }
+      return null;
+  }
+
+}
+
 
 export class SolidityDefinitionProvider {
   private rootPath: string;

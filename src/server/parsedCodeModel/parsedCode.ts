@@ -16,7 +16,11 @@ export class ParsedCode {
         return false;
     }
 
-    public getLocation() {
+    public isCurrentElementedSelected(offset: number): boolean {
+        return this.isElementedSelected(this.element, offset);
+    }
+
+    public getLocation(): Location {
         const uri = URI.file(this.document.sourceDocument.absolutePath).toString();
         const document = TextDocument.create(uri, null, null, this.document.sourceDocument.code);
         return Location.create(

@@ -62,7 +62,7 @@ export class SourceDocumentCollection {
 
 
     public addSourceDocumentAndResolveImports(contractPath: string, code: string, project: Project) {
-        const contract = this.addSourceDocument(contractPath, code);
+        const contract = this.addSourceDocument(contractPath, code, project);
         if (contract !== null) {
             contract.resolveImports();
             contract.imports.forEach(foundImport => {
@@ -81,9 +81,9 @@ export class SourceDocumentCollection {
         return contract;
     }
 
-    private addSourceDocument(contractPath: string, code: string) {
+    private addSourceDocument(contractPath: string, code: string, project: Project) {
         if (!this.containsSourceDocument(contractPath)) {
-            const contract = new SourceDocument(contractPath, code);
+            const contract = new SourceDocument(contractPath, code, project);
             this.documents.push(contract);
             return contract;
         }
@@ -115,7 +115,7 @@ export class SourceDocumentCollection {
     }
 
     private addSourceDocumentAndResolveDependencyImport(dependencyImport: string, contract: SourceDocument, project: Project) {
-        //find re-mapping
+        // find re-mapping
         const remapping = project.findImportRemapping(dependencyImport);
         if (remapping !== undefined && remapping !== null) {
             const importPath = this.formatContractPath(remapping.resolveImport(dependencyImport));

@@ -22,7 +22,7 @@ const hardhatConfigFileName = 'hardhat.config.js';
 const truffleConfigFileName = 'truffle-config.js';
 const foundryConfigFileName = 'foundry.toml';
 
-const projectFilesAtRoot = [remappingConfigFileName, brownieConfigFileName, foundryConfigFileName, hardhatConfigFileName, truffleConfigFileName, packageConfigFileName]
+const projectFilesAtRoot = [remappingConfigFileName, brownieConfigFileName, foundryConfigFileName, hardhatConfigFileName, truffleConfigFileName, packageConfigFileName];
 
 // These are set using user configuration settings
 let packageDependenciesDirectory = 'lib';
@@ -93,21 +93,21 @@ export function initialiseProject(rootPath: string,
 function getRemappingsFromFoundryConfig(rootPath: string): string[] {
     const foundryConfigFile = path.join(rootPath, foundryConfigFileName);
     if (fs.existsSync(foundryConfigFile)) {
-        
+
         try {
             const fileContent = fs.readFileSync(foundryConfigFile, 'utf8');
             const configOutput = toml.parse(fileContent);
             let remappingsLoaded: string[];
-            remappingsLoaded = configOutput["profile"]["default"]["remappings"];
+            remappingsLoaded = configOutput['profile']['default']['remappings'];
             if (!remappingsLoaded) {
                 return null;
             }
-            if(remappingsLoaded.length ==0) {
+            if (remappingsLoaded.length === 0) {
                 return null;
             }
             return remappingsLoaded;
         } catch (error) {
-            //ignore error
+            // ignore error
             console.log(error);
         }
         return ;
@@ -147,7 +147,7 @@ function getRemappingsFromRemappingsFile(rootPath) {
     if (fs.existsSync(remappingsFile)) {
         const remappings = [];
         const fileContent = fs.readFileSync(remappingsFile, 'utf8');
-        const remappingsLoaded = fileContent.split(/\r\n|\r|\n/); //split lines
+        const remappingsLoaded = fileContent.split(/\r\n|\r|\n/); // split lines
         if (remappingsLoaded) {
             remappingsLoaded.forEach(element => {
                 remappings.push(element);
@@ -158,7 +158,7 @@ function getRemappingsFromRemappingsFile(rootPath) {
     return null;
 }
 
-export function loadRemappings(rootPath: string, remappings: string[]): string[]{
+export function loadRemappings(rootPath: string, remappings: string[]): string[] {
     if (remappings === undefined) { remappings = []; }
 
     // Brownie prioritezes brownie-config.yml over remappings.txt

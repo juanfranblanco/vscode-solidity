@@ -1,3 +1,4 @@
+import { Location } from 'vscode-languageserver';
 import { ParsedDocument } from './ParsedDocument';
 import { ParsedCode } from './parsedCode';
 import { ParsedContract } from './parsedContract';
@@ -8,7 +9,7 @@ export class ParsedContractIs extends ParsedCode {
     private contractReference: ParsedContract = null;
     public initialise(element: any, contract: ParsedContract, document: ParsedDocument, isGlobal: boolean) {
         this.element = element;
-        this.name = element.library;
+        this.name = element.name;
         this.document = document;
         this.contract = contract;
     }
@@ -24,5 +25,9 @@ export class ParsedContractIs extends ParsedCode {
 
     public getContractReference(): ParsedContract {
         return this.initialiseContractReference();
+    }
+
+    public getContractReferenceLocation(): Location {
+        return this.getContractReference().getLocation();
     }
 }

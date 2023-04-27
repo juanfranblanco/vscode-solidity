@@ -85,6 +85,13 @@ export class ParsedContract extends ParsedCode {
         return this.isElementedSelected(element, offset);
     }
 
+    public getSelectedIsStatement(offset: number): ParsedContractIs {
+        const foundContractIs  = this.contractIsStatements.find(x => {
+            return x.isCurrentElementedSelected(offset);
+        });
+        return foundContractIs;
+    }
+
     public getSelectedFunction(offset: number) {
         let selectedFunction = this.functions.find(x => {
             const element = x.element;

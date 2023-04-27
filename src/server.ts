@@ -5,7 +5,7 @@ import SolhintService from './server/linter/solhint';
 import SoliumService from './server/linter/solium';
 import { CompilerError } from './server/solErrorsToDiagnostics';
 import { CompletionService } from './server/completionService';
-import { SolidityDefinitionProvider } from './server/definitionProvider';
+import { SolidityDefinitionProvider, SolidityDefinitionProviderExperimental } from './server/definitionProvider';
 import {
     createConnection,
     TextDocuments,
@@ -205,7 +205,7 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
     let completionItems = [];
     const document = documents.get(textDocumentPosition.textDocument.uri);
     const projectRootPath = initCurrentProjectInWorkspaceRootFsPath(document.uri);
-    
+
     const service = new CompletionService(projectRootPath);
 
     completionItems = completionItems.concat(
@@ -221,6 +221,11 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
 
 connection.onDefinition((handler: TextDocumentPositionParams): Thenable<Location | Location[]> => {
     const projectRootPath = initCurrentProjectInWorkspaceRootFsPath(handler.textDocument.uri);
+    /*
+    const provider = new SolidityDefinitionProviderExperimental();
+    return provider.provideDefinition(documents.get(handler.textDocument.uri), handler.position, getCodeWalkerService());
+    */
+
     const provider = new SolidityDefinitionProvider(
         projectRootPath,
         packageDefaultDependenciesDirectory,
