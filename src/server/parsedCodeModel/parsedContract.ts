@@ -3,7 +3,7 @@ import { ParsedEnum } from './ParsedEnum';
 import { ParsedStruct } from './ParsedStruct';
 import { ParsedEvent } from './ParsedEvent';
 import { ParsedFunction } from './ParsedFunction';
-import { ParsedCode } from './parsedCode';
+import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 import { ParsedDeclarationType } from './parsedDeclarationType';
 import { ParsedUsing } from './parsedUsing';
 import { ParsedError } from './ParsedError';
@@ -12,6 +12,7 @@ import { ParsedConstant } from './ParsedConstant';
 import { ParsedCustomType } from './ParsedCustomType';
 import { CompletionItem, CompletionItemKind, Location, Range, TextDocument } from 'vscode-languageserver';
 import { ParsedContractIs } from './ParsedContractIs';
+
 export enum ContractType {
     contract,
     interface,
@@ -19,6 +20,7 @@ export enum ContractType {
 }
 
 export class ParsedContract extends ParsedCode {
+
     public functions: ParsedFunction[] = [];
     public enums: ParsedEnum[] = [];
     public events: ParsedEvent[] = [];
@@ -26,13 +28,15 @@ export class ParsedContract extends ParsedCode {
     public contractIsStatements: ParsedContractIs[] = [];
     public errors: ParsedError[] = [];
     public structs: ParsedStruct[] = [];
+    public using: ParsedUsing[] = [];
+    public customTypes: ParsedCustomType[] = [];
+
     public contractElementType: string;
     public constructorFunction: ParsedFunction = new ParsedFunction();
     public fallbackFunction: ParsedFunction = new ParsedFunction();
     public receiveFunction: ParsedFunction = new ParsedFunction();
     public extendsContracts: ParsedContract[] = [];
-    public using: ParsedUsing[] = [];
-    public customTypes: ParsedCustomType[] = [];
+
     public contractType: ContractType = ContractType.contract;
     public isAbstract: boolean;
 
@@ -90,6 +94,45 @@ export class ParsedContract extends ParsedCode {
             return x.isCurrentElementedSelected(offset);
         });
         return foundContractIs;
+    }
+
+    public getSelectedStructDeclaration(offset: number): ParsedStruct {
+        const found  = this.structs.find(x => {
+            return x.isCurrentElementedSelected(offset);
+        });
+        return found;
+    }
+
+    public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+        if (this.isCurrentElementedSelected(offset)) {
+            const results: FindTypeReferenceLocationResult[] = [];
+            this.functions.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.errors.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.events.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.stateVariables.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.structs.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.using.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.customTypes.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.contractIsStatements.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+
+            const foundResult = results.find(x => x.isCurrentElementSelected === true);
+            if (foundResult === undefined) {
+                return FindTypeReferenceLocationResult.create(true);
+            } else {
+                return foundResult;
+            }
+        }
+        return FindTypeReferenceLocationResult.create(false);
+    }
+
+    public findType(name: string): ParsedCode {
+        let typesParsed: ParsedCode[] = [];
+        typesParsed = typesParsed.concat(this.getAllConstants())
+                         .concat(this.getAllCustomTypes())
+                         .concat(this.getAllStructs())
+                         .concat(this.getAllEnums())
+                         .concat(this.document.allContracts);
+        return typesParsed.find(x => x.name === name);
     }
 
     public getSelectedFunction(offset: number) {
@@ -181,7 +224,7 @@ export class ParsedContract extends ParsedCode {
     }
 
     public getAllConstants(): ParsedConstant[] {
-        return this.document.getAllConstants();
+        return this.document.getAllGlobalConstants();
     }
 
     public getAllEvents(): ParsedEvent[] {

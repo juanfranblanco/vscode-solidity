@@ -10,7 +10,7 @@ export class ParsedConstant extends ParsedVariable {
         this.document = document;
         this.element = element;
         this.name = element.name;
-        this.type = ParsedDeclarationType.create(element.literal);
+        this.type = ParsedDeclarationType.create(element.literal, null, document);
     }
 
     public createCompletionItem(): CompletionItem {

@@ -1,5 +1,5 @@
 import { ParsedContract } from './parsedContract';
-import { ParsedCode } from './parsedCode';
+import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 import { ParsedDeclarationType } from './parsedDeclarationType';
 import { ParsedParameter } from './ParsedParameter';
 import { ParsedFunctionVariable } from './ParsedFunctionVariable';
@@ -25,8 +25,8 @@ export class ParsedFunction extends ParsedCode {
         this.initialiseParamters();
     }
     public initialiseParamters() {
-        this.input = ParsedParameter.extractParameters(this.element.params);
-        this.output = ParsedParameter.extractParameters(this.element.returnParams);
+        this.input = ParsedParameter.extractParameters(this.element.params, this.contract, this.document, this);
+        this.output = ParsedParameter.extractParameters(this.element.returnParams, this.contract, this.document, this);
     }
 
     public findVariableDeclarationsInScope(offset: number) {
@@ -93,6 +93,24 @@ export class ParsedFunction extends ParsedCode {
         return completionItem;
     }
 
+    public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+        if (this.isCurrentElementedSelected(offset)) {
+            const results: FindTypeReferenceLocationResult[] = [];
+            this.input.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.output.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.findVariableDeclarationsInScope(offset);
+            this.variablesInScope.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            // TODO method calls and everything else variables is a small workaround
+            const foundResult = results.find(x => x.isCurrentElementSelected === true);
+            if (foundResult === undefined) {
+                return FindTypeReferenceLocationResult.create(true);
+            } else {
+                return foundResult;
+            }
+        }
+        return FindTypeReferenceLocationResult.create(false);
+   }
+
     private addVariableInScopeFromExpression(expression: any) {
         let declarationStatement = null;
         if (expression.type === 'AssignmentExpression') {
@@ -109,7 +127,7 @@ export class ParsedFunction extends ParsedCode {
             const variable = new ParsedFunctionVariable();
             variable.element = declarationStatement;
             variable.name = declarationStatement.name;
-            variable.type = ParsedDeclarationType.create(declarationStatement.literal);
+            variable.type = ParsedDeclarationType.create(declarationStatement.literal, this.contract, this.document);
             variable.function = this;
             this.variablesInScope.push(variable);
         }

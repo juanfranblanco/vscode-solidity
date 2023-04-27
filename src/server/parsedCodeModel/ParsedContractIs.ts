@@ -1,6 +1,6 @@
 import { Location } from 'vscode-languageserver';
 import { ParsedDocument } from './ParsedDocument';
-import { ParsedCode } from './parsedCode';
+import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 import { ParsedContract } from './parsedContract';
 
 
@@ -30,4 +30,11 @@ export class ParsedContractIs extends ParsedCode {
     public getContractReferenceLocation(): Location {
         return this.getContractReference().getLocation();
     }
+
+    public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+        if (this.isCurrentElementedSelected(offset)) {
+             return FindTypeReferenceLocationResult.create(true, this.getContractReferenceLocation());
+        }
+        return FindTypeReferenceLocationResult.create(false);
+   }
 }

@@ -87,14 +87,14 @@ let codeWalkerService: CodeWalkerService = null;
 
 function getCodeWalkerService() {
     if (codeWalkerService !== null) {
-        if (codeWalkerService.rootPath === rootPath &&
+        if (codeWalkerService.rootPath === selectedProjectFolder &&
             codeWalkerService.packageDefaultDependenciesDirectory === packageDefaultDependenciesDirectory &&
             codeWalkerService.packageDefaultDependenciesContractsDirectory === packageDefaultDependenciesContractsDirectory &&
             codeWalkerService.remappings.sort().join('') === remappings.sort().join('')) {
             return codeWalkerService;
         }
     }
-    codeWalkerService = new CodeWalkerService(rootPath,  packageDefaultDependenciesDirectory,
+    codeWalkerService = new CodeWalkerService(selectedProjectFolder,  packageDefaultDependenciesDirectory,
         packageDefaultDependenciesContractsDirectory, remappings,
     );
     return codeWalkerService;
@@ -220,12 +220,13 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
 });
 
 connection.onDefinition((handler: TextDocumentPositionParams): Thenable<Location | Location[]> => {
+    initWorkspaceRootFolder(handler.textDocument.uri);
     const projectRootPath = initCurrentProjectInWorkspaceRootFsPath(handler.textDocument.uri);
-    /*
+
     const provider = new SolidityDefinitionProviderExperimental();
     return provider.provideDefinition(documents.get(handler.textDocument.uri), handler.position, getCodeWalkerService());
-    */
 
+/*
     const provider = new SolidityDefinitionProvider(
         projectRootPath,
         packageDefaultDependenciesDirectory,
@@ -233,6 +234,7 @@ connection.onDefinition((handler: TextDocumentPositionParams): Thenable<Location
         remappings,
     );
     return provider.provideDefinition(documents.get(handler.textDocument.uri), handler.position);
+    */
 });
 
 

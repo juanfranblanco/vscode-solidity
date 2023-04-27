@@ -1,9 +1,9 @@
 import { ParsedContract } from './parsedContract';
-import { ParsedCode } from './parsedCode';
+import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 import { ParsedDeclarationType } from './parsedDeclarationType';
 import { ParsedStructVariable } from './ParsedStructVariable';
 import { ParsedDocument } from './ParsedDocument';
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind, Location } from 'vscode-languageserver';
 
 export class ParsedStruct extends ParsedCode {
     public variables: ParsedStructVariable[] = [];
@@ -21,14 +21,29 @@ export class ParsedStruct extends ParsedCode {
             this.element.body.forEach(structBodyElement => {
                 if (structBodyElement.type === 'DeclarativeExpression') {
                     const variable = new ParsedStructVariable();
-                    variable.element = structBodyElement;
-                    variable.name = structBodyElement.name;
-                    variable.type = ParsedDeclarationType.create(structBodyElement.literal);
-                    variable.struct = this;
+                    variable.initialise(structBodyElement, this.contract, this.document, this);
                     this.variables.push(variable);
                 }
             });
         }
+    }
+
+    public getVariableSelected(offset: number) {
+       return this.variables.find(x => {
+            return x.isCurrentElementedSelected(offset);
+        });
+    }
+
+    public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+        if (this.isCurrentElementedSelected(offset)) {
+             const variableSelected = this.getVariableSelected(offset);
+              if (variableSelected !== undefined) {
+                  return variableSelected.getSelectedTypeReferenceLocation(offset);
+              } else {
+                  return FindTypeReferenceLocationResult.create(true);
+              }
+        }
+        return FindTypeReferenceLocationResult.create(false);
     }
 
     public createCompletionItem(): CompletionItem {

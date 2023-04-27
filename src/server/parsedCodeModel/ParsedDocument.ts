@@ -12,11 +12,13 @@ import { ParsedDeclarationType } from './parsedDeclarationType';
 import { ParsedCustomType } from './ParsedCustomType';
 import { URI } from 'vscode-uri';
 import { Location, Range, TextDocument } from 'vscode-languageserver';
+import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 
 
 export class ParsedDocument {
 
     public allContracts: ParsedContract[] = [];
+    public innerContracts: ParsedContract[] = [];
     public functions: ParsedFunction[]  = [];
     public events: ParsedEvent[]  = [];
     public enums: ParsedEnum[]  = [];
@@ -79,11 +81,11 @@ export class ParsedDocument {
         return returnItems;
     }
 
-    public getAllConstants(): ParsedConstant[] {
+    public getAllGlobalConstants(): ParsedConstant[] {
         let returnItems: ParsedConstant[] = [];
         returnItems = returnItems.concat(this.constants);
         this.importedDocuments.forEach(document => {
-            returnItems = returnItems.concat(document.getAllConstants());
+            returnItems = returnItems.concat(document.getAllGlobalConstants());
         });
         return returnItems;
     }
@@ -146,6 +148,7 @@ export class ParsedDocument {
                         this.selectedContract = contract;
                     }
                     this.allContracts.push(contract);
+                    this.innerContracts.push(contract);
                 }
 
                 if (element.type === 'FileLevelConstant') {
@@ -238,6 +241,35 @@ export class ParsedDocument {
         return null;
     }
 
+    public getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+            const results: FindTypeReferenceLocationResult[] = [];
+            this.functions.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.errors.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.events.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.innerContracts.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.structs.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.usings.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.customTypes.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.constants.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.imports.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+
+            const foundResult = results.find(x => x.isCurrentElementSelected === true);
+            if (foundResult === undefined) {
+                return FindTypeReferenceLocationResult.create(true);
+            } else {
+                return foundResult;
+            }
+    }
+
+    public findType(name: string): ParsedCode {
+        let typesParsed: ParsedCode[] = [];
+        typesParsed = typesParsed.concat(this.getAllGlobalConstants())
+                         .concat(this.getAllGlobalCustomTypes())
+                         .concat(this.getAllGlobalStructs())
+                         .concat(this.getAllGlobalEnums())
+                         .concat(this.allContracts);
+        return typesParsed.find(x => x.name === name);
+    }
 
     public getLocation() {
         const uri = URI.file(this.sourceDocument.absolutePath).toString();

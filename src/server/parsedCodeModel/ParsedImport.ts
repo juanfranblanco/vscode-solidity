@@ -1,5 +1,5 @@
 import { Location, Range } from 'vscode-languageserver';
-import { ParsedCode } from './parsedCode';
+import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 import { ParsedDocument } from './ParsedDocument';
 import { URI } from 'vscode-uri';
 
@@ -13,6 +13,13 @@ export class ParsedImport extends ParsedCode {
         this.element = element;
         this.from = element.from;
     }
+
+    public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+        if (this.isCurrentElementedSelected(offset)) {
+             return FindTypeReferenceLocationResult.create(true, this.getReferenceLocation());
+        }
+        return FindTypeReferenceLocationResult.create(false);
+   }
 
     public getReferenceLocation(): Location {
         const path = this.document.sourceDocument.resolveImportPath(this.from);

@@ -2,13 +2,19 @@ import { ParsedDeclarationType } from './parsedDeclarationType';
 import { ParsedVariable } from './ParsedVariable';
 import { ParsedCodeTypeHelper } from './ParsedCodeTypeHelper';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { ParsedDocument } from './ParsedDocument';
+import { ParsedContract } from './parsedContract';
+import { ParsedCode } from './parsedCode';
 
 
 
 
 export class ParsedParameter extends ParsedVariable {
+    public contract: ParsedContract;
+    public parent: ParsedCode;
 
-    public static extractParameters(params: any): ParsedParameter[] {
+
+    public static extractParameters(params: any, contract: ParsedContract, document: ParsedDocument, parent: ParsedCode): ParsedParameter[] {
         const parameters: ParsedParameter[] = [];
         if (typeof params !== 'undefined' && params !== null) {
             if (params.hasOwnProperty('params')) {
@@ -16,17 +22,14 @@ export class ParsedParameter extends ParsedVariable {
             }
             params.forEach(parameterElement => {
                 const parameter: ParsedParameter = new ParsedParameter();
-                const type = ParsedDeclarationType.create(parameterElement.literal);
-                parameter.element = parameterElement;
-                parameter.type = type;
-                if (typeof parameterElement.id !== 'undefined' && parameterElement.id !== null) { // no name on return parameters
-                    parameter.name = parameterElement.id;
-                } parameters.push(parameter);
+                parameter.initialise(parameterElement, contract, document, parent);
+                parameters.push(parameter);
 
             });
         }
         return parameters;
     }
+
 
     public static createParamsInfo(params: any): string {
         let paramsInfo = '';
@@ -72,6 +75,21 @@ export class ParsedParameter extends ParsedVariable {
             });
         }
         return paramsSnippet;
+    }
+
+    public initialise(element: any, contract: ParsedContract, document: ParsedDocument, parent: ParsedCode) {
+        this.element = element;
+        this.name = element.name;
+        this.document = document;
+        this.contract = contract;
+        this.parent = parent;
+
+        const type = ParsedDeclarationType.create(element.literal, contract, document);
+        this.element = element;
+        this.type = type;
+        if (typeof element.id !== 'undefined' && element.id !== null) { // no name on return parameters
+            this.name = element.id;
+        }
     }
 
     public createCompletionItem(type: string, contractName: string): CompletionItem {

@@ -15,7 +15,7 @@ export class ParsedStateVariable extends ParsedVariable {
         this.element = element;
         this.name = element.name;
         this.document = document;
-        this.type = ParsedDeclarationType.create(element.literal);
+        this.type = ParsedDeclarationType.create(element.literal, contract, document);
     }
 
     public createCompletionItem(): CompletionItem {

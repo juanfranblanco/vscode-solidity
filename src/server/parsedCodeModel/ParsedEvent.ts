@@ -1,5 +1,5 @@
 import { ParsedContract } from './parsedContract';
-import { ParsedCode } from './parsedCode';
+import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 import { ParsedParameter } from './ParsedParameter';
 import { ParsedDocument } from './ParsedDocument';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
@@ -21,7 +21,7 @@ export class ParsedEvent extends ParsedCode {
     }
 
     public initialiseParamters() {
-        this.input = ParsedParameter.extractParameters(this.element.params);
+        this.input = ParsedParameter.extractParameters(this.element.params, this.contract, this.document, this);
     }
 
     public createCompletionItem(skipFirstParamSnipppet = false): CompletionItem {
@@ -47,6 +47,20 @@ export class ParsedEvent extends ParsedCode {
         completionItem.detail = info;
         return completionItem;
     }
+
+    public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+        if (this.isCurrentElementedSelected(offset)) {
+            const results: FindTypeReferenceLocationResult[] = [];
+            this.input.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            const foundResult = results.find(x => x.isCurrentElementSelected === true);
+            if (foundResult === undefined) {
+                return FindTypeReferenceLocationResult.create(true);
+            } else {
+                return foundResult;
+            }
+        }
+        return FindTypeReferenceLocationResult.create(false);
+   }
 
 }
 

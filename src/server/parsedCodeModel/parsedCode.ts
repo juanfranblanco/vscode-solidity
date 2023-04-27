@@ -2,6 +2,18 @@ import { ParsedDocument } from './ParsedDocument';
 import { Location, Range, TextDocument } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 
+export class FindTypeReferenceLocationResult {
+    public isCurrentElementSelected: boolean;
+    public location: Location;
+
+    public static create(isSelected: boolean, location: Location = null){
+        const result = new FindTypeReferenceLocationResult();
+        result.location = location;
+        result.isCurrentElementSelected = isSelected;
+        return result;
+    }
+}
+
 export class ParsedCode {
     public element: any;
     public name: string;
@@ -27,5 +39,14 @@ export class ParsedCode {
             document.uri,
             Range.create(document.positionAt(this.element.start), document.positionAt(this.element.end)),
           );
+    }
+
+    public getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+        if (this.isCurrentElementedSelected(offset)) {
+
+            return FindTypeReferenceLocationResult.create(true);
+
+        }
+        return FindTypeReferenceLocationResult.create(false);
     }
 }

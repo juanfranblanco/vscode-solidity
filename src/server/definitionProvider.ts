@@ -17,20 +17,10 @@ export class SolidityDefinitionProviderExperimental {
     walker: CodeWalkerService,
   ): Thenable<vscode.Location | vscode.Location[]> {
 
-      const offset = document.offsetAt(position);
-      const documentContractSelected = walker.getSelectedDocument(document, position);
-      if (documentContractSelected.selectedImport !== undefined && documentContractSelected.selectedImport !== null) {
-         const selectedImport = documentContractSelected.selectedImport;
-         return Promise.resolve(selectedImport.getReferenceLocation());
-      }
-      if (documentContractSelected.selectedContract !== undefined && documentContractSelected.selectedContract !== null) {
-        const selectedContract = documentContractSelected.selectedContract;
-        const selectedIsStatement = selectedContract.getSelectedIsStatement(offset);
-        if (selectedIsStatement !== undefined &&  selectedIsStatement !== null) {
-            return Promise.resolve(selectedIsStatement.getContractReferenceLocation());
-        }
-      }
-      return null;
+    const offset = document.offsetAt(position);
+    const documentContractSelected = walker.getSelectedDocument(document, position);
+    const reference = documentContractSelected.getSelectedTypeReferenceLocation(offset);
+    return Promise.resolve(reference.location);
   }
 
 }
@@ -80,107 +70,107 @@ export class SolidityDefinitionProvider {
   ): Thenable<vscode.Location | vscode.Location[]> {
 
 
-      const documentText = document.getText();
-      const contractPath = URI.parse(document.uri).fsPath;
+    const documentText = document.getText();
+    const contractPath = URI.parse(document.uri).fsPath;
 
-      const contracts = new SourceDocumentCollection();
-      if (this.project !== undefined) {
-        contracts.addSourceDocumentAndResolveImports(
-          contractPath,
-          documentText,
-          this.project,
-        );
-      }
-      // this contract
-      const contract = contracts.documents[0];
+    const contracts = new SourceDocumentCollection();
+    if (this.project !== undefined) {
+      contracts.addSourceDocumentAndResolveImports(
+        contractPath,
+        documentText,
+        this.project,
+      );
+    }
+    // this contract
+    const contract = contracts.documents[0];
 
-      const offset = document.offsetAt(position);
+    const offset = document.offsetAt(position);
 
-      const result = solparse.parse(documentText);
+    const result = solparse.parse(documentText);
 
-      const element = this.findElementByOffset(result.body, offset);
+    const element = this.findElementByOffset(result.body, offset);
 
-      if (element !== undefined) {
-        switch (element.type) {
-          case 'ImportStatement':
-            return Promise.resolve(
-              vscode.Location.create(
-                URI.file(this.resolveImportPath(element.from, contract)).toString(),
-                vscode.Range.create(0, 0, 0, 0),
-              ),
+    if (element !== undefined) {
+      switch (element.type) {
+        case 'ImportStatement':
+          return Promise.resolve(
+            vscode.Location.create(
+              URI.file(this.resolveImportPath(element.from, contract)).toString(),
+              vscode.Range.create(0, 0, 0, 0),
+            ),
+          );
+        case 'ContractStatement': {
+          // find definition for inheritance
+          const isBlock = this.findElementByOffset(element.is, offset);
+          if (isBlock !== undefined) {
+            let directImport = this.findDirectImport(
+              document,
+              result.body,
+              isBlock.name,
+              'ContractStatement',
+              contracts,
             );
-          case 'ContractStatement': {
-            // find definition for inheritance
-            const isBlock = this.findElementByOffset(element.is, offset);
-            if (isBlock !== undefined) {
-              let directImport = this.findDirectImport(
+
+            if (directImport.location === undefined) {
+              directImport = this.findDirectImport(
                 document,
                 result.body,
                 isBlock.name,
-                'ContractStatement',
+                'InterfaceStatement',
                 contracts,
               );
+            }
+            return Promise.resolve(directImport.location);
+          }
 
-              if (directImport.location === undefined) {
-                directImport = this.findDirectImport(
-                  document,
-                  result.body,
-                  isBlock.name,
-                  'InterfaceStatement',
-                  contracts,
-                );
-              }
-              return Promise.resolve(directImport.location);
-            }
-
-            // find definition in contract body recursively
-            const statement = this.findElementByOffset(element.body, offset);
-            if (statement !== undefined) {
-              return this.provideDefinitionInStatement(
-                document,
-                result.body,
-                statement,
-                element,
-                offset,
-                contracts,
-              );
-            }
-            break;
+          // find definition in contract body recursively
+          const statement = this.findElementByOffset(element.body, offset);
+          if (statement !== undefined) {
+            return this.provideDefinitionInStatement(
+              document,
+              result.body,
+              statement,
+              element,
+              offset,
+              contracts,
+            );
           }
-          case 'LibraryStatement': {
-            // find definition in library body recursively
-            const statement = this.findElementByOffset(element.body, offset);
-            if (statement !== undefined) {
-              return this.provideDefinitionInStatement(
-                document,
-                result.body,
-                statement,
-                element,
-                offset,
-                contracts,
-              );
-            }
-            break;
-          }
-          case 'InterfaceStatement': {
-            // find definition in interface body recursively
-            const statement = this.findElementByOffset(element.body, offset);
-            if (statement !== undefined) {
-              return this.provideDefinitionInStatement(
-                document,
-                result.body,
-                statement,
-                element,
-                offset,
-                contracts,
-              );
-            }
-            break;
-          }
-          default:
-            break;
+          break;
         }
+        case 'LibraryStatement': {
+          // find definition in library body recursively
+          const statement = this.findElementByOffset(element.body, offset);
+          if (statement !== undefined) {
+            return this.provideDefinitionInStatement(
+              document,
+              result.body,
+              statement,
+              element,
+              offset,
+              contracts,
+            );
+          }
+          break;
+        }
+        case 'InterfaceStatement': {
+          // find definition in interface body recursively
+          const statement = this.findElementByOffset(element.body, offset);
+          if (statement !== undefined) {
+            return this.provideDefinitionInStatement(
+              document,
+              result.body,
+              statement,
+              element,
+              offset,
+              contracts,
+            );
+          }
+          break;
+        }
+        default:
+          break;
       }
+    }
 
   }
 
@@ -420,9 +410,9 @@ export class SolidityDefinitionProvider {
       try {
         const result = solparse.parse(contract.code);
 
-        const elements =  Array.prototype.concat.apply([],
+        const elements = Array.prototype.concat.apply([],
           result.body.map(element => {
-            if (element.type === 'ContractStatement' ||  element.type === 'LibraryStatement') {
+            if (element.type === 'ContractStatement' || element.type === 'LibraryStatement') {
               if (typeof element.body !== 'undefined' && element.body !== null) {
                 return extractElements(element);
               }
@@ -442,33 +432,33 @@ export class SolidityDefinitionProvider {
             ),
           ),
         );
-        } catch {
-          // FALLBACK WORKAROUND ON ERROR PARSING this could be a custom parser
-          // remove all comments with spaces
-          const code = this.replaceCommentsWithSpacesPreservingLines(contract.code);
-          // we find functions, structs, enums and contracts name
-          const regexWord = new RegExp('^\\s*(function|event)\\s+(' + literalFallbackName + ')\\s*\\(|\\s*(struct|contract|enum|library)\\s+(' + literalFallbackName + ')\\s*{', 'gm');
-          // find the first declaration
-          let pos = this.regexIndexOf(code, regexWord, 0);
-          if (pos > -1) {
-            // we want to get position of the name, not the start of the match
-            pos = code.indexOf(literalFallbackName, pos);
-            if (pos > -1) { // making sure..
-              locations.push(
-                vscode.Location.create(
-                  uri,
-                  vscode.Range.create(document.positionAt(pos), document.positionAt(pos + literalFallbackName.length)),
-                  ));
-              }
+      } catch {
+        // FALLBACK WORKAROUND ON ERROR PARSING this could be a custom parser
+        // remove all comments with spaces
+        const code = this.replaceCommentsWithSpacesPreservingLines(contract.code);
+        // we find functions, structs, enums and contracts name
+        const regexWord = new RegExp('^\\s*(function|event)\\s+(' + literalFallbackName + ')\\s*\\(|\\s*(struct|contract|enum|library)\\s+(' + literalFallbackName + ')\\s*{', 'gm');
+        // find the first declaration
+        let pos = this.regexIndexOf(code, regexWord, 0);
+        if (pos > -1) {
+          // we want to get position of the name, not the start of the match
+          pos = code.indexOf(literalFallbackName, pos);
+          if (pos > -1) { // making sure..
+            locations.push(
+              vscode.Location.create(
+                uri,
+                vscode.Range.create(document.positionAt(pos), document.positionAt(pos + literalFallbackName.length)),
+              ));
           }
-
         }
+
+      }
     }
     return Promise.resolve(locations);
   }
 
   private replaceCommentsWithSpacesPreservingLines(code: string): string {
-     // https://stackoverflow.com/questions/5989315/regex-for-match-replacing-javascript-comments-both-multiline-and-inline
+    // https://stackoverflow.com/questions/5989315/regex-for-match-replacing-javascript-comments-both-multiline-and-inline
     return code.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, this.replacer);
   }
 
@@ -664,14 +654,14 @@ export class SolidityDefinitionProvider {
       return contract.formatDocumentPath(path.resolve(path.dirname(contract.absolutePath), importPath));
     } else if (this.project !== undefined && this.project !== null) {
       const remapping = this.project.findImportRemapping(importPath);
-        if (remapping !== undefined && remapping != null) {
-            return contract.formatDocumentPath(remapping.resolveImport(importPath));
-        } else {
-            const depPack = this.project.findDependencyPackage(importPath);
-            if (depPack !== undefined) {
-               return contract.formatDocumentPath(depPack.resolveImport(importPath));
-            }
+      if (remapping !== undefined && remapping != null) {
+        return contract.formatDocumentPath(remapping.resolveImport(importPath));
+      } else {
+        const depPack = this.project.findDependencyPackage(importPath);
+        if (depPack !== undefined) {
+          return contract.formatDocumentPath(depPack.resolveImport(importPath));
         }
+      }
     }
     return importPath;
   }
