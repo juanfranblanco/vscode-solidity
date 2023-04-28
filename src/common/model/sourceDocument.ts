@@ -5,6 +5,7 @@ import { Project } from './project';
 
 export class SourceDocument {
     public code: string;
+    public unformattedCode: string;
     // TODO: Import needs to be a class including if is local, absolutePath, module etc
     public imports: Array<string>;
     public absolutePath: string;
@@ -15,6 +16,7 @@ export class SourceDocument {
     constructor(absoulePath: string, code: string, project: Project) {
         this.absolutePath = this.formatDocumentPath(absoulePath);
         this.code = code;
+        this.unformattedCode = code;
         this.project = project;
         this.imports = new Array<string>();
     }

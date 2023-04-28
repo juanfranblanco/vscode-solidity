@@ -4,17 +4,17 @@ import { ParsedDeclarationType } from './parsedDeclarationType';
 import { ParsedParameter } from './ParsedParameter';
 import { ParsedFunctionVariable } from './ParsedFunctionVariable';
 import { ParsedDocument } from './ParsedDocument';
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
-
-
-
+import { CompletionItem, CompletionItemKind, Location } from 'vscode-languageserver';
+import { ParsedModifierArgument } from './ParsedModifierArgument';
 
 export class ParsedFunction extends ParsedCode {
     public input: ParsedParameter[] = [];
     public output: ParsedParameter[] = [];
+    public modifiers: ParsedModifierArgument[] = [];
     public variablesInScope: ParsedFunctionVariable[] = [];
     public contract: ParsedContract;
     public isGlobal: boolean;
+    public isModifier: boolean;
 
     public initialise(element: any, contract: ParsedContract, document: ParsedDocument, isGlobal: boolean) {
         this.contract = contract;
@@ -22,12 +22,25 @@ export class ParsedFunction extends ParsedCode {
         this.name = element.name;
         this.document = document;
         this.isGlobal = isGlobal;
-        this.initialiseParamters();
+        this.initialiseParameters();
+        this.initialiseModifiers();
     }
-    public initialiseParamters() {
+
+    public initialiseParameters() {
         this.input = ParsedParameter.extractParameters(this.element.params, this.contract, this.document, this);
         this.output = ParsedParameter.extractParameters(this.element.returnParams, this.contract, this.document, this);
     }
+
+    public initialiseModifiers() {
+        if (this.element.modifiers !== undefined && this.element.modifiers !== null) {
+            this.element.modifiers.forEach(element => {
+                const parsedModifier = new ParsedModifierArgument();
+                parsedModifier.initialise(element, this, this.document);
+                this.modifiers.push(parsedModifier);
+        });
+        }
+    }
+
 
     public findVariableDeclarationsInScope(offset: number) {
 
@@ -86,8 +99,17 @@ export class ParsedFunction extends ParsedCode {
             contractName = this.document.getGlobalPathInfo();
         }
         completionItem.insertTextFormat = 2;
-        completionItem.insertText = this.name + '(' + paramsSnippet + ');';
-        const info = '(Function in ' + contractName  + ') ' + this.name + '(' + paramsInfo + ')' + returnParamsInfo;
+        let closingSemi = ';';
+        if (this.isModifier) {
+            closingSemi = '';
+        }
+
+        completionItem.insertText = this.name + '(' + paramsSnippet + ')' + closingSemi;
+        let functionType = 'Function';
+        if (this.isModifier) {
+            functionType = 'Modifier';
+        }
+        const info = '(' + functionType + ' in ' + contractName  + ') ' + this.name + '(' + paramsInfo + ')' + returnParamsInfo;
         completionItem.documentation = info;
         completionItem.detail = info;
         return completionItem;
@@ -100,6 +122,7 @@ export class ParsedFunction extends ParsedCode {
             this.output.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
             this.findVariableDeclarationsInScope(offset);
             this.variablesInScope.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.modifiers.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
             // TODO method calls and everything else variables is a small workaround
             const foundResult = results.find(x => x.isCurrentElementSelected === true);
             if (foundResult === undefined) {
@@ -134,6 +157,123 @@ export class ParsedFunction extends ParsedCode {
         }
     }
 
+    /*
+    private provideDefinitionInStatement(
+        document: TextDocument,
+        documentStatements: Array<any>,
+        statement: any,
+        parentStatement: any,
+        offset: number,
+        contracts: SourceDocumentCollection,
+      ): Location | Location[] {
+        switch (statement.type) {
+          case 'Type':
+            // handle nested type and resolve to inner type when applicable e.g. mapping(uint => Struct)
+            if (statement.literal instanceof Object && statement.literal.start <= offset && offset <= statement.literal.end) {
+              return this.provideDefinitionInStatement(
+                document,
+                documentStatements,
+                statement.literal,
+                statement,
+                offset,
+                contracts,
+              );
+            } else {
+              return this.provideDefinitionForType(
+                document,
+                documentStatements,
+                statement,
+                contracts,
+              );
+            }
+          case 'Identifier':
+            switch (parentStatement.type) {
+              case 'CallExpression': // e.g. Func(x, y)
+                if (parentStatement.callee === statement) {
+                  // TODO: differentiate function, event, and struct construction
+                  return this.provideDefinitionForCallee(
+                    contracts,
+                    statement.name,
+                  );
+                }
+                break;
+              case 'MemberExpression': // e.g. x.y x.f(y) arr[1] map['1'] arr[i] map[k]
+                if (parentStatement.object === statement) {
+                  // NB: it is possible to have f(x).y but the object statement would not be an identifier
+                  // therefore we can safely assume this is a variable instead
+                  return this.provideDefinitionForVariable(
+                    contracts,
+                    statement.name,
+                  );
+                } else if (parentStatement.property === statement) {
+                  return Promise.all([
+                    // TODO: differentiate better between following possible cases
+                    // TODO: provide field access definition, which requires us to know the type of object
+                    // Consider find the definition of object first and recursive upward till declarative expression for type inference
+
+                    // array or mapping access via variable i.e. arr[i] map[k]
+                    this.provideDefinitionForVariable(
+                      contracts,
+                      statement.name,
+                    ),
+                    // func call in the form of obj.func(arg)
+                    this.provideDefinitionForCallee(
+                      contracts,
+                      statement.name,
+                    ),
+                  ]).then(locationsArray => Array.prototype.concat.apply([], locationsArray));
+                }
+                break;
+              default:
+                return this.provideDefinitionForVariable(
+                  contracts,
+                  statement.name,
+                );
+            }
+            break;
+          default:
+            for (const key in statement) {
+              if (statement.hasOwnProperty(key)) {
+                const element = statement[key];
+                if (element instanceof Array) {
+                  // recursively drill down to collections e.g. statements, params
+                  const inner = this.findElementByOffset(element, offset);
+                  if (inner !== undefined) {
+                    return this.provideDefinitionInStatement(
+                      document,
+                      documentStatements,
+                      inner,
+                      statement,
+                      offset,
+                      contracts,
+                    );
+                  }
+                } else if (element instanceof Object) {
+                  // recursively drill down to elements with start/end e.g. literal type
+                  if (
+                    element.hasOwnProperty('start') && element.hasOwnProperty('end') &&
+                    element.start <= offset && offset <= element.end
+                  ) {
+                    return this.provideDefinitionInStatement(
+                      document,
+                      documentStatements,
+                      element,
+                      statement,
+                      offset,
+                      contracts,
+                    );
+                  }
+                }
+              }
+            }
+            // handle modifier last now that params have not been selected
+            if (statement.type === 'ModifierArgument') {
+              return this.provideDefinitionForCallee(contracts, statement.name);
+            }
+            break;
+        }
+      }
+        */
 
 
 

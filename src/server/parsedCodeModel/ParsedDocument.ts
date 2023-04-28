@@ -178,6 +178,16 @@ export class ParsedDocument {
                     this.functions.push(functionDocument);
                 }
 
+                if (element.type === 'ModifierDeclaration') {
+                    const functionDocument = new ParsedFunction();
+                    functionDocument.initialise(element, null, this, true);
+                    functionDocument.isModifier = true;
+                    if (this.matchesElement(selectedElement, element)) {
+                        this.selectedFunction = functionDocument;
+                    }
+                    this.functions.push(functionDocument);
+                }
+
                 if (element.type === 'EventDeclaration') {
                     const eventDocument = new ParsedEvent();
                     eventDocument.initialise(element, null, this, true);
@@ -269,6 +279,12 @@ export class ParsedDocument {
                          .concat(this.getAllGlobalEnums())
                          .concat(this.allContracts);
         return typesParsed.find(x => x.name === name);
+    }
+
+    public findMethodCalls(name: string): ParsedCode[] {
+        let typesParsed: ParsedCode[] = [];
+        typesParsed = typesParsed.concat(this.getAllGlobalFunctions());
+        return typesParsed.filter(x => x.name === name);
     }
 
     public getLocation() {

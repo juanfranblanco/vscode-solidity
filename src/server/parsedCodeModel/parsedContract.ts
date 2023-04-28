@@ -135,6 +135,12 @@ export class ParsedContract extends ParsedCode {
         return typesParsed.find(x => x.name === name);
     }
 
+    public findMethodCalls(name: string): ParsedCode[] {
+        let typesParsed: ParsedCode[] = [];
+        typesParsed = typesParsed.concat(this.getAllFunctions());
+        return typesParsed.filter(x => x.name === name);
+    }
+
     public getSelectedFunction(offset: number) {
         let selectedFunction = this.functions.find(x => {
             const element = x.element;
@@ -281,6 +287,13 @@ export class ParsedContract extends ParsedCode {
                     } else {
                         this.functions.push(functionContract);
                     }
+                }
+
+                if (contractElement.type === 'ModifierDeclaration') {
+                    const functionContract = new ParsedFunction();
+                    functionContract.initialise(contractElement, this, this.document, false);
+                    functionContract.isModifier = true;
+                    this.functions.push(functionContract);
                 }
 
                 if (contractElement.type === 'ConstructorDeclaration') {

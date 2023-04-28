@@ -34,7 +34,7 @@ export class ParsedCode {
 
     public getLocation(): Location {
         const uri = URI.file(this.document.sourceDocument.absolutePath).toString();
-        const document = TextDocument.create(uri, null, null, this.document.sourceDocument.code);
+        const document = TextDocument.create(uri, null, null, this.document.sourceDocument.unformattedCode);
         return Location.create(
             document.uri,
             Range.create(document.positionAt(this.element.start), document.positionAt(this.element.end)),
