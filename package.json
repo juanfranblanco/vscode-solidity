@@ -205,6 +205,21 @@
           "type": "array",
           "default": [],
           "description": "Unix Remappings to resolve contracts to local Unix files / directories (Note this overrides the generic remapping settings if the OS is Unix based), i.e: [\"@openzeppelin/=/opt/lib/openzeppelin-contracts\",\"ds-test/=/opt/lib/ds-test/src/\"]"
+        },
+        "solidity.developmentEnvironment": {
+          "type": "string",
+          "description": "Sets the development environment for the project. This is used to perform environment specific commands (like testing) and to parse output from relevant tools.",
+          "enum": [
+            "",
+            "hardhat",
+            "forge"
+          ],
+          "default": ""
+        },
+        "solidity.test.command": {
+          "type": "string",
+          "default": "",
+          "description": "Command to run to invoke tests"
         }
       }
     },
@@ -325,6 +340,10 @@
       {
         "command": "solidity.changeDefaultCompilerType",
         "title": "Solidity: Change the default workspace compiler to Remote, Local, NodeModule, Embedded"
+      },
+      {
+        "command": "solidity.runTests",
+        "title": "Solidity: Run tests"
       }
     ],
     "menus": {
