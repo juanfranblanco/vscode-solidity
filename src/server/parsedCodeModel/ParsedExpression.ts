@@ -274,7 +274,8 @@ export class ParsedExpressionIdentifier extends ParsedExpression {
   public initReference() {
     if (this.reference == null) {
       if (this.parent === null) {
-        const foundResults = this.expressionContainer.findMembersInScope(this.name);
+        let foundResults = this.expressionContainer.findMembersInScope(this.name);
+        foundResults = foundResults.concat(this.document.getAllContracts().filter(x => x.name === this.name));
         if (foundResults.length > 0) {
           this.reference = foundResults[0];
         }
@@ -287,12 +288,24 @@ export class ParsedExpressionIdentifier extends ParsedExpression {
     }
   }
 
+  public override isCurrentElementedSelected(offset: number): boolean {
+     return super.isCurrentElementedSelected(offset) || this.parent?.isCurrentElementedSelected(offset);
+  }
+
   public initExpressionType() {
     if (this.expressionType === null) {
       if (this.reference !== null) {
         const variable: ParsedVariable = <ParsedVariable>this.reference;
         if (variable.type !== undefined) {
           this.expressionType = variable.type;
+        } else {
+          if(this.reference instanceof ParsedContract) {
+             const contractExpressionType = new ParsedDeclarationType();
+             contractExpressionType.contract = this.contract;
+             contractExpressionType.document = this.document;
+             contractExpressionType.type = this.reference;
+            this.expressionType = contractExpressionType;
+          }
         }
       }
     }

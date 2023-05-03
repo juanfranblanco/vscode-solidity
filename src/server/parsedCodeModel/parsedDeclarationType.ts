@@ -55,8 +55,9 @@ export class ParsedDeclarationType extends ParsedCode {
             if (parentType !== undefined) {
                 this.type = parentType.findTypeInScope(this.name);
             }
+        } else { 
+            this.type = this.findTypeInScope(this.name);
         }
-        this.type = this.findTypeInScope(this.name);
         }
         return this.type;
     }
