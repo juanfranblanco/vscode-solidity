@@ -17,7 +17,7 @@ export class CodeWalkerService {
   public rootPath: string;
   public packageDefaultDependenciesDirectory: string;
   public packageDefaultDependenciesContractsDirectory: string;
-  private parsedDocumentsCache: ParsedDocument[] = [];
+  public parsedDocumentsCache: ParsedDocument[] = [];
 
   constructor(
     rootPath: string,
@@ -65,8 +65,6 @@ export class CodeWalkerService {
             if (sourceDocumentItem !== selectedSourceDocument) {
                 const documentImport = this.parseDocument(sourceDocumentItem.code, false, sourceDocumentItem);
                 selectedDocument.importedDocuments = selectedDocument.importedDocuments.concat(documentImport);
-                const contractsParsed = this.getContracts(sourceDocumentItem.code, documentImport);
-                selectedDocument.allContracts = selectedDocument.allContracts.concat(contractsParsed);
 
             }
         });
@@ -74,6 +72,12 @@ export class CodeWalkerService {
         if (selectedDocument.selectedContract !== undefined && selectedDocument.selectedContract !== null ) {
             selectedDocument.selectedContract.initialiseExtendContracts();
         }
+
+        this.parsedDocumentsCache.forEach(element => {
+          element.imports.forEach(importItem => {
+            importItem.initialiseDocumentReference(this.parsedDocumentsCache);
+          });
+        });
 
         return selectedDocument;
   }

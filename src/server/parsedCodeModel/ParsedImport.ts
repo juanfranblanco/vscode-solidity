@@ -7,6 +7,7 @@ import { URI } from 'vscode-uri';
 export class ParsedImport extends ParsedCode {
     public document: ParsedDocument;
     public from: string;
+    public documentReference: ParsedDocument;
 
     public initialise(element: any, document: ParsedDocument) {
         this.document = document;
@@ -19,6 +20,18 @@ export class ParsedImport extends ParsedCode {
              return FindTypeReferenceLocationResult.create(true, this.getReferenceLocation());
         }
         return FindTypeReferenceLocationResult.create(false);
+   }
+
+   public initialiseDocumentReference(parsedDocuments: ParsedDocument[]) {
+        for (let index = 0; index < parsedDocuments.length; index++) {
+            const element = parsedDocuments[index];
+            if (element.sourceDocument.absolutePath === this.document.sourceDocument.resolveImportPath(this.from)){
+                this.documentReference = element;
+                if (this.document.importedDocuments.indexOf(element) < 0) {
+                    this.document.importedDocuments.push(element);
+                }
+            }
+        }
    }
 
     public getReferenceLocation(): Location {

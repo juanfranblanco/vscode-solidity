@@ -7,18 +7,18 @@ import { ParsedContract } from '../parsedContract';
 import { ParsedDocument } from '../ParsedDocument';
 
 
-export class AutocompleteByDot {
+export class AutoCompleteExpression {
     public isVariable = false;
     public isMethod = false;
     public isArray = false;
     public isProperty = false;
-    public parentAutocomplete: AutocompleteByDot = null; // could be a property or a method
-    public childAutocomplete: AutocompleteByDot = null;
+    public parent: AutoCompleteExpression = null; // could be a property or a method
+    public child: AutoCompleteExpression = null;
     public name = '';
 
-    public getTopParent(): AutocompleteByDot {
-        if (this.parentAutocomplete != null) {
-            return this.parentAutocomplete.getTopParent();
+    public getTopParent(): AutoCompleteExpression {
+        if (this.parent != null) {
+            return this.parent.getTopParent();
         }
         return this;
     }
@@ -47,11 +47,11 @@ export class DotCompletionService {
     public static getSelectedDocumentDotCompletionItems(lines: string[],
                                                         position: Position,
                                                         triggeredByDotStart: number,
-                                                        documentContractSelected: ParsedDocument,
+                                                        documentSelected: ParsedDocument,
                                                         offset: number): CompletionItem[] {
 
         let completionItems: CompletionItem[] = [];
-        const autocompleteByDot = this.getAutocompleteTriggerByDotVariableName(lines[position.line], triggeredByDotStart - 1);
+        const autocompleteByDot = this.buildAutoCompleteExpression(lines[position.line], triggeredByDotStart - 1);
         // if triggered by variable //done
         // todo triggered by method (get return type) // done
         // todo triggered by property // done
@@ -62,11 +62,11 @@ export class DotCompletionService {
 
 
             // have we got a selected contract (assuming not type.something)
-            if (documentContractSelected.selectedContract !== undefined && documentContractSelected.selectedContract !== null) {
-                const selectedContract = documentContractSelected.selectedContract;
+            if (documentSelected.selectedContract !== undefined && documentSelected.selectedContract !== null) {
+                const selectedContract = documentSelected.selectedContract;
 
                 // this contract
-                if (autocompleteByDot.name === 'this' && autocompleteByDot.isVariable && autocompleteByDot.parentAutocomplete === null) {
+                if (autocompleteByDot.name === 'this' && autocompleteByDot.isVariable && autocompleteByDot.parent === null) {
 
                     // add selectd contract completion items
                     completionItems = completionItems.concat(selectedContract.getDotCompletionItems());
@@ -75,11 +75,11 @@ export class DotCompletionService {
                     /// the types
                     let topParent = autocompleteByDot.getTopParent();
                     if (topParent.name === 'this') {
-                        topParent = topParent.childAutocomplete;
+                        topParent = topParent.child;
                     }
 
                     completionItems = completionItems.concat(
-                        this.getDotCompletionItemsForSelectedContract(topParent, documentContractSelected, documentContractSelected.selectedContract, offset));
+                        this.getDotCompletionItemsForSelectedContract(topParent, documentSelected, documentSelected.selectedContract, offset));
                 }
             }
         }
@@ -87,28 +87,28 @@ export class DotCompletionService {
     }
 
       // tslint:disable-next-line:max-line-length
-    public static getDotCompletionItemsForSelectedContract(autocompleteByDot: AutocompleteByDot, documentContractSelected: ParsedDocument, currentContract: ParsedContract, offset: number): CompletionItem[] {
+    public static getDotCompletionItemsForSelectedContract(autocompleteByDot: AutoCompleteExpression, documentContractSelected: ParsedDocument, currentContract: ParsedContract, offset: number): CompletionItem[] {
         let completionItems: CompletionItem[] = [];
         if (currentContract === documentContractSelected.selectedContract) {
             const selectedFunction = documentContractSelected.selectedContract.getSelectedFunction(offset);
             // tslint:disable-next-line:max-line-length
             completionItems = completionItems.concat(
                 this.getDotCompletionItemsForContract(autocompleteByDot,
-                                                     documentContractSelected.allContracts,
+                                                     documentContractSelected.getAllContracts(),
                                                      documentContractSelected.selectedContract,
                                                      selectedFunction,
                                                      offset));
         } else {
             completionItems = completionItems.concat(
                 this.getDotCompletionItemsForContract(autocompleteByDot,
-                                                     documentContractSelected.allContracts,
+                                                     documentContractSelected.getAllContracts(),
                                                      documentContractSelected.selectedContract));
             }
         return completionItems;
     }
 
     // tslint:disable-next-line:max-line-length
-    public static getDotCompletionItemsForContract(autocompleteByDot: AutocompleteByDot, allContracts: ParsedContract[], currentContract: ParsedContract, selectedFunction: ParsedFunction = null, offset: number = null): CompletionItem[] {
+    public static getDotCompletionItemsForContract(autocompleteByDot: AutoCompleteExpression, allContracts: ParsedContract[], currentContract: ParsedContract, selectedFunction: ParsedFunction = null, offset: number = null): CompletionItem[] {
         let completionItems: CompletionItem[] = [];
         const allStructs = currentContract.getAllStructs();
         const allEnums = currentContract.getAllEnums();
@@ -117,11 +117,11 @@ export class DotCompletionService {
 
 
         if (selectedFunction !== undefined && selectedFunction !== null)  {
-            selectedFunction.findVariableDeclarationsInScope(offset);
+            const variablesInScope =  selectedFunction.findVariableDeclarationsInScope(offset);
             // adding input parameters
             allVariables = allVariables.concat(selectedFunction.input);
             // ading all variables
-            allVariables = allVariables.concat(selectedFunction.variablesInScope);
+            allVariables = allVariables.concat(variablesInScope);
         }
 
 
@@ -132,11 +132,11 @@ export class DotCompletionService {
             allVariables.forEach(item => {
                 if (item.name === autocompleteByDot.name && !found) {
                     found = true;
-                    if (autocompleteByDot.childAutocomplete !== undefined && autocompleteByDot.childAutocomplete !== null) {
+                    if (autocompleteByDot.child !== undefined && autocompleteByDot.child !== null) {
                         completionItems = completionItems.concat(
                             this.findDotType(allStructs,
                                 item.type,
-                                autocompleteByDot.childAutocomplete,
+                                autocompleteByDot.child,
                                 allContracts,
                                 currentContract));
                     } else {
@@ -146,7 +146,7 @@ export class DotCompletionService {
                 }
             });
 
-            if (!found &&  (autocompleteByDot.childAutocomplete === undefined || autocompleteByDot.childAutocomplete === null)) {
+            if (!found &&  (autocompleteByDot.child === undefined || autocompleteByDot.child === null)) {
                 allEnums.forEach(item => {
                     if (item.name === autocompleteByDot.name) {
                         found = true;
@@ -155,7 +155,7 @@ export class DotCompletionService {
                 });
             }
 
-            if (!found && (autocompleteByDot.childAutocomplete === undefined || autocompleteByDot.childAutocomplete === null) ) {
+            if (!found && (autocompleteByDot.child === undefined || autocompleteByDot.child === null) ) {
                 allContracts.forEach(item => {
                     if (item.name === autocompleteByDot.name) {
                         found = true;
@@ -174,9 +174,9 @@ export class DotCompletionService {
                         // todo return array
                         const type = item.output[0].type;
 
-                        if (autocompleteByDot.childAutocomplete !== undefined && autocompleteByDot.childAutocomplete !== null) {
+                        if (autocompleteByDot.child !== undefined && autocompleteByDot.child !== null) {
                             completionItems = completionItems.concat(
-                                this.findDotType(allStructs, type, autocompleteByDot.childAutocomplete, allContracts, currentContract));
+                                this.findDotType(allStructs, type, autocompleteByDot.child, allContracts, currentContract));
                         } else {
                             completionItems = completionItems.concat(this.getDotTypeCompletionItems(allStructs, type, allContracts, currentContract));
                         }
@@ -185,7 +185,7 @@ export class DotCompletionService {
             });
 
             // contract declaration as IMyContract(address)
-            if (!found && (autocompleteByDot.childAutocomplete === undefined || autocompleteByDot.childAutocomplete === null) ) {
+            if (!found && (autocompleteByDot.child === undefined || autocompleteByDot.child === null) ) {
                 allContracts.forEach(item => {
                     if (item.name === autocompleteByDot.name) {
                         found = true;
@@ -249,16 +249,16 @@ export class DotCompletionService {
 
 
     // tslint:disable-next-line:max-line-length
-    public static findDotType(allStructs: ParsedStruct[], type: ParsedDeclarationType, autocompleteByDot: AutocompleteByDot, allContracts: ParsedContract[], currentContract: ParsedContract) {
+    public static findDotType(allStructs: ParsedStruct[], type: ParsedDeclarationType, autocompleteByDot: AutoCompleteExpression, allContracts: ParsedContract[], currentContract: ParsedContract) {
         let completionItems: CompletionItem[] = [];
         const foundStruct = allStructs.find(x => x.name === type.name);
         if (foundStruct !== undefined) {
             foundStruct.variables.forEach(property => {
                 // own method refactor
                 if (autocompleteByDot.name === property.name) {
-                    if (autocompleteByDot.childAutocomplete !== undefined && autocompleteByDot.childAutocomplete !== null)  {
+                    if (autocompleteByDot.child !== undefined && autocompleteByDot.child !== null)  {
                         completionItems = completionItems.concat(
-                            this.findDotType(allStructs, property.type, autocompleteByDot.childAutocomplete, allContracts, currentContract));
+                            this.findDotType(allStructs, property.type, autocompleteByDot.child, allContracts, currentContract));
                     } else {
                         completionItems = completionItems.concat(
                             this.getDotTypeCompletionItems(allStructs, property.type, allContracts, currentContract));
@@ -289,9 +289,9 @@ export class DotCompletionService {
     }
 
 
-    public static getAutocompleteTriggerByDotVariableName(lineText: string, wordEndPosition: number): AutocompleteByDot {
+    public static buildAutoCompleteExpression(lineText: string, wordEndPosition: number): AutoCompleteExpression {
         let searching = true;
-        const result: AutocompleteByDot = new AutocompleteByDot();
+        const result: AutoCompleteExpression = new AutoCompleteExpression();
         // simpler way might be to find the first space or beginning of line
         // and from there split / match (but for now kiss or slowly)
 
@@ -323,8 +323,8 @@ export class DotCompletionService {
                     return result;
                 } else {
                     if (currentChar === '.') {
-                        result.parentAutocomplete = this.getAutocompleteTriggerByDotVariableName(lineText, wordEndPosition - 1);
-                        result.parentAutocomplete.childAutocomplete = result;
+                        result.parent = this.buildAutoCompleteExpression(lineText, wordEndPosition - 1);
+                        result.parent.child = result;
                     }
                 }
                 searching = false;
@@ -334,7 +334,7 @@ export class DotCompletionService {
         return result;
     }
 
-    public static getArrayStart(lineText: string, wordEndPosition: number, result: AutocompleteByDot) {
+    public static getArrayStart(lineText: string, wordEndPosition: number, result: AutoCompleteExpression) {
         if (lineText[wordEndPosition] === ']') {
             result.isArray = true;
             let arrayBeginFound = false;

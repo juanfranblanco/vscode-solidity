@@ -17,7 +17,6 @@ import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 
 export class ParsedDocument {
 
-    public allContracts: ParsedContract[] = [];
     public innerContracts: ParsedContract[] = [];
     public functions: ParsedFunction[]  = [];
     public events: ParsedEvent[]  = [];
@@ -44,6 +43,15 @@ export class ParsedDocument {
     public sourceDocument: SourceDocument;
     public fixedSource: string = null;
     public element: any;
+
+    public getAllContracts(): ParsedContract[] {
+        let returnItems: ParsedContract[] = [];
+        returnItems = returnItems.concat(this.innerContracts);
+        this.importedDocuments.forEach(document => {
+            returnItems = returnItems.concat(document.getAllContracts());
+        });
+        return returnItems;
+    }
 
     public getAllGlobalFunctions(): ParsedFunction[] {
         let returnItems: ParsedFunction[] = [];
@@ -147,7 +155,6 @@ export class ParsedDocument {
                     if (this.matchesElement(selectedElement, element)) {
                         this.selectedContract = contract;
                     }
-                    this.allContracts.push(contract);
                     this.innerContracts.push(contract);
                 }
 
@@ -243,7 +250,7 @@ export class ParsedDocument {
           }
 
     public findContractByName(name: string): ParsedContract {
-        for (const contract of this.allContracts) {
+        for (const contract of this.getAllContracts()) {
             if (contract.name === name) {
                 return contract;
             }
@@ -277,8 +284,18 @@ export class ParsedDocument {
                          .concat(this.getAllGlobalCustomTypes())
                          .concat(this.getAllGlobalStructs())
                          .concat(this.getAllGlobalEnums())
-                         .concat(this.allContracts);
+                         .concat(this.getAllContracts());
         return typesParsed.find(x => x.name === name);
+    }
+
+    public getInnerMembers(): ParsedCode[] {
+        let typesParsed: ParsedCode[] = [];
+        typesParsed = typesParsed.concat(this.getAllGlobalConstants());
+        return typesParsed;
+    }
+
+    public findMembersInScope(name: string): ParsedCode[] {
+        return this.getInnerMembers().filter(x => x.name === name );
     }
 
     public findMethodCalls(name: string): ParsedCode[] {
@@ -344,7 +361,7 @@ export class ParsedDocument {
 
     public getAllGlobalContractsCompletionItems(): CompletionItem[] {
         const completionItems: CompletionItem[] = [];
-        this.allContracts.forEach(x => completionItems.push(x.createCompletionItem()));
+        this.getAllContracts().forEach(x => completionItems.push(x.createCompletionItem()));
         return completionItems;
     }
 
@@ -359,7 +376,7 @@ export class ParsedDocument {
         completionItems = completionItems.concat(this.getAllGlobalContractsCompletionItems());
 
         if (this.selectedFunction !== undefined) {
-            this.selectedFunction.findVariableDeclarationsInScope(offset);
+            const variablesInScope = this.selectedFunction.findVariableDeclarationsInScope(offset);
             this.selectedFunction.input.forEach(parameter => {
                 completionItems.push(parameter.createCompletionItem('function parameter', this.getGlobalPathInfo()));
             });
@@ -367,7 +384,7 @@ export class ParsedDocument {
                 completionItems.push(parameter.createCompletionItem('return parameter', this.getGlobalPathInfo()));
             });
 
-            this.selectedFunction.variablesInScope.forEach(variable => {
+            variablesInScope.forEach(variable => {
                 completionItems.push(variable.createCompletionItem());
             });
         }

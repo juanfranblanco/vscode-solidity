@@ -15,7 +15,7 @@ export class ParsedContractIs extends ParsedCode {
     }
 
     public initialiseContractReference(): ParsedContract {
-        if (this.contractReference != null) { return this.contractReference; }
+        if (this.contractReference !== null) { return this.contractReference; }
         this.contractReference = this.document.findContractByName(this.name);
         if (this.contractReference !== undefined && this.contractReference  !== null) {
             this.contractReference.initialiseExtendContracts();

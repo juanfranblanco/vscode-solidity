@@ -7,7 +7,6 @@ import { CompletionItem, CompletionItemKind, Location } from 'vscode-languageser
 
 export class ParsedStruct extends ParsedCode {
     public variables: ParsedStructVariable[] = [];
-    public contract: ParsedContract;
     public isGlobal: boolean;
 
     public initialise(element: any, contract: ParsedContract, document: ParsedDocument, isGlobal: boolean) {
@@ -26,6 +25,10 @@ export class ParsedStruct extends ParsedCode {
                 }
             });
         }
+    }
+
+    public getInnerMembers(): ParsedCode[] {
+        return this.variables;
     }
 
     public getVariableSelected(offset: number) {

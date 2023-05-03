@@ -1,4 +1,3 @@
-
 import { ParsedDocument } from './ParsedDocument';
 import { ParsedCode } from './parsedCode';
 import { ParsedContract } from './parsedContract';
@@ -6,7 +5,8 @@ import { ParsedContract } from './parsedContract';
 export class ParsedDeclarationType extends ParsedCode {
     public isArray: boolean;
     public isMapping: boolean;
-    public contract: ParsedContract = null;
+    public parentTypeName: any = null;
+    public type: ParsedCode = null;
 
     public static create(literal: any, contract: ParsedContract, document: ParsedDocument): ParsedDeclarationType {
         const declarationType = new ParsedDeclarationType();
@@ -20,6 +20,7 @@ export class ParsedDeclarationType extends ParsedCode {
         this.element = literal;
         if (literal.members !== undefined && literal.members.length > 0) {
             this.name = literal.members[0];
+            this.parentTypeName = literal.literal;
         } else {
             this.name = literal.literal;
         }
@@ -33,14 +34,31 @@ export class ParsedDeclarationType extends ParsedCode {
         }
     }
 
-    public findType(): ParsedCode {
-        if (this.contract === null) {
-            return this.document.findType(this.name);
-        } else {
-            return this.contract.findType(this.name);
-        }
+    public override getInnerMembers(): ParsedCode[] {
+        const type = this.findType();
+        if (type === null || type === undefined) { return []; }
+        return type.getInnerMembers();
     }
+
+    public override getInnerMethodCalls() {
+        const type = this.findType();
+        if (type === null || type === undefined) {
+            return [];
+        }
+        return type.getInnerMethodCalls();
+    }
+
+    public findType(): ParsedCode {
+        if (this.type === null){
+        if (this.parentTypeName !== null) {
+            const parentType = this.findTypeInScope(this.parentTypeName);
+            if (parentType !== undefined) {
+                this.type = parentType.findTypeInScope(this.name);
+            }
+        }
+        this.type = this.findTypeInScope(this.name);
+        }
+        return this.type;
+    }
+
 }
-
-
-

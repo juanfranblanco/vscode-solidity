@@ -9,6 +9,7 @@ export class ParsedModifierArgument extends ParsedCode {
 
     public initialise(element: any, functionParent: ParsedFunction, document: ParsedDocument) {
         this.functionParent = functionParent;
+        this.contract = functionParent.contract;
         this.element = element;
         this.name = element.name;
         this.document = document;
@@ -50,16 +51,9 @@ export class ParsedModifierArgument extends ParsedCode {
         if (this.isCurrentElementedSelected(offset)) {
             const results: FindTypeReferenceLocationResult[] = [];
             if (this.IsCustomModifier()) {
-                if (this.functionParent.isGlobal) {
-                    const foundResults = this.document.findMethodCalls(this.name);
-                    if (foundResults.length > 0) {
-                        return FindTypeReferenceLocationResult.create(true, foundResults[0].getLocation());
-                    }
-                } else {
-                    const foundResults = this.functionParent.contract.findMethodCalls(this.name);
-                    if (foundResults.length > 0) {
-                        return FindTypeReferenceLocationResult.create(true, foundResults[0].getLocation());
-                    }
+                const foundResults =  this.findMethodsInScope(this.name);
+                if (foundResults.length > 0) {
+                    return FindTypeReferenceLocationResult.create(true, foundResults[0].getLocation());
                 }
             }
             return FindTypeReferenceLocationResult.create(true);

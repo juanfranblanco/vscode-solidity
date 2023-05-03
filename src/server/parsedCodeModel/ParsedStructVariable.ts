@@ -13,6 +13,7 @@ export class ParsedStructVariable extends ParsedVariable {
     public initialise(element: any, contract: ParsedContract, document: ParsedDocument, struct: ParsedStruct ) {
         this.element = element;
         this.name = element.name;
+        this.document = document;
         this.type = ParsedDeclarationType.create(element.literal, contract, document);
         this.struct = struct;
     }

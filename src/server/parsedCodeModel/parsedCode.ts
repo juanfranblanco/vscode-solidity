@@ -1,10 +1,11 @@
 import { ParsedDocument } from './ParsedDocument';
 import { Location, Range, TextDocument } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
+import { ParsedContract } from './parsedContract';
 
 export class FindTypeReferenceLocationResult {
     public isCurrentElementSelected: boolean;
-    public location: Location;
+    public location: Location | Location[];
 
     public static create(isSelected: boolean, location: Location = null) {
         const result = new FindTypeReferenceLocationResult();
@@ -18,6 +19,13 @@ export class ParsedCode {
     public element: any;
     public name: string;
     public document: ParsedDocument;
+    public contract: ParsedContract = null;
+
+    public findElementByOffset(elements: Array<any>, offset: number): any {
+        return elements.find(
+          element => element.start <= offset && offset <= element.end,
+        );
+      }
 
     public isElementedSelected(element: any, offset: number): boolean {
         if (element !== undefined && element !== null) {
@@ -48,5 +56,37 @@ export class ParsedCode {
 
         }
         return FindTypeReferenceLocationResult.create(false);
+    }
+
+    public findTypeInScope(name: string): ParsedCode {
+        if (this.contract === null) {
+            return this.document.findType(name);
+        } else {
+            return this.contract.findType(name);
+        }
+    }
+
+    public findMethodsInScope(name: string): ParsedCode[] {
+        if (this.contract === null) {
+            return this.document.findMethodCalls(name);
+        } else {
+            return this.contract.findMethodCalls(name);
+        }
+    }
+
+    public findMembersInScope(name: string): ParsedCode[] {
+        if (this.contract === null) {
+            return this.document.findMembersInScope(name);
+        } else {
+            return this.contract.findMembersInScope(name);
+        }
+    }
+
+    public getInnerMembers(): ParsedCode[] {
+        return [];
+    }
+
+    public getInnerMethodCalls(): ParsedCode[] {
+        return [];
     }
 }

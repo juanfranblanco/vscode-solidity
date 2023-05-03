@@ -35,7 +35,7 @@ export class ParsedContract extends ParsedCode {
     public constructorFunction: ParsedFunction = new ParsedFunction();
     public fallbackFunction: ParsedFunction = new ParsedFunction();
     public receiveFunction: ParsedFunction = new ParsedFunction();
-    public extendsContracts: ParsedContract[] = [];
+
 
     public contractType: ContractType = ContractType.contract;
     public isAbstract: boolean;
@@ -63,15 +63,31 @@ export class ParsedContract extends ParsedCode {
         if (element.type === 'InterfaceStatement') {
             this.contractType = ContractType.interface;
         }
+        this.contract = this;
         this.initialiseChildren();
     }
 
+    public getExtendContracts(): ParsedContract[] {
+        const result: ParsedContract[] = [];
+        if (this.contractIsStatements.length > 0) {
+            this.contractIsStatements.forEach(isStatement => {
+                    const contractReference = isStatement.getContractReference();
+                    if (contractReference !== undefined && contractReference !== null) {
+
+                        result.push(contractReference); }
+                    });
+
+        }
+        return result;
+
+    }
+
     public initialiseExtendContracts() {
-        this.contractIsStatements.forEach(isStatement => {
-                const contractReference = isStatement.initialiseContractReference();
-                if (contractReference !== undefined && contractReference !== null) {
-                    this.extendsContracts.push(contractReference); }
-                });
+        if (this.contractIsStatements.length > 0) {
+            this.contractIsStatements.forEach(isStatement => {
+                        const contractReference = isStatement.initialiseContractReference();
+            });
+        }
     }
 
     public isConstructorSelected(offset: number) {
@@ -131,14 +147,34 @@ export class ParsedContract extends ParsedCode {
                          .concat(this.getAllCustomTypes())
                          .concat(this.getAllStructs())
                          .concat(this.getAllEnums())
-                         .concat(this.document.allContracts);
+                         .concat(this.document.getAllContracts());
         return typesParsed.find(x => x.name === name);
     }
 
-    public findMethodCalls(name: string): ParsedCode[] {
+    public override getInnerMembers(): ParsedCode[] {
         let typesParsed: ParsedCode[] = [];
-        typesParsed = typesParsed.concat(this.getAllFunctions());
-        return typesParsed.filter(x => x.name === name);
+        typesParsed = typesParsed.concat(this.getAllConstants())
+                           .concat(this.getAllStateVariables());
+        return typesParsed;
+    }
+
+    public findMembersInScope(name: string): ParsedCode[] {
+        return this.getInnerMembers().filter(x => x.name === name );
+    }
+
+
+    public findInnerMember(name: string): ParsedCode[] {
+        return this.getInnerMembers().filter(x => x.name === name);
+    }
+
+    public override getInnerMethodCalls(): ParsedCode[] {
+        let methodCalls: ParsedCode[] = [];
+        methodCalls = methodCalls.concat(this.getAllFunctions()).concat(this.getAllEvents()).concat(this.getAllErrors());
+        return methodCalls;
+    }
+
+    public findMethodCalls(name: string): ParsedCode[] {
+        return this.getInnerMethodCalls().filter(x => x.name === name);
     }
 
     public getSelectedFunction(offset: number) {
@@ -171,7 +207,7 @@ export class ParsedContract extends ParsedCode {
     public getAllFunctions(): ParsedFunction[] {
         let returnItems: ParsedFunction[] = [];
         returnItems = returnItems.concat(this.functions);
-        this.extendsContracts.forEach(contract => {
+        this.getExtendContracts().forEach(contract => {
             returnItems = returnItems.concat(contract.getAllFunctions());
         });
         returnItems = returnItems.concat(this.document.getAllGlobalFunctions());
@@ -183,7 +219,7 @@ export class ParsedContract extends ParsedCode {
     public getAllStructs(): ParsedStruct[] {
         let returnItems: ParsedStruct[] = [];
         returnItems = returnItems.concat(this.structs);
-        this.extendsContracts.forEach(contract => {
+        this.getExtendContracts().forEach(contract => {
             returnItems = returnItems.concat(contract.getAllStructs());
         });
         returnItems = returnItems.concat(this.document.getAllGlobalStructs());
@@ -193,7 +229,7 @@ export class ParsedContract extends ParsedCode {
     public getAllErrors(): ParsedError[] {
         let returnItems: ParsedError[] = [];
         returnItems = returnItems.concat(this.errors);
-        this.extendsContracts.forEach(contract => {
+        this.getExtendContracts().forEach(contract => {
             returnItems = returnItems.concat(contract.getAllErrors());
         });
         returnItems = returnItems.concat(this.document.getAllGlobalErrors());
@@ -203,7 +239,7 @@ export class ParsedContract extends ParsedCode {
     public getAllEnums(): ParsedEnum[] {
         let returnItems: ParsedEnum[] = [];
         returnItems = returnItems.concat(this.enums);
-        this.extendsContracts.forEach(contract => {
+        this.getExtendContracts().forEach(contract => {
             returnItems = returnItems.concat(contract.getAllEnums());
         });
         returnItems = returnItems.concat(this.document.getAllGlobalEnums());
@@ -213,7 +249,7 @@ export class ParsedContract extends ParsedCode {
     public getAllCustomTypes(): ParsedCustomType[] {
         let returnItems: ParsedCustomType[] = [];
         returnItems = returnItems.concat(this.customTypes);
-        this.extendsContracts.forEach(contract => {
+        this.getExtendContracts().forEach(contract => {
             returnItems = returnItems.concat(contract.getAllCustomTypes());
         });
         returnItems = returnItems.concat(this.document.getAllGlobalCustomTypes());
@@ -223,7 +259,7 @@ export class ParsedContract extends ParsedCode {
     public getAllStateVariables(): ParsedStateVariable[] {
         let returnItems: ParsedStateVariable[] = [];
         returnItems = returnItems.concat(this.stateVariables);
-        this.extendsContracts.forEach(contract => {
+        this.getExtendContracts().forEach(contract => {
             returnItems = returnItems.concat(contract.getAllStateVariables());
         });
         return returnItems;
@@ -236,7 +272,7 @@ export class ParsedContract extends ParsedCode {
     public getAllEvents(): ParsedEvent[] {
         let returnItems: ParsedEvent[] = [];
         returnItems = returnItems.concat(this.events);
-        this.extendsContracts.forEach(contract => {
+        this.getExtendContracts().forEach(contract => {
             returnItems = returnItems.concat(contract.getAllEvents());
         });
         returnItems = returnItems.concat(this.document.getAllGlobalEvents());
@@ -258,7 +294,7 @@ export class ParsedContract extends ParsedCode {
 
         }));
 
-        this.extendsContracts.forEach(contract => {
+        this.getExtendContracts().forEach(contract => {
             returnItems = returnItems.concat(contract.getAllUsing(type));
         });
 
@@ -448,7 +484,6 @@ export class ParsedContract extends ParsedCode {
         const selectedFunction = this.getSelectedFunction(offset);
 
         if (selectedFunction !== undefined) {
-            selectedFunction.findVariableDeclarationsInScope(offset);
             selectedFunction.input.forEach(parameter => {
                 completionItems.push(parameter.createCompletionItem('function parameter', selectedFunction.contract.name));
             });
@@ -456,7 +491,8 @@ export class ParsedContract extends ParsedCode {
                 completionItems.push(parameter.createCompletionItem('return parameter', selectedFunction.contract.name));
             });
 
-            selectedFunction.variablesInScope.forEach(variable => {
+            const variablesInScope = selectedFunction.findVariableDeclarationsInScope(offset);
+            variablesInScope.forEach(variable => {
                 completionItems.push(variable.createCompletionItem());
             });
         }
