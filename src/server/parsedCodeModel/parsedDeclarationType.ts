@@ -22,7 +22,11 @@ export class ParsedDeclarationType extends ParsedCode {
             this.name = literal.members[0];
             this.parentTypeName = literal.literal;
         } else {
+            if (literal.literal.literal !== undefined ) {
+                this.name = literal.literal.literal;
+            } else{
             this.name = literal.literal;
+            }
         }
         this.isArray = literal.array_parts.length > 0;
         this.isMapping = false;
@@ -40,12 +44,38 @@ export class ParsedDeclarationType extends ParsedCode {
         return type.getInnerMembers();
     }
 
-    public override getInnerMethodCalls() {
+    public override getInnerMethodCalls(): ParsedCode[] {
+        let result: ParsedCode[] = [];
+        result = result.concat(this.getExtendedMethodCallsFromUsing());
         const type = this.findType();
         if (type === null || type === undefined) {
-            return [];
+            return result;
         }
-        return type.getInnerMethodCalls();
+        return result.concat(type.getInnerMethodCalls());
+    }
+
+    public getExtendedMethodCallsFromUsing(): ParsedCode[] {
+       const usings = this.contract.getAllUsing(this);
+       let result: ParsedCode[] = [];
+       usings.forEach(usingItem => {
+        const foundLibrary = this.document.getAllContracts().find(x => x.name === usingItem.name);
+        if (foundLibrary !== undefined) {
+            const allfunctions = foundLibrary.getAllFunctions();
+            const filteredFunctions = allfunctions.filter( x => {
+                    if (x.input.length > 0 ) {
+                        const typex = x.input[0].type;
+                        let validTypeName = false;
+                        if (typex.name === this.name || (this.name === 'address_payable' && typex.name === 'address')) {
+                            validTypeName = true;
+                        }
+                        return typex.isArray === this.isArray && validTypeName && typex.isMapping === this.isMapping;
+                    }
+                    return false;
+                });
+            result = result.concat(filteredFunctions);
+        }
+    });
+    return result;
     }
 
     public findType(): ParsedCode {

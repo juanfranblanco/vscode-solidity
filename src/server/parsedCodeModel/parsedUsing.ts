@@ -13,7 +13,7 @@ export class ParsedUsing extends ParsedCode {
     public initialise(element: any, contract: ParsedContract, document: ParsedDocument, isGlobal: boolean) {
         this.contract = contract;
         this.element = element;
-        this.name = element.library;
+        this.name = element.library.literal;
         this.document = document;
         this.isGlobal = isGlobal;
 
