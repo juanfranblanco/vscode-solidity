@@ -24,7 +24,7 @@ export class ParsedEvent extends ParsedCode {
         this.input = ParsedParameter.extractParameters(this.element.params, this.contract, this.document, this);
     }
 
-    public createCompletionItem(skipFirstParamSnipppet = false): CompletionItem {
+    public override createCompletionItem(skipFirstParamSnipppet = false): CompletionItem {
 
         const completionItem =  CompletionItem.create(this.name);
         completionItem.kind = CompletionItemKind.Function;

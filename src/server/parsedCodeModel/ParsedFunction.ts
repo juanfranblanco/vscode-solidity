@@ -71,8 +71,13 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
 
   public override getInnerMembers(): ParsedCode[] {
     const result: ParsedCode[] = [];
+    if (this.contract !== null) {
     return result.concat(this.variables)
       .concat(this.contract.getInnerMembers()).concat(this.input).concat(this.output);
+    } else {
+      return result.concat(this.variables)
+      .concat(this.document.getInnerMembers()).concat(this.input).concat(this.output);
+    }
   }
 
   public override findMembersInScope(name: string): ParsedCode[] {

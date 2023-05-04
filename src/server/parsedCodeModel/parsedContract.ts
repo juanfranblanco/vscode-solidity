@@ -12,6 +12,8 @@ import { ParsedConstant } from './ParsedConstant';
 import { ParsedCustomType } from './ParsedCustomType';
 import { CompletionItem, CompletionItemKind, Location, Range, TextDocument } from 'vscode-languageserver';
 import { ParsedContractIs } from './ParsedContractIs';
+import { IParsedExpressionContainer } from './IParsedExpressionContainer';
+import { ParsedExpression } from './ParsedExpression';
 
 export enum ContractType {
     contract,
@@ -19,7 +21,7 @@ export enum ContractType {
     library,
 }
 
-export class ParsedContract extends ParsedCode {
+export class ParsedContract extends ParsedCode implements IParsedExpressionContainer {
 
     public functions: ParsedFunction[] = [];
     public enums: ParsedEnum[] = [];
@@ -30,11 +32,11 @@ export class ParsedContract extends ParsedCode {
     public structs: ParsedStruct[] = [];
     public using: ParsedUsing[] = [];
     public customTypes: ParsedCustomType[] = [];
-
+    public expressions: ParsedExpression[] = [];
     public contractElementType: string;
-    public constructorFunction: ParsedFunction = new ParsedFunction();
-    public fallbackFunction: ParsedFunction = new ParsedFunction();
-    public receiveFunction: ParsedFunction = new ParsedFunction();
+    public constructorFunction: ParsedFunction = null;
+    public fallbackFunction: ParsedFunction = null;
+    public receiveFunction: ParsedFunction = null;
 
 
     public contractType: ContractType = ContractType.contract;
@@ -65,6 +67,9 @@ export class ParsedContract extends ParsedCode {
         }
         this.contract = this;
         this.initialiseChildren();
+        if (this.element !== undefined && this.element !== null) {
+            this.initialiseVariablesMembersEtc(this.element, null, null);
+        }
     }
 
     public getExtendContracts(): ParsedContract[] {
@@ -130,13 +135,17 @@ export class ParsedContract extends ParsedCode {
             this.using.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
             this.customTypes.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
             this.contractIsStatements.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            this.expressions.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+            if (this.constructorFunction !== null) {results.push(this.constructorFunction.getSelectedTypeReferenceLocation(offset)); }
+            if (this.fallbackFunction !== null) {results.push(this.fallbackFunction.getSelectedTypeReferenceLocation(offset)); }
+            if (this.receiveFunction !== null) {results.push(this.receiveFunction.getSelectedTypeReferenceLocation(offset)); }
 
-            const foundResult = results.find(x => x.isCurrentElementSelected === true);
-            if (foundResult === undefined) {
+            const foundResult = results.filter(x => x.isCurrentElementSelected === true);
+            if (foundResult.length > 0) {
+                const foundLocation = foundResult.find(x => x.location !== null);
+                if (foundLocation !== undefined) { return foundLocation; }
                 return FindTypeReferenceLocationResult.create(true);
-            } else {
-                return foundResult;
-            }
+           }
         }
         return FindTypeReferenceLocationResult.create(false);
     }
@@ -154,7 +163,7 @@ export class ParsedContract extends ParsedCode {
     public override getInnerMembers(): ParsedCode[] {
         let typesParsed: ParsedCode[] = [];
         typesParsed = typesParsed.concat(this.getAllConstants())
-                           .concat(this.getAllStateVariables());
+                           .concat(this.getAllStateVariables()).concat(this.getAllEnums()).concat(this.getAllCustomTypes());
         return typesParsed;
     }
 
@@ -169,7 +178,7 @@ export class ParsedContract extends ParsedCode {
 
     public override getInnerMethodCalls(): ParsedCode[] {
         let methodCalls: ParsedCode[] = [];
-        methodCalls = methodCalls.concat(this.getAllFunctions()).concat(this.getAllEvents()).concat(this.getAllErrors());
+        methodCalls = methodCalls.concat(this.getAllFunctions()).concat(this.getAllEvents()).concat(this.getAllErrors()).concat(this.document.getAllContracts());
         return methodCalls;
     }
 
@@ -399,7 +408,7 @@ export class ParsedContract extends ParsedCode {
         }
     }
 
-    public createCompletionItem(): CompletionItem {
+    public override createCompletionItem(): CompletionItem {
 
         const completionItem =  CompletionItem.create(this.name);
         if (this.contractType === ContractType.interface) {
@@ -463,7 +472,7 @@ export class ParsedContract extends ParsedCode {
         return completionItems;
     }
 
-    public getDotCompletionItems(): CompletionItem[] {
+    public override getInnerCompletionItems(): CompletionItem[] {
         let completionItems: CompletionItem[] = [];
         completionItems = completionItems.concat(this.getAllFunctionCompletionItems());
         completionItems = completionItems.concat(this.getAllStateVariableCompletionItems());
@@ -485,10 +494,10 @@ export class ParsedContract extends ParsedCode {
 
         if (selectedFunction !== undefined) {
             selectedFunction.input.forEach(parameter => {
-                completionItems.push(parameter.createCompletionItem('function parameter', selectedFunction.contract.name));
+                completionItems.push(parameter.createParamCompletionItem('function parameter', selectedFunction.contract.name));
             });
             selectedFunction.output.forEach(parameter => {
-                completionItems.push(parameter.createCompletionItem('return parameter', selectedFunction.contract.name));
+                completionItems.push(parameter.createParamCompletionItem('return parameter', selectedFunction.contract.name));
             });
 
             const variablesInScope = selectedFunction.findVariableDeclarationsInScope(offset);
@@ -511,5 +520,63 @@ export class ParsedContract extends ParsedCode {
                 break;
         }
     }
+
+    public initialiseVariablesMembersEtc(statement: any, parentStatement: any, child: ParsedExpression) {
+        try {
+          if (statement !== undefined && statement.type !== undefined && statement.type !== null) {
+            switch (statement.type) {
+              case 'CallExpression': // e.g. Func(x, y)
+                const callExpression = ParsedExpression.createFromElement(statement, this.document, this.contract, child, this);
+                this.expressions.push(callExpression);
+                break;
+              case 'MemberExpression': // e.g. x.y x.f(y) arr[1] map['1'] arr[i] map[k]
+                const memberCreated = ParsedExpression.createFromMemberExpression(statement, this.document, this.contract, child, this);
+                if (memberCreated !== undefined) {
+                  this.expressions.push(memberCreated);
+                } else {
+                  console.log(statement);
+                }
+                break;
+              case 'Identifier':
+                const identifier = ParsedExpression.createFromElement(statement, this.document, this.contract, child, this);
+                this.expressions.push(identifier);
+                break;
+              case 'FunctionDeclaration':
+                break;
+              case 'ConstructorDeclaration':
+                break;
+              case 'FallbackDeclaration':
+                break;
+              case 'ReceiveDeclaration':
+                break;
+              default:
+                for (const key in statement) {
+                  if (statement.hasOwnProperty(key)) {
+                    const element = statement[key];
+                    if (element instanceof Array) {
+                      // recursively drill down to collections e.g. statements, params
+                      element.forEach(innerElement => {
+                        this.initialiseVariablesMembersEtc(innerElement, statement, null);
+                      });
+                    } else if (element instanceof Object) {
+                      // recursively drill down to elements with start/end e.g. literal type
+                      if (
+                        element.hasOwnProperty('start') && element.hasOwnProperty('end')
+                      ) {
+                        this.initialiseVariablesMembersEtc(
+                          element,
+                          statement,
+                          null,
+                        );
+                      }
+                    }
+                  }
+                }
+            }
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      }
 
 }

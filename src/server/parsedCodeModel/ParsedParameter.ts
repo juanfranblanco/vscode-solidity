@@ -92,7 +92,7 @@ export class ParsedParameter extends ParsedVariable {
         }
     }
 
-    public createCompletionItem(type: string, contractName: string): CompletionItem {
+    public createParamCompletionItem(type: string, contractName: string): CompletionItem {
         let id = '[parameter name not set]';
         if (this.element.id !== null) {
             id = this.element.id;

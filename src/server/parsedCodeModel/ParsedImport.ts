@@ -25,10 +25,10 @@ export class ParsedImport extends ParsedCode {
    public initialiseDocumentReference(parsedDocuments: ParsedDocument[]) {
         for (let index = 0; index < parsedDocuments.length; index++) {
             const element = parsedDocuments[index];
-            if (element.sourceDocument.absolutePath === this.document.sourceDocument.resolveImportPath(this.from)){
+            if (element.sourceDocument.absolutePath === this.document.sourceDocument.resolveImportPath(this.from)) {
                 this.documentReference = element;
                 if (this.document.importedDocuments.indexOf(element) < 0) {
-                    this.document.importedDocuments.push(element);
+                    this.document.addImportedDocument(element);
                 }
             }
         }

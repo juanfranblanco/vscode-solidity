@@ -19,7 +19,7 @@ export class ParsedEnum extends ParsedCode {
         element.members.forEach(member => { this.items.push(member); });
     }
 
-    public createCompletionItem(): CompletionItem {
+    public override createCompletionItem(): CompletionItem {
         const completionItem =  CompletionItem.create(this.name);
         completionItem.kind = CompletionItemKind.Enum;
         let contractName = '';
@@ -34,7 +34,7 @@ export class ParsedEnum extends ParsedCode {
         return completionItem;
     }
 
-    public getDotCompletionItems(): CompletionItem[] {
+    public override getInnerCompletionItems(): CompletionItem[] {
         const completionItems: CompletionItem[] = [];
         this.items.forEach(property =>  completionItems.push(CompletionItem.create(property)));
         return completionItems;

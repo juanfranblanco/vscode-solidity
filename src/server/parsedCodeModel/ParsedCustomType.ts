@@ -12,12 +12,13 @@ export class ParsedCustomType extends ParsedCode {
         this.element = element;
         this.name = element.name;
         this.document = document;
+        this.contract = contract;
         this.isGlobal = isGlobal;
         this.isType = element.isType;
     }
 
 
-    public createCompletionItem(): CompletionItem {
+    public override createCompletionItem(): CompletionItem {
         const completionItem =  CompletionItem.create(this.name);
         completionItem.kind = CompletionItemKind.Field;
         let contractName = '';

@@ -64,7 +64,7 @@ export class ParsedStruct extends ParsedCode {
         return completionItem;
     }
 
-    public getDotCompletionItems(): CompletionItem[] {
+    public override getInnerCompletionItems(): CompletionItem[] {
         const completionItems: CompletionItem[] = [];
         this.variables.forEach(x =>  completionItems.push(x.createCompletionItem()));
         return completionItems;

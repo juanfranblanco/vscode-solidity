@@ -24,7 +24,7 @@ export class ParsedError extends ParsedCode {
         this.input = ParsedParameter.extractParameters(this.element.params, this.contract, this.document, this);
     }
 
-    public createCompletionItem(): CompletionItem {
+    public override createCompletionItem(): CompletionItem {
         const completionItem =  CompletionItem.create(this.name);
         completionItem.kind = CompletionItemKind.Function;
         // completionItem.insertText = contractName + '.' + contractElement.name;

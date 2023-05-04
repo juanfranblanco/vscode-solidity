@@ -64,8 +64,7 @@ export class CodeWalkerService {
         sourceDocuments.documents.forEach(sourceDocumentItem => {
             if (sourceDocumentItem !== selectedSourceDocument) {
                 const documentImport = this.parseDocument(sourceDocumentItem.code, false, sourceDocumentItem);
-                selectedDocument.importedDocuments = selectedDocument.importedDocuments.concat(documentImport);
-
+                selectedDocument.addImportedDocument(documentImport);
             }
         });
 

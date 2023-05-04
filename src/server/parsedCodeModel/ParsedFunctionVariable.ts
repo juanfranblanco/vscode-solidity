@@ -7,7 +7,7 @@ import { ParsedVariable } from './ParsedVariable';
 export class ParsedFunctionVariable extends ParsedVariable {
     public function: ParsedFunction;
 
-    public createCompletionItem(): CompletionItem {
+    public override createCompletionItem(): CompletionItem {
 
         const completionItem =  CompletionItem.create(this.name);
         completionItem.kind = CompletionItemKind.Field;

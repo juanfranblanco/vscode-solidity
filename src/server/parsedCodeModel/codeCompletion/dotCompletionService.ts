@@ -5,13 +5,14 @@ import { ParsedDeclarationType } from '../parsedDeclarationType';
 import { ParsedFunction } from '../ParsedFunction';
 import { ParsedContract } from '../parsedContract';
 import { ParsedDocument } from '../ParsedDocument';
+import { ParsedExpression, ParsedExpressionCall, ParsedExpressionIdentifier } from '../ParsedExpression';
+import { IParsedExpressionContainer } from '../IParsedExpressionContainer';
 
 
 export class AutoCompleteExpression {
     public isVariable = false;
     public isMethod = false;
     public isArray = false;
-    public isProperty = false;
     public parent: AutoCompleteExpression = null; // could be a property or a method
     public child: AutoCompleteExpression = null;
     public name = '';
@@ -44,6 +45,122 @@ export class DotCompletionService {
         return start;
     }
 
+    public static convertAutoCompleteExpressionToParsedExpression(autocompleteExpression: AutoCompleteExpression,
+                                                                 expressionChild: ParsedExpression,
+                                                                 document: ParsedDocument,
+                                                                 contract: ParsedContract,
+                                                                 expressionContainer: IParsedExpressionContainer): ParsedExpression {
+        let expression: ParsedExpression = null;
+
+        if (autocompleteExpression.isMethod) {
+            expression = new ParsedExpressionCall();
+        }
+
+        if (autocompleteExpression.isVariable) {
+            expression = new ParsedExpressionIdentifier();
+        }
+
+        expression.name = autocompleteExpression.name;
+        expression.document = document;
+        expression.contract = contract;
+        expression.child = expressionChild;
+        expression.expressionContainer = expressionContainer;
+        if (autocompleteExpression.parent !== null) {
+            expression.parent = this.convertAutoCompleteExpressionToParsedExpression(autocompleteExpression.parent, expression, document, contract, expressionContainer);
+        }
+
+        return expression;
+    }
+
+    public static getSelectedDocumentDotCompletionItems(lines: string[],
+        position: Position,
+        triggeredByDotStart: number,
+        documentSelected: ParsedDocument,
+        offset: number): CompletionItem[] {
+
+            const autocompleteByDot = this.buildAutoCompleteExpression(lines[position.line], triggeredByDotStart - 1);
+            const expression = this.convertAutoCompleteExpressionToParsedExpression(autocompleteByDot, null, documentSelected,
+            documentSelected.selectedContract,
+            documentSelected.selectedContract.getSelectedFunction(offset));
+            return expression.getInnerCompletionItems();
+        }
+
+        public static buildAutoCompleteExpression(lineText: string, wordEndPosition: number): AutoCompleteExpression {
+            let searching = true;
+            const result: AutoCompleteExpression = new AutoCompleteExpression();
+            // simpler way might be to find the first space or beginning of line
+            // and from there split / match (but for now kiss or slowly)
+
+            wordEndPosition = this.getArrayStart(lineText, wordEndPosition, result);
+
+            if (lineText[wordEndPosition] === ')' ) {
+                result.isMethod = true;
+                let methodParamBeginFound = false;
+                while (!methodParamBeginFound && wordEndPosition >= 0 ) {
+                    if (lineText[wordEndPosition] === '(') {
+                        methodParamBeginFound = true;
+                    }
+                    wordEndPosition = wordEndPosition - 1;
+                }
+            }
+
+            if (!result.isMethod && !result.isArray) {
+                result.isVariable = true;
+            }
+
+            while (searching && wordEndPosition >= 0) {
+                const currentChar = lineText[wordEndPosition];
+                if (this.isAlphaNumeric(currentChar) || currentChar === '_' || currentChar === '$') {
+                    result.name = currentChar + result.name;
+                    wordEndPosition = wordEndPosition - 1;
+                } else {
+                    if (currentChar === ' ') { // we only want a full word for a variable / method // this cannot be parsed due incomplete statements
+                        searching = false;
+                        return result;
+                    } else {
+                        if (currentChar === '.') {
+                            result.parent = this.buildAutoCompleteExpression(lineText, wordEndPosition - 1);
+                            result.parent.child = result;
+                        }
+                    }
+                    searching = false;
+                    return result;
+                }
+            }
+            return result;
+        }
+
+        public static getArrayStart(lineText: string, wordEndPosition: number, result: AutoCompleteExpression) {
+            if (lineText[wordEndPosition] === ']') {
+                result.isArray = true;
+                let arrayBeginFound = false;
+                while (!arrayBeginFound && wordEndPosition >= 0) {
+                    if (lineText[wordEndPosition] === '[') {
+                        arrayBeginFound = true;
+                    }
+                    wordEndPosition = wordEndPosition - 1;
+                }
+            }
+            if (lineText[wordEndPosition] === ']') {
+                wordEndPosition = this.getArrayStart(lineText, wordEndPosition, result);
+            }
+            return wordEndPosition;
+        }
+
+        private static isAlphaNumeric(str) {
+            let code, i, len;
+            for (i = 0, len = str.length; i < len; i++) {
+              code = str.charCodeAt(i);
+              if (!(code > 47 && code < 58) && // numeric (0-9)
+                  !(code > 64 && code < 91) && // upper alpha (A-Z)
+                  !(code > 96 && code < 123)) { // lower alpha (a-z)
+                return false;
+              }
+            }
+            return true;
+          }
+
+    /*
     public static getSelectedDocumentDotCompletionItems(lines: string[],
                                                         position: Position,
                                                         triggeredByDotStart: number,
@@ -52,6 +169,10 @@ export class DotCompletionService {
 
         let completionItems: CompletionItem[] = [];
         const autocompleteByDot = this.buildAutoCompleteExpression(lines[position.line], triggeredByDotStart - 1);
+        const expression = this.convertAutoCompleteExpressionToParsedExpression(autocompleteByDot, null, documentSelected,
+                                documentSelected.selectedContract,
+                                documentSelected.selectedContract.getSelectedFunction(offset));
+         return expression.getInnerCompletionItems();
         // if triggered by variable //done
         // todo triggered by method (get return type) // done
         // todo triggered by property // done
@@ -69,7 +190,7 @@ export class DotCompletionService {
                 if (autocompleteByDot.name === 'this' && autocompleteByDot.isVariable && autocompleteByDot.parent === null) {
 
                     // add selectd contract completion items
-                    completionItems = completionItems.concat(selectedContract.getDotCompletionItems());
+                    completionItems = completionItems.concat(selectedContract.getInnerCompletionItems());
 
                 } else {
                     /// the types
@@ -150,7 +271,7 @@ export class DotCompletionService {
                 allEnums.forEach(item => {
                     if (item.name === autocompleteByDot.name) {
                         found = true;
-                        completionItems = completionItems.concat(item.getDotCompletionItems());
+                        completionItems = completionItems.concat(item.getInnerCompletionItems());
                     }
                 });
             }
@@ -159,7 +280,7 @@ export class DotCompletionService {
                 allContracts.forEach(item => {
                     if (item.name === autocompleteByDot.name) {
                         found = true;
-                        completionItems = completionItems.concat(item.getDotCompletionItems());
+                        completionItems = completionItems.concat(item.getInnerCompletionItems());
                     }
                 });
             }
@@ -189,7 +310,7 @@ export class DotCompletionService {
                 allContracts.forEach(item => {
                     if (item.name === autocompleteByDot.name) {
                         found = true;
-                        completionItems = completionItems.concat(item.getDotCompletionItems());
+                        completionItems = completionItems.concat(item.getInnerCompletionItems());
                     }
                 });
             }
@@ -204,13 +325,13 @@ export class DotCompletionService {
         let completionItems: CompletionItem[] = [];
         const foundStruct = allStructs.find(x => x.name === type.name);
         if (foundStruct !== undefined) {
-            completionItems = completionItems.concat(foundStruct.getDotCompletionItems());
+            completionItems = completionItems.concat(foundStruct.getInnerCompletionItems());
         } else {
 
             const foundContract = allContracts.find(x => x.name === type.name);
             if (foundContract !== undefined) {
                 foundContract.initialiseExtendContracts();
-                completionItems = completionItems.concat(foundContract.getDotCompletionItems());
+                completionItems = completionItems.concat(foundContract.getInnerCompletionItems());
             }
         }
 
@@ -286,81 +407,7 @@ export class DotCompletionService {
             }
         });
         */
-    }
+   /* } */
 
 
-    public static buildAutoCompleteExpression(lineText: string, wordEndPosition: number): AutoCompleteExpression {
-        let searching = true;
-        const result: AutoCompleteExpression = new AutoCompleteExpression();
-        // simpler way might be to find the first space or beginning of line
-        // and from there split / match (but for now kiss or slowly)
-
-        wordEndPosition = this.getArrayStart(lineText, wordEndPosition, result);
-
-        if (lineText[wordEndPosition] === ')' ) {
-            result.isMethod = true;
-            let methodParamBeginFound = false;
-            while (!methodParamBeginFound && wordEndPosition >= 0 ) {
-                if (lineText[wordEndPosition] === '(') {
-                    methodParamBeginFound = true;
-                }
-                wordEndPosition = wordEndPosition - 1;
-            }
-        }
-
-        if (!result.isMethod && !result.isArray) {
-            result.isVariable = true;
-        }
-
-        while (searching && wordEndPosition >= 0) {
-            const currentChar = lineText[wordEndPosition];
-            if (this.isAlphaNumeric(currentChar) || currentChar === '_' || currentChar === '$') {
-                result.name = currentChar + result.name;
-                wordEndPosition = wordEndPosition - 1;
-            } else {
-                if (currentChar === ' ') { // we only want a full word for a variable / method // this cannot be parsed due incomplete statements
-                    searching = false;
-                    return result;
-                } else {
-                    if (currentChar === '.') {
-                        result.parent = this.buildAutoCompleteExpression(lineText, wordEndPosition - 1);
-                        result.parent.child = result;
-                    }
-                }
-                searching = false;
-                return result;
-            }
-        }
-        return result;
-    }
-
-    public static getArrayStart(lineText: string, wordEndPosition: number, result: AutoCompleteExpression) {
-        if (lineText[wordEndPosition] === ']') {
-            result.isArray = true;
-            let arrayBeginFound = false;
-            while (!arrayBeginFound && wordEndPosition >= 0) {
-                if (lineText[wordEndPosition] === '[') {
-                    arrayBeginFound = true;
-                }
-                wordEndPosition = wordEndPosition - 1;
-            }
-        }
-        if (lineText[wordEndPosition] === ']') {
-            wordEndPosition = this.getArrayStart(lineText, wordEndPosition, result);
-        }
-        return wordEndPosition;
-    }
-
-    private static isAlphaNumeric(str) {
-        let code, i, len;
-        for (i = 0, len = str.length; i < len; i++) {
-          code = str.charCodeAt(i);
-          if (!(code > 47 && code < 58) && // numeric (0-9)
-              !(code > 64 && code < 91) && // upper alpha (A-Z)
-              !(code > 96 && code < 123)) { // lower alpha (a-z)
-            return false;
-          }
-        }
-        return true;
-      }
 }

@@ -5,6 +5,8 @@ import { ParsedDocument } from './ParsedDocument';
 import { IParsedExpressionContainer } from './IParsedExpressionContainer';
 import { ParsedVariable } from './ParsedVariable';
 import { ParsedFunction } from './ParsedFunction';
+import { CompletionItem } from 'vscode-languageserver';
+import { ParsedEnum } from './ParsedEnum';
 
 export enum ExpressionType {
   Call,
@@ -185,6 +187,13 @@ export class ParsedExpressionCall extends ParsedExpression {
     return [];
   }
 
+  public override getInnerCompletionItems(): CompletionItem[] {
+    this.initReference();
+    this.initExpressionType();
+    if (this.expressionType !== null) { return this.expressionType.getInnerCompletionItems(); }
+    return [];
+  }
+
   public override getInnerMethodCalls(): ParsedCode[] {
     this.initReference();
     this.initExpressionType();
@@ -257,6 +266,13 @@ export class ParsedExpressionIdentifier extends ParsedExpression {
     this.name = this.element.name;
   }
 
+  public override getInnerCompletionItems(): CompletionItem[] {
+    this.initReference();
+    this.initExpressionType();
+    if (this.expressionType !== null) { return this.expressionType.getInnerCompletionItems(); }
+    return [];
+  }
+
   public override getInnerMembers(): ParsedCode[] {
     this.initReference();
     this.initExpressionType();
@@ -299,7 +315,7 @@ export class ParsedExpressionIdentifier extends ParsedExpression {
         if (variable.type !== undefined) {
           this.expressionType = variable.type;
         } else {
-          if(this.reference instanceof ParsedContract) {
+          if (this.reference instanceof ParsedContract || this.reference instanceof ParsedEnum) {
              const contractExpressionType = new ParsedDeclarationType();
              contractExpressionType.contract = this.contract;
              contractExpressionType.document = this.document;

@@ -13,7 +13,7 @@ export class ParsedConstant extends ParsedVariable {
         this.type = ParsedDeclarationType.create(element.literal, null, document);
     }
 
-    public createCompletionItem(): CompletionItem {
+    public override createCompletionItem(): CompletionItem {
         const completionItem =  CompletionItem.create(this.name);
         completionItem.kind = CompletionItemKind.Field;
         const info = this.document.getGlobalPathInfo();

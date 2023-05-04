@@ -1,5 +1,5 @@
 import { ParsedDocument } from './ParsedDocument';
-import { Location, Range, TextDocument } from 'vscode-languageserver';
+import { CompletionItem, Location, Range, TextDocument } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 import { ParsedContract } from './parsedContract';
 
@@ -34,6 +34,10 @@ export class ParsedCode {
             }
         }
         return false;
+    }
+
+    public createCompletionItem(): CompletionItem {
+        return null;
     }
 
     public isCurrentElementedSelected(offset: number): boolean {
@@ -80,6 +84,10 @@ export class ParsedCode {
         } else {
             return this.contract.findMembersInScope(name);
         }
+    }
+
+    public getInnerCompletionItems(): CompletionItem[] {
+        return [];
     }
 
     public getInnerMembers(): ParsedCode[] {

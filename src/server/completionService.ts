@@ -102,11 +102,15 @@ export class CompletionService {
 
             if (documentContractSelected.selectedContract !== undefined && documentContractSelected.selectedContract !== null ) {
                 completionItems = completionItems.concat(documentContractSelected.selectedContract.getAllEventsCompletionItems());
+            } else {
+                completionItems = completionItems.concat(documentContractSelected.getAllGlobalEventsCompletionItems());
             }
 
         } else if (triggeredByRevert) {
             if (documentContractSelected.selectedContract !== undefined && documentContractSelected.selectedContract !== null ) {
                 completionItems = completionItems.concat(documentContractSelected.selectedContract.getAllErrorsCompletionItems());
+            } else {
+                completionItems = completionItems.concat(documentContractSelected.getAllGlobalErrorsCompletionItems());
             }
         } else {
 
