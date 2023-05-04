@@ -96,16 +96,19 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
     }
 
     public isConstructorSelected(offset: number) {
+        if (this.constructorFunction === null) { return false; }
         const element = this.constructorFunction.element;
         return this.isElementedSelected(element, offset);
     }
 
     public isFallbackSelected(offset: number) {
+        if (this.fallbackFunction === null) { return false; }
         const element = this.fallbackFunction.element;
         return this.isElementedSelected(element, offset);
     }
 
     public isReceivableSelected(offset: number) {
+        if (this.receiveFunction === null) { return false; }
         const element = this.receiveFunction.element;
         return this.isElementedSelected(element, offset);
     }
@@ -213,55 +216,65 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
         return selectedFunction;
     }
 
-    public getAllFunctions(): ParsedFunction[] {
+    public getAllFunctions(includeGlobal = true): ParsedFunction[] {
         let returnItems: ParsedFunction[] = [];
         returnItems = returnItems.concat(this.functions);
         this.getExtendContracts().forEach(contract => {
             returnItems = returnItems.concat(contract.getAllFunctions());
         });
+        if (includeGlobal) {
         returnItems = returnItems.concat(this.document.getAllGlobalFunctions());
+        }
         return returnItems;
     }
 
 
 
-    public getAllStructs(): ParsedStruct[] {
+    public getAllStructs(includeGlobal = true): ParsedStruct[] {
         let returnItems: ParsedStruct[] = [];
         returnItems = returnItems.concat(this.structs);
         this.getExtendContracts().forEach(contract => {
             returnItems = returnItems.concat(contract.getAllStructs());
         });
+        if (includeGlobal) {
         returnItems = returnItems.concat(this.document.getAllGlobalStructs());
+        }
         return returnItems;
     }
 
-    public getAllErrors(): ParsedError[] {
+    public getAllErrors(includeGlobal = true): ParsedError[] {
         let returnItems: ParsedError[] = [];
         returnItems = returnItems.concat(this.errors);
         this.getExtendContracts().forEach(contract => {
             returnItems = returnItems.concat(contract.getAllErrors());
         });
-        returnItems = returnItems.concat(this.document.getAllGlobalErrors());
+        if (includeGlobal) {
+            returnItems = returnItems.concat(this.document.getAllGlobalErrors());
+        }
         return returnItems;
     }
 
-    public getAllEnums(): ParsedEnum[] {
+    public getAllEnums(includeGlobal = true): ParsedEnum[] {
         let returnItems: ParsedEnum[] = [];
         returnItems = returnItems.concat(this.enums);
         this.getExtendContracts().forEach(contract => {
             returnItems = returnItems.concat(contract.getAllEnums());
         });
+        if (includeGlobal) {
         returnItems = returnItems.concat(this.document.getAllGlobalEnums());
+        }
         return returnItems;
     }
 
-    public getAllCustomTypes(): ParsedCustomType[] {
+    public getAllCustomTypes(includeGlobal = true): ParsedCustomType[] {
         let returnItems: ParsedCustomType[] = [];
         returnItems = returnItems.concat(this.customTypes);
         this.getExtendContracts().forEach(contract => {
             returnItems = returnItems.concat(contract.getAllCustomTypes());
         });
+        if (includeGlobal) {
         returnItems = returnItems.concat(this.document.getAllGlobalCustomTypes());
+        }
         return returnItems;
     }
 
@@ -278,13 +291,15 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
         return this.document.getAllGlobalConstants();
     }
 
-    public getAllEvents(): ParsedEvent[] {
+    public getAllEvents(includeGlobal = true): ParsedEvent[] {
         let returnItems: ParsedEvent[] = [];
         returnItems = returnItems.concat(this.events);
         this.getExtendContracts().forEach(contract => {
             returnItems = returnItems.concat(contract.getAllEvents());
         });
+        if (includeGlobal) {
         returnItems = returnItems.concat(this.document.getAllGlobalEvents());
+        }
         return returnItems;
     }
 
@@ -391,7 +406,7 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
 
                 if (contractElement.type === 'ErrorDeclaration') {
                     const error = new ParsedError();
-                    error.initialise(contractElement, null, this.document, false);
+                    error.initialise(contractElement, this, this.document, false);
                     /*
                     if (selectedElement === contractElement) {
                         this.selectedError = error;
@@ -474,8 +489,11 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
 
     public override getInnerCompletionItems(): CompletionItem[] {
         let completionItems: CompletionItem[] = [];
-        completionItems = completionItems.concat(this.getAllFunctionCompletionItems());
+        completionItems = completionItems.concat(this.getAllFunctions(false).map(x => x.createCompletionItem()));
         completionItems = completionItems.concat(this.getAllStateVariableCompletionItems());
+        completionItems = completionItems.concat(this.getAllErrors(false).map(x => x.createCompletionItem()));
+        completionItems = completionItems.concat(this.getAllStructs(false).map(x => x.createCompletionItem()));
+        completionItems = completionItems.concat(this.getAllEnums(false).map(x => x.createCompletionItem()));
         return completionItems;
     }
 
