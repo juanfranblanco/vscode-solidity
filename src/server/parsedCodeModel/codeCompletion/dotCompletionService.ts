@@ -78,10 +78,25 @@ export class DotCompletionService {
         documentSelected: ParsedDocument,
         offset: number): CompletionItem[] {
 
+            let contractSelected: ParsedContract = null;
+            let expressionContainer: IParsedExpressionContainer = null;
+
+            if (documentSelected.selectedContract === null || documentSelected.selectedContract === undefined) {
+                expressionContainer = documentSelected;
+            } else {
+                contractSelected = documentSelected.selectedContract;
+                const functionSelected = documentSelected.selectedContract.getSelectedFunction(offset);
+                if (functionSelected === undefined || functionSelected === null) {
+                    expressionContainer = contractSelected;
+                } else {
+                    expressionContainer = functionSelected;
+                }
+            }
+
             const autocompleteByDot = this.buildAutoCompleteExpression(lines[position.line], triggeredByDotStart - 1);
             const expression = this.convertAutoCompleteExpressionToParsedExpression(autocompleteByDot, null, documentSelected,
-            documentSelected.selectedContract,
-            documentSelected.selectedContract.getSelectedFunction(offset));
+            contractSelected,
+            expressionContainer);
             return expression.getInnerCompletionItems();
         }
 
