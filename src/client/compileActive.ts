@@ -44,19 +44,18 @@ export function compileActiveContract(compiler: Compiler, overrideDefaultCompile
     const remappings = workspaceUtil.getSolidityRemappings();
     const project = initialiseProject(workspaceUtil.getCurrentProjectInWorkspaceRootFsPath(), packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory, remappings);
     const contract = contractsCollection.addSourceDocumentAndResolveImports(contractPath, contractCode, project);
- 
+
     let packagesPath = null;
-    if(project.packagesDir != null) 
-    {
+    if (project.packagesDir != null) {
         packagesPath = formatPath(project.packagesDir);
     }
-    
+
     return compiler.compile(contractsCollection.getDefaultSourceDocumentsForCompilation(compilationOptimisation),
             diagnosticCollection,
             project.projectPackage.build_dir,
             project.projectPackage.absoluletPath,
             null,
             packagesPath,
-            contract.absolutePath, 
+            contract.absolutePath,
             overrideDefaultCompiler);
 }

@@ -45,17 +45,18 @@ export class ParsedError extends ParsedCode {
         return completionItem;
     }
 
-    public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+    public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
         if (this.isCurrentElementedSelected(offset)) {
-            const results: FindTypeReferenceLocationResult[] = [];
-            this.input.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            const foundResult = results.find(x => x.isCurrentElementSelected === true);
-            if (foundResult === undefined) {
-                return FindTypeReferenceLocationResult.create(true);
-            } else {
+            let results: FindTypeReferenceLocationResult[] = [];
+            this.input.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            const foundResult = FindTypeReferenceLocationResult.filterFoundResults(results);
+            if (foundResult.length > 0) {
                 return foundResult;
+            } else {
+                return [FindTypeReferenceLocationResult.create(true)];
             }
         }
-        return FindTypeReferenceLocationResult.create(false);
-   }
+            return [FindTypeReferenceLocationResult.create(false)];
+    }
+
 }

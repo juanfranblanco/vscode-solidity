@@ -19,8 +19,22 @@ export class SolidityDefinitionProviderExperimental {
 
     const offset = document.offsetAt(position);
     const documentContractSelected = walker.getSelectedDocument(document, position);
-    const reference = documentContractSelected.getSelectedTypeReferenceLocation(offset);
-    return Promise.resolve(reference.location);
+    const references = documentContractSelected.getSelectedTypeReferenceLocation(offset);
+    const foundLocations = references.filter(x => x.location !== null).map(x => x.location);
+    //const foundLocationsDeDup =
+    //foundLocations.filter(location => foundLocations.filter(innerlocation => innerlocation.range === location.range && innerlocation.uri === location.uri).length === 0);
+    const keys = ['range', 'uri'];
+    const result = Object.values(foundLocations.reduce((r, o: any) => {
+        const key = keys.map(k => o[k]).join('|');
+        // tslint:disable-next-line:curly
+        if (r[key]) r[key].condition = [].concat(r[key].condition, o.condition);
+        // tslint:disable-next-line:curly
+        else r[key] = { ...o };
+        return r;
+    }, {}));
+
+    
+    return Promise.resolve(<vscode.Location[]>result);
   }
 
 }

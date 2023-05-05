@@ -37,16 +37,16 @@ export class ParsedStruct extends ParsedCode {
         });
     }
 
-    public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+    public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
         if (this.isCurrentElementedSelected(offset)) {
              const variableSelected = this.getVariableSelected(offset);
               if (variableSelected !== undefined) {
                   return variableSelected.getSelectedTypeReferenceLocation(offset);
               } else {
-                  return FindTypeReferenceLocationResult.create(true);
+                  return [FindTypeReferenceLocationResult.create(true)];
               }
         }
-        return FindTypeReferenceLocationResult.create(false);
+        return [FindTypeReferenceLocationResult.create(false)];
     }
 
     public createCompletionItem(): CompletionItem {

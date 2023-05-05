@@ -111,7 +111,12 @@ export class Compiler {
 
     public async compile(contracts: any,
         diagnosticCollection: vscode.DiagnosticCollection,
-        buildDir: string, rootDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string, overrideDefaultCompiler: compilerType = null): Promise<Array<string>> {
+        buildDir: string,
+        rootDir: string,
+        sourceDir: string,
+        excludePath?: string,
+        singleContractFilePath?: string,
+        overrideDefaultCompiler: compilerType = null): Promise<Array<string>> {
         // Did we find any sol files after all?
         if (Object.keys(contracts).length === 0) {
             vscode.window.showWarningMessage('No solidity files (*.sol) found');

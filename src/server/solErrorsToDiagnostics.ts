@@ -60,6 +60,7 @@ export interface CompilerError {
         return {
             diagnostic: {
                 message: errorMessage,
+                code: error.errorCode,
                 range: {
                     end: {
                         character: column + error.sourceLocation.end - error.sourceLocation.start - 1,

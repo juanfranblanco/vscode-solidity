@@ -157,23 +157,23 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
     return completionItem;
   }
 
-  public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+  public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
     if (this.isCurrentElementedSelected(offset)) {
-      const results: FindTypeReferenceLocationResult[] = [];
-      this.input.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-      this.output.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-      this.variables.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-      this.modifiers.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-      this.expressions.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+      let results: FindTypeReferenceLocationResult[] = [];
+      this.input.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+      this.output.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+      this.variables.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+      this.modifiers.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+      this.expressions.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
 
-      const foundResult = results.find(x => x.isCurrentElementSelected === true);
-      if (foundResult === undefined) {
-        return FindTypeReferenceLocationResult.create(true);
+      const foundResult = FindTypeReferenceLocationResult.filterFoundResults(results);
+      if (foundResult.length > 0) {
+          return foundResult;
       } else {
-        return foundResult;
+        return [FindTypeReferenceLocationResult.create(true)];
       }
     }
-    return FindTypeReferenceLocationResult.create(false);
+    return [FindTypeReferenceLocationResult.create(false)];
   }
 
 

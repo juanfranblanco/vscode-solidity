@@ -5,13 +5,27 @@ import { ParsedContract } from './parsedContract';
 
 export class FindTypeReferenceLocationResult {
     public isCurrentElementSelected: boolean;
-    public location: Location | Location[];
+    public location: Location;
 
     public static create(isSelected: boolean, location: Location = null) {
         const result = new FindTypeReferenceLocationResult();
         result.location = location;
         result.isCurrentElementSelected = isSelected;
         return result;
+    }
+
+    public static filterFoundResults(results: FindTypeReferenceLocationResult[]): FindTypeReferenceLocationResult[] {
+        const foundResult = results.filter(x => x.isCurrentElementSelected === true);
+        if (foundResult.length > 0) {
+            const foundLocations = foundResult.filter(x => x.location !== null);
+            if (foundLocations.length > 0) {
+              return foundLocations;
+            } else {
+              return [FindTypeReferenceLocationResult.create(true)];
+            }
+        } else {
+          return [];
+        }
     }
 }
 
@@ -53,13 +67,13 @@ export class ParsedCode {
           );
     }
 
-    public getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+    public getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
         if (this.isCurrentElementedSelected(offset)) {
 
-            return FindTypeReferenceLocationResult.create(true);
+            return  [FindTypeReferenceLocationResult.create(true)];
 
         }
-        return FindTypeReferenceLocationResult.create(false);
+        return [FindTypeReferenceLocationResult.create(false)];
     }
 
     public findTypeInScope(name: string): ParsedCode {
@@ -96,5 +110,14 @@ export class ParsedCode {
 
     public getInnerMethodCalls(): ParsedCode[] {
         return [];
+    }
+
+    protected mergeArrays<Type>(first: Type[], second: Type[]): Type[] {
+        for (let i = 0; i < second.length; i++) {
+            if (first.indexOf(second[i]) === -1) {
+            first.push(second[i]);
+            }
+        }
+        return first;
     }
 }

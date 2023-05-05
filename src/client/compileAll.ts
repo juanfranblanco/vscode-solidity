@@ -5,7 +5,7 @@ import * as path from 'path';
 import {Compiler} from './compiler';
 import {SourceDocumentCollection} from '../common/model/sourceDocumentCollection';
 import { initialiseProject } from '../common/projectService';
-import { formatPath } from '../common/util';
+import { formatPath, isPathSubdirectory } from '../common/util';
 import * as workspaceUtil from './workspaceUtil';
 
 
@@ -27,6 +27,8 @@ export function compileAllContracts(compiler: Compiler, diagnosticCollection: vs
     let solidityPath = '**/*.sol';
     if (project.projectPackage.sol_sources !== undefined && project.projectPackage.sol_sources !== '') {
         solidityPath = project.projectPackage.sol_sources + '/' + solidityPath;
+    } else {
+        solidityPath = rootPath + '/' + solidityPath;
     }
 
     // TODO parse excluded files
@@ -37,22 +39,21 @@ export function compileAllContracts(compiler: Compiler, diagnosticCollection: vs
 
     // Process open Text Documents first as it is faster (We might need to save them all first? Is this assumed?)
     vscode.workspace.textDocuments.forEach(document => {
-
-        if (path.extname(document.fileName) === '.sol') {
-            const contractPath = document.fileName;
-            const contractCode = document.getText();
-            contractsCollection.addSourceDocumentAndResolveImports(contractPath, contractCode, project);
-        }
+        if (isPathSubdirectory(rootPath,  document.fileName)) {
+            if (path.extname(document.fileName) === '.sol' ) {
+                const contractPath = document.fileName;
+                const contractCode = document.getText();
+                contractsCollection.addSourceDocumentAndResolveImports(contractPath, contractCode, project);
+            }
+         }
     });
 
     // Find all the other sol files, to compile them (1000 maximum should be enough for now)
     const files = vscode.workspace.findFiles(solidityPath, excludePath, 1000);
 
     return files.then(documents => {
-
         documents.forEach(document => {
             const contractPath = document.fsPath;
-
             // have we got this already opened? used those instead
             if (!contractsCollection.containsSourceDocument(contractPath)) {
                 const contractCode = fs.readFileSync(document.fsPath, 'utf8');
@@ -60,13 +61,11 @@ export function compileAllContracts(compiler: Compiler, diagnosticCollection: vs
             }
         });
         const sourceDirPath = formatPath(project.projectPackage.getSolSourcesAbsolutePath());
-        
         let packagesPath = null;
-        if(project.packagesDir != null) 
-        {
+        if (project.packagesDir != null) {
              packagesPath = formatPath(project.packagesDir);
         }
-      
+
         compiler.compile(contractsCollection.getDefaultSourceDocumentsForCompilation(compilationOptimisation),
                 diagnosticCollection,
                 project.projectPackage.build_dir,

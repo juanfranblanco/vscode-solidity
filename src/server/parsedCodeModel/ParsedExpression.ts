@@ -228,7 +228,7 @@ export class ParsedExpressionCall extends ParsedExpression {
     }
   }
 
-  public getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+  public getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
     this.initReference();
     this.initExpressionType();
     if (this.isCurrentElementedSelected(offset)) {
@@ -239,12 +239,12 @@ export class ParsedExpressionCall extends ParsedExpression {
           }
         }
         if (this.reference !== null) {
-          return FindTypeReferenceLocationResult.create(true, this.reference.getLocation());
+          return [FindTypeReferenceLocationResult.create(true, this.reference.getLocation())];
         }
-        return FindTypeReferenceLocationResult.create(true);
+        return [FindTypeReferenceLocationResult.create(true)];
       }
     }
-    return FindTypeReferenceLocationResult.create(false);
+    return [FindTypeReferenceLocationResult.create(false)];
   }
 }
 
@@ -327,7 +327,7 @@ export class ParsedExpressionIdentifier extends ParsedExpression {
     }
   }
 
-  public getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+  public getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
     try {
       this.initReference();
       this.initExpressionType();
@@ -338,9 +338,9 @@ export class ParsedExpressionIdentifier extends ParsedExpression {
           }
         }
         if (this.reference !== null) {
-          return FindTypeReferenceLocationResult.create(true, this.reference.getLocation());
+          return [FindTypeReferenceLocationResult.create(true, this.reference.getLocation())];
         }
-        return FindTypeReferenceLocationResult.create(true);
+        return [FindTypeReferenceLocationResult.create(true)];
       } else { // in case the parent is a member and not part of the element
         if (this.parent !== null) {
           if (this.parent.isCurrentElementedSelected(offset)) {
@@ -348,9 +348,9 @@ export class ParsedExpressionIdentifier extends ParsedExpression {
           }
         }
       }
-      return FindTypeReferenceLocationResult.create(false);
+      return [FindTypeReferenceLocationResult.create(false)];
     } catch (error) {
-      return FindTypeReferenceLocationResult.create(false);
+      return [FindTypeReferenceLocationResult.create(false)];
     }
   }
 }

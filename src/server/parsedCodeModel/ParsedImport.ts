@@ -15,11 +15,11 @@ export class ParsedImport extends ParsedCode {
         this.from = element.from;
     }
 
-    public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+    public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
         if (this.isCurrentElementedSelected(offset)) {
-             return FindTypeReferenceLocationResult.create(true, this.getReferenceLocation());
+             return [FindTypeReferenceLocationResult.create(true, this.getReferenceLocation())];
         }
-        return FindTypeReferenceLocationResult.create(false);
+        return [FindTypeReferenceLocationResult.create(false)];
    }
 
    public initialiseDocumentReference(parsedDocuments: ParsedDocument[]) {

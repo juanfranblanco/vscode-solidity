@@ -31,10 +31,10 @@ export class ParsedContractIs extends ParsedCode {
         return this.getContractReference().getLocation();
     }
 
-    public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+    public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
         if (this.isCurrentElementedSelected(offset)) {
-             return FindTypeReferenceLocationResult.create(true, this.getContractReferenceLocation());
+             return [FindTypeReferenceLocationResult.create(true, this.getContractReferenceLocation())];
         }
-        return FindTypeReferenceLocationResult.create(false);
+        return [FindTypeReferenceLocationResult.create(false)];
    }
 }

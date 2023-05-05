@@ -271,24 +271,24 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
         return null;
     }
 
-    public getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
-            const results: FindTypeReferenceLocationResult[] = [];
-            this.functions.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            this.errors.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            this.events.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            this.innerContracts.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            this.structs.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            this.usings.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            this.customTypes.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            this.constants.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            this.imports.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            this.expressions.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
+    public getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
+            let results: FindTypeReferenceLocationResult[] = [];
+            this.functions.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            this.errors.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            this.events.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            this.innerContracts.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            this.structs.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            this.usings.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            this.customTypes.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            this.constants.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            this.imports.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            this.expressions.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
 
-            const foundResult = results.find(x => x.isCurrentElementSelected === true);
-            if (foundResult === undefined) {
-                return FindTypeReferenceLocationResult.create(true);
-            } else {
+            const foundResult = FindTypeReferenceLocationResult.filterFoundResults(results);
+            if (foundResult.length > 0) {
                 return foundResult;
+            } else {
+                return [FindTypeReferenceLocationResult.create(true)];
             }
     }
 
@@ -462,15 +462,6 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
           console.log(error);
         }
       }
-
-    private mergeArrays<Type>(first: Type[], second: Type[]): Type[] {
-        for (let i = 0; i < second.length; i++) {
-            if (first.indexOf(second[i]) === -1) {
-            first.push(second[i]);
-            }
-        }
-        return first;
-    }
 
     private matchesElement(selectedElement: any, element: any) {
         return selectedElement !== null && selectedElement === element;

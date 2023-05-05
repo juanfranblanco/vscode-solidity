@@ -22,6 +22,7 @@ import { workspace, WorkspaceFolder } from 'vscode';
 import { formatDocument } from './client/formatter/formatter';
 import { compilerType } from './common/solcCompiler';
 import * as workspaceUtil from './client/workspaceUtil';
+import { AddressChecksumCodeActionProvider } from './client/codeActionProviders/addressChecksumActionProvider';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 let compiler: Compiler;
@@ -184,6 +185,12 @@ export async function activate(context: vscode.ExtensionContext) {
                 return formatDocument(document, context);
             },
         }));
+
+    context.subscriptions.push(
+        vscode.languages.registerCodeActionsProvider('solidity', new AddressChecksumCodeActionProvider(), {
+            providedCodeActionKinds: AddressChecksumCodeActionProvider.providedCodeActionKinds,
+        }),
+    );
 
     const serverModule = path.join(__dirname, 'server.js');
     const serverOptions: ServerOptions = {

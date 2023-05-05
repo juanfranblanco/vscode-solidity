@@ -6,16 +6,16 @@ import { ParsedCodeTypeHelper } from './ParsedCodeTypeHelper';
 export class ParsedVariable extends ParsedCode {
     public type: ParsedDeclarationType;
 
-    public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+    public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
           if (this.isCurrentElementedSelected(offset)) {
                 const foundType = this.type.findType();
                 if (foundType !== undefined) {
-                    return FindTypeReferenceLocationResult.create(true, foundType.getLocation());
+                    return [FindTypeReferenceLocationResult.create(true, foundType.getLocation())];
                 } else {
-                    return FindTypeReferenceLocationResult.create(true);
+                    return [FindTypeReferenceLocationResult.create(true)];
                 }
           }
-          return FindTypeReferenceLocationResult.create(false);
+          return [FindTypeReferenceLocationResult.create(false)];
     }
 
 }

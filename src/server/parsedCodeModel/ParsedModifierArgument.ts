@@ -47,17 +47,20 @@ export class ParsedModifierArgument extends ParsedCode {
         return !(this.isPublic() || this.isExternal() || this.isPrivate() || this.isView() || this.isPure() || this.isPayeable() || this.isInternal());
     }
 
-    public getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+    public getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
         if (this.isCurrentElementedSelected(offset)) {
             const results: FindTypeReferenceLocationResult[] = [];
             if (this.IsCustomModifier()) {
                 const foundResults =  this.findMethodsInScope(this.name);
-                if (foundResults.length > 0) {
-                    return FindTypeReferenceLocationResult.create(true, foundResults[0].getLocation());
-                }
+                    if (foundResults.length > 0) {
+                        foundResults.forEach(x => {
+                                results.push(FindTypeReferenceLocationResult.create(true, x.getLocation()));
+                            });
+                    }
+                return results;
             }
-            return FindTypeReferenceLocationResult.create(true);
+            return [FindTypeReferenceLocationResult.create(true)];
         }
-        return FindTypeReferenceLocationResult.create(false);
+        return [FindTypeReferenceLocationResult.create(false)];
     }
 }

@@ -127,30 +127,30 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
         return found;
     }
 
-    public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult {
+    public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
         if (this.isCurrentElementedSelected(offset)) {
-            const results: FindTypeReferenceLocationResult[] = [];
-            this.functions.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            this.errors.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            this.events.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            this.stateVariables.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            this.structs.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            this.using.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            this.customTypes.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            this.contractIsStatements.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            this.expressions.forEach(x => results.push(x.getSelectedTypeReferenceLocation(offset)));
-            if (this.constructorFunction !== null) {results.push(this.constructorFunction.getSelectedTypeReferenceLocation(offset)); }
-            if (this.fallbackFunction !== null) {results.push(this.fallbackFunction.getSelectedTypeReferenceLocation(offset)); }
-            if (this.receiveFunction !== null) {results.push(this.receiveFunction.getSelectedTypeReferenceLocation(offset)); }
+            let results: FindTypeReferenceLocationResult[] = [];
+            this.functions.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            this.errors.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            this.events.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            this.stateVariables.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            this.structs.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            this.using.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            this.customTypes.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            this.contractIsStatements.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            this.expressions.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+            if (this.constructorFunction !== null) {results = this.mergeArrays(results, this.constructorFunction.getSelectedTypeReferenceLocation(offset)); }
+            if (this.fallbackFunction !== null) {results = this.mergeArrays(results, this.fallbackFunction.getSelectedTypeReferenceLocation(offset)); }
+            if (this.receiveFunction !== null) {results = this.mergeArrays(results, this.receiveFunction.getSelectedTypeReferenceLocation(offset)); }
 
-            const foundResult = results.filter(x => x.isCurrentElementSelected === true);
+            const foundResult = FindTypeReferenceLocationResult.filterFoundResults(results);
             if (foundResult.length > 0) {
-                const foundLocation = foundResult.find(x => x.location !== null);
-                if (foundLocation !== undefined) { return foundLocation; }
-                return FindTypeReferenceLocationResult.create(true);
-           }
+                return foundResult;
+            } else {
+                return [FindTypeReferenceLocationResult.create(true)];
+            }
         }
-        return FindTypeReferenceLocationResult.create(false);
+        return [FindTypeReferenceLocationResult.create(false)];
     }
 
     public findType(name: string): ParsedCode {
