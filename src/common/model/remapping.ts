@@ -68,12 +68,12 @@ export class Remapping {
     }
 }
 
-export function importRemappings(remappings: string, project: Project) : Array<Remapping> {
-    const remappingArray = remappings.split(/\r\n|\r|\n/); //split lines
+export function importRemappings(remappings: string, project: Project): Array<Remapping> {
+    const remappingArray = remappings.split(/\r\n|\r|\n/); // split lines
     return importRemappingArray(remappingArray, project);
 }
 
-export function importRemappingArray(remappings: string[], project: Project) : Array<Remapping> {
+export function importRemappingArray(remappings: string[], project: Project): Array<Remapping> {
     const remappingsList = new Array<Remapping>();
     if (remappings !== undefined && remappings.length > 0) {
         remappings.forEach(remappingElement => {

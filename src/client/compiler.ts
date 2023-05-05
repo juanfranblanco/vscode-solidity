@@ -37,8 +37,8 @@ export class Compiler {
     }
 
     public async downloadRemoteVersionAndSetLocalPathSetting(target: vscode.ConfigurationTarget, folderPath: string) {
-        const path = await this.downloadRemoteVersion(folderPath);
-        vscode.workspace.getConfiguration('solidity').update('compileUsingLocalVersion', path, target);      
+        const downloadPath = await this.downloadRemoteVersion(folderPath);
+        vscode.workspace.getConfiguration('solidity').update('compileUsingLocalVersion', downloadPath, target);      
     }
 
     public async downloadRemoteVersion(folderPath: string) : Promise<string> {
@@ -148,7 +148,7 @@ export class Compiler {
         this.outputChannel.clear();
         this.outputChannel.show();
         this.outputChannel.appendLine('Retrieving compiler information:');
-        let compiler = this.solc.getCompiler(overrideDefaultCompiler);
+        const compiler = this.solc.getCompiler(overrideDefaultCompiler);
         if (compiler.compilerType === compilerType.localFile) {
             this.outputChannel.appendLine("Compiler using local file: '" + compiler.getConfiguration() + "', solidity version: " + compiler.getVersion());
         }

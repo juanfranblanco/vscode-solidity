@@ -181,7 +181,11 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
 
     public override getInnerMethodCalls(): ParsedCode[] {
         let methodCalls: ParsedCode[] = [];
-        methodCalls = methodCalls.concat(this.getAllFunctions()).concat(this.getAllEvents()).concat(this.getAllErrors()).concat(this.document.getAllContracts());
+        methodCalls = methodCalls.concat(this.getAllFunctions())
+                                 .concat(this.getAllEvents())
+                                 .concat(this.getAllErrors())
+                                 .concat(this.document.getAllContracts())
+                                 .concat(this.getAllStructs());
         return methodCalls;
     }
 

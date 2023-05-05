@@ -7,6 +7,7 @@ import { ParsedVariable } from './ParsedVariable';
 import { ParsedFunction } from './ParsedFunction';
 import { CompletionItem } from 'vscode-languageserver';
 import { ParsedEnum } from './ParsedEnum';
+import { ParsedStruct } from './ParsedStruct';
 
 export enum ExpressionType {
   Call,
@@ -220,9 +221,18 @@ export class ParsedExpressionCall extends ParsedExpression {
   public initExpressionType() {
     if (this.expressionType === null) {
       if (this.reference !== null) {
-        const functionReference: ParsedFunction = <ParsedFunction>this.reference;
-        if (functionReference.output !== undefined && functionReference.output.length > 0) {
-          this.expressionType = functionReference.output[0].type;
+        if (this.reference instanceof ParsedFunction) {
+          const functionReference: ParsedFunction = <ParsedFunction>this.reference;
+          if (functionReference.output !== undefined && functionReference.output.length > 0) {
+            this.expressionType = functionReference.output[0].type;
+          }
+        }
+        if (this.reference instanceof ParsedContract || this.reference instanceof ParsedStruct) {
+           const contractExpressionType = new ParsedDeclarationType();
+           contractExpressionType.contract = this.contract;
+           contractExpressionType.document = this.document;
+           contractExpressionType.type = this.reference;
+          this.expressionType = contractExpressionType;
         }
       }
     }
