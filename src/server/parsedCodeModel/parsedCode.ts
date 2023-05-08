@@ -34,6 +34,18 @@ export class ParsedCode {
     public name: string;
     public document: ParsedDocument;
     public contract: ParsedContract = null;
+    public isGlobal: boolean;
+
+    public initialise(element: any, document: ParsedDocument, contract: ParsedContract = null, isGlobal = false) {
+        this.contract = contract;
+        this.element = element;
+        this.name = element.name;
+        this.document = document;
+        this.isGlobal = isGlobal; // need to remove is global
+        if (contract !== null && isGlobal === false) {
+            this.isGlobal = true;
+        }
+    }
 
     public findElementByOffset(elements: Array<any>, offset: number): any {
         return elements.find(

@@ -5,15 +5,10 @@ import { ParsedContract } from './parsedContract';
 
 export class ParsedCustomType extends ParsedCode {
     public isType: string;
-    public isGlobal: boolean;
-    public contract: ParsedContract;
 
-    public initialise(element: any, contract: ParsedContract, document: ParsedDocument, isGlobal: boolean) {
+    public override initialise(element: any,  document: ParsedDocument, contract: ParsedContract, isGlobal: boolean) {
+        super.initialise(element, document, contract, isGlobal);
         this.element = element;
-        this.name = element.name;
-        this.document = document;
-        this.contract = contract;
-        this.isGlobal = isGlobal;
         this.isType = element.isType;
     }
 

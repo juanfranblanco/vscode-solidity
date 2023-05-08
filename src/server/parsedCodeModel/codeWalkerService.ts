@@ -8,6 +8,7 @@ import * as solparse from 'solparse-exp-jb';
 import { ParsedContract } from './parsedContract';
 import { ParsedDocument } from './ParsedDocument';
 import { SourceDocument } from '../../common/model/sourceDocument';
+import * as fs from 'fs';
 
 
 
@@ -39,6 +40,25 @@ export class CodeWalkerService {
         this.remappings,
       );
     }
+  }
+
+  public initialiseAllDocuments() {
+     const sourceDocuments = new SourceDocumentCollection();
+     const files = this.project.getAllSolFilesIgnoringDependencyFolders();
+     files.forEach(contractPath => {
+          if (!sourceDocuments.containsSourceDocument(contractPath)) {
+                const contractCode = fs.readFileSync(contractPath, 'utf8');
+                sourceDocuments.addSourceDocumentAndResolveImports(contractPath, contractCode, this.project);
+            }
+      });
+      sourceDocuments.documents.forEach(sourceDocumentItem => {
+         this.parseDocument(sourceDocumentItem.code, false, sourceDocumentItem);
+      });
+      this.parsedDocumentsCache.forEach(element => {
+        element.imports.forEach(importItem => {
+          importItem.initialiseDocumentReference(this.parsedDocumentsCache);
+        });
+      });
   }
 
   public getSelectedDocument(
@@ -88,9 +108,9 @@ export class CodeWalkerService {
         const result = solparse.parse(documentText);
         const selectedElement = this.findElementByOffset(result.body, offset);
         if (fixedSource) {
-            document.initialise(result, selectedElement, sourceDocument, documentText);
+            document.initialiseDocument(result, selectedElement, sourceDocument, documentText);
         } else {
-            document.initialise(result, selectedElement, sourceDocument, null );
+            document.initialiseDocument(result, selectedElement, sourceDocument, null );
         }
     } catch (error) {
         // if we error parsing (cannot cater for all combos) we fix by removing current line.
@@ -114,9 +134,9 @@ export class CodeWalkerService {
     try {
         const result = solparse.parse(documentText);
         if (fixedSource) {
-            document.initialise(result, null, sourceDocument, documentText);
+            document.initialiseDocument(result, null, sourceDocument, documentText);
         } else {
-            document.initialise(result, null, sourceDocument, null );
+            document.initialiseDocument(result, null, sourceDocument, null );
         }
         this.parsedDocumentsCache.push(document);
     } catch (error) {

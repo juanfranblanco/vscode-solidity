@@ -7,9 +7,8 @@ import { CompletionItem, CompletionItemKind, Location } from 'vscode-languageser
 
 export class ParsedStruct extends ParsedCode {
     public variables: ParsedStructVariable[] = [];
-    public isGlobal: boolean;
 
-    public initialise(element: any, contract: ParsedContract, document: ParsedDocument, isGlobal: boolean) {
+    public initialise(element: any, document: ParsedDocument,  contract: ParsedContract, isGlobal: boolean) {
         this.contract = contract;
         this.element = element;
         this.name = element.name;
@@ -20,7 +19,7 @@ export class ParsedStruct extends ParsedCode {
             this.element.body.forEach(structBodyElement => {
                 if (structBodyElement.type === 'DeclarativeExpression') {
                     const variable = new ParsedStructVariable();
-                    variable.initialise(structBodyElement, this.contract, this.document, this);
+                    variable.initialiseStructVariable(structBodyElement, this.contract, this.document, this);
                     this.variables.push(variable);
                 }
             });

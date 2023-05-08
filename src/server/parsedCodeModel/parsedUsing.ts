@@ -7,10 +7,8 @@ import { ParsedDocument } from './ParsedDocument';
 export class ParsedUsing extends ParsedCode {
     public for: ParsedDeclarationType;
     public forStar = false;
-    public contract: ParsedContract;
-    public isGlobal: boolean;
 
-    public initialise(element: any, contract: ParsedContract, document: ParsedDocument, isGlobal: boolean) {
+    public initialise(element: any,  document: ParsedDocument, contract: ParsedContract, isGlobal: boolean) {
         this.contract = contract;
         this.element = element;
         this.name = element.library.literal;

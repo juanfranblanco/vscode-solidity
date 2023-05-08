@@ -3,13 +3,13 @@ import { replaceRemappings } from '../common/util';
 import { findFirstRootProjectFile } from '../common/projectService';
 
 
-export function getCurrentProjectInWorkspaceRootFsPath(){
+export function getCurrentProjectInWorkspaceRootFsPath() {
     const monoreposupport = vscode.workspace.getConfiguration('solidity').get<boolean>('monoRepoSupport');
-    var currentRootPath = getCurrentWorkspaceRootFsPath();
-    if( monoreposupport ) {
-        var editor = vscode.window.activeTextEditor;
+    const currentRootPath = getCurrentWorkspaceRootFsPath();
+    if ( monoreposupport ) {
+        const editor = vscode.window.activeTextEditor;
         const currentDocument = editor.document.uri;
-        var projectFolder = findFirstRootProjectFile(currentRootPath, currentDocument.fsPath);
+        const projectFolder = findFirstRootProjectFile(currentRootPath, currentDocument.fsPath);
         if (projectFolder == null) {
             return currentRootPath;
         } else {
@@ -18,18 +18,18 @@ export function getCurrentProjectInWorkspaceRootFsPath(){
     } else {
         return currentRootPath;
     }
-    
+
 }
 
-export function getCurrentWorkspaceRootFsPath(){
+export function getCurrentWorkspaceRootFsPath() {
     return getCurrentWorkspaceRootFolder().uri.fsPath;
 }
 
-export function getCurrentWorkspaceRootFolder(){
-    var editor = vscode.window.activeTextEditor;
+export function getCurrentWorkspaceRootFolder() {
+    const editor = vscode.window.activeTextEditor;
     const currentDocument = editor.document.uri;
     return vscode.workspace.getWorkspaceFolder(currentDocument);
-    
+
 }
 
 export function getSolidityRemappings(): string[] {

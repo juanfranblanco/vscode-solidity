@@ -10,7 +10,6 @@ import { ParsedCode } from './parsedCode';
 
 
 export class ParsedParameter extends ParsedVariable {
-    public contract: ParsedContract;
     public parent: ParsedCode;
 
 
@@ -22,7 +21,7 @@ export class ParsedParameter extends ParsedVariable {
             }
             params.forEach(parameterElement => {
                 const parameter: ParsedParameter = new ParsedParameter();
-                parameter.initialise(parameterElement, contract, document, parent);
+                parameter.initialiseParameter(parameterElement, contract, document, parent);
                 parameters.push(parameter);
 
             });
@@ -77,7 +76,7 @@ export class ParsedParameter extends ParsedVariable {
         return paramsSnippet;
     }
 
-    public initialise(element: any, contract: ParsedContract, document: ParsedDocument, parent: ParsedCode) {
+    public initialiseParameter(element: any, contract: ParsedContract, document: ParsedDocument, parent: ParsedCode) {
         this.element = element;
         this.name = element.name;
         this.document = document;

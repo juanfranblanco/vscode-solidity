@@ -38,3 +38,45 @@ export class AddressChecksumCodeActionProvider implements vscode.CodeActionProvi
 
 
     }
+
+
+    export class SPDXCodeActionProvider implements vscode.CodeActionProvider {
+
+
+        public static readonly providedCodeActionKinds = [
+            vscode.CodeActionKind.QuickFix,
+        ];
+        public static SPDX_ERRORCODE = '1878';
+        public static licenses: string[] = ['MIT', 'UNKNOWN', 'UNLICENSED'];
+        public static preferredLicense = 'MIT';
+
+        public static createFix(document: vscode.TextDocument, diagnostic: vscode.Diagnostic, license: string, isPreferred = false): vscode.CodeAction {
+
+            const fix = new vscode.CodeAction(`Add SPDX License ` + license, vscode.CodeActionKind.QuickFix);
+            const licenseText = '// SPDX-License-Identifier: ' + license + ' \n';
+            fix.edit = new vscode.WorkspaceEdit();
+            fix.edit.insert(document.uri, diagnostic.range.start, licenseText);
+            fix.isPreferred = true;
+            return fix;
+        }
+
+        // tslint:disable-next-line:max-line-length
+        public provideCodeActions(document: vscode.TextDocument, range: vscode.Range | vscode.Selection, context: vscode.CodeActionContext, token: vscode.CancellationToken): vscode.CodeAction[] {
+            const results: vscode.CodeAction[] = [];
+            const diagnostics = context.diagnostics
+                .filter(diagnostic => diagnostic.code === SPDXCodeActionProvider.SPDX_ERRORCODE);
+            diagnostics.forEach(diagnostic => {
+                results.push(SPDXCodeActionProvider.createFix(document, diagnostic, SPDXCodeActionProvider.preferredLicense, true));
+                SPDXCodeActionProvider.licenses.forEach(license => {
+                    if (license !== SPDXCodeActionProvider.preferredLicense) {
+                        results.push(SPDXCodeActionProvider.createFix(document, diagnostic, license, false));
+                    }
+                });
+
+            } );
+            return results;
+        }
+
+
+    }
+

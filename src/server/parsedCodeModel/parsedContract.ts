@@ -42,11 +42,11 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
     public contractType: ContractType = ContractType.contract;
     public isAbstract: boolean;
 
-    public initialise(element: any, document: ParsedDocument) {
-        this.element = element;
+    public override initialise(element: any, document: ParsedDocument) {
+        super.initialise(element, document, this);
         this.name = element.name;
-        this.document = document;
         this.contractElementType = element.type;
+
 
         if (this.element.is_abstract !== undefined || this.element.is_abstract !== null) {
             this.isAbstract = this.element.is_abstract;
@@ -336,7 +336,7 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
         if (typeof this.element.is !== 'undefined' && this.element.is !== null) {
             this.element.is.forEach(isElement => {
                 const isStatement = new ParsedContractIs();
-                isStatement.initialise(isElement, this, this.document, false);
+                isStatement.initialise(isElement, this.document, this, false);
                 this.contractIsStatements.push(isStatement);
             });
         }
@@ -345,7 +345,7 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
             this.element.body.forEach(contractElement => {
                 if (contractElement.type === 'FunctionDeclaration') {
                     const functionContract = new ParsedFunction();
-                    functionContract.initialise(contractElement, this, this.document, false);
+                    functionContract.initialise(contractElement, this.document, this, false);
                     if (functionContract.name === functionContract.contract.name) {
                         this.constructorFunction = functionContract;
                     } else {
@@ -355,72 +355,68 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
 
                 if (contractElement.type === 'ModifierDeclaration') {
                     const functionContract = new ParsedFunction();
-                    functionContract.initialise(contractElement, this, this.document, false);
+                    functionContract.initialise(contractElement, this.document, this, false);
                     functionContract.isModifier = true;
                     this.functions.push(functionContract);
                 }
 
                 if (contractElement.type === 'ConstructorDeclaration') {
                     const functionContract = new ParsedFunction();
-                    functionContract.initialise(contractElement, this, this.document, false);
+                    functionContract.initialise(contractElement, this.document, this, false);
                     this.constructorFunction = functionContract;
                 }
 
                 if (contractElement.type === 'FallbackDeclaration') {
                     const functionContract = new ParsedFunction();
-                    functionContract.initialise(contractElement, this, this.document, false);
+                    functionContract.initialise(contractElement, this.document, this, false);
                     this.fallbackFunction = functionContract;
                 }
 
                 if (contractElement.type === 'ReceiveDeclaration') {
                     const functionContract = new ParsedFunction();
-                    functionContract.initialise(contractElement, this, this.document, false);
+                    functionContract.initialise(contractElement, this.document, this, false);
                     this.receiveFunction = functionContract;
                 }
 
                 if (contractElement.type === 'EventDeclaration') {
                     const eventContract = new ParsedEvent();
-                    eventContract.initialise(contractElement, this, this.document, false);
+                    eventContract.initialise(contractElement, this.document, this, false);
                     this.events.push(eventContract);
                 }
 
                 if (contractElement.type === 'StateVariableDeclaration') {
                     const stateVariable = new ParsedStateVariable();
-                    stateVariable.initialise(contractElement, this, this.document);
+                    stateVariable.initialise(contractElement, this.document, this);
                     this.stateVariables.push(stateVariable);
                 }
 
                 if (contractElement.type === 'EnumDeclaration') {
                     const enumContract = new ParsedEnum();
-                    enumContract.initialise(contractElement, this, this.document, false);
+                    enumContract.initialise(contractElement, this.document, this, false);
                     this.enums.push(enumContract);
                 }
 
                 if (contractElement.type === 'StructDeclaration') {
                     const struct = new ParsedStruct();
-                    struct.initialise(contractElement, this, this.document, false);
+                    struct.initialise(contractElement, this.document, this, false);
                     this.structs.push(struct);
                 }
 
                 if (contractElement.type === 'TypeDeclaration') {
                     const customType = new ParsedCustomType();
-                    customType.initialise(contractElement, this, this.document, false);
+                    customType.initialise(contractElement, this.document, this, false);
                     this.customTypes.push(customType);
                 }
 
                 if (contractElement.type === 'ErrorDeclaration') {
                     const error = new ParsedError();
-                    error.initialise(contractElement, this, this.document, false);
-                    /*
-                    if (selectedElement === contractElement) {
-                        this.selectedError = error;
-                    }*/
+                    error.initialise(contractElement, this.document, this, false);
                     this.errors.push(error);
                 }
 
                 if (contractElement.type === 'UsingStatement') {
                     const using = new ParsedUsing();
-                    using.initialise(contractElement, this, this.document, false);
+                    using.initialise(contractElement, this.document, this, false);
                     this.using.push(using);
                 }
             });

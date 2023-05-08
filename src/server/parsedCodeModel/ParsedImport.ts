@@ -5,7 +5,6 @@ import { URI } from 'vscode-uri';
 
 
 export class ParsedImport extends ParsedCode {
-    public document: ParsedDocument;
     public from: string;
     public documentReference: ParsedDocument;
 

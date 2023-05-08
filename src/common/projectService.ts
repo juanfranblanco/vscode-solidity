@@ -76,7 +76,7 @@ function readYamlSync(filePath: string) {
 export function initialiseProject(rootPath: string,
     packageDefaultDependenciesDirectory: string,
     packageDefaultDependenciesContractsDirectory: string,
-    remappings: string[]) {
+    remappings: string[]): Project {
 
     packageDependenciesDirectory = packageDefaultDependenciesDirectory;
     packageDependenciesContractsDirectory = packageDefaultDependenciesContractsDirectory;

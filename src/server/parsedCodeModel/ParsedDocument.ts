@@ -149,7 +149,7 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
     }
 
 
-    public initialise(documentElement: any, selectedElement: any = null, sourceDocument: SourceDocument, fixedSource: string = null) {
+    public initialiseDocument(documentElement: any, selectedElement: any = null, sourceDocument: SourceDocument, fixedSource: string = null) {
             this.element = documentElement;
             this.sourceDocument = sourceDocument;
 
@@ -190,7 +190,7 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
 
                 if (element.type === 'FunctionDeclaration') {
                     const functionDocument = new ParsedFunction();
-                    functionDocument.initialise(element, null, this, true);
+                    functionDocument.initialise(element, this, null, true);
                     if (this.matchesElement(selectedElement, element)) {
                         this.selectedFunction = functionDocument;
                     }
@@ -199,7 +199,7 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
 
                 if (element.type === 'ModifierDeclaration') {
                     const functionDocument = new ParsedFunction();
-                    functionDocument.initialise(element, null, this, true);
+                    functionDocument.initialise(element, this, null, true);
                     functionDocument.isModifier = true;
                     if (this.matchesElement(selectedElement, element)) {
                         this.selectedFunction = functionDocument;
@@ -209,7 +209,7 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
 
                 if (element.type === 'EventDeclaration') {
                     const eventDocument = new ParsedEvent();
-                    eventDocument.initialise(element, null, this, true);
+                    eventDocument.initialise(element, this, null, true);
                     if (this.matchesElement(selectedElement, element)) {
                         this.selectedEvent = eventDocument;
                     }
@@ -218,7 +218,7 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
 
                 if (element.type === 'EnumDeclaration') {
                     const enumDocument = new ParsedEnum();
-                    enumDocument.initialise(element, null, this, true);
+                    enumDocument.initialise(element, this, null, true);
                     if (this.matchesElement(selectedElement, element)) {
                         this.selectedEnum = enumDocument;
                     }
@@ -227,7 +227,7 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
 
                 if (element.type === 'StructDeclaration') {
                     const struct = new ParsedStruct();
-                    struct.initialise(element, null, this, true);
+                    struct.initialise(element, this, null, true);
                     if (this.matchesElement(selectedElement, element)) {
                         this.selectedStruct = struct;
                     }
@@ -236,13 +236,13 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
 
                 if (element.type === 'TypeDeclaration') {
                     const customType = new ParsedCustomType();
-                    customType.initialise(element, null, this, true);
+                    customType.initialise(element, this, null, true);
                     this.customTypes.push(customType);
                 }
 
                 if (element.type === 'ErrorDeclaration') {
                     const documentError = new ParsedError();
-                    documentError.initialise(element, null, this, true);
+                    documentError.initialise(element, this, null, true);
                     if (this.matchesElement(selectedElement, element)) {
                         this.selectedError = documentError;
                     }
@@ -251,7 +251,7 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
 
                 if (element.type === 'UsingStatement') {
                     const using = new ParsedUsing();
-                    using.initialise(element, null, this, true);
+                    using.initialise(element, this, null, true);
                     if (this.matchesElement(selectedElement, element)) {
                         this.selectedUsing = using;
                     }

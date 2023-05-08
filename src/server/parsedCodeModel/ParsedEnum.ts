@@ -8,14 +8,9 @@ import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 
 export class ParsedEnum extends ParsedCode {
     public items: string[] = [];
-    public contract: ParsedContract;
-    public isGlobal: boolean;
-    public initialise(element: any, contract: ParsedContract, document: ParsedDocument, isGlobal: boolean) {
-        this.contract = contract;
-        this.element = element;
+    public override initialise(element: any, document: ParsedDocument, contract: ParsedContract, isGlobal: boolean) {
+        super.initialise(element, document, contract, isGlobal);
         this.name = element.name;
-        this.document = document;
-        this.isGlobal = isGlobal;
         element.members.forEach(member => { this.items.push(member); });
     }
 

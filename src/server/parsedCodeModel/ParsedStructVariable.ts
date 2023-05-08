@@ -10,7 +10,7 @@ import { ParsedDeclarationType } from './parsedDeclarationType';
 export class ParsedStructVariable extends ParsedVariable {
     public struct: ParsedStruct;
 
-    public initialise(element: any, contract: ParsedContract, document: ParsedDocument, struct: ParsedStruct ) {
+    public initialiseStructVariable(element: any, contract: ParsedContract, document: ParsedDocument, struct: ParsedStruct ) {
         this.element = element;
         this.name = element.name;
         this.document = document;

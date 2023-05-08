@@ -7,7 +7,7 @@ export class ParsedModifierArgument extends ParsedCode {
     public functionParent: ParsedFunction;
     public params: any;
 
-    public initialise(element: any, functionParent: ParsedFunction, document: ParsedDocument) {
+    public initialiseModifier(element: any, functionParent: ParsedFunction, document: ParsedDocument) {
         this.functionParent = functionParent;
         this.contract = functionParent.contract;
         this.element = element;

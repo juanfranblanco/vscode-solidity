@@ -54,7 +54,7 @@ export function exitsAnyFileSync(filenames: string[], dir: string) {
         return false;
 }
 
-export function isPathSubdirectory(parent: string, dir: string){
+export function isPathSubdirectory(parent: string, dir: string) {
         const relative = path.relative(parent, dir);
         return relative && !relative.startsWith('..') && !path.isAbsolute(relative);
 }

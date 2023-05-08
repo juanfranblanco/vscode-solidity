@@ -191,8 +191,8 @@ export class LocalPathCompilerLoader extends SolcCompilerLoader {
 }
 
 export class RemoteCompilerDownloader {
-     public downloadCompilationFile(version: string, path: string): Promise<void> {
-        const file = fs.createWriteStream(path);
+     public downloadCompilationFile(version: string, savePath: string): Promise<void> {
+        const file = fs.createWriteStream(savePath);
         const url = 'https://binaries.soliditylang.org/bin/soljson-' + version + '.js';
         return new Promise((resolve, reject) => {
                 const request = https.get(url, function (response) {

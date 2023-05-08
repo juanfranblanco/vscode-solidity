@@ -6,17 +6,12 @@ import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 
 
 export class ParsedError extends ParsedCode {
-
     public input: ParsedParameter[] = [];
-    public contract: ParsedContract;
-    public isGlobal: boolean;
 
-    public initialise(element: any, contract: ParsedContract, document: ParsedDocument, isGlobal: boolean) {
-        this.contract = contract;
+    public override initialise(element: any, document: ParsedDocument, contract: ParsedContract, isGlobal: boolean) {
+        super.initialise(element, document, contract, isGlobal);
         this.element = element;
         this.name = element.name;
-        this.isGlobal = isGlobal;
-        this.document = document;
         this.initialiseParamters();
     }
 

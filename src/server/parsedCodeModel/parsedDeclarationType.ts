@@ -12,27 +12,25 @@ export class ParsedDeclarationType extends ParsedCode {
 
     public static create(literal: any, contract: ParsedContract, document: ParsedDocument): ParsedDeclarationType {
         const declarationType = new ParsedDeclarationType();
-        declarationType.initialise(literal, contract, document);
+        declarationType.initialise(literal, document, contract);
         return declarationType;
     }
 
-    public initialise(literal: any, contract: ParsedContract, document: ParsedDocument) {
-        this.contract = contract;
-        this.document = document;
-        this.element = literal;
-        if (literal.members !== undefined && literal.members.length > 0) {
-            this.name = literal.members[0];
-            this.parentTypeName = literal.literal;
+    public override initialise(element: any,  document: ParsedDocument, contract: ParsedContract, isGlobal = false) {
+        super.initialise(element, document, contract, isGlobal);
+        if (element.members !== undefined && element.members.length > 0) {
+            this.name = element.members[0];
+            this.parentTypeName = element.literal;
         } else {
-            if (literal.literal.literal !== undefined ) {
-                this.name = literal.literal.literal;
+            if (element.literal.literal !== undefined ) {
+                this.name = element.literal.literal;
             } else {
-            this.name = literal.literal;
+            this.name = element.literal;
             }
         }
-        this.isArray = literal.array_parts.length > 0;
+        this.isArray = element.array_parts.length > 0;
         this.isMapping = false;
-        const literalType = literal.literal;
+        const literalType = element.literal;
         if (typeof literalType.type !== 'undefined')  {
              this.isMapping = literalType.type === 'MappingExpression';
              this.name = 'mapping'; // do something here

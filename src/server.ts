@@ -5,7 +5,7 @@ import SolhintService from './server/linter/solhint';
 import SoliumService from './server/linter/solium';
 import { CompilerError } from './server/solErrorsToDiagnostics';
 import { CompletionService } from './server/completionService';
-import { SolidityDefinitionProvider, SolidityDefinitionProviderExperimental } from './server/definitionProvider';
+import { SolidityDefinitionProvider } from './server/definitionProvider';
 import {
     createConnection,
     TextDocuments,
@@ -15,15 +15,16 @@ import {
     TextDocumentPositionParams,
     CompletionItem, Location, SignatureHelp, TextDocumentSyncKind, VersionedTextDocumentIdentifier,
     WorkspaceFolder,
+    ReferenceParams,
 } from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 
 import { CodeWalkerService } from './server/parsedCodeModel/codeWalkerService';
-import { Uri } from 'vscode';
 import { replaceRemappings } from './common/util';
 import { findFirstRootProjectFile } from './common/projectService';
+import { TestRunProfileKind } from 'vscode';
 
 interface Settings {
     solidity: SoliditySettings;
@@ -97,6 +98,7 @@ function getCodeWalkerService() {
     codeWalkerService = new CodeWalkerService(selectedProjectFolder,  packageDefaultDependenciesDirectory,
         packageDefaultDependenciesContractsDirectory, remappings,
     );
+    codeWalkerService.initialiseAllDocuments();
     return codeWalkerService;
 }
 
@@ -219,11 +221,18 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
     return completionItems;
 });
 
+
+ connection.onReferences((handler: TextDocumentPositionParams): Location[] => {
+    initWorkspaceRootFolder(handler.textDocument.uri);
+    const projectRootPath = initCurrentProjectInWorkspaceRootFsPath(handler.textDocument.uri);
+    return null;
+ });
+
 connection.onDefinition((handler: TextDocumentPositionParams): Thenable<Location | Location[]> => {
     initWorkspaceRootFolder(handler.textDocument.uri);
     const projectRootPath = initCurrentProjectInWorkspaceRootFsPath(handler.textDocument.uri);
 
-    const provider = new SolidityDefinitionProviderExperimental();
+    const provider = new SolidityDefinitionProvider();
     return provider.provideDefinition(documents.get(handler.textDocument.uri), handler.position, getCodeWalkerService());
 
 /*

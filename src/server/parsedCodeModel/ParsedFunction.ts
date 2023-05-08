@@ -13,19 +13,13 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
   public input: ParsedParameter[] = [];
   public output: ParsedParameter[] = [];
   public modifiers: ParsedModifierArgument[] = [];
-  public contract: ParsedContract;
-  public isGlobal: boolean;
   public isModifier: boolean;
   public variables: ParsedFunctionVariable[] = [];
   // parent callExpressions in fuction
   public expressions: ParsedExpression[] = [];
 
-  public initialise(element: any, contract: ParsedContract, document: ParsedDocument, isGlobal: boolean) {
-    this.contract = contract;
-    this.element = element;
-    this.name = element.name;
-    this.document = document;
-    this.isGlobal = isGlobal;
+  public override initialise(element: any, document: ParsedDocument, contract: ParsedContract, isGlobal: boolean) {
+    super.initialise(element, document, contract, isGlobal);
     this.initialiseParameters();
     this.initialiseModifiers();
     if (this.element.body !== undefined && this.element.body !== null) {
@@ -42,7 +36,7 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
     if (this.element.modifiers !== undefined && this.element.modifiers !== null) {
       this.element.modifiers.forEach(element => {
         const parsedModifier = new ParsedModifierArgument();
-        parsedModifier.initialise(element, this, this.document);
+        parsedModifier.initialiseModifier(element, this, this.document);
         this.modifiers.push(parsedModifier);
       });
     }

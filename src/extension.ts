@@ -22,7 +22,7 @@ import { workspace, WorkspaceFolder } from 'vscode';
 import { formatDocument } from './client/formatter/formatter';
 import { compilerType } from './common/solcCompiler';
 import * as workspaceUtil from './client/workspaceUtil';
-import { AddressChecksumCodeActionProvider } from './client/codeActionProviders/addressChecksumActionProvider';
+import { AddressChecksumCodeActionProvider, SPDXCodeActionProvider } from './client/codeActionProviders/addressChecksumActionProvider';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 let compiler: Compiler;
@@ -31,23 +31,6 @@ export async function activate(context: vscode.ExtensionContext) {
     const ws = workspace.workspaceFolders;
     diagnosticCollection = vscode.languages.createDiagnosticCollection('solidity');
     compiler = new Compiler(context.extensionPath);
-
-    /*
-    const configuration = vscode.workspace.getConfiguration('solidity');
-    const cacheConfiguration = configuration.get<string>('solcCache');
-    if (typeof cacheConfiguration === 'undefined' || cacheConfiguration === null) {
-        configuration.update('solcCache', context.extensionPath, vscode.ConfigurationTarget.Global);
-    }*/
-
-    /* WSL is affected by this
-    workspace.onDidChangeConfiguration(async (event) => {
-        if (event.affectsConfiguration('solidity.enableLocalNodeCompiler') ||
-            event.affectsConfiguration('solidity.compileUsingRemoteVersion') ||
-            event.affectsConfiguration('solidity.compileUsingLocalVersion')) {
-            await initialiseCompiler();
-        }
-    });
-    */
 
     context.subscriptions.push(diagnosticCollection);
 
@@ -189,6 +172,12 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.languages.registerCodeActionsProvider('solidity', new AddressChecksumCodeActionProvider(), {
             providedCodeActionKinds: AddressChecksumCodeActionProvider.providedCodeActionKinds,
+        }),
+    );
+
+    context.subscriptions.push(
+        vscode.languages.registerCodeActionsProvider('solidity', new SPDXCodeActionProvider(), {
+            providedCodeActionKinds: SPDXCodeActionProvider.providedCodeActionKinds,
         }),
     );
 

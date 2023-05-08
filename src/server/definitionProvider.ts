@@ -9,7 +9,7 @@ import { initialiseProject } from '../common/projectService';
 import * as solparse from 'solparse-exp-jb';
 import { CodeWalkerService } from './parsedCodeModel/codeWalkerService';
 
-export class SolidityDefinitionProviderExperimental {
+export class SolidityDefinitionProvider {
 
   public provideDefinition(
     document: vscode.TextDocument,
@@ -21,26 +21,29 @@ export class SolidityDefinitionProviderExperimental {
     const documentContractSelected = walker.getSelectedDocument(document, position);
     const references = documentContractSelected.getSelectedTypeReferenceLocation(offset);
     const foundLocations = references.filter(x => x.location !== null).map(x => x.location);
-    //const foundLocationsDeDup =
-    //foundLocations.filter(location => foundLocations.filter(innerlocation => innerlocation.range === location.range && innerlocation.uri === location.uri).length === 0);
     const keys = ['range', 'uri'];
-    const result = Object.values(foundLocations.reduce((r, o: any) => {
-        const key = keys.map(k => o[k]).join('|');
-        // tslint:disable-next-line:curly
-        if (r[key]) r[key].condition = [].concat(r[key].condition, o.condition);
-        // tslint:disable-next-line:curly
-        else r[key] = { ...o };
-        return r;
-    }, {}));
+    const result = this.removeDuplicates(foundLocations, keys);
 
-    
     return Promise.resolve(<vscode.Location[]>result);
   }
 
+  public removeDuplicates(foundLocations: any[], keys: string[]) {
+    return Object.values(foundLocations.reduce((r, o: any) => {
+      const key = keys.map(k => o[k]).join('|');
+      // tslint:disable-next-line:curly
+      if (r[key])
+        r[key].condition = [].concat(r[key].condition, o.condition);
+
+      // tslint:disable-next-line:curly
+      else
+        r[key] = { ...o };
+      return r;
+    }, {}));
+  }
 }
 
 
-export class SolidityDefinitionProvider {
+export class SolidityDefinitionProviderOld {
   private rootPath: string;
   private packageDefaultDependenciesDirectory: string;
   private packageDefaultDependenciesContractsDirectory: string;

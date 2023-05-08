@@ -6,9 +6,8 @@ import { ParsedVariable } from './ParsedVariable';
 
 export class ParsedConstant extends ParsedVariable {
     public from: string;
-    public initialise(element: any, document: ParsedDocument) {
-        this.document = document;
-        this.element = element;
+    public override initialise(element: any, document: ParsedDocument) {
+        super.initialise(element, document);
         this.name = element.name;
         this.type = ParsedDeclarationType.create(element.literal, null, document);
     }

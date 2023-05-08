@@ -5,13 +5,11 @@ import { ParsedContract } from './parsedContract';
 
 
 export class ParsedContractIs extends ParsedCode {
-    public contract: ParsedContract;
+
     private contractReference: ParsedContract = null;
-    public initialise(element: any, contract: ParsedContract, document: ParsedDocument, isGlobal: boolean) {
-        this.element = element;
+    public override initialise(element: any,  document: ParsedDocument, contract: ParsedContract, isGlobal: boolean) {
+        super.initialise(element, document, contract, isGlobal);
         this.name = element.name;
-        this.document = document;
-        this.contract = contract;
     }
 
     public initialiseContractReference(): ParsedContract {

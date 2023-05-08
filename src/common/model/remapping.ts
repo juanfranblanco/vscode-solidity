@@ -1,6 +1,7 @@
 'use strict';
 import * as path from 'path';
 import { Project } from './project';
+import { isPathSubdirectory } from '../util';
 
 export class Remapping {
     public context: string;
@@ -13,6 +14,16 @@ export class Remapping {
             return contractDependencyImport.startsWith(this.context + ':' + this.prefix);
         }
         return contractDependencyImport.startsWith(this.prefix);
+    }
+
+    public getLibraryPathIfRelative(projectPath: string) {
+        if (!path.isAbsolute(this.target)) {
+            const fullPath = path.join(this.basePath, this.target);
+            if (isPathSubdirectory(projectPath, fullPath)) {
+                return path.dirname(this.target).split(path.sep)[0];
+            }
+        }
+        return null;
     }
 
     public createImportFromFile(filePath: string) {

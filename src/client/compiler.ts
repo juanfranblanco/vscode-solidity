@@ -27,21 +27,22 @@ export class Compiler {
 
     public async changeDefaultCompilerType(target: vscode.ConfigurationTarget) {
         try {
+            // tslint:disable-next-line:max-line-length
             const compilers: string[] = [compilerType[compilerType.remote], compilerType[compilerType.localFile], compilerType[compilerType.localNodeModule], compilerType[compilerType.embedded]];
-            const selectedCompiler : string = await vscode.window.showQuickPick(compilers);
+            const selectedCompiler: string = await vscode.window.showQuickPick(compilers);
             vscode.workspace.getConfiguration('solidity').update('defaultCompiler', selectedCompiler, target);
-            vscode.window.showInformationMessage("Compiler changed to: " + selectedCompiler);
+            vscode.window.showInformationMessage('Compiler changed to: ' + selectedCompiler);
         } catch (e) {
-            vscode.window.showErrorMessage("Error changing default compiler: " + e);
+            vscode.window.showErrorMessage('Error changing default compiler: ' + e);
         }
     }
 
     public async downloadRemoteVersionAndSetLocalPathSetting(target: vscode.ConfigurationTarget, folderPath: string) {
         const downloadPath = await this.downloadRemoteVersion(folderPath);
-        vscode.workspace.getConfiguration('solidity').update('compileUsingLocalVersion', downloadPath, target);      
+        vscode.workspace.getConfiguration('solidity').update('compileUsingLocalVersion', downloadPath, target);
     }
 
-    public async downloadRemoteVersion(folderPath: string) : Promise<string> {
+    public async downloadRemoteVersion(folderPath: string): Promise<string> {
         try {
             const releases = await this.getSolcReleases();
             const releasesToSelect: string[] = [];
@@ -49,9 +50,9 @@ export class Compiler {
             for (const release in releases) {
                 releasesToSelect.push(release);
             }
-            const selectedVersion : string = await vscode.window.showQuickPick(releasesToSelect);
+            const selectedVersion: string = await vscode.window.showQuickPick(releasesToSelect);
             let version = '';
-            
+
             const value: string = releases[selectedVersion];
             if (value !== 'undefined') {
                 version = value.replace('soljson-', '');
@@ -59,12 +60,12 @@ export class Compiler {
             }
             const pathVersion = path.resolve(path.join(folderPath, 'soljson-' + version + '.js'));
             await new RemoteCompilerDownloader().downloadCompilationFile(version, pathVersion);
-            vscode.window.showInformationMessage("Compiler downloaded: " + pathVersion);
+            vscode.window.showInformationMessage('Compiler downloaded: ' + pathVersion);
             return pathVersion;
         } catch (e) {
-            vscode.window.showErrorMessage("Error downloading compiler: " + e);
+            vscode.window.showErrorMessage('Error downloading compiler: ' + e);
         }
-        
+
     }
 
     public async selectRemoteVersion(target: vscode.ConfigurationTarget) {
@@ -168,7 +169,7 @@ export class Compiler {
 
     private initialiseCompiler(overrideDefaultCompiler: compilerType = null): Promise<void> {
         const rootPath = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
-        
+
         if (typeof this.solc === 'undefined' || this.solc === null) {
             this.solc = new SolcCompiler(rootPath);
             this.solc.setSolcCache(this.solcCachePath);
@@ -187,14 +188,14 @@ export class Compiler {
         this.outputChannel.appendLine('Node compiler module: ' + nodeModulePackage);
         this.outputChannel.appendLine('Default compiler: ' + compilerSetting);
 
-        if(overrideDefaultCompiler != null) {
+        if (overrideDefaultCompiler != null) {
             this.outputChannel.appendLine('Compiling with compiler: ' + compilerType[overrideDefaultCompiler]);
         }
         this.outputChannel.appendLine('This may take a couple of seconds as we may need to download the solc binaries...');
         return new Promise((resolve, reject) => {
-            this.solc.initialiseAllCompilerSettings(remoteCompiler, localCompiler, nodeModulePackage, defaultCompiler)
+            this.solc.initialiseAllCompilerSettings(remoteCompiler, localCompiler, nodeModulePackage, defaultCompiler);
 
-            if(overrideDefaultCompiler == null) {
+            if (overrideDefaultCompiler == null) {
                 this.solc.initialiseSelectedCompiler().then(() => {
                     this.outputCompilerInfo();
                     resolve();

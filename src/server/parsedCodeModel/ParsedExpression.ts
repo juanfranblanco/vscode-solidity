@@ -80,7 +80,7 @@ export class ParsedExpression extends ParsedCode {
       switch (element.type) {
         case 'CallExpression':
           const callExpression = new ParsedExpressionCall();
-          callExpression.initialise(element, document, contract, child, expressionContainer);
+          callExpression.initialiseExpression(element, document, contract, child, expressionContainer);
           if (child !== null) {
             child.parent = callExpression;
           }
@@ -91,7 +91,7 @@ export class ParsedExpression extends ParsedCode {
           break;
         case 'Identifier':
           const expressionIdentifier = new ParsedExpressionIdentifier();
-          expressionIdentifier.initialise(element, document, contract, child, expressionContainer);
+          expressionIdentifier.initialiseExpression(element, document, contract, child, expressionContainer);
           if (child !== null) {
             child.parent = expressionIdentifier;
           }
@@ -104,11 +104,10 @@ export class ParsedExpression extends ParsedCode {
   }
 
   // tslint:disable-next-line:member-ordering
-  public initialise(element: any, document: ParsedDocument, contract: ParsedContract, parent: ParsedExpression, expressionContainer: IParsedExpressionContainer) {
+  public initialiseExpression(element: any, document: ParsedDocument, contract: ParsedContract, parent: ParsedExpression, expressionContainer: IParsedExpressionContainer) {
     this.name = element.name;
     this.parent = parent;
-    this.document = document;
-    this.contract = contract;
+    this.initialise(element, document, contract);
     this.expressionContainer = expressionContainer;
   }
 
@@ -155,7 +154,7 @@ export class ParsedExpression extends ParsedCode {
 export class ParsedExpressionCall extends ParsedExpression {
   public arguments: ParsedExpression[];
   // tslint:disable-next-line:member-ordering
-  public override initialise(element: any, document: ParsedDocument, contract: ParsedContract, child: ParsedExpression,
+  public override initialiseExpression(element: any, document: ParsedDocument, contract: ParsedContract, child: ParsedExpression,
     expressionContainer: IParsedExpressionContainer) {
     this.element = element;
     this.child = child;
@@ -262,7 +261,7 @@ export class ParsedExpressionCall extends ParsedExpression {
 
 export class ParsedExpressionIdentifier extends ParsedExpression {
   // tslint:disable-next-line:member-ordering
-  public override initialise(element: any,
+  public override initialiseExpression(element: any,
     document: ParsedDocument,
     contract: ParsedContract,
     child: ParsedExpression,

@@ -6,15 +6,11 @@ import { ParsedVariable } from './ParsedVariable';
 import { ParsedCodeTypeHelper } from './ParsedCodeTypeHelper';
 
 
-
-
 export class ParsedStateVariable extends ParsedVariable {
-    public contract: ParsedContract;
-    public initialise(element: any, contract: ParsedContract, document: ParsedDocument) {
-        this.contract = contract;
-        this.element = element;
+
+    public initialise(element: any, document: ParsedDocument, contract: ParsedContract) {
+        super.initialise(element, document, contract);
         this.name = element.name;
-        this.document = document;
         this.type = ParsedDeclarationType.create(element.literal, contract, document);
     }
 
