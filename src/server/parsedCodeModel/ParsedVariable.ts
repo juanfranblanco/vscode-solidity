@@ -18,4 +18,12 @@ export class ParsedVariable extends ParsedCode {
           return [FindTypeReferenceLocationResult.create(false)];
     }
 
+    public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
+        if (this.isTheSame(parsedCode)) {
+            return [this.createFoundReferenceLocationResult()];
+        } else {
+            return this.type.getAllReferencesToObject(parsedCode);
+        }
+    }
+
 }

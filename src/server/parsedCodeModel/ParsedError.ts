@@ -10,7 +10,6 @@ export class ParsedError extends ParsedCode {
 
     public override initialise(element: any, document: ParsedDocument, contract: ParsedContract, isGlobal: boolean) {
         super.initialise(element, document, contract, isGlobal);
-        this.element = element;
         this.name = element.name;
         this.initialiseParamters();
     }

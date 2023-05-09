@@ -1,5 +1,5 @@
 import { ParsedContract } from './parsedContract';
-import { ParsedCode } from './parsedCode';
+import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 import { ParsedDocument } from './ParsedDocument';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 
@@ -34,5 +34,6 @@ export class ParsedEnum extends ParsedCode {
         this.items.forEach(property =>  completionItems.push(CompletionItem.create(property)));
         return completionItems;
     }
+
 }
 

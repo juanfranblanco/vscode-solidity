@@ -271,6 +271,31 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
         return null;
     }
 
+    public override getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
+        let results: FindTypeReferenceLocationResult[] = [];
+        if (this.isCurrentElementedSelected(offset)) {
+          this.functions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+          this.innerContracts.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+        }
+        return results;
+    }
+
+    public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
+        let results: FindTypeReferenceLocationResult[] = [];
+        this.functions.forEach(x => results = this.mergeArrays(results, x.getAllReferencesToObject(parsedCode)));
+        this.errors.forEach(x => results = this.mergeArrays(results, x.getAllReferencesToObject(parsedCode)));
+        this.events.forEach(x => results = this.mergeArrays(results, x.getAllReferencesToObject(parsedCode)));
+        this.innerContracts.forEach(x => results = this.mergeArrays(results, x.getAllReferencesToObject(parsedCode)));
+        this.structs.forEach(x => results = this.mergeArrays(results, x.getAllReferencesToObject(parsedCode)));
+        this.usings.forEach(x => results = this.mergeArrays(results, x.getAllReferencesToObject(parsedCode)));
+        this.customTypes.forEach(x => results = this.mergeArrays(results, x.getAllReferencesToObject(parsedCode)));
+        this.constants.forEach(x => results = this.mergeArrays(results, x.getAllReferencesToObject(parsedCode)));
+        this.imports.forEach(x => results = this.mergeArrays(results, x.getAllReferencesToObject(parsedCode)));
+        this.expressions.forEach(x => results = this.mergeArrays(results, x.getAllReferencesToObject(parsedCode)));
+
+        return results;
+    }
+
     public getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
             let results: FindTypeReferenceLocationResult[] = [];
             this.functions.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));

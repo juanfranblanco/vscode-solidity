@@ -1,6 +1,6 @@
 import { CompletionItem } from 'vscode-languageserver';
 import { ParsedDocument } from './ParsedDocument';
-import { ParsedCode } from './parsedCode';
+import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 import { ParsedContract } from './parsedContract';
 import { ParsedUsing } from './parsedUsing';
 
@@ -107,6 +107,17 @@ export class ParsedDeclarationType extends ParsedCode {
         }
         }
         return this.type;
+    }
+
+    public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
+        if (this.isTheSame(parsedCode)) {
+            return [this.createFoundReferenceLocationResult()];
+        }
+
+        if (this.type != null && this.type.isTheSame(parsedCode)) {
+            return [this.createFoundReferenceLocationResult()];
+        }
+        return [];
     }
 
 }

@@ -6,7 +6,7 @@ import { ParsedDocument } from './ParsedDocument';
 import { CompletionItem, CompletionItemKind, Location } from 'vscode-languageserver';
 
 export class ParsedStruct extends ParsedCode {
-    public variables: ParsedStructVariable[] = [];
+    public properties: ParsedStructVariable[] = [];
 
     public initialise(element: any, document: ParsedDocument,  contract: ParsedContract, isGlobal: boolean) {
         this.contract = contract;
@@ -20,18 +20,18 @@ export class ParsedStruct extends ParsedCode {
                 if (structBodyElement.type === 'DeclarativeExpression') {
                     const variable = new ParsedStructVariable();
                     variable.initialiseStructVariable(structBodyElement, this.contract, this.document, this);
-                    this.variables.push(variable);
+                    this.properties.push(variable);
                 }
             });
         }
     }
 
     public getInnerMembers(): ParsedCode[] {
-        return this.variables;
+        return this.properties;
     }
 
     public getVariableSelected(offset: number) {
-       return this.variables.find(x => {
+       return this.properties.find(x => {
             return x.isCurrentElementedSelected(offset);
         });
     }
@@ -65,7 +65,23 @@ export class ParsedStruct extends ParsedCode {
 
     public override getInnerCompletionItems(): CompletionItem[] {
         const completionItems: CompletionItem[] = [];
-        this.variables.forEach(x =>  completionItems.push(x.createCompletionItem()));
+        this.properties.forEach(x =>  completionItems.push(x.createCompletionItem()));
         return completionItems;
+    }
+
+    public getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
+        if (this.isCurrentElementedSelected(offset)) {
+            const selectedProperty = this.getSelectedProperty(offset);
+            if (selectedProperty !== undefined) {
+                return selectedProperty.getAllReferencesToThis();
+            } else {
+                return this.getAllReferencesToThis();
+            }
+        }
+        return [];
+    }
+
+    public getSelectedProperty(offset: number) {
+        return this.properties.find(x => x.isCurrentElementedSelected(offset));
     }
 }

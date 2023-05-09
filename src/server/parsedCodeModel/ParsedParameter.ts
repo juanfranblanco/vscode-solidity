@@ -4,14 +4,13 @@ import { ParsedCodeTypeHelper } from './ParsedCodeTypeHelper';
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { ParsedDocument } from './ParsedDocument';
 import { ParsedContract } from './parsedContract';
-import { ParsedCode } from './parsedCode';
+import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 
 
 
 
 export class ParsedParameter extends ParsedVariable {
     public parent: ParsedCode;
-
 
     public static extractParameters(params: any, contract: ParsedContract, document: ParsedDocument, parent: ParsedCode): ParsedParameter[] {
         const parameters: ParsedParameter[] = [];
@@ -74,6 +73,31 @@ export class ParsedParameter extends ParsedVariable {
             });
         }
         return paramsSnippet;
+    }
+
+    public override getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
+        if (this.isCurrentElementedSelected(offset)) {
+            if (this.type.isCurrentElementedSelected(offset)) {
+                 return this.type.getAllReferencesToSelected(offset);
+            } else {
+                 return this.getAllReferencesToThis();
+            }
+        }
+        return [];
+    }
+
+    public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
+        if(this.isTheSame(parsedCode)){
+            return [this.createFoundReferenceLocationResult()];
+        } else {
+            return this.type.getAllReferencesToObject(parsedCode);
+        }
+    }
+
+    public override getAllReferencesToThis(): FindTypeReferenceLocationResult[] {
+        const results: FindTypeReferenceLocationResult[] = [];
+        results.push(this.createFoundReferenceLocationResult());
+        return results.concat(this.parent.getAllReferencesToObject(this));
     }
 
     public initialiseParameter(element: any, contract: ParsedContract, document: ParsedDocument, parent: ParsedCode) {

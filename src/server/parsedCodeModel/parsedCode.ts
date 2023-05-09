@@ -6,11 +6,13 @@ import { ParsedContract } from './parsedContract';
 export class FindTypeReferenceLocationResult {
     public isCurrentElementSelected: boolean;
     public location: Location;
+    public reference: ParsedCode;
 
-    public static create(isSelected: boolean, location: Location = null) {
+    public static create(isSelected: boolean, location: Location = null, reference: ParsedCode = null) {
         const result = new FindTypeReferenceLocationResult();
         result.location = location;
         result.isCurrentElementSelected = isSelected;
+        result.reference = reference;
         return result;
     }
 
@@ -44,6 +46,20 @@ export class ParsedCode {
         this.isGlobal = isGlobal; // need to remove is global
         if (contract !== null && isGlobal === false) {
             this.isGlobal = true;
+        }
+    }
+
+    public createFoundReferenceLocationResult(): FindTypeReferenceLocationResult {
+        return FindTypeReferenceLocationResult.create(true, this.getLocation(), this);
+    }
+
+    public isTheSame(parsedCode: ParsedCode): boolean {
+        return parsedCode === this;
+    }
+
+    public getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
+        if (this.isTheSame(parsedCode)) {
+            return [this.createFoundReferenceLocationResult()];
         }
     }
 
@@ -86,6 +102,23 @@ export class ParsedCode {
 
         }
         return [FindTypeReferenceLocationResult.create(false)];
+    }
+
+    public getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
+        if (this.isCurrentElementedSelected(offset)) {
+            return this.getAllReferencesToThis();
+        }
+        return [];
+    }
+
+    public getAllReferencesToThis(): FindTypeReferenceLocationResult[] {
+        const results: FindTypeReferenceLocationResult[] = [];
+        results.push(FindTypeReferenceLocationResult.create(true, this.getLocation()));
+        if (this.contract === null) {
+            return results.concat(this.document.getAllReferencesToObject(this));
+        } else {
+            return results.concat(this.contract.getAllReferencesToObject(this));
+        }
     }
 
     public findTypeInScope(name: string): ParsedCode {

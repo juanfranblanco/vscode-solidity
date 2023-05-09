@@ -5,7 +5,7 @@ import SolhintService from './server/linter/solhint';
 import SoliumService from './server/linter/solium';
 import { CompilerError } from './server/solErrorsToDiagnostics';
 import { CompletionService } from './server/completionService';
-import { SolidityDefinitionProvider } from './server/definitionProvider';
+import { SolidityDefinitionProvider, SolidityReferencesProvider } from './server/definitionProvider';
 import {
     createConnection,
     TextDocuments,
@@ -225,7 +225,9 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
  connection.onReferences((handler: TextDocumentPositionParams): Location[] => {
     initWorkspaceRootFolder(handler.textDocument.uri);
     const projectRootPath = initCurrentProjectInWorkspaceRootFsPath(handler.textDocument.uri);
-    return null;
+
+    const provider = new SolidityReferencesProvider();
+    return provider.provideReferences(documents.get(handler.textDocument.uri), handler.position, getCodeWalkerService());
  });
 
 connection.onDefinition((handler: TextDocumentPositionParams): Thenable<Location | Location[]> => {
@@ -234,17 +236,8 @@ connection.onDefinition((handler: TextDocumentPositionParams): Thenable<Location
 
     const provider = new SolidityDefinitionProvider();
     return provider.provideDefinition(documents.get(handler.textDocument.uri), handler.position, getCodeWalkerService());
-
-/*
-    const provider = new SolidityDefinitionProvider(
-        projectRootPath,
-        packageDefaultDependenciesDirectory,
-        packageDefaultDependenciesContractsDirectory,
-        remappings,
-    );
-    return provider.provideDefinition(documents.get(handler.textDocument.uri), handler.position);
-    */
 });
+
 
 
 // This handler resolve additional information for the item selected in
@@ -320,6 +313,7 @@ connection.onInitialize((params): InitializeResult => {
                 triggerCharacters: ['.'],
             },
             definitionProvider: true,
+            referencesProvider : true,
             textDocumentSync: TextDocumentSyncKind.Full,
         },
     };

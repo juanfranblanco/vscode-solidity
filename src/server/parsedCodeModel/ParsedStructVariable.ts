@@ -5,6 +5,7 @@ import { ParsedVariable } from './ParsedVariable';
 import { ParsedContract } from './parsedContract';
 import { ParsedDocument } from './ParsedDocument';
 import { ParsedDeclarationType } from './parsedDeclarationType';
+import { FindTypeReferenceLocationResult } from './parsedCode';
 
 
 export class ParsedStructVariable extends ParsedVariable {

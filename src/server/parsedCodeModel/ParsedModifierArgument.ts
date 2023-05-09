@@ -63,4 +63,28 @@ export class ParsedModifierArgument extends ParsedCode {
         }
         return [FindTypeReferenceLocationResult.create(false)];
     }
+
+    public getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
+        if (this.IsCustomModifier()) {
+            if (parsedCode instanceof ParsedFunction) {
+                const functModifider = <ParsedFunction>parsedCode;
+                if (functModifider.isModifier && functModifider.name === this.name) {
+                    return [this.createFoundReferenceLocationResult()];
+                }
+            }
+        }
+        return [];
+    }
+
+    public override getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
+        if (this.isCurrentElementedSelected(offset)) {
+            let results: FindTypeReferenceLocationResult[] = [];
+            if (this.IsCustomModifier()) {
+                const foundResults =  this.findMethodsInScope(this.name);
+                foundResults.forEach(x => results = results.concat(x.getAllReferencesToThis()));
+                return results;
+            }
+        }
+        return [];
+    }
 }

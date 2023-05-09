@@ -71,6 +71,8 @@ export class ParsedExpression extends ParsedCode {
     }
   }
 
+ 
+
   public static createFromElement(element: any,
     document: ParsedDocument,
     contract: ParsedContract,
@@ -180,6 +182,41 @@ export class ParsedExpressionCall extends ParsedExpression {
     }
   }
 
+  public override getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
+    this.initReference();
+    this.initExpressionType();
+    const results: FindTypeReferenceLocationResult[] = [];
+    if (this.isCurrentElementedSelected(offset)) {
+      if (this.isElementedSelected(this.element.callee, offset)) {
+        if (this.parent !== null) {
+          if (this.parent.isCurrentElementedSelected(offset)) {
+            return this.parent.getAllReferencesToSelected(offset);
+          }
+        }
+        if (this.reference !== null) {
+          return results.concat(this.reference.getAllReferencesToThis());
+        }
+        return [];
+      }
+    }
+  }
+
+
+
+  public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
+    this.initReference();
+    this.initExpressionType();
+    let results: FindTypeReferenceLocationResult[] = [];
+    if (this.reference !== null && this.reference.isTheSame(parsedCode)) {
+        results.push(this.createFoundReferenceLocationResult());
+    }
+    if (this.parent !== null) {
+      results = results.concat(this.parent.getAllReferencesToObject(parsedCode));
+    }
+    return results;
+  }
+
+
   public override getInnerMembers(): ParsedCode[] {
     this.initReference();
     this.initExpressionType();
@@ -273,6 +310,43 @@ export class ParsedExpressionIdentifier extends ParsedExpression {
     this.expressionObjectType = ExpressionType.Identifier;
     this.expressionContainer = expressionContainer;
     this.name = this.element.name;
+  }
+
+  public override getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
+    this.initReference();
+    this.initExpressionType();
+    const results: FindTypeReferenceLocationResult[] = [];
+    if (this.isCurrentElementedSelected(offset)) {
+      if (this.parent !== null) {
+        if (this.parent.isCurrentElementedSelected(offset)) {
+          return this.parent.getAllReferencesToSelected(offset);
+        }
+      }
+      if (this.reference !== null) {
+        return results.concat(this.reference.getAllReferencesToThis());
+      }
+      return [this.createFoundReferenceLocationResult()];
+    } else { // in case the parent is a member and not part of the element
+      if (this.parent !== null) {
+        if (this.parent.isCurrentElementedSelected(offset)) {
+          return this.parent.getAllReferencesToSelected(offset);
+        }
+      }
+    }
+  }
+
+  public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
+    this.initReference();
+    this.initExpressionType();
+    let results: FindTypeReferenceLocationResult[] = [];
+
+    if (this.reference !== null && this.reference.isTheSame(parsedCode)) {
+        results.push(this.createFoundReferenceLocationResult());
+    }
+    if (this.parent !== null) {
+      results = results.concat(this.parent.getAllReferencesToObject(parsedCode));
+    }
+    return results;
   }
 
   public override getInnerCompletionItems(): CompletionItem[] {

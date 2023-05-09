@@ -2,6 +2,7 @@ import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { ParsedCodeTypeHelper } from './ParsedCodeTypeHelper';
 import { ParsedFunction } from './ParsedFunction';
 import { ParsedVariable } from './ParsedVariable';
+import { FindTypeReferenceLocationResult } from './parsedCode';
 
 
 export class ParsedFunctionVariable extends ParsedVariable {
@@ -21,5 +22,11 @@ export class ParsedFunctionVariable extends ParsedVariable {
         completionItem.detail = '(Function variable in ' + this.function.name + ') '
                                             + typeString + ' ' + name;
         return completionItem;
+    }
+
+    public override getAllReferencesToThis(): FindTypeReferenceLocationResult[] {
+        const results: FindTypeReferenceLocationResult[] = [];
+        results.push(this.createFoundReferenceLocationResult());
+        return results.concat(this.function.getAllReferencesToObject(this));
     }
 }

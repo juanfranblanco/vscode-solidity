@@ -18,8 +18,34 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
   // parent callExpressions in fuction
   public expressions: ParsedExpression[] = [];
 
+  public override getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
+    let results: FindTypeReferenceLocationResult[] = [];
+    if (this.isCurrentElementedSelected(offset)) {
+      this.input.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+      this.output.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+      this.expressions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+      this.variables.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+      this.modifiers.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+    }
+    return results;
+  }
+
+  public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
+    let results: FindTypeReferenceLocationResult[] = [];
+    if (this.isTheSame(parsedCode)) {
+      results.push(this.createFoundReferenceLocationResult());
+    }
+    this.expressions.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
+    this.input.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
+    this.output.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
+    this.variables.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
+    this.modifiers.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
+    return results;
+  }
+
   public override initialise(element: any, document: ParsedDocument, contract: ParsedContract, isGlobal: boolean) {
     super.initialise(element, document, contract, isGlobal);
+    this.name = element.name;
     this.initialiseParameters();
     this.initialiseModifiers();
     if (this.element.body !== undefined && this.element.body !== null) {

@@ -42,6 +42,38 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
     public contractType: ContractType = ContractType.contract;
     public isAbstract: boolean;
 
+    public override getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
+        let results: FindTypeReferenceLocationResult[] = [];
+        if (this.isCurrentElementedSelected(offset)) {
+            this.functions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+            this.expressions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+            if (this.constructorFunction !== null) {results = this.mergeArrays(results, this.constructorFunction.getAllReferencesToSelected(offset)); }
+            if (this.fallbackFunction !== null) {results = this.mergeArrays(results, this.fallbackFunction.getAllReferencesToSelected(offset)); }
+            if (this.receiveFunction !== null) {results = this.mergeArrays(results, this.receiveFunction.getAllReferencesToSelected(offset)); }
+            this.stateVariables.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+            this.enums.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+            this.errors.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+            this.structs.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+            this.events.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+        }
+        return results;
+    }
+
+    public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
+        let results: FindTypeReferenceLocationResult[] = [];
+        this.expressions.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
+        this.functions.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
+        if (this.constructorFunction !== null) {results = this.mergeArrays(results, this.constructorFunction.getAllReferencesToObject(parsedCode)); }
+        if (this.fallbackFunction !== null) {results = this.mergeArrays(results, this.fallbackFunction.getAllReferencesToObject(parsedCode)); }
+        if (this.receiveFunction !== null) {results = this.mergeArrays(results, this.receiveFunction.getAllReferencesToObject(parsedCode)); }
+        this.stateVariables.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
+        this.enums.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
+        this.errors.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
+        this.structs.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
+        this.events.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
+        return results;
+    }
+
     public override initialise(element: any, document: ParsedDocument) {
         super.initialise(element, document, this);
         this.name = element.name;
