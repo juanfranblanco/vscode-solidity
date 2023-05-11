@@ -125,31 +125,34 @@ export class CodeWalkerService {
   }
 
   public parseDocument(documentText: string, fixedSource: boolean, sourceDocument: SourceDocument): ParsedDocument {
-    const foundDocument = this.parsedDocumentsCache.find(x => x.sourceDocument.absolutePath ===  sourceDocument.absolutePath &&
-      x.sourceDocument.code === sourceDocument.code);
-
-    if (foundDocument !== undefined && foundDocument !== null) { return foundDocument; }
-
-    const document: ParsedDocument = new ParsedDocument();
-    try {
-        const result = solparse.parse(documentText);
-        if (fixedSource) {
-            document.initialiseDocument(result, null, sourceDocument, documentText);
-        } else {
-            document.initialiseDocument(result, null, sourceDocument, null );
-        }
-        this.parsedDocumentsCache.push(document);
-    } catch (error) {
-        /*
-        // if we error parsing (cannot cater for all combos) we fix by removing current line.
-        const lines = documentText.split(/\r?\n/g);
-        if (lines[line].trim() !== '') { // have we done it already?
-            lines[line] = ''.padStart(lines[line].length, ' '); // adding the same number of characters so the position matches where we are at the moment
-            const code = lines.join('\r\n');
-            return this.parseDocument(code, true, sourceDocument);
-        }*/
+    const foundDocument = this.parsedDocumentsCache.find(x => x.sourceDocument.absolutePath ===  sourceDocument.absolutePath);
+    const newDocument: ParsedDocument = new ParsedDocument();
+    if (foundDocument !== undefined && foundDocument !== null) {
+      if (foundDocument.sourceDocument.code === sourceDocument.code) {
+          newDocument.initialiseDocument(foundDocument.element, null, sourceDocument, foundDocument.fixedSource);
+          this.parsedDocumentsCache.push(newDocument);
+      }
+      this.parsedDocumentsCache = this.parsedDocumentsCache.filter( x => x !== foundDocument);
     }
-    return document;
+        try {
+            const result = solparse.parse(documentText);
+            if (fixedSource) {
+              newDocument.initialiseDocument(result, null, sourceDocument, documentText);
+            } else {
+              newDocument.initialiseDocument(result, null, sourceDocument, null );
+            }
+            this.parsedDocumentsCache.push(newDocument);
+        } catch (error) {
+            /*
+            // if we error parsing (cannot cater for all combos) we fix by removing current line.
+            const lines = documentText.split(/\r?\n/g);
+            if (lines[line].trim() !== '') { // have we done it already?
+                lines[line] = ''.padStart(lines[line].length, ' '); // adding the same number of characters so the position matches where we are at the moment
+                const code = lines.join('\r\n');
+                return this.parseDocument(code, true, sourceDocument);
+            }*/
+        }
+        return newDocument;
   }
 
   public getContracts(documentText: string, document: ParsedDocument): ParsedContract[] {
@@ -171,15 +174,10 @@ export class CodeWalkerService {
     return contracts;
   }
 
-
-
-
   private findElementByOffset(elements: Array<any>, offset: number): any {
     return elements.find(
       element => element.start <= offset && offset <= element.end,
     );
   }
-
-
 
 }

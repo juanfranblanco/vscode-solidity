@@ -190,15 +190,16 @@ export class ParsedExpressionCall extends ParsedExpression {
       if (this.isElementedSelected(this.element.callee, offset)) {
         if (this.parent !== null) {
           if (this.parent.isCurrentElementedSelected(offset)) {
-            return this.parent.getAllReferencesToSelected(offset);
+            return results.concat(this.parent.getAllReferencesToSelected(offset));
           }
         }
         if (this.reference !== null) {
           return results.concat(this.reference.getAllReferencesToThis());
         }
-        return [];
+        return results;
       }
     }
+    return results;
   }
 
 
@@ -319,7 +320,7 @@ export class ParsedExpressionIdentifier extends ParsedExpression {
     if (this.isCurrentElementedSelected(offset)) {
       if (this.parent !== null) {
         if (this.parent.isCurrentElementedSelected(offset)) {
-          return this.parent.getAllReferencesToSelected(offset);
+          return results.concat(this.parent.getAllReferencesToSelected(offset));
         }
       }
       if (this.reference !== null) {
@@ -329,10 +330,11 @@ export class ParsedExpressionIdentifier extends ParsedExpression {
     } else { // in case the parent is a member and not part of the element
       if (this.parent !== null) {
         if (this.parent.isCurrentElementedSelected(offset)) {
-          return this.parent.getAllReferencesToSelected(offset);
+          return results.concat(this.parent.getAllReferencesToSelected(offset));
         }
       }
     }
+    return results;
   }
 
   public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {

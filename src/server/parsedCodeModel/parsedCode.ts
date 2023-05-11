@@ -61,6 +61,7 @@ export class ParsedCode {
         if (this.isTheSame(parsedCode)) {
             return [this.createFoundReferenceLocationResult()];
         }
+        return [];
     }
 
     public findElementByOffset(elements: Array<any>, offset: number): any {
@@ -113,12 +114,8 @@ export class ParsedCode {
 
     public getAllReferencesToThis(): FindTypeReferenceLocationResult[] {
         const results: FindTypeReferenceLocationResult[] = [];
-        results.push(FindTypeReferenceLocationResult.create(true, this.getLocation()));
-        if (this.contract === null) {
-            return results.concat(this.document.getAllReferencesToObject(this));
-        } else {
-            return results.concat(this.contract.getAllReferencesToObject(this));
-        }
+        results.push(this.createFoundReferenceLocationResult());
+        return results.concat(this.document.getAllReferencesToObject(this));
     }
 
     public findTypeInScope(name: string): ParsedCode {

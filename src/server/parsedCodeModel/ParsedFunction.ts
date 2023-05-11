@@ -15,7 +15,6 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
   public modifiers: ParsedModifierArgument[] = [];
   public isModifier: boolean;
   public variables: ParsedFunctionVariable[] = [];
-  // parent callExpressions in fuction
   public expressions: ParsedExpression[] = [];
 
   public override getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
@@ -26,6 +25,10 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
       this.expressions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
       this.variables.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
       this.modifiers.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+
+      if (results.length === 0) {
+        results = results.concat(this.getAllReferencesToThis());
+      }
     }
     return results;
   }
@@ -40,6 +43,7 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
     this.output.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
     this.variables.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
     this.modifiers.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
+
     return results;
   }
 
