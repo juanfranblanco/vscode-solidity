@@ -8,9 +8,11 @@ import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 
 export class ParsedEnum extends ParsedCode {
     public items: string[] = [];
+    public id: any;
     public override initialise(element: any, document: ParsedDocument, contract: ParsedContract, isGlobal: boolean) {
         super.initialise(element, document, contract, isGlobal);
         this.name = element.name;
+        this.id = element.id;
         element.members.forEach(member => { this.items.push(member); });
     }
 

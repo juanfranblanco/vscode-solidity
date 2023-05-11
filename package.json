@@ -55,7 +55,7 @@
     "solc": "^0.8.19",
     "solhint": "^3.4.0",
     "solium": "^1.2.5",
-    "solparse-exp-jb": "3.0.2",
+    "solparse-exp-jb": "3.0.3",
     "vscode-languageclient": "^8.1.0",
     "vscode-languageserver": "^8.1.0",
     "vscode-languageserver-textdocument": "^1.0.1",

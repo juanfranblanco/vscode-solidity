@@ -35,4 +35,20 @@ export class ParsedContractIs extends ParsedCode {
         }
         return [FindTypeReferenceLocationResult.create(false)];
    }
+
+   public override getAllReferencesToThis(): FindTypeReferenceLocationResult[] {
+        const results: FindTypeReferenceLocationResult[] = [];
+        results.push(this.createFoundReferenceLocationResult());
+        return results.concat(this.document.getAllReferencesToObject(this.getContractReference()));
+    }
+
+   public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
+        if (this.isTheSame(parsedCode)) {
+            return [this.createFoundReferenceLocationResult()];
+        } else {
+            if (this.getContractReference().isTheSame(parsedCode)) {
+                return [this.createFoundReferenceLocationResult()];
+            }
+        }
+    }
 }

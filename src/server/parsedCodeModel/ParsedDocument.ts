@@ -276,6 +276,14 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
         if (this.isCurrentElementedSelected(offset)) {
           this.functions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
           this.innerContracts.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+          this.errors.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+          this.events.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+          this.structs.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+          this.usings.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+          this.customTypes.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+          this.constants.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+          this.imports.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+          this.expressions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
         }
         return results;
     }

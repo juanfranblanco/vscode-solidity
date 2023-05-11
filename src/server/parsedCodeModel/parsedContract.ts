@@ -37,6 +37,7 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
     public constructorFunction: ParsedFunction = null;
     public fallbackFunction: ParsedFunction = null;
     public receiveFunction: ParsedFunction = null;
+    public id: any;
 
 
     public contractType: ContractType = ContractType.contract;
@@ -45,6 +46,9 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
     public override getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
         let results: FindTypeReferenceLocationResult[] = [];
         if (this.isCurrentElementedSelected(offset)) {
+            if (this.isElementedSelected(this.id, offset)) {
+                return this.getAllReferencesToThis();
+            }
             this.functions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
             this.expressions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
             if (this.constructorFunction !== null) {results = this.mergeArrays(results, this.constructorFunction.getAllReferencesToSelected(offset)); }
@@ -55,12 +59,16 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
             this.errors.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
             this.structs.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
             this.events.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+            this.contractIsStatements.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
         }
         return results;
     }
 
     public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
         let results: FindTypeReferenceLocationResult[] = [];
+        if (this.isTheSame(parsedCode)) {
+            results.push(this.createFoundReferenceLocationResult());
+        }
         this.expressions.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
         this.functions.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
         if (this.constructorFunction !== null) {results = this.mergeArrays(results, this.constructorFunction.getAllReferencesToObject(parsedCode)); }
@@ -71,12 +79,14 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
         this.errors.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
         this.structs.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
         this.events.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
+        this.contractIsStatements.forEach(x => results = results.concat(x.getAllReferencesToObject(parsedCode)));
         return results;
     }
 
     public override initialise(element: any, document: ParsedDocument) {
         super.initialise(element, document, this);
         this.name = element.name;
+        this.id = element.id;
         this.contractElementType = element.type;
 
 

@@ -16,10 +16,14 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
   public isModifier: boolean;
   public variables: ParsedFunctionVariable[] = [];
   public expressions: ParsedExpression[] = [];
+  public id: any;
 
   public override getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
     let results: FindTypeReferenceLocationResult[] = [];
     if (this.isCurrentElementedSelected(offset)) {
+      if (this.isElementedSelected(this.id, offset)) {
+        return this.getAllReferencesToThis();
+      }
       this.input.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
       this.output.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
       this.expressions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
@@ -49,6 +53,7 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
 
   public override initialise(element: any, document: ParsedDocument, contract: ParsedContract, isGlobal: boolean) {
     super.initialise(element, document, contract, isGlobal);
+    this.id = element.id;
     this.name = element.name;
     this.initialiseParameters();
     this.initialiseModifiers();

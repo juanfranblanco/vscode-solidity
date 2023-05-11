@@ -7,10 +7,12 @@ import { CompletionItem, CompletionItemKind, Location } from 'vscode-languageser
 
 export class ParsedStruct extends ParsedCode {
     public properties: ParsedStructVariable[] = [];
+    public id: any;
 
     public initialise(element: any, document: ParsedDocument,  contract: ParsedContract, isGlobal: boolean) {
         this.contract = contract;
         this.element = element;
+        this.id = element.id;
         this.name = element.name;
         this.document = document;
         this.isGlobal = isGlobal;
@@ -71,6 +73,9 @@ export class ParsedStruct extends ParsedCode {
 
     public getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
         if (this.isCurrentElementedSelected(offset)) {
+            if (this.isElementedSelected(this.id, offset)) {
+                return this.getAllReferencesToThis();
+              }
             const selectedProperty = this.getSelectedProperty(offset);
             if (selectedProperty !== undefined) {
                 return selectedProperty.getAllReferencesToThis();

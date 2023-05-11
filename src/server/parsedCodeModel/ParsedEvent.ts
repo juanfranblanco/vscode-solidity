@@ -10,10 +10,12 @@ export class ParsedEvent extends ParsedCode {
     public input: ParsedParameter[] = [];
     public contract: ParsedContract;
     public isGlobal: boolean;
+    public id: any;
 
     public override initialise(element: any,  document: ParsedDocument, contract: ParsedContract, isGlobal = false) {
         super.initialise(element, document, contract, isGlobal);
         this.name = element.name;
+        this.id = element.id;
         this.initialiseParamters();
     }
 

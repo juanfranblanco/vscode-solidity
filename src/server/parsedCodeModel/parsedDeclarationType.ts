@@ -113,7 +113,7 @@ export class ParsedDeclarationType extends ParsedCode {
         if (this.isTheSame(parsedCode)) {
             return [this.createFoundReferenceLocationResult()];
         }
-
+        const type = this.findType();
         if (this.type != null && this.type.isTheSame(parsedCode)) {
             return [this.createFoundReferenceLocationResult()];
         }
