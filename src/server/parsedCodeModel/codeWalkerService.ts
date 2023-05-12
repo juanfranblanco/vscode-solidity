@@ -61,6 +61,21 @@ export class CodeWalkerService {
       });
   }
 
+  public initialiseChangedDocuments() {
+    const sourceDocuments = new SourceDocumentCollection();
+    const files = this.project.getAllSolFilesIgnoringDependencyFolders();
+    files.forEach(contractPath => {
+         if (!sourceDocuments.containsSourceDocument(contractPath)) {
+               const contractCode = fs.readFileSync(contractPath, 'utf8');
+               sourceDocuments.addSourceDocumentAndResolveImports(contractPath, contractCode, this.project);
+           }
+     });
+     sourceDocuments.documents.forEach(sourceDocumentItem => {
+        this.parseDocumentChanged(sourceDocumentItem.unformattedCode, false, sourceDocumentItem);
+     });
+ }
+
+
   public getSelectedDocument(
     document: vscode.TextDocument,
     position: vscode.Position): ParsedDocument {
@@ -83,21 +98,13 @@ export class CodeWalkerService {
 
         sourceDocuments.documents.forEach(sourceDocumentItem => {
             if (sourceDocumentItem !== selectedSourceDocument) {
-                const documentImport = this.parseDocument(sourceDocumentItem.code, false, sourceDocumentItem);
-                selectedDocument.addImportedDocument(documentImport);
+                const documentImport = this.parseDocumentChanged(sourceDocumentItem.code, false, sourceDocumentItem);
             }
         });
 
-        if (selectedDocument.selectedContract !== undefined && selectedDocument.selectedContract !== null ) {
-            selectedDocument.selectedContract.initialiseExtendContracts();
-        }
-
         this.parsedDocumentsCache.forEach(element => {
-          element.imports.forEach(importItem => {
-            importItem.initialiseDocumentReference(this.parsedDocumentsCache);
-          });
+          element.initialiseDocumentReferences(this.parsedDocumentsCache);
         });
-
         return selectedDocument;
   }
 
@@ -133,6 +140,37 @@ export class CodeWalkerService {
       }
       return newDocument;
   }
+
+  public parseDocumentChanged(documentText: string, fixedSource: boolean, sourceDocument: SourceDocument): ParsedDocument {
+    const foundDocument = this.parsedDocumentsCache.find(x => x.sourceDocument.absolutePath ===  sourceDocument.absolutePath);
+    const newDocument: ParsedDocument = new ParsedDocument();
+    if (foundDocument !== undefined && foundDocument !== null) {
+      if (foundDocument.sourceDocument.unformattedCode === sourceDocument.unformattedCode) {
+         return foundDocument;
+      }
+      this.parsedDocumentsCache = this.parsedDocumentsCache.filter( x => x !== foundDocument);
+    }
+    try {
+        const result = solparse.parse(documentText);
+        if (fixedSource) {
+          newDocument.initialiseDocument(result, null, sourceDocument, documentText);
+        } else {
+          newDocument.initialiseDocument(result, null, sourceDocument, null );
+        }
+        this.parsedDocumentsCache.push(newDocument);
+    } catch (error) {
+        /*
+        // if we error parsing (cannot cater for all combos) we fix by removing current line.
+        const lines = documentText.split(/\r?\n/g);
+        if (lines[line].trim() !== '') { // have we done it already?
+            lines[line] = ''.padStart(lines[line].length, ' '); // adding the same number of characters so the position matches where we are at the moment
+            const code = lines.join('\r\n');
+            return this.parseDocument(code, true, sourceDocument);
+        }*/
+    }
+    return newDocument;
+}
+
 
   public parseDocument(documentText: string, fixedSource: boolean, sourceDocument: SourceDocument): ParsedDocument {
         const foundDocument = this.parsedDocumentsCache.find(x => x.sourceDocument.absolutePath ===  sourceDocument.absolutePath);

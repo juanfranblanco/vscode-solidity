@@ -6,7 +6,7 @@ import { URI } from 'vscode-uri';
 
 export class ParsedImport extends ParsedCode {
     public from: string;
-    public documentReference: ParsedDocument;
+    public documentReference: ParsedDocument = null;
 
     public initialise(element: any, document: ParsedDocument) {
         this.document = document;
@@ -31,6 +31,13 @@ export class ParsedImport extends ParsedCode {
                 }
             }
         }
+   }
+
+   public getDocumentsThatReference(document: ParsedDocument): ParsedDocument[] {
+        if (this.documentReference !== null) {
+            return this.documentReference.getDocumentsThatReference(document);
+        }
+        return [];
    }
 
    public getAllReferencesToSelected(offset: number, documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {

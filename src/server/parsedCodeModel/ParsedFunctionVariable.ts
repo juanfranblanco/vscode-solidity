@@ -3,6 +3,7 @@ import { ParsedCodeTypeHelper } from './ParsedCodeTypeHelper';
 import { ParsedFunction } from './ParsedFunction';
 import { ParsedVariable } from './ParsedVariable';
 import { FindTypeReferenceLocationResult } from './parsedCode';
+import { ParsedDocument } from './ParsedDocument';
 
 
 export class ParsedFunctionVariable extends ParsedVariable {
@@ -32,5 +33,16 @@ export class ParsedFunctionVariable extends ParsedVariable {
         const results: FindTypeReferenceLocationResult[] = [];
         results.push(this.createFoundReferenceLocationResult());
         return results.concat(this.function.getAllReferencesToObject(this));
+    }
+
+    public override getAllReferencesToSelected(offset: number, documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {
+        if (this.isCurrentElementedSelected(offset)) {
+            if (this.type.isCurrentElementedSelected(offset)) {
+                 return this.type.getAllReferencesToSelected(offset, documents);
+            } else {
+                 return this.getAllReferencesToThis();
+            }
+        }
+        return [];
     }
 }

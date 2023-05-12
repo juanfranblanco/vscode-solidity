@@ -51,8 +51,13 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
     return results;
   }
 
+  public override generateNatSpec(): string {
+      return '/**\n                 ';
+  }
+
   public override initialise(element: any, document: ParsedDocument, contract: ParsedContract, isGlobal: boolean) {
     super.initialise(element, document, contract, isGlobal);
+    this.supportsNatSpec = true;
     this.id = element.id;
     this.name = element.name;
     this.initialiseParameters();

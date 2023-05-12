@@ -47,6 +47,22 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
     public fixedSource: string = null;
     public element: any;
 
+    public getDocumentsThatReference(document: ParsedDocument): ParsedDocument[] {
+        let returnItems: ParsedDocument[] = [];
+        if (
+            this.isTheSame(document) || // it is the doc so needs be added as a flag for the reference return it later on can be filtered dup
+            this.sourceDocument.absolutePath === document.sourceDocument.absolutePath) {
+            returnItems.push(this);
+            return returnItems;
+        }
+
+        this.imports.forEach(x => returnItems = returnItems.concat(x.getDocumentsThatReference(document)));
+
+        if (returnItems.length > 0) { // if any our our imports has the document import we are also referencing it
+                returnItems.push(this); }
+        return returnItems;
+   }
+
     public addImportedDocument(document: ParsedDocument) {
         if (!this.importedDocuments.includes(document) && this !== document) {
             this.importedDocuments.push(document);
@@ -148,11 +164,17 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
         });
     }
 
+    public initialiseDocumentReferences(documents: ParsedDocument[]) {
+        this.importedDocuments = [];
+        this.imports.forEach(x => x.initialiseDocumentReference(documents));
+        this.innerContracts.forEach(x => x.initialiseExtendContracts());
+    }
+
 
     public initialiseDocument(documentElement: any, selectedElement: any = null, sourceDocument: SourceDocument, fixedSource: string = null) {
             this.element = documentElement;
             this.sourceDocument = sourceDocument;
-
+            this.document = this;
             this.fixedSource = fixedSource;
             this.selectedElement = selectedElement;
             if (this.element !== undefined && this.element !== null) {

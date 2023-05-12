@@ -109,6 +109,14 @@ export class ParsedDeclarationType extends ParsedCode {
         return this.type;
     }
 
+    public override getAllReferencesToSelected(offset: number, documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {
+        if (this.isCurrentElementedSelected(offset)) {
+            const type = this.findType();
+            return type.getAllReferencesToThis(documents);
+        }
+        return [];
+    }
+
     public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
         if (this.isTheSame(parsedCode)) {
             return [this.createFoundReferenceLocationResult()];

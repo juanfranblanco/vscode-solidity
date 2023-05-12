@@ -1,7 +1,9 @@
 import { ParsedDocument } from './ParsedDocument';
-import { CompletionItem, Location, Range, TextDocument } from 'vscode-languageserver';
+import { CompletionItem, Location, Range, Position, Hover } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 import { ParsedContract } from './parsedContract';
+import { HoverFeature } from 'vscode-languageclient/lib/common/hover';
 
 export class FindTypeReferenceLocationResult {
     public isCurrentElementSelected: boolean;
@@ -37,6 +39,8 @@ export class ParsedCode {
     public document: ParsedDocument;
     public contract: ParsedContract = null;
     public isGlobal: boolean;
+    public supportsNatSpec = false;
+    public comment: string = null;
 
     public initialise(element: any, document: ParsedDocument, contract: ParsedContract = null, isGlobal = false) {
         this.contract = contract;
@@ -49,12 +53,62 @@ export class ParsedCode {
         }
     }
 
+    public getHover():Hover{
+        return null;
+    }
+
+    public generateNatSpec(): string {
+        return null;
+    }
+
+   public isCommentLine(document: TextDocument, line: number): boolean {
+        if (line === 0) {
+            return false;
+        }
+        const txt: string = document.getText(this.getLineRange(line)).trimStart();
+        if (!txt.startsWith('///') && !txt.startsWith('*') &&
+            !txt.startsWith('/**') && !txt.startsWith('/*!') && !txt.startsWith('*/') ) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public getLineRange(lineNumber: number){
+        return Range.create(Position.create(lineNumber, 0), Position.create(lineNumber + 1, 0));
+    }
+
+    public getComment(): string {
+        if (this.comment === null && this.supportsNatSpec) {
+            const uri = URI.file(this.document.sourceDocument.absolutePath).toString();
+            const document = TextDocument.create(uri, null, null, this.document.sourceDocument.unformattedCode);
+            const position = document.positionAt(this.element.start);
+            let comment = '';
+            let currentLine = position.line - 1;
+            while (this.isCommentLine(document, currentLine)) {
+
+                currentLine = currentLine - 1;
+                comment = document.getText(this.getLineRange(currentLine)) + comment;
+            }
+            this.comment = comment;
+         }
+        return this.comment;
+    }
+
     public createFoundReferenceLocationResult(): FindTypeReferenceLocationResult {
         return FindTypeReferenceLocationResult.create(true, this.getLocation(), this);
     }
 
     public isTheSame(parsedCode: ParsedCode): boolean {
-        return parsedCode === this;
+        try {
+        const sameObject =  parsedCode === this;
+        const sameDocReference =
+        (this.document.sourceDocument.absolutePath === parsedCode.document.sourceDocument.absolutePath
+            && this.name === parsedCode.name && this.element.start === parsedCode.element.start && this.element.end === parsedCode.element.end);
+            return sameObject || sameDocReference;
+        } catch(error) {
+            // console.log(error);
+        }
     }
 
     public getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
@@ -93,7 +147,7 @@ export class ParsedCode {
         return Location.create(
             document.uri,
             Range.create(document.positionAt(this.element.start), document.positionAt(this.element.end)),
-          );
+            );
     }
 
     public getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
@@ -115,7 +169,10 @@ export class ParsedCode {
     public getAllReferencesToThis(documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {
         let results: FindTypeReferenceLocationResult[] = [];
         results.push(this.createFoundReferenceLocationResult());
-        // return results.concat(this.document.getAllReferencesToObject(this));
+        let documentsToSearch: ParsedDocument[] = [];
+        documents.forEach(x => documentsToSearch = documentsToSearch.concat(x.getDocumentsThatReference(this.document)));
+        documentsToSearch = [...new Set(documentsToSearch)];
+
         documents.forEach(x => results = results.concat(x.getAllReferencesToObject(this)));
         return results;
     }

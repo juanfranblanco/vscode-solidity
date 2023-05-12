@@ -314,6 +314,7 @@ connection.onInitialize((params): InitializeResult => {
             },
             definitionProvider: true,
             referencesProvider : true,
+            hoverProvider: true,
             textDocumentSync: TextDocumentSyncKind.Full,
         },
     };
