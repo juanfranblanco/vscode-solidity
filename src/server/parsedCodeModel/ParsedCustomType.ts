@@ -5,6 +5,7 @@ import { ParsedContract } from './parsedContract';
 
 export class ParsedCustomType extends ParsedCode {
     public isType: string;
+    private completionItem: CompletionItem = null;
 
     public override initialise(element: any,  document: ParsedDocument, contract: ParsedContract, isGlobal: boolean) {
         super.initialise(element, document, contract, isGlobal);
@@ -14,6 +15,7 @@ export class ParsedCustomType extends ParsedCode {
 
 
     public override createCompletionItem(): CompletionItem {
+        if (this.completionItem === null) {
         const completionItem =  CompletionItem.create(this.name);
         completionItem.kind = CompletionItemKind.Field;
         let contractName = '';
@@ -26,7 +28,9 @@ export class ParsedCustomType extends ParsedCode {
         completionItem.insertText = this.name;
         completionItem.detail = '(' + this.name + ' in ' + contractName + ') '
                                             + this.isType + ' ' + this.name;
-        return completionItem;
+            this.completionItem = completionItem;
+        }
+        return this.completionItem;
     }
 }
 

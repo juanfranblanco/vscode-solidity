@@ -17,21 +17,21 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
   public variables: ParsedFunctionVariable[] = [];
   public expressions: ParsedExpression[] = [];
   public id: any;
+  private completionItem: CompletionItem = null;
 
-  public override getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
+  public override getAllReferencesToSelected(offset: number, documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {
     let results: FindTypeReferenceLocationResult[] = [];
     if (this.isCurrentElementedSelected(offset)) {
-      if (this.isElementedSelected(this.id, offset)) {
-        return this.getAllReferencesToThis();
-      }
-      this.input.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-      this.output.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-      this.expressions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-      this.variables.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-      this.modifiers.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+      this.input.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+      this.output.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+      this.expressions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+      this.variables.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+      this.modifiers.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
 
       if (results.length === 0) {
-        results = results.concat(this.getAllReferencesToThis());
+        if (this.isElementedSelected(this.id, offset)) {
+          return this.getAllReferencesToThis(documents);
+        }
       }
     }
     return results;
@@ -154,7 +154,7 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
   }
 
   public createCompletionItem(skipFirstParamSnipppet = false): CompletionItem {
-
+    if (this.completionItem === null) {
     const completionItem = CompletionItem.create(this.name);
     completionItem.kind = CompletionItemKind.Function;
     const paramsInfo = ParsedParameter.createParamsInfo(this.element.params);
@@ -183,7 +183,9 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
     const info = '(' + functionType + ' in ' + contractName + ') ' + this.name + '(' + paramsInfo + ')' + returnParamsInfo;
     completionItem.documentation = info;
     completionItem.detail = info;
-    return completionItem;
+    this.completionItem = completionItem;
+  }
+  return this.completionItem;
   }
 
   public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {

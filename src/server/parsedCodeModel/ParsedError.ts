@@ -8,6 +8,7 @@ import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 export class ParsedError extends ParsedCode {
     public input: ParsedParameter[] = [];
     public id: any;
+    private completionItem: CompletionItem = null;
 
     public override initialise(element: any, document: ParsedDocument, contract: ParsedContract, isGlobal: boolean) {
         super.initialise(element, document, contract, isGlobal);
@@ -21,6 +22,7 @@ export class ParsedError extends ParsedCode {
     }
 
     public override createCompletionItem(): CompletionItem {
+        if (this.completionItem === null) {
         const completionItem =  CompletionItem.create(this.name);
         completionItem.kind = CompletionItemKind.Function;
         // completionItem.insertText = contractName + '.' + contractElement.name;
@@ -38,7 +40,9 @@ export class ParsedError extends ParsedCode {
         const info = '(Error in ' + contractName + ') ' + this.name + '(' + paramsInfo + ')';
         completionItem.documentation = info;
         completionItem.detail = info;
-        return completionItem;
+        this.completionItem = completionItem;
+    }
+    return this.completionItem;
     }
 
     public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {

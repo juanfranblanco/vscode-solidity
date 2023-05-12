@@ -11,6 +11,7 @@ import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 
 export class ParsedParameter extends ParsedVariable {
     public parent: ParsedCode;
+    private completionItem: CompletionItem = null;
 
     public static extractParameters(params: any, contract: ParsedContract, document: ParsedDocument, parent: ParsedCode): ParsedParameter[] {
         const parameters: ParsedParameter[] = [];
@@ -75,12 +76,12 @@ export class ParsedParameter extends ParsedVariable {
         return paramsSnippet;
     }
 
-    public override getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
+    public override getAllReferencesToSelected(offset: number, documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {
         if (this.isCurrentElementedSelected(offset)) {
             if (this.type.isCurrentElementedSelected(offset)) {
-                 return this.type.getAllReferencesToSelected(offset);
+                 return this.type.getAllReferencesToSelected(offset, documents);
             } else {
-                 return this.getAllReferencesToThis();
+                 return this.getAllReferencesToThis(documents);
             }
         }
         return [];
@@ -94,7 +95,7 @@ export class ParsedParameter extends ParsedVariable {
         }
     }
 
-    public override getAllReferencesToThis(): FindTypeReferenceLocationResult[] {
+    public override getAllReferencesToThis(documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {
         const results: FindTypeReferenceLocationResult[] = [];
         results.push(this.createFoundReferenceLocationResult());
         return results.concat(this.parent.getAllReferencesToObject(this));
@@ -116,15 +117,18 @@ export class ParsedParameter extends ParsedVariable {
     }
 
     public createParamCompletionItem(type: string, contractName: string): CompletionItem {
-        let id = '[parameter name not set]';
-        if (this.element.id !== null) {
-            id = this.element.id;
+        if (this.completionItem === null) {
+            let id = '[parameter name not set]';
+            if (this.element.id !== null) {
+                id = this.element.id;
+            }
+            const completionItem =  CompletionItem.create(id);
+            completionItem.kind = CompletionItemKind.Variable;
+            const typeString = ParsedCodeTypeHelper.getTypeString(this.element.literal);
+            completionItem.detail = '(' + type + ' in ' + contractName + ') '
+                                                + typeString + ' ' + id;
+            this.completionItem = completionItem;
         }
-        const completionItem =  CompletionItem.create(id);
-        completionItem.kind = CompletionItemKind.Variable;
-        const typeString = ParsedCodeTypeHelper.getTypeString(this.element.literal);
-        completionItem.detail = '(' + type + ' in ' + contractName + ') '
-                                            + typeString + ' ' + id;
-        return completionItem;
+        return this.completionItem;
     }
 }

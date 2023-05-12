@@ -52,7 +52,7 @@ export class CodeWalkerService {
             }
       });
       sourceDocuments.documents.forEach(sourceDocumentItem => {
-         this.parseDocument(sourceDocumentItem.code, false, sourceDocumentItem);
+         this.parseDocument(sourceDocumentItem.unformattedCode, false, sourceDocumentItem);
       });
       this.parsedDocumentsCache.forEach(element => {
         element.imports.forEach(importItem => {
@@ -101,39 +101,51 @@ export class CodeWalkerService {
         return selectedDocument;
   }
 
-
   public parseSelectedDocument(documentText: string, offset: number, line: number, fixedSource: boolean, sourceDocument: SourceDocument): ParsedDocument {
-    const document: ParsedDocument = new ParsedDocument();
-    try {
-        const result = solparse.parse(documentText);
-        const selectedElement = this.findElementByOffset(result.body, offset);
-        if (fixedSource) {
-            document.initialiseDocument(result, selectedElement, sourceDocument, documentText);
-        } else {
-            document.initialiseDocument(result, selectedElement, sourceDocument, null );
+    const foundDocument = this.parsedDocumentsCache.find(x => x.sourceDocument.absolutePath ===  sourceDocument.absolutePath);
+    const newDocument: ParsedDocument = new ParsedDocument();
+      if (foundDocument !== undefined && foundDocument !== null) {
+        if (!fixedSource && foundDocument.sourceDocument.code === sourceDocument.code) {
+            const selectedElement = this.findElementByOffset(foundDocument.element.body, offset);
+            newDocument.initialiseDocument(foundDocument.element, selectedElement, foundDocument.sourceDocument, foundDocument.fixedSource);
+            this.parsedDocumentsCache.push(newDocument);
+            this.parsedDocumentsCache = this.parsedDocumentsCache.filter( x => x !== foundDocument);
+            return foundDocument;
         }
-    } catch (error) {
-        // if we error parsing (cannot cater for all combos) we fix by removing current line.
+        this.parsedDocumentsCache = this.parsedDocumentsCache.filter( x => x !== foundDocument);
+      }
+      try {
+          const result = solparse.parse(documentText);
+          const selectedElement = this.findElementByOffset(result.body, offset);
+          if (fixedSource) {
+            newDocument.initialiseDocument(result, selectedElement, sourceDocument, documentText);
+          } else {
+            newDocument.initialiseDocument(result, selectedElement, sourceDocument, null );
+          }
+          this.parsedDocumentsCache.push(newDocument);
+      } catch (error) {
         const lines = documentText.split(/\r?\n/g);
         if (lines[line].trim() !== '') { // have we done it already?
             lines[line] = ''.padStart(lines[line].length, ' '); // adding the same number of characters so the position matches where we are at the moment
             const code = lines.join('\r\n');
             return this.parseSelectedDocument(code, offset, line, true, sourceDocument);
         }
-    }
-    return document;
+      }
+      return newDocument;
   }
 
   public parseDocument(documentText: string, fixedSource: boolean, sourceDocument: SourceDocument): ParsedDocument {
-    const foundDocument = this.parsedDocumentsCache.find(x => x.sourceDocument.absolutePath ===  sourceDocument.absolutePath);
-    const newDocument: ParsedDocument = new ParsedDocument();
-    if (foundDocument !== undefined && foundDocument !== null) {
-      if (foundDocument.sourceDocument.code === sourceDocument.code) {
-          newDocument.initialiseDocument(foundDocument.element, null, sourceDocument, foundDocument.fixedSource);
-          this.parsedDocumentsCache.push(newDocument);
-      }
-      this.parsedDocumentsCache = this.parsedDocumentsCache.filter( x => x !== foundDocument);
-    }
+        const foundDocument = this.parsedDocumentsCache.find(x => x.sourceDocument.absolutePath ===  sourceDocument.absolutePath);
+        const newDocument: ParsedDocument = new ParsedDocument();
+        if (foundDocument !== undefined && foundDocument !== null) {
+          if (foundDocument.sourceDocument.unformattedCode === sourceDocument.unformattedCode) {
+              newDocument.initialiseDocument(foundDocument.element, null, sourceDocument, foundDocument.fixedSource);
+              this.parsedDocumentsCache.push(newDocument);
+              this.parsedDocumentsCache = this.parsedDocumentsCache.filter( x => x !== foundDocument);
+              return newDocument;
+          }
+          this.parsedDocumentsCache = this.parsedDocumentsCache.filter( x => x !== foundDocument);
+        }
         try {
             const result = solparse.parse(documentText);
             if (fixedSource) {

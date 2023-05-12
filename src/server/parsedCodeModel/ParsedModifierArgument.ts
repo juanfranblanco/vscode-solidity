@@ -76,12 +76,12 @@ export class ParsedModifierArgument extends ParsedCode {
         return [];
     }
 
-    public override getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
+    public override getAllReferencesToSelected(offset: number, documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {
         if (this.isCurrentElementedSelected(offset)) {
             let results: FindTypeReferenceLocationResult[] = [];
             if (this.IsCustomModifier()) {
                 const foundResults =  this.findMethodsInScope(this.name);
-                foundResults.forEach(x => results = results.concat(x.getAllReferencesToThis()));
+                foundResults.forEach(x => results = results.concat(x.getAllReferencesToThis(documents)));
                 return results;
             }
         }

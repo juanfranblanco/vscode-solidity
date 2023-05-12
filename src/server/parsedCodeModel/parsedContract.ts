@@ -42,24 +42,25 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
 
     public contractType: ContractType = ContractType.contract;
     public isAbstract: boolean;
+    private completionItem: CompletionItem = null;
 
-    public override getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
+    public override getAllReferencesToSelected(offset: number, documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {
         let results: FindTypeReferenceLocationResult[] = [];
         if (this.isCurrentElementedSelected(offset)) {
             if (this.isElementedSelected(this.id, offset)) {
-                return this.getAllReferencesToThis();
+                return this.getAllReferencesToThis(documents);
             }
-            this.functions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-            this.expressions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-            if (this.constructorFunction !== null) {results = this.mergeArrays(results, this.constructorFunction.getAllReferencesToSelected(offset)); }
-            if (this.fallbackFunction !== null) {results = this.mergeArrays(results, this.fallbackFunction.getAllReferencesToSelected(offset)); }
-            if (this.receiveFunction !== null) {results = this.mergeArrays(results, this.receiveFunction.getAllReferencesToSelected(offset)); }
-            this.stateVariables.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-            this.enums.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-            this.errors.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-            this.structs.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-            this.events.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-            this.contractIsStatements.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+            this.functions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+            this.expressions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+            if (this.constructorFunction !== null) {results = this.mergeArrays(results, this.constructorFunction.getAllReferencesToSelected(offset, documents)); }
+            if (this.fallbackFunction !== null) {results = this.mergeArrays(results, this.fallbackFunction.getAllReferencesToSelected(offset, documents)); }
+            if (this.receiveFunction !== null) {results = this.mergeArrays(results, this.receiveFunction.getAllReferencesToSelected(offset, documents)); }
+            this.stateVariables.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+            this.enums.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+            this.errors.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+            this.structs.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+            this.events.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+            this.contractIsStatements.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
         }
         return results;
     }
@@ -466,7 +467,7 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
     }
 
     public override createCompletionItem(): CompletionItem {
-
+        if (this.completionItem === null) {
         const completionItem =  CompletionItem.create(this.name);
         if (this.contractType === ContractType.interface) {
             completionItem.kind = CompletionItemKind.Interface;
@@ -477,7 +478,9 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
         completionItem.insertText = this.name;
         completionItem.detail = '(' + this.getContractTypeName(this.contractType)  + ' : ' + this.name + ') in ' + this.document.sourceDocument.absolutePath;
 
-        return completionItem;
+        this.completionItem = completionItem;
+    }
+    return this.completionItem;
     }
 
     public getAllFunctionCompletionItems(): CompletionItem[] {

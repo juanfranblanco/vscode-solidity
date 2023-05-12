@@ -10,6 +10,7 @@ import { FindTypeReferenceLocationResult } from './parsedCode';
 
 export class ParsedStructVariable extends ParsedVariable {
     public struct: ParsedStruct;
+    private completionItem: CompletionItem = null;
 
     public initialiseStructVariable(element: any, contract: ParsedContract, document: ParsedDocument, struct: ParsedStruct ) {
         this.element = element;
@@ -19,10 +20,13 @@ export class ParsedStructVariable extends ParsedVariable {
         this.struct = struct;
     }
     public createCompletionItem(): CompletionItem {
-        const completitionItem = CompletionItem.create(this.name);
-        const typeString = ParsedCodeTypeHelper.getTypeString(this.element.literal);
-        completitionItem.detail = '(' + this.name + ' in ' + this.struct.name + ') '
-            + typeString + ' ' + this.struct.name;
-        return completitionItem;
+        if (this.completionItem === null) {
+            const completitionItem = CompletionItem.create(this.name);
+            const typeString = ParsedCodeTypeHelper.getTypeString(this.element.literal);
+            completitionItem.detail = '(' + this.name + ' in ' + this.struct.name + ') '
+                + typeString + ' ' + this.struct.name;
+            this.completionItem = completitionItem;
+        }
+        return this.completionItem;
     }
 }

@@ -46,7 +46,8 @@ export class ParsedContractIs extends ParsedCode {
         if (this.isTheSame(parsedCode)) {
             return [this.createFoundReferenceLocationResult()];
         } else {
-            if (this.getContractReference().isTheSame(parsedCode)) {
+            const reference = this.getContractReference();
+            if (reference !== null && reference.isTheSame(parsedCode)) {
                 return [this.createFoundReferenceLocationResult()];
             }
         }

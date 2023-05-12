@@ -182,7 +182,7 @@ export class ParsedExpressionCall extends ParsedExpression {
     }
   }
 
-  public override getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
+  public override getAllReferencesToSelected(offset: number, documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {
     this.initReference();
     this.initExpressionType();
     const results: FindTypeReferenceLocationResult[] = [];
@@ -190,11 +190,11 @@ export class ParsedExpressionCall extends ParsedExpression {
       if (this.isElementedSelected(this.element.callee, offset)) {
         if (this.parent !== null) {
           if (this.parent.isCurrentElementedSelected(offset)) {
-            return results.concat(this.parent.getAllReferencesToSelected(offset));
+            return results.concat(this.parent.getAllReferencesToSelected(offset, documents));
           }
         }
         if (this.reference !== null) {
-          return results.concat(this.reference.getAllReferencesToThis());
+          return results.concat(this.reference.getAllReferencesToThis(documents));
         }
         return results;
       }
@@ -313,24 +313,24 @@ export class ParsedExpressionIdentifier extends ParsedExpression {
     this.name = this.element.name;
   }
 
-  public override getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
+  public override getAllReferencesToSelected(offset: number, documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {
     this.initReference();
     this.initExpressionType();
     const results: FindTypeReferenceLocationResult[] = [];
     if (this.isCurrentElementedSelected(offset)) {
       if (this.parent !== null) {
         if (this.parent.isCurrentElementedSelected(offset)) {
-          return results.concat(this.parent.getAllReferencesToSelected(offset));
+          return results.concat(this.parent.getAllReferencesToSelected(offset, documents));
         }
       }
       if (this.reference !== null) {
-        return results.concat(this.reference.getAllReferencesToThis());
+        return results.concat(this.reference.getAllReferencesToThis(documents));
       }
       return [this.createFoundReferenceLocationResult()];
     } else { // in case the parent is a member and not part of the element
       if (this.parent !== null) {
         if (this.parent.isCurrentElementedSelected(offset)) {
-          return results.concat(this.parent.getAllReferencesToSelected(offset));
+          return results.concat(this.parent.getAllReferencesToSelected(offset, documents));
         }
       }
     }

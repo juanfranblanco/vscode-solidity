@@ -8,6 +8,7 @@ import { CompletionItem, CompletionItemKind, Location } from 'vscode-languageser
 export class ParsedStruct extends ParsedCode {
     public properties: ParsedStructVariable[] = [];
     public id: any;
+    private completionItem: CompletionItem = null;
 
     public initialise(element: any, document: ParsedDocument,  contract: ParsedContract, isGlobal: boolean) {
         this.contract = contract;
@@ -51,18 +52,21 @@ export class ParsedStruct extends ParsedCode {
     }
 
     public createCompletionItem(): CompletionItem {
-        const completionItem =  CompletionItem.create(this.name);
-        completionItem.kind = CompletionItemKind.Enum;
-        let contractName = '';
-        if (!this.isGlobal) {
-            contractName = this.contract.name;
-        } else {
-            contractName = this.document.getGlobalPathInfo();
+        if (this.completionItem === null) {
+            const completionItem =  CompletionItem.create(this.name);
+            completionItem.kind = CompletionItemKind.Enum;
+            let contractName = '';
+            if (!this.isGlobal) {
+                contractName = this.contract.name;
+            } else {
+                contractName = this.document.getGlobalPathInfo();
+            }
+            completionItem.insertText = this.name;
+            completionItem.detail = '(Struct in ' + contractName + ') '
+                                                + this.name;
+            this.completionItem = completionItem;
         }
-        completionItem.insertText = this.name;
-        completionItem.detail = '(Struct in ' + contractName + ') '
-                                            + this.name;
-        return completionItem;
+        return this.completionItem;
     }
 
     public override getInnerCompletionItems(): CompletionItem[] {
@@ -71,16 +75,13 @@ export class ParsedStruct extends ParsedCode {
         return completionItems;
     }
 
-    public getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
+    public getAllReferencesToSelected(offset: number, documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {
         if (this.isCurrentElementedSelected(offset)) {
-            if (this.isElementedSelected(this.id, offset)) {
-                return this.getAllReferencesToThis();
-              }
             const selectedProperty = this.getSelectedProperty(offset);
             if (selectedProperty !== undefined) {
-                return selectedProperty.getAllReferencesToThis();
+                return selectedProperty.getAllReferencesToThis(documents);
             } else {
-                return this.getAllReferencesToThis();
+                return this.getAllReferencesToThis(documents);
             }
         }
         return [];

@@ -11,6 +11,7 @@ export class ParsedEvent extends ParsedCode {
     public contract: ParsedContract;
     public isGlobal: boolean;
     public id: any;
+    private completionItem: CompletionItem = null;
 
     public override initialise(element: any,  document: ParsedDocument, contract: ParsedContract, isGlobal = false) {
         super.initialise(element, document, contract, isGlobal);
@@ -24,27 +25,29 @@ export class ParsedEvent extends ParsedCode {
     }
 
     public override createCompletionItem(skipFirstParamSnipppet = false): CompletionItem {
-
-        const completionItem =  CompletionItem.create(this.name);
-        completionItem.kind = CompletionItemKind.Function;
-        const paramsInfo = ParsedParameter.createParamsInfo(this.element.params);
-        const paramsSnippet = ParsedParameter.createFunctionParamsSnippet(this.element.params, skipFirstParamSnipppet);
-        let returnParamsInfo = ParsedParameter.createParamsInfo(this.element.returnParams);
-        if (returnParamsInfo !== '') {
-            returnParamsInfo = ' returns (' + returnParamsInfo + ')';
+        if (this.completionItem === null) {
+            const completionItem =  CompletionItem.create(this.name);
+            completionItem.kind = CompletionItemKind.Function;
+            const paramsInfo = ParsedParameter.createParamsInfo(this.element.params);
+            const paramsSnippet = ParsedParameter.createFunctionParamsSnippet(this.element.params, skipFirstParamSnipppet);
+            let returnParamsInfo = ParsedParameter.createParamsInfo(this.element.returnParams);
+            if (returnParamsInfo !== '') {
+                returnParamsInfo = ' returns (' + returnParamsInfo + ')';
+            }
+            let contractName = '';
+            if (!this.isGlobal) {
+                contractName = this.contract.name;
+            } else {
+                contractName = this.document.getGlobalPathInfo();
+            }
+            completionItem.insertTextFormat = 2;
+            completionItem.insertText = this.name + '(' + paramsSnippet + ');';
+            const info = '(Event in ' +  + ') ' + contractName + '(' + paramsInfo + ')' + returnParamsInfo;
+            completionItem.documentation = info;
+            completionItem.detail = info;
+            this.completionItem = completionItem;
         }
-        let contractName = '';
-        if (!this.isGlobal) {
-            contractName = this.contract.name;
-        } else {
-            contractName = this.document.getGlobalPathInfo();
-        }
-        completionItem.insertTextFormat = 2;
-        completionItem.insertText = this.name + '(' + paramsSnippet + ');';
-        const info = '(Event in ' +  + ') ' + contractName + '(' + paramsInfo + ')' + returnParamsInfo;
-        completionItem.documentation = info;
-        completionItem.detail = info;
-        return completionItem;
+        return this.completionItem;
     }
 
     public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {

@@ -218,7 +218,7 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
             textDocumentPosition.position,
             getCodeWalkerService(),
         ));
-    return completionItems;
+    return [...new Set(completionItems)];
 });
 
 

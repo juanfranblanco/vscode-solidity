@@ -271,19 +271,19 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
         return null;
     }
 
-    public override getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
+    public override getAllReferencesToSelected(offset: number, documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {
         let results: FindTypeReferenceLocationResult[] = [];
         if (this.isCurrentElementedSelected(offset)) {
-          this.functions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-          this.innerContracts.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-          this.errors.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-          this.events.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-          this.structs.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-          this.usings.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-          this.customTypes.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-          this.constants.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-          this.imports.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
-          this.expressions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset)));
+          this.functions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+          this.innerContracts.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+          this.errors.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+          this.events.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+          this.structs.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+          this.usings.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+          this.customTypes.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+          this.constants.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+          this.imports.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+          this.expressions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
         }
         return results;
     }

@@ -105,17 +105,19 @@ export class ParsedCode {
         return [FindTypeReferenceLocationResult.create(false)];
     }
 
-    public getAllReferencesToSelected(offset: number): FindTypeReferenceLocationResult[] {
+    public getAllReferencesToSelected(offset: number, documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {
         if (this.isCurrentElementedSelected(offset)) {
-            return this.getAllReferencesToThis();
+            return this.getAllReferencesToThis(documents);
         }
         return [];
     }
 
-    public getAllReferencesToThis(): FindTypeReferenceLocationResult[] {
-        const results: FindTypeReferenceLocationResult[] = [];
+    public getAllReferencesToThis(documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {
+        let results: FindTypeReferenceLocationResult[] = [];
         results.push(this.createFoundReferenceLocationResult());
-        return results.concat(this.document.getAllReferencesToObject(this));
+        // return results.concat(this.document.getAllReferencesToObject(this));
+        documents.forEach(x => results = results.concat(x.getAllReferencesToObject(this)));
+        return results;
     }
 
     public findTypeInScope(name: string): ParsedCode {

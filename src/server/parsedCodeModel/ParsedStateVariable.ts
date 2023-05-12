@@ -7,6 +7,7 @@ import { ParsedCodeTypeHelper } from './ParsedCodeTypeHelper';
 
 
 export class ParsedStateVariable extends ParsedVariable {
+    private completionItem: CompletionItem = null;
 
     public initialise(element: any, document: ParsedDocument, contract: ParsedContract) {
         super.initialise(element, document, contract);
@@ -15,13 +16,15 @@ export class ParsedStateVariable extends ParsedVariable {
     }
 
     public createCompletionItem(): CompletionItem {
-
-        const completionItem =  CompletionItem.create(this.name);
-        completionItem.kind = CompletionItemKind.Field;
-        const typeString = ParsedCodeTypeHelper.getTypeString(this.element.literal);
-        completionItem.detail = '(State variable in ' + this.contract.name + ') '
-                                            + typeString + ' ' + this.contract.name;
-        return completionItem;
+        if (this.completionItem === null) {
+            const completionItem =  CompletionItem.create(this.name);
+            completionItem.kind = CompletionItemKind.Field;
+            const typeString = ParsedCodeTypeHelper.getTypeString(this.element.literal);
+            completionItem.detail = '(State variable in ' + this.contract.name + ') '
+                                                + typeString + ' ' + this.contract.name;
+            this.completionItem = completionItem;
+        }
+         return this.completionItem;
     }
 }
 

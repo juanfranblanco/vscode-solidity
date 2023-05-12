@@ -9,6 +9,7 @@ import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 export class ParsedEnum extends ParsedCode {
     public items: string[] = [];
     public id: any;
+    private completionItem: CompletionItem = null;
     public override initialise(element: any, document: ParsedDocument, contract: ParsedContract, isGlobal: boolean) {
         super.initialise(element, document, contract, isGlobal);
         this.name = element.name;
@@ -17,6 +18,7 @@ export class ParsedEnum extends ParsedCode {
     }
 
     public override createCompletionItem(): CompletionItem {
+        if (this.completionItem === null) {
         const completionItem =  CompletionItem.create(this.name);
         completionItem.kind = CompletionItemKind.Enum;
         let contractName = '';
@@ -28,7 +30,9 @@ export class ParsedEnum extends ParsedCode {
         completionItem.insertText = this.name;
         completionItem.detail = '(Enum in ' + contractName + ') '
                                             + this.name;
-        return completionItem;
+        this.completionItem = completionItem;
+        }
+        return this.completionItem;
     }
 
     public override getInnerCompletionItems(): CompletionItem[] {

@@ -33,6 +33,13 @@ export class ParsedImport extends ParsedCode {
         }
    }
 
+   public getAllReferencesToSelected(offset: number, documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {
+        if (this.isCurrentElementedSelected(offset)) {
+            return this.getAllReferencesToObject(this.documentReference);
+        }
+        return [];
+    }
+
     public getReferenceLocation(): Location {
         const path = this.document.sourceDocument.resolveImportPath(this.from);
         // note: we can use the path to find the referenced source document too.

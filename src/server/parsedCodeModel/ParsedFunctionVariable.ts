@@ -7,9 +7,11 @@ import { FindTypeReferenceLocationResult } from './parsedCode';
 
 export class ParsedFunctionVariable extends ParsedVariable {
     public function: ParsedFunction;
+    private completionItem: CompletionItem = null;
 
     public override createCompletionItem(): CompletionItem {
 
+        if (this.completionItem === null) {
         const completionItem =  CompletionItem.create(this.name);
         completionItem.kind = CompletionItemKind.Field;
         let name = '';
@@ -21,7 +23,9 @@ export class ParsedFunctionVariable extends ParsedVariable {
         const typeString = ParsedCodeTypeHelper.getTypeString(this.element.literal);
         completionItem.detail = '(Function variable in ' + this.function.name + ') '
                                             + typeString + ' ' + name;
-        return completionItem;
+            this.completionItem = completionItem;
+        }
+        return this.completionItem;
     }
 
     public override getAllReferencesToThis(): FindTypeReferenceLocationResult[] {
