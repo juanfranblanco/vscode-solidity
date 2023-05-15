@@ -22,9 +22,7 @@ export class ParsedStructVariable extends ParsedVariable {
     public createCompletionItem(): CompletionItem {
         if (this.completionItem === null) {
             const completitionItem = CompletionItem.create(this.name);
-            const typeString = ParsedCodeTypeHelper.getTypeString(this.element.literal);
-            completitionItem.detail = '(' + this.name + ' in ' + this.struct.name + ') '
-                + typeString + ' ' + this.struct.name;
+            completitionItem.documentation = this.getMarkupInfo();
             this.completionItem = completitionItem;
         }
         return this.completionItem;
