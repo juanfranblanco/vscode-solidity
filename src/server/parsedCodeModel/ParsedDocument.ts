@@ -11,7 +11,7 @@ import { SourceDocument } from '../../common/model/sourceDocument';
 import { ParsedDeclarationType } from './parsedDeclarationType';
 import { ParsedCustomType } from './ParsedCustomType';
 import { URI } from 'vscode-uri';
-import { CompletionItem, Location, Range, TextDocument } from 'vscode-languageserver';
+import { CompletionItem, Hover, Location, Range, TextDocument } from 'vscode-languageserver';
 import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 import { ParsedExpression } from './ParsedExpression';
 import { IParsedExpressionContainer } from './IParsedExpressionContainer';
@@ -308,6 +308,35 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
           this.expressions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
         }
         return results;
+    }
+
+    public override getHover(): Hover {
+        return null;
+    }
+
+
+    public override getSelectedItem(offset: number): ParsedCode {
+        let selectedItem: ParsedCode = null;
+        if (this.isCurrentElementedSelected(offset)) {
+                let allItems: ParsedCode[] = [];
+                allItems = allItems.concat(this.functions)
+                                    .concat(this.innerContracts)
+                                    .concat(this.errors)
+                                    .concat(this.events)
+                                    .concat(this.structs)
+                                    .concat(this.usings)
+                                    .concat(this.customTypes)
+                                    .concat(this.constants)
+                                    .concat(this.imports)
+                                    .concat(this.expressions);
+
+            for (const item of allItems) {
+                selectedItem = item.getSelectedItem(offset);
+                if (selectedItem !== null) { return selectedItem; }
+                }
+                return this;
+            }
+            return selectedItem;
     }
 
     public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {

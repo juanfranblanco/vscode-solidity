@@ -16,6 +16,9 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
   public isModifier: boolean;
   public variables: ParsedFunctionVariable[] = [];
   public expressions: ParsedExpression[] = [];
+  public isConstructor = false;
+  public isFallback = false;
+  public isReceive = false;
   public id: any;
   private completionItem: CompletionItem = null;
 
@@ -35,6 +38,24 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
       }
     }
     return results;
+  }
+
+  public override getSelectedItem(offset: number): ParsedCode {
+    let selectedItem: ParsedCode = null;
+    if (this.isCurrentElementedSelected(offset)) {
+       let allItems: ParsedCode[] = [];
+       allItems = allItems.concat(this.input)
+                          .concat(this.output)
+                          .concat(this.expressions)
+                          .concat(this.variables)
+                          .concat(this.modifiers);
+       for (const item of allItems) {
+          selectedItem = item.getSelectedItem(offset);
+          if (selectedItem !== null) { return selectedItem; }
+        }
+       return this;
+    }
+    return selectedItem;
   }
 
   public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
@@ -59,7 +80,11 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
     super.initialise(element, document, contract, isGlobal);
     this.supportsNatSpec = true;
     this.id = element.id;
-    this.name = element.name;
+    if (!this.isConstructor && !this.isReceive && !this.isFallback) {
+      this.name = element.name;
+    } else {
+      this.name = '';
+    }
     this.initialiseParameters();
     this.initialiseModifiers();
     if (this.element.body !== undefined && this.element.body !== null) {
@@ -162,7 +187,6 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
     if (this.completionItem === null) {
     const completionItem = CompletionItem.create(this.name);
     completionItem.kind = CompletionItemKind.Function;
-    const paramsInfo = ParsedParameter.createParamsInfo(this.element.params);
     const paramsSnippet = ParsedParameter.createFunctionParamsSnippet(this.element.params, skipFirstParamSnipppet);
     let returnParamsInfo = ParsedParameter.createParamsInfo(this.element.returnParams);
     if (returnParamsInfo !== '') {
@@ -185,12 +209,74 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
     if (this.isModifier) {
       functionType = 'Modifier';
     }
-    const info = '(' + functionType + ' in ' + contractName + ') ' + this.name + '(' + paramsInfo + ')' + returnParamsInfo;
-    completionItem.documentation = info;
-    completionItem.detail = info;
+
+    completionItem.documentation = this.getMarkupInfo();
+    // completionItem.detail = this.getDetail();
     this.completionItem = completionItem;
   }
   return this.completionItem;
+  }
+
+  public getDetail() {
+    let functionType = 'Function';
+    if (this.isModifier) {
+      functionType = 'Modifier';
+    }
+    return functionType  + ': ' +  this.name + '\n' +
+              this.getContractNameOrGlobal() + '\n';
+  }
+
+  public override getInfo(): string {
+    const functionType = this.getParsedObjectType();
+    return    '### ' + functionType  + ': ' +  this.name + '\n' +
+              '#### ' + this.getContractNameOrGlobal() + '\n' +
+              '\t' +  this.getSignature() + ' \n\n' +
+              this.getComment();
+  }
+
+  public override getParsedObjectType(): string {
+    if (this.isModifier) {
+      return 'Modifier';
+    }
+    if (this.isConstructor) {
+      return 'Constructor';
+    }
+
+    if (this.isReceive) {
+      return 'Receive';
+    }
+
+    if (this.isFallback) {
+      return 'Fallback';
+    }
+    return 'Function';
+  }
+
+  public getDeclaration(): string {
+    if (this.isModifier) {
+      return 'modifier';
+    }
+    if (this.isConstructor) {
+      return 'constructor';
+    }
+
+    if (this.isReceive) {
+      return 'receive';
+    }
+
+    if (this.isFallback) {
+      return 'fallback';
+    }
+    return 'function';
+  }
+
+  public getSignature(): string {
+    const paramsInfo = ParsedParameter.createParamsInfo(this.element.params);
+    let returnParamsInfo = ParsedParameter.createParamsInfo(this.element.returnParams);
+    if (returnParamsInfo !== '') {
+      returnParamsInfo = ' returns (' + returnParamsInfo + ')';
+    }
+    return this.getDeclaration() + ' ' +  this.name + '(' + paramsInfo + ') \n\t\t\t\t' +  this.modifiers.map(x => x.name).join(' ')  + returnParamsInfo;
   }
 
   public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {

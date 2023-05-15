@@ -5,7 +5,7 @@ import SolhintService from './server/linter/solhint';
 import SoliumService from './server/linter/solium';
 import { CompilerError } from './server/solErrorsToDiagnostics';
 import { CompletionService } from './server/completionService';
-import { SolidityDefinitionProvider, SolidityReferencesProvider } from './server/definitionProvider';
+import { SolidityDefinitionProvider, SolidityHoverProvider, SolidityReferencesProvider } from './server/definitionProvider';
 import {
     createConnection,
     TextDocuments,
@@ -16,6 +16,10 @@ import {
     CompletionItem, Location, SignatureHelp, TextDocumentSyncKind, VersionedTextDocumentIdentifier,
     WorkspaceFolder,
     ReferenceParams,
+    Hover,
+    MarkedString,
+    MarkupContent,
+    MarkupKind,
 } from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -238,6 +242,13 @@ connection.onDefinition((handler: TextDocumentPositionParams): Thenable<Location
     return provider.provideDefinition(documents.get(handler.textDocument.uri), handler.position, getCodeWalkerService());
 });
 
+connection.onHover((handler: TextDocumentPositionParams): Hover | undefined => {
+    initWorkspaceRootFolder(handler.textDocument.uri);
+    const projectRootPath = initCurrentProjectInWorkspaceRootFsPath(handler.textDocument.uri);
+
+    const provider = new SolidityHoverProvider();
+    return provider.provideHover(documents.get(handler.textDocument.uri), handler.position, getCodeWalkerService());
+    });
 
 
 // This handler resolve additional information for the item selected in

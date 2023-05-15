@@ -26,6 +26,12 @@ export class ParsedStateVariable extends ParsedVariable {
         }
          return this.completionItem;
     }
+
+    public override getInfo(): string {
+        return    '### (State variable) ' + this.name + ' in ' + this.contract.name + '\n'  +
+                  '### Type: \n' +
+                  this.type.getInfo() + '\n';
+    }
 }
 
 

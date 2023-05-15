@@ -28,8 +28,7 @@ export class ParsedEnum extends ParsedCode {
             contractName = this.document.getGlobalPathInfo();
         }
         completionItem.insertText = this.name;
-        completionItem.detail = '(Enum in ' + contractName + ') '
-                                            + this.name;
+        completionItem.documentation = this.getMarkupInfo();
         this.completionItem = completionItem;
         }
         return this.completionItem;
@@ -40,6 +39,17 @@ export class ParsedEnum extends ParsedCode {
         this.items.forEach(property =>  completionItems.push(CompletionItem.create(property)));
         return completionItems;
     }
+
+    public override getParsedObjectType(): string {
+        return 'Enum';
+     }
+
+     public override getInfo(): string {
+        return    '### ' + this.getParsedObjectType()  + ': ' +  this.name + '\n' +
+                  '#### ' + this.getContractNameOrGlobal() + '\n' +
+                  this.getComment();
+    }
+
 
 }
 

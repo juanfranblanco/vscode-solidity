@@ -2,6 +2,7 @@ import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import { ParsedDeclarationType } from './parsedDeclarationType';
 import { ParsedDocument } from './ParsedDocument';
 import { ParsedVariable } from './ParsedVariable';
+import { ParsedParameter } from './ParsedParameter';
 
 
 export class ParsedConstant extends ParsedVariable {
@@ -19,10 +20,26 @@ export class ParsedConstant extends ParsedVariable {
         completionItem.kind = CompletionItemKind.Field;
         const info = this.document.getGlobalPathInfo();
         completionItem.insertText = this.name;
-        completionItem.detail = '(Constant in ' + info + ') '
-                                            + this.name + ' ' + this.type.name;
+        completionItem.documentation = this.getMarkupInfo();
         this.completionItem = completionItem;
         }
         return this.completionItem;
+    }
+
+
+    public override getParsedObjectType(): string {
+        return 'Constant';
+    }
+
+    public override getInfo(): string {
+        return    '### ' + this.getParsedObjectType()  + ': ' +  this.name + '\n' +
+                  '#### ' + this.getContractNameOrGlobal() + '\n' +
+                  '\t' +  this.getSignature() + ' \n\n' +
+                  '### Type Info: \n' +
+                  this.type.getInfo() + '\n';
+    }
+
+    public getSignature(): string {
+        return ParsedParameter.getParamInfo(this.element);
     }
 }

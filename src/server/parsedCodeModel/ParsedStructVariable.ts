@@ -29,4 +29,18 @@ export class ParsedStructVariable extends ParsedVariable {
         }
         return this.completionItem;
     }
+
+    public override getParsedObjectType(): string {
+        return 'Struct Property';
+    }
+
+    public override getInfo(): string {
+
+        return    '### ' + this.getParsedObjectType()  + ': ' +  this.name + '\n' +
+                  '#### ' + this.struct.getParsedObjectType() + ': ' + this.struct.name + '\n' +
+                  '#### ' + this.getContractNameOrGlobal() + '\n' +
+                  // '\t' +  this.getSignature() + ' \n\n' +
+                  '### Type Info: \n' +
+                  this.type.getInfo() + '\n';
+    }
 }

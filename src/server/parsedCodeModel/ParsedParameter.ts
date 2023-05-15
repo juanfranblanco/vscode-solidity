@@ -1,10 +1,11 @@
 import { ParsedDeclarationType } from './parsedDeclarationType';
 import { ParsedVariable } from './ParsedVariable';
 import { ParsedCodeTypeHelper } from './ParsedCodeTypeHelper';
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind, Hover, MarkupContent, MarkupKind } from 'vscode-languageserver';
 import { ParsedDocument } from './ParsedDocument';
 import { ParsedContract } from './parsedContract';
 import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
+import { ParameterInformation } from 'vscode';
 
 
 
@@ -37,21 +38,28 @@ export class ParsedParameter extends ParsedVariable {
                 params = params.params;
             }
             params.forEach( parameterElement => {
-               const typeString = ParsedCodeTypeHelper.getTypeString(parameterElement.literal);
-                let currentParamInfo = '';
-                if (typeof parameterElement.id !== 'undefined' && parameterElement.id !== null ) { // no name on return parameters
-                    currentParamInfo = typeString + ' ' + parameterElement.id;
-                } else {
-                    currentParamInfo = typeString;
-                }
+
+                const currentParamInfo = ParsedParameter.getParamInfo(parameterElement);
                 if (paramsInfo === '') {
                     paramsInfo = currentParamInfo;
                 } else {
-                    paramsInfo = paramsInfo + ', ' + currentParamInfo;
+                    paramsInfo = paramsInfo + ',\n\t\t\t\t' + currentParamInfo;
                 }
             });
         }
         return paramsInfo;
+    }
+
+    public static getParamInfo(parameterElement: any) {
+        const typeString = ParsedCodeTypeHelper.getTypeString(parameterElement.literal);
+
+        let currentParamInfo = '';
+        if (typeof parameterElement.id !== 'undefined' && parameterElement.id !== null) { // no name on return parameters
+            currentParamInfo = typeString + ' ' + parameterElement.id;
+        } else {
+            currentParamInfo = typeString;
+        }
+        return currentParamInfo;
     }
 
     public static createFunctionParamsSnippet(params: any, skipFirst = false): string {
@@ -131,4 +139,26 @@ export class ParsedParameter extends ParsedVariable {
         }
         return this.completionItem;
     }
+
+    public override getParsedObjectType(): string {
+        return 'Parameter';
+    }
+
+    public override getInfo(): string {
+        let name = 'Name not set';
+        if (this.name !== undefined) {
+            name = this.name;
+        }
+        return    '### ' + this.getParsedObjectType()  + ': ' +  name + '\n' +
+                  '#### ' + this.parent.getParsedObjectType() + ': ' + this.parent.name + '\n' +
+                  '#### ' + this.getContractNameOrGlobal() + '\n' +
+                  '### Type Info: \n' +
+                  this.type.getInfo() + '\n';
+    }
+
+    public getSignature(): string {
+        return ParsedParameter.getParamInfo(this.element);
+    }
+
+
 }

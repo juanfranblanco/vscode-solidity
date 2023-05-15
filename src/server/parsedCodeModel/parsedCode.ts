@@ -1,5 +1,5 @@
 import { ParsedDocument } from './ParsedDocument';
-import { CompletionItem, Location, Range, Position, Hover } from 'vscode-languageserver';
+import { CompletionItem, Location, Range, Position, Hover, MarkupKind, MarkupContent } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 import { ParsedContract } from './parsedContract';
@@ -35,11 +35,11 @@ export class FindTypeReferenceLocationResult {
 
 export class ParsedCode {
     public element: any;
-    public name: string;
+    public name = '';
     public document: ParsedDocument;
     public contract: ParsedContract = null;
     public isGlobal: boolean;
-    public supportsNatSpec = false;
+    public supportsNatSpec = true;
     public comment: string = null;
 
     public initialise(element: any, document: ParsedDocument, contract: ParsedContract = null, isGlobal = false) {
@@ -53,7 +53,25 @@ export class ParsedCode {
         }
     }
 
-    public getHover():Hover{
+    public getHover(): Hover {
+        const doc: MarkupContent = this.getMarkupInfo();
+        return {
+            contents: doc,
+        }; }
+
+    public getMarkupInfo(): MarkupContent {
+        return {
+            kind: MarkupKind.Markdown,
+            value: this.getInfo(),
+        };
+    }
+
+    public getInfo(): string {
+        return '### ' + this.name + '\n' + this.getComment();
+    }
+
+    public getSelectedItem(offset: number): ParsedCode {
+        if (this.isCurrentElementedSelected(offset)) { return this; }
         return null;
     }
 
@@ -78,6 +96,14 @@ export class ParsedCode {
         return Range.create(Position.create(lineNumber, 0), Position.create(lineNumber + 1, 0));
     }
 
+    public getContractNameOrGlobal(): string {
+        if (this.contract != null) {
+            return this.contract.getContractTypeName(this.contract.contractType) + ': ' + this.contract.name;
+          } else {
+           return 'Global';
+        }
+    }
+
     public getComment(): string {
         if (this.comment === null && this.supportsNatSpec) {
             const uri = URI.file(this.document.sourceDocument.absolutePath).toString();
@@ -86,9 +112,8 @@ export class ParsedCode {
             let comment = '';
             let currentLine = position.line - 1;
             while (this.isCommentLine(document, currentLine)) {
-
+                comment = '\t' + document.getText(this.getLineRange(currentLine)).trimStart() + comment;
                 currentLine = currentLine - 1;
-                comment = document.getText(this.getLineRange(currentLine)) + comment;
             }
             this.comment = comment;
          }
@@ -97,6 +122,14 @@ export class ParsedCode {
 
     public createFoundReferenceLocationResult(): FindTypeReferenceLocationResult {
         return FindTypeReferenceLocationResult.create(true, this.getLocation(), this);
+    }
+
+    public createNotFoundReferenceLocationResult(): FindTypeReferenceLocationResult {
+        return FindTypeReferenceLocationResult.create(false);
+    }
+
+    public createFoundReferenceLocationResultNoLocation(): FindTypeReferenceLocationResult {
+        return FindTypeReferenceLocationResult.create(true, null, this);
     }
 
     public isTheSame(parsedCode: ParsedCode): boolean {
@@ -212,6 +245,10 @@ export class ParsedCode {
     public getInnerMethodCalls(): ParsedCode[] {
         return [];
     }
+
+    public getParsedObjectType(): string {
+       return '';
+      }
 
     protected mergeArrays<Type>(first: Type[], second: Type[]): Type[] {
         for (let i = 0; i < second.length; i++) {

@@ -87,4 +87,27 @@ export class ParsedModifierArgument extends ParsedCode {
         }
         return [];
     }
+
+    public override getParsedObjectType(): string {
+        return 'Modifier Argument';
+    }
+
+    public override getInfo(): string {
+
+        if (this.IsCustomModifier()) {
+            const foundResults =  this.findMethodsInScope(this.name);
+            if (foundResults.length > 0 ) {
+             return '### ' + this.getParsedObjectType()  + ': ' +  this.name + '\n' +
+                  '#### ' + this.functionParent.getParsedObjectType() + ': ' + this.functionParent.name + '\n' +
+                  '#### ' + this.getContractNameOrGlobal() + '\n' +
+                  '### Type Info: \n' +
+                  foundResults[0].getInfo() + '\n';
+            }
+
+        return    '### ' + this.getParsedObjectType()  + ': ' +  this.name + '\n' +
+                  '#### ' + this.functionParent.getParsedObjectType() + ': ' + this.functionParent.name + '\n' +
+                  '#### ' + this.getContractNameOrGlobal() + '\n' 
+        }
+    }
+
 }

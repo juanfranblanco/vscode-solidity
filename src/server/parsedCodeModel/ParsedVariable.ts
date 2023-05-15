@@ -2,21 +2,21 @@ import { CompletionItem, CompletionItemKind, Location } from 'vscode-languageser
 import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 import { ParsedDeclarationType } from './parsedDeclarationType';
 import { ParsedCodeTypeHelper } from './ParsedCodeTypeHelper';
+import { ParsedParameter } from './ParsedParameter';
 
 export class ParsedVariable extends ParsedCode {
     public type: ParsedDeclarationType;
 
     public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
-          if (this.isCurrentElementedSelected(offset)) {
-                const foundType = this.type.findType();
-                if (foundType !== undefined) {
-                    return [FindTypeReferenceLocationResult.create(true, foundType.getLocation())];
-                } else {
-                    return [FindTypeReferenceLocationResult.create(true)];
-                }
-          }
-          return [FindTypeReferenceLocationResult.create(false)];
-    }
+        if (this.isCurrentElementedSelected(offset)) {
+            const foundType = this.type.findType();
+            if (foundType !== undefined) {
+                return [foundType.createFoundReferenceLocationResult()];
+            }
+            return [this.createFoundReferenceLocationResultNoLocation()];
+        }
+        return [this.createNotFoundReferenceLocationResult()];
+   }
 
     public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
         if (this.isTheSame(parsedCode)) {

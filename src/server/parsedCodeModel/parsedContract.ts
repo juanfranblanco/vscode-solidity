@@ -190,11 +190,38 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
             if (foundResult.length > 0) {
                 return foundResult;
             } else {
-                return [FindTypeReferenceLocationResult.create(true)];
+                return [this.createFoundReferenceLocationResultNoLocation()];
             }
         }
-        return [FindTypeReferenceLocationResult.create(false)];
+        return [this.createNotFoundReferenceLocationResult()];
     }
+
+    public override getSelectedItem(offset: number): ParsedCode {
+        let selectedItem: ParsedCode = null;
+        if (this.isCurrentElementedSelected(offset)) {
+           let allItems: ParsedCode[] = [];
+           allItems = allItems.concat(this.functions)
+                              .concat(this.errors)
+                              .concat(this.events)
+                              .concat(this.structs)
+                              .concat(this.stateVariables)
+                              .concat(this.customTypes)
+                              .concat(this.using)
+                              .concat(this.contractIsStatements)
+                              .concat(this.expressions)
+                              .concat(this.constructorFunction)
+                              .concat(this.fallbackFunction)
+                              .concat(this.receiveFunction);
+
+            for (const item of allItems) {
+                selectedItem = item.getSelectedItem(offset);
+                if (selectedItem !== null) { return selectedItem; }
+            }
+            return this;
+        }
+        return selectedItem;
+    }
+
 
     public findType(name: string): ParsedCode {
         let typesParsed: ParsedCode[] = [];
@@ -405,18 +432,21 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
 
                 if (contractElement.type === 'ConstructorDeclaration') {
                     const functionContract = new ParsedFunction();
+                    functionContract.isConstructor = true;
                     functionContract.initialise(contractElement, this.document, this, false);
                     this.constructorFunction = functionContract;
                 }
 
                 if (contractElement.type === 'FallbackDeclaration') {
                     const functionContract = new ParsedFunction();
+                    functionContract.isFallback = true;
                     functionContract.initialise(contractElement, this.document, this, false);
                     this.fallbackFunction = functionContract;
                 }
 
                 if (contractElement.type === 'ReceiveDeclaration') {
                     const functionContract = new ParsedFunction();
+                    functionContract.isReceive = true;
                     functionContract.initialise(contractElement, this.document, this, false);
                     this.receiveFunction = functionContract;
                 }
@@ -482,6 +512,17 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
     }
     return this.completionItem;
     }
+
+    public override getInfo(): string {
+        const contracType = this.getParsedObjectType();
+        return    '### ' + contracType  + ': ' +  this.name + '\n' +
+                  '##### ' + this.document.sourceDocument?.absolutePath + '\n' +
+                  this.getComment();
+      }
+
+      public override getParsedObjectType(): string {
+        return  this.contract.getContractTypeName(this.contract.contractType);
+      }
 
     public getAllFunctionCompletionItems(): CompletionItem[] {
         const completionItems: CompletionItem[] = [];

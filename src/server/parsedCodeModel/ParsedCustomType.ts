@@ -26,12 +26,24 @@ export class ParsedCustomType extends ParsedCode {
         }
         const typeString = this.isType;
         completionItem.insertText = this.name;
-        completionItem.detail = '(' + this.name + ' in ' + contractName + ') '
-                                            + this.isType + ' ' + this.name;
-            this.completionItem = completionItem;
+        completionItem.documentation = this.getMarkupInfo();
+        this.completionItem = completionItem;
         }
         return this.completionItem;
     }
+
+
+    public override getParsedObjectType(): string {
+        return 'Custom Type';
+    }
+
+    public override getInfo(): string {
+        return    '### ' + this.getParsedObjectType()  + ': ' +  this.name + '\n' +
+                  '#### ' + this.getContractNameOrGlobal() + '\n' +
+                  '### Type Info: \n' +
+                  this.isType + '\n';
+    }
+
 }
 
 

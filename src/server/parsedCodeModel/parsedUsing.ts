@@ -28,12 +28,12 @@ export class ParsedUsing extends ParsedCode {
              if (this.for !== null) {
                 const foundType = this.for.findType();
                 if (foundType !== undefined) {
-                    return [FindTypeReferenceLocationResult.create(true, foundType.getLocation())];
+                    return [foundType.createFoundReferenceLocationResult()];
                 }
-               return [FindTypeReferenceLocationResult.create(true)];
+               return [this.createFoundReferenceLocationResultNoLocation()];
              }
         }
-        return [FindTypeReferenceLocationResult.create(false)];
+        return [this.createNotFoundReferenceLocationResult()];
    }
 }
 

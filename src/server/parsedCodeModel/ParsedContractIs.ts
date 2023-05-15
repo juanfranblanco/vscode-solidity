@@ -52,4 +52,13 @@ export class ParsedContractIs extends ParsedCode {
             }
         }
     }
+
+    public override getInfo(): string {
+        const reference = this.getContractReference();
+        if (reference !== null) {
+            return reference.getInfo();
+        } else {
+            return '### Contract: ' + this.name;
+        }
+    }
 }

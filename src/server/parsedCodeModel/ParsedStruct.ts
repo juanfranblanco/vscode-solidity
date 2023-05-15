@@ -39,6 +39,18 @@ export class ParsedStruct extends ParsedCode {
         });
     }
 
+    public override getSelectedItem(offset: number): ParsedCode {
+        if (this.isCurrentElementedSelected(offset)) {
+            const variableSelected = this.getVariableSelected(offset);
+             if (variableSelected !== undefined) {
+                 return variableSelected;
+             } else {
+                return this;
+             }
+       }
+       return null;
+    }
+
     public override getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
         if (this.isCurrentElementedSelected(offset)) {
              const variableSelected = this.getVariableSelected(offset);
@@ -54,16 +66,9 @@ export class ParsedStruct extends ParsedCode {
     public createCompletionItem(): CompletionItem {
         if (this.completionItem === null) {
             const completionItem =  CompletionItem.create(this.name);
-            completionItem.kind = CompletionItemKind.Enum;
-            let contractName = '';
-            if (!this.isGlobal) {
-                contractName = this.contract.name;
-            } else {
-                contractName = this.document.getGlobalPathInfo();
-            }
+            completionItem.kind = CompletionItemKind.Struct;
             completionItem.insertText = this.name;
-            completionItem.detail = '(Struct in ' + contractName + ') '
-                                                + this.name;
+            completionItem.documentation = this.getMarkupInfo();
             this.completionItem = completionItem;
         }
         return this.completionItem;
@@ -90,4 +95,16 @@ export class ParsedStruct extends ParsedCode {
     public getSelectedProperty(offset: number) {
         return this.properties.find(x => x.isCurrentElementedSelected(offset));
     }
+
+    public override getParsedObjectType(): string {
+        return 'Struct';
+    }
+
+
+    public override getInfo(): string {
+        return    '### ' + this.getParsedObjectType()  + ': ' +  this.name + '\n' +
+                  '#### ' + this.getContractNameOrGlobal() + '\n' +
+                  this.getComment();
+    }
+
 }

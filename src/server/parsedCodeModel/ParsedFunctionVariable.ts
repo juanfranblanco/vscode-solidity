@@ -4,6 +4,7 @@ import { ParsedFunction } from './ParsedFunction';
 import { ParsedVariable } from './ParsedVariable';
 import { FindTypeReferenceLocationResult } from './parsedCode';
 import { ParsedDocument } from './ParsedDocument';
+import { ParsedParameter } from './ParsedParameter';
 
 
 export class ParsedFunctionVariable extends ParsedVariable {
@@ -45,4 +46,21 @@ export class ParsedFunctionVariable extends ParsedVariable {
         }
         return [];
     }
+
+    public override getParsedObjectType(): string {
+        return 'Function Variable';
+    }
+
+    public override getInfo(): string {
+        return    '### ' + this.getParsedObjectType()  + ': ' +  this.name + '\n' +
+                  '#### ' + this.function.getParsedObjectType() + ': ' + this.function.name + '\n' +
+                  '#### ' + this.getContractNameOrGlobal() + '\n' +
+                  '### Type Info: \n' +
+                  this.type.getInfo() + '\n';
+    }
+
+    public getSignature(): string {
+        return ParsedParameter.getParamInfo(this.element);
+    }
 }
+

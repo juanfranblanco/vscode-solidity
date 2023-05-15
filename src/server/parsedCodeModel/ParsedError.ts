@@ -25,21 +25,13 @@ export class ParsedError extends ParsedCode {
         if (this.completionItem === null) {
         const completionItem =  CompletionItem.create(this.name);
         completionItem.kind = CompletionItemKind.Function;
-        // completionItem.insertText = contractName + '.' + contractElement.name;
 
-        const paramsInfo = ParsedParameter.createParamsInfo(this.element.params);
         const paramsSnippet = ParsedParameter.createFunctionParamsSnippet(this.element.params, false);
         completionItem.insertTextFormat = 2;
-        let contractName = '';
-        if (!this.isGlobal) {
-            contractName = this.contract.name;
-        } else {
-            contractName = this.document.getGlobalPathInfo();
-        }
         completionItem.insertText = this.name + '(' + paramsSnippet + ');';
-        const info = '(Error in ' + contractName + ') ' + this.name + '(' + paramsInfo + ')';
-        completionItem.documentation = info;
-        completionItem.detail = info;
+
+        completionItem.documentation = this.getMarkupInfo();
+
         this.completionItem = completionItem;
     }
     return this.completionItem;
@@ -58,5 +50,38 @@ export class ParsedError extends ParsedCode {
         }
             return [FindTypeReferenceLocationResult.create(false)];
     }
+
+    public override getSelectedItem(offset: number): ParsedCode {
+        let selectedItem: ParsedCode = null;
+        if (this.isCurrentElementedSelected(offset)) {
+           let allItems: ParsedCode[] = [];
+           allItems = allItems.concat(this.input);
+           selectedItem = allItems.find(x => x.getSelectedItem(offset));
+           if (selectedItem !== undefined && selectedItem !== null) { return selectedItem; }
+           return this;
+        }
+        return selectedItem;
+    }
+
+    public override getParsedObjectType(): string {
+        return 'Error';
+     }
+
+     public override getInfo(): string {
+         const elementType = this.getParsedObjectType();
+        return    '### ' + elementType  + ': ' +  this.name + '\n' +
+                  '#### ' + this.getContractNameOrGlobal() + '\n' +
+                  '\t' +  this.getSignature() + ' \n\n' +
+                  this.getComment();
+      }
+
+      public getDeclaration(): string {
+         return 'error';
+      }
+      public getSignature(): string {
+        const paramsInfo = ParsedParameter.createParamsInfo(this.element.params);
+        return this.getDeclaration() + ' ' +  this.name + '(' + paramsInfo + ') \n\t\t';
+      }
+
 
 }

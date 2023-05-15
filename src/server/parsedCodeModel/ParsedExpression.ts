@@ -71,7 +71,6 @@ export class ParsedExpression extends ParsedCode {
     }
   }
 
- 
 
   public static createFromElement(element: any,
     document: ParsedDocument,
@@ -202,6 +201,19 @@ export class ParsedExpressionCall extends ParsedExpression {
     return results;
   }
 
+  public override getSelectedItem(offset: number): ParsedCode {
+      if (this.isCurrentElementedSelected(offset)) {
+        if (this.isElementedSelected(this.element.callee, offset)) {
+          if (this.parent !== null) {
+            if (this.parent.isCurrentElementedSelected(offset)) {
+              return this.parent.getSelectedItem(offset);
+            }
+          }
+          return this;
+        }
+      }
+    return null;
+  }
 
 
   public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
@@ -237,6 +249,13 @@ export class ParsedExpressionCall extends ParsedExpression {
     this.initExpressionType();
     if (this.expressionType !== null) { return this.expressionType.getInnerMethodCalls(); }
     return [];
+  }
+
+  public override getInfo(): string {
+    this.initReference();
+    this.initExpressionType();
+    if (this.reference !== null) { return this.reference.getInfo(); }
+    return '';
   }
 
   public initReference() {
@@ -337,6 +356,24 @@ export class ParsedExpressionIdentifier extends ParsedExpression {
     return results;
   }
 
+  public override getSelectedItem(offset: number): ParsedCode {
+    if (this.isCurrentElementedSelected(offset)) {
+        if (this.parent !== null) {
+          if (this.parent.isCurrentElementedSelected(offset)) {
+            return this.parent.getSelectedItem(offset);
+          }
+        }
+        return this;
+    } else { // in case the parent is a member and not part of the element
+      if (this.parent !== null) {
+        if (this.parent.isCurrentElementedSelected(offset)) {
+          return this.parent.getSelectedItem(offset);
+        }
+      }
+    }
+   return null;
+  }
+
   public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
     this.initReference();
     this.initExpressionType();
@@ -410,6 +447,13 @@ export class ParsedExpressionIdentifier extends ParsedExpression {
         }
       }
     }
+  }
+
+  public override getInfo(): string {
+    this.initReference();
+    this.initExpressionType();
+    if (this.reference !== null) { return this.reference.getInfo(); }
+    return '';
   }
 
   public getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
