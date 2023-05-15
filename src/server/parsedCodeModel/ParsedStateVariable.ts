@@ -19,17 +19,20 @@ export class ParsedStateVariable extends ParsedVariable {
         if (this.completionItem === null) {
             const completionItem =  CompletionItem.create(this.name);
             completionItem.kind = CompletionItemKind.Field;
-            const typeString = ParsedCodeTypeHelper.getTypeString(this.element.literal);
-            completionItem.detail = '(State variable in ' + this.contract.name + ') '
-                                                + typeString + ' ' + this.contract.name;
+            completionItem.documentation = this.getMarkupInfo();
             this.completionItem = completionItem;
         }
          return this.completionItem;
     }
 
+    public override getParsedObjectType(): string {
+        return 'State Variable';
+    }
+
     public override getInfo(): string {
-        return    '### (State variable) ' + this.name + ' in ' + this.contract.name + '\n'  +
-                  '### Type: \n' +
+        return    '### ' + this.getParsedObjectType()  + ': ' +  this.name + '\n' +
+                  '#### ' + this.getContractNameOrGlobal() + '\n' +
+                  '### Type Info: \n' +
                   this.type.getInfo() + '\n';
     }
 }
