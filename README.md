@@ -8,15 +8,22 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
 * Compilation of the current contract (Press <kbd>F1</kbd> Solidity : Compile Current Solidity Contract), or <kbd>F5</kbd>
 * Compilation of all the contracts (Press <kbd>F1</kbd> Solidity : Compile all Solidity Contracts), or <kbd>Ctrl</kbd> + <kbd>F5</kbd> or <kbd>Cmd</kbd> + <kbd>F5</kbd>
 * Code completion for all contracts / libraries in the current file and all referenced imports
+* Goto definition
+* Find all references in project
+* Hover information
+* Code quick fixes
+* Mono repo support (identifies the project by finding the files: remappings.txt, foundry.toml, brownie-config.yaml, truffle-config.js, hardhat.config.js)
 * Default project structure (solidity files needs to be in the `src/` directory, and libraries in the `lib/` directory). Libraries will follow the same structure.
 * Compilation supporting EIP82 (dappfile and dependency packages)
 * Support for different solidity versions (Remote and local)
+* Download source code and Abi from Etherscan
 * Code generation using [Nethereum](https://github.com/Nethereum/Nethereum), it includes currently the default template for Nethereum service, dtos generation. 
   (Open 'contractName.json' after compilation from the bin folder. Press <kbd>F1</kbd> and press Solidity: Code generate from compilation output..)
   Auto generation of Nethereum files on compilation
 * Linting using [Solhint](https://github.com/protofire/solhint) or [Ethlint](https://github.com/duaraghav8/Ethlint)
 
 # Instructions
+
 
 ## Using a different version of the solidity compiler
 
@@ -27,6 +34,7 @@ Currently we support four ways supported to use a different version of the solid
 You can change the compiler, in your user settings or workspace settings.
 
 ![image](https://user-images.githubusercontent.com/562371/112019635-85d13d80-8b27-11eb-9e91-dc74dcf9e2fa.png)
+
 
 
 ### Remote download
@@ -45,7 +53,10 @@ You can simply change this setting using the context menu:
 
 ![Screenshot](screenshots/change-compiler-version-selectversion.png) 
 
+#### Using a code action
+If your code is targetting a specific version for solidity, and see the issue highlighted you can also trigger the menu directly from the import.
 
+![Screenshot](screenshots/solidity-change-workspacecompiler-codeaction.gif)
 
 ### Using a Local file
 
@@ -80,6 +91,10 @@ There might be scenarios, that you want to use a different compiler for a specif
 ![image](https://user-images.githubusercontent.com/562371/112020877-a3eb6d80-8b28-11eb-895d-bbee7665e38d.png)
 
 
+## Mono repo support
+To provide mono repo support as solidity does not have a standard project file, a project is identified by findind one of the different files used by different tools, for example remappings.txt, foundry.toml, brownie-config.yaml, truffle-config.js, hardhat.config.js.
+Mono repo support is enabled by default now in the settings, but if wanted it can be disabled.
+
 ## ERC, ERC drafts and Smart contracts snippets / reference
 
 It is pretty hard sometimes to find interfaces or information about an EIP (ERC) or specific libraries to simply get started working with Solidity. 
@@ -102,6 +117,8 @@ Note: If an ERC or your project is not included, please create a pull request. N
 ## Compiler optimization
 Optimize for how many times you intend to run the code. Lower values will optimize more for initial deployment cost, higher values will optimize more for high-frequency usage. The default value is **200**.
 ```"solidity.compilerOptimization": 200``` 
+
+## Code fixes
 
 
 ## Project structure and Remappings
@@ -206,6 +223,24 @@ Auto compilation of files and error highlighting can be enabled or disabled usin
 "solidity.enabledAsYouTypeCompilationErrorCheck": true,
 "solidity.validationDelay": 1500
 ```
+
+## Go To definition
+To navigate to a definition, just press F12 or Ctrl + click to find a definition and navigate to it.
+
+## Hover information
+To find more information about a method, function, variable, contract etc, you can just hover over it with your mouse. Natspecs and comments are extracted for all types to provide you all the documentation required.
+
+![Screenshot](screenshots/solidity-hover.gif)
+
+## Goto references
+To find all usages of a specific type, method, etc you can press Shift + F12 or right click to find all references
+
+![Screenshot](screenshots/solidity-references.gif)
+
+## Download source code and ABI from Etherscan
+To download verified source code from Etherscan, you can right click on the folder area or in a soldity file. First select what chain the smart contract it(for example Ethereum) and then input the smart contract address. The source code will be saved in the root folder of your project. Please note that remappings will be generated for multiple files, so these might conflict with existing ones.
+
+![Screenshot](screenshots/solidity-etherscan-download.gif)
 
 ## Linting
 
@@ -321,8 +356,8 @@ Mythx analysis tool, has been moved to its own stand alone extension, [please do
 
 ## Contributing / Issues / Requests
 
-For ideas, issues, additions, modifications please raise an issue or a pull request at https://github.com/juanfranblanco/vscode-solidity/
-and send a message on gitter at https://gitter.im/vscode-solidity/Lobby or https://gitter.im/Nethereum/Nethereum to get an instant notification.
+For ideas, issues, additions, modifications please raise an issue, if your change is significant please head to the Netherum discord for a chat https://discord.gg/u3Ej2BReNn. 
+Note: All contributions will be under the same project license.
 
 # Credits
 
@@ -346,7 +381,7 @@ Piotr Szlachciak for refactoring the syntaxes
 
 James Lefrere for further refactoring the syntaxes.
 
-Forest Fang for providing the implementation of the "Go to definition", allowing you to navigate to structs, contracts, functions calls, etc
+Forest Fang for providing the first implementation of the "Go to definition", allowing you to navigate to structs, contracts, functions calls, etc and we have used for years.
 
 Bernardo Vieira for adding the capability to read the solium settings from a file in the workspace root directory.
 
