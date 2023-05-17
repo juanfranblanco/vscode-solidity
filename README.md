@@ -11,7 +11,7 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
 * Goto definition
 * Find all references in project
 * Hover information
-* Code quick fixes
+* Code actions / quick fixes (change compiler, format address, add sdpx license.. )
 * Mono repo support (identifies the project by finding the files: remappings.txt, foundry.toml, brownie-config.yaml, truffle-config.js, hardhat.config.js)
 * Default project structure (solidity files needs to be in the `src/` directory, and libraries in the `lib/` directory). Libraries will follow the same structure.
 * Compilation supporting EIP82 (dappfile and dependency packages)
@@ -91,9 +91,6 @@ There might be scenarios, that you want to use a different compiler for a specif
 ![image](https://user-images.githubusercontent.com/562371/112020877-a3eb6d80-8b28-11eb-895d-bbee7665e38d.png)
 
 
-## Mono repo support
-To provide mono repo support as solidity does not have a standard project file, a project is identified by findind one of the different files used by different tools, for example remappings.txt, foundry.toml, brownie-config.yaml, truffle-config.js, hardhat.config.js.
-Mono repo support is enabled by default now in the settings, but if wanted it can be disabled.
 
 ## ERC, ERC drafts and Smart contracts snippets / reference
 
@@ -118,10 +115,14 @@ Note: If an ERC or your project is not included, please create a pull request. N
 Optimize for how many times you intend to run the code. Lower values will optimize more for initial deployment cost, higher values will optimize more for high-frequency usage. The default value is **200**.
 ```"solidity.compilerOptimization": 200``` 
 
-## Code fixes
-
-
 ## Project structure and Remappings
+
+## Mono repo support
+Mono repo support, enables to have different projects in the same workspace as opposed to having open different workspaces in the same window.
+
+To provide mono repo support the project is idenfifed by by finding one of the different files used by different tools, for example remappings.txt, foundry.toml, brownie-config.yaml, truffle-config.js, hardhat.config.js. Solidity does not have a standard project file yet, or many not have it ever, so this is the best solution.
+
+Mono repo support is enabled by default now in the settings, but if wanted it can be disabled.
 
 ### OpenZeppelin (Default)
 
@@ -237,10 +238,18 @@ To find all usages of a specific type, method, etc you can press Shift + F12 or 
 
 ![Screenshot](screenshots/solidity-references.gif)
 
+## Code actions / quick fixes
+The extension provides some code actions and quick fixes, like change compiler, format address, add sdpx license, feel free to make pull requests with new ones!
+
+![Screenshot](screenshots/solidity-corrections.gif)
+
 ## Download source code and ABI from Etherscan
 To download verified source code from Etherscan, you can right click on the folder area or in a soldity file. First select what chain the smart contract it(for example Ethereum) and then input the smart contract address. The source code will be saved in the root folder of your project. Please note that remappings will be generated for multiple files, so these might conflict with existing ones.
 
 ![Screenshot](screenshots/solidity-etherscan-download.gif)
+
+## Solparse-Exp
+The extension uses https://github.com/juanfranblanco/solparse-exp as the main parser, this continues the work that many have done over the years. Tim Coulter, @cgewecke, @duaraghav8 @federicobond
 
 ## Linting
 
@@ -363,7 +372,7 @@ Note: All contributions will be under the same project license.
 
 Many thanks to:
 
-Christian Reitwiessner and the Ethereum team for Solidity https://github.com/ethereum/solidity
+Christian Reitwiessner and the Ethereum team for Solidity https://github.com/ethereum/solidity, for their amazing and none stop work. Thanks to them Ethereum and all the other EVM compatible chains are they way they are. This extension piggybacks on their work.
 
 Raghav Dua and everyone that contributed to Solium, the solidity linter, and the solidity parser.
 
