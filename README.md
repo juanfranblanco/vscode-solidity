@@ -249,7 +249,7 @@ To download verified source code from Etherscan, you can right click on the fold
 ![Screenshot](screenshots/solidity-etherscan-download.gif)
 
 ## Solparse-Exp
-The extension uses https://github.com/juanfranblanco/solparse-exp as the main parser, this continues the work that many have done over the years. Tim Coulter, @cgewecke, @duaraghav8 @federicobond
+The extension uses https://github.com/juanfranblanco/solparse-exp as the main parser, this continues the work that many have done over the years. Tim Coulter, @cgewecke, @duaraghav8 @federicobond, as a Peg solidity parser in javascript.
 
 ## Linting
 
