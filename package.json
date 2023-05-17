@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.160",
+  "version": "0.0.161",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -183,7 +183,7 @@
         },
         "solidity.monoRepoSupport": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Enables mono repo support in the current workspace, a project folder will be signaled if a file is found on the current folder or above including: remappings.txt, truffle-config.js, brownie-config.yaml, foundry.toml, hardhat.config.js, dappfile"
         },
         "solidity.packageDefaultDependenciesContractsDirectory": {
