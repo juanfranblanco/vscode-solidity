@@ -43,6 +43,7 @@
     "@iarna/toml": "^2.2.5",
     "ajv": "^6.10.2",
     "ajv-keywords": "^3.4.1",
+    "axios": "^1.4.0",
     "chai": "^4.2.0",
     "find-cache-dir": "^2.1.0",
     "fs-extra": "^4.0.3",
@@ -324,6 +325,10 @@
       {
         "command": "solidity.changeDefaultCompilerType",
         "title": "Solidity: Change the default workspace compiler to Remote, Local, NodeModule, Embedded"
+      },
+      {
+        "command": "solidity.downloadVerifiedSmartContractEtherscan",
+        "title": "Solidity: Download smart contract source code / abi (Etherscan)"
       }
     ],
     "menus": {
@@ -341,11 +346,15 @@
           "command": "solidity.codegenFSharpProject"
         },
         {
-          "when": "editorLangId == 'solidity'",
+          "when": "resourceExtname == .sol",
           "command": "solidity.compile.active"
         },
         {
-          "when": "editorLangId == 'solidity'",
+          "when": "explorerResourceIsFolder || resourceExtname == .sol || resourceExtname == .abi" ,
+          "command": "solidity.downloadVerifiedSmartContractEtherscan"
+        },
+        {
+          "when": "resourceExtname == .sol",
           "command": "solidity.compile"
         }
       ],
@@ -378,6 +387,11 @@
         {
           "when": "editorLangId == 'solidity'",
           "command": "solidity.compile.activeUsingNodeModule",
+          "group": "1_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.downloadVerifiedSmartContractEtherscan",
           "group": "1_solidity"
         },
         {
@@ -478,12 +492,12 @@
           "group": "3_solidity"
         },
         {
-          "when": "editorLangId == 'solidity'",
+          "when": "resourceExtname == .sol",
           "command": "solidity.compile.active",
           "group": "2_solidity"
         },
         {
-          "when": "editorLangId == 'solidity'",
+          "when": "resourceExtname == .sol",
           "command": "solidity.compile",
           "group": "2_solidity"
         },
@@ -501,6 +515,11 @@
           "when": "resourceExtname == .abi",
           "command": "solidity.codegenFSharpProjectAllAbiCurrent",
           "group": "3_solidity"
+        },
+        {
+          "when": "explorerResourceIsFolder || resourceExtname == .sol || resourceExtname == .abi" ,
+          "command": "solidity.downloadVerifiedSmartContractEtherscan",
+          "group": "2_solidity"
         }
       ]
     },

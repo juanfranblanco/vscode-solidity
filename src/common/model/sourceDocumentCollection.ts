@@ -6,6 +6,13 @@ import {formatPath} from '../util';
 
 export class SourceDocumentCollection {
     public documents: Array<SourceDocument>;
+
+    public static getAllLibraryImports(codeFiles: string[]): string[] {
+        let imports: string[] = [];
+        codeFiles.forEach(x => imports = imports.concat(SourceDocument.getAllLibraryImports(x)));
+        return [...new Set(imports)];
+    }
+
     constructor() {
         this.documents = new Array<SourceDocument>();
     }

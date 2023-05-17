@@ -5,9 +5,6 @@ import { CompletionItem, CompletionItemKind, Hover, MarkupContent, MarkupKind } 
 import { ParsedDocument } from './ParsedDocument';
 import { ParsedContract } from './parsedContract';
 import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
-import { ParameterInformation } from 'vscode';
-
-
 
 
 export class ParsedParameter extends ParsedVariable {
@@ -132,9 +129,7 @@ export class ParsedParameter extends ParsedVariable {
             }
             const completionItem =  CompletionItem.create(id);
             completionItem.kind = CompletionItemKind.Variable;
-            const typeString = ParsedCodeTypeHelper.getTypeString(this.element.literal);
-            completionItem.detail = '(' + type + ' in ' + contractName + ') '
-                                                + typeString + ' ' + id;
+            completionItem.documentation = this.getMarkupInfo();
             this.completionItem = completionItem;
         }
         return this.completionItem;

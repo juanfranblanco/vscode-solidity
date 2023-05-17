@@ -162,11 +162,11 @@ export function codeGenerateCQS(fileName: string, lang: number, args: any, diagn
                 projectPath = path.join(projectPath, settings.projectPath);
             }
 
-            if(settings.useFolderAsNamespace !== undefined) {
+            if (settings.useFolderAsNamespace !== undefined) {
                 useFolderAsNamespace = settings.useFolderAsNamespace;
             }
 
-            if(settings.ignorePrefixFolder !== undefined) {
+            if (settings.ignorePrefixFolder !== undefined) {
                 ignorePrefixFolder = settings.ignorePrefixFolder;
             }
         }
@@ -180,7 +180,7 @@ export function codeGenerateCQS(fileName: string, lang: number, args: any, diagn
             compilationOutput = { 'abi': abi, 'bytecode': '0x' };
             const binFile = fileName.substr(0, fileName.lastIndexOf('.')) + '.bin';
             if (fs.existsSync(binFile)) {
-                let bytecode = fs.readFileSync(binFile, 'utf8');
+                const bytecode = fs.readFileSync(binFile, 'utf8');
             }
         } else {
             compilationOutput = JSON.parse(fs.readFileSync(fileName, 'utf8'));
@@ -188,28 +188,28 @@ export function codeGenerateCQS(fileName: string, lang: number, args: any, diagn
             bytecode = compilationOutput.bytecode;
         }
         if (abi !== undefined) {
-           
+
             const projectFullPath = path.join(projectPath, projectName + extension);
 
             if (!fs.existsSync(projectFullPath)) {
                 codegen.generateNetStandardClassLibrary(projectName, projectPath, lang);
             }
 
-            if(useFolderAsNamespace) {
-                let pathFullIgnore = path.join(getBuildPath(), ignorePrefixFolder);
-                let dirPath = path.dirname(fileName);
+            if (useFolderAsNamespace) {
+                const pathFullIgnore = path.join(getBuildPath(), ignorePrefixFolder);
+                const dirPath = path.dirname(fileName);
                 let testPath = '';
-                if(dirPath.startsWith(pathFullIgnore)) {
+                if (dirPath.startsWith(pathFullIgnore)) {
                     testPath = path.relative(pathFullIgnore, path.dirname(fileName));
-                    //make upper case the first char in a folder
+                    // make upper case the first char in a folder
                     testPath = prettifyRootNameAsNamespaceWithSplitString(testPath, path.sep, path.sep);
                 }
                 projectPath = path.join(projectPath, testPath);
-                let trailingNameSpace = prettifyRootNameAsNamespaceWithSplitString(testPath, path.sep, '.').trim();
-                if(trailingNameSpace != '') {
+                const trailingNameSpace = prettifyRootNameAsNamespaceWithSplitString(testPath, path.sep, '.').trim();
+                if (trailingNameSpace !== '') {
                     baseNamespace = baseNamespace + '.' + trailingNameSpace;
                 }
-                
+
             }
 
             codegen.generateAllClasses(abi,

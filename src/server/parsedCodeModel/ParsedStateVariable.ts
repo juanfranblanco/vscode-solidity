@@ -32,6 +32,7 @@ export class ParsedStateVariable extends ParsedVariable {
     public override getInfo(): string {
         return    '### ' + this.getParsedObjectType()  + ': ' +  this.name + '\n' +
                   '#### ' + this.getContractNameOrGlobal() + '\n' +
+                  this.getComment() + '\n' +
                   '### Type Info: \n' +
                   this.type.getInfo() + '\n';
     }

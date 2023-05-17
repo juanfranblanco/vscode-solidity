@@ -40,6 +40,38 @@ export class AddressChecksumCodeActionProvider implements vscode.CodeActionProvi
     }
 
 
+    export class ChangeCompilerVersionActionProvider implements vscode.CodeActionProvider {
+
+
+        public static readonly providedCodeActionKinds = [
+            vscode.CodeActionKind.Empty,
+        ];
+        public static COMPILER_ERRORCODE = '5333';
+
+        public static createFix(document: vscode.TextDocument, diagnostic: vscode.Diagnostic): vscode.CodeAction {
+
+            const fix = new vscode.CodeAction(`Change workspace compiler version`, vscode.CodeActionKind.Empty);
+            fix.command = { command: 'solidity.selectWorkspaceRemoteSolcVersion',
+                            title: 'Change the workspace remote compiler version',
+                            tooltip: 'This will open a prompt with the solidity version' };
+            return fix;
+        }
+
+        // tslint:disable-next-line:max-line-length
+        public provideCodeActions(document: vscode.TextDocument, range: vscode.Range | vscode.Selection, context: vscode.CodeActionContext, token: vscode.CancellationToken): vscode.CodeAction[] {
+            const results: vscode.CodeAction[] = [];
+            const diagnostics = context.diagnostics
+                .filter(diagnostic => diagnostic.code === ChangeCompilerVersionActionProvider.COMPILER_ERRORCODE);
+            diagnostics.forEach(diagnostic => {
+                results.push(ChangeCompilerVersionActionProvider.createFix(document, diagnostic));
+            } );
+            return results;
+        }
+
+
+    }
+
+
     export class SPDXCodeActionProvider implements vscode.CodeActionProvider {
 
 

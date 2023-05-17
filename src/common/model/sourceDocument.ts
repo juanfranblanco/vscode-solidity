@@ -13,6 +13,26 @@ export class SourceDocument {
     public abi: string;
     public project: Project;
 
+    public static getAllLibraryImports(code: string): string[] {
+        const importRegEx = /^\s?import\s+[^'"]*['"](.*)['"]\s*/gm;
+        const imports: string[] = [];
+        let foundImport = importRegEx.exec(code);
+        while (foundImport != null) {
+            const importPath = foundImport[1];
+
+            if (!this.isImportLocal(importPath)) {
+                imports.push(importPath);
+            }
+
+            foundImport = importRegEx.exec(code);
+        }
+        return imports;
+    }
+
+    public static isImportLocal(importPath: string) {
+        return importPath.startsWith('.');
+    }
+
     constructor(absoulePath: string, code: string, project: Project) {
         this.absolutePath = this.formatDocumentPath(absoulePath);
         this.code = code;
@@ -56,7 +76,7 @@ export class SourceDocument {
     }
 
     public isImportLocal(importPath: string) {
-        return importPath.startsWith('.');
+        return SourceDocument.isImportLocal(importPath);
     }
 
     public formatDocumentPath(contractPath: string) {

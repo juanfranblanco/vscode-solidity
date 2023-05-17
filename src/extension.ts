@@ -22,7 +22,8 @@ import { workspace, WorkspaceFolder } from 'vscode';
 import { formatDocument } from './client/formatter/formatter';
 import { compilerType } from './common/solcCompiler';
 import * as workspaceUtil from './client/workspaceUtil';
-import { AddressChecksumCodeActionProvider, SPDXCodeActionProvider } from './client/codeActionProviders/addressChecksumActionProvider';
+import { AddressChecksumCodeActionProvider, ChangeCompilerVersionActionProvider, SPDXCodeActionProvider } from './client/codeActionProviders/addressChecksumActionProvider';
+import { EtherscanContractDownloader } from './common/sourceCodeDownloader/etherscanSourceCodeDownloader';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 let compiler: Compiler;
@@ -147,6 +148,10 @@ export async function activate(context: vscode.ExtensionContext) {
         compiler.downloadRemoteVersion(root.uri.fsPath);
     }));
 
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.downloadVerifiedSmartContractEtherscan', async () => {
+        await EtherscanContractDownloader.downloadContractWithPrompts();
+    }));
+
     context.subscriptions.push(vscode.commands.registerCommand('solidity.downloadRemoteVersionAndSetLocalPathSetting', async () => {
         const root = workspaceUtil.getCurrentWorkspaceRootFolder();
         compiler.downloadRemoteVersionAndSetLocalPathSetting(vscode.ConfigurationTarget.Workspace, root.uri.fsPath);
@@ -178,6 +183,13 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.languages.registerCodeActionsProvider('solidity', new SPDXCodeActionProvider(), {
             providedCodeActionKinds: SPDXCodeActionProvider.providedCodeActionKinds,
+        }),
+    );
+
+
+    context.subscriptions.push(
+        vscode.languages.registerCodeActionsProvider('solidity', new ChangeCompilerVersionActionProvider(), {
+            providedCodeActionKinds: ChangeCompilerVersionActionProvider.providedCodeActionKinds,
         }),
     );
 

@@ -73,7 +73,19 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
   }
 
   public override generateNatSpec(): string {
-      return '/**\n                 ';
+
+      return '/**\n' +
+            '* @notice ' + this.name.split(/(?=[A-Z])/).map(x => x.toLowerCase()).join(' ') + ' \n' +
+            '* @dev extra info for developers \n';
+      /**
+     * @dev Clears a ConsiderationItem from storage.
+     *
+     * @param item the ConsiderationItem to clear.
+     */
+  }
+
+  public generateSelectedNatspec(offset: number): string {
+    return this.generateNatSpec();
   }
 
   public override initialise(element: any, document: ParsedDocument, contract: ParsedContract, isGlobal: boolean) {
