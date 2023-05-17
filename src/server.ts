@@ -195,7 +195,7 @@ function validate(document: TextDocument) {
         }
 
         const diagnostics = linterDiagnostics.concat(compileErrorDiagnostics);
-        connection.sendDiagnostics({ diagnostics, uri });
+        connection.sendDiagnostics({ uri: document.uri, diagnostics });
     } finally {
         validatingDocument = false;
     }

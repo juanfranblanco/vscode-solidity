@@ -12,7 +12,7 @@ export interface CompilerError {
                 return DiagnosticSeverity.Error;
             case 'warning':
                 return DiagnosticSeverity.Warning;
-            case 'info':
+             case 'info':
                 return DiagnosticSeverity.Information;
             default:
                 return DiagnosticSeverity.Error;
@@ -54,21 +54,38 @@ export interface CompilerError {
         const severity = getDiagnosticSeverity(error.severity);
         const errorMessage = error.message;
         // tslint:disable-next-line:radix
-        const line = parseInt(errorSplit[index]);
+        let line = parseInt(errorSplit[index]);
+        if (Number.isNaN(line)) { line = 1; }
         // tslint:disable-next-line:radix
-        const column = parseInt(errorSplit[index + 1]);
+        let column = parseInt(errorSplit[index + 1]);
+        if (Number.isNaN(column)) { column = 1; }
+
+        let startCharacter = column - 1;
+
+        let endCharacter = column + error.sourceLocation.end - error.sourceLocation.start - 1;
+        if (endCharacter < 0) { endCharacter = 1; }
+
+        let endLine = line - 1;
+        let startLine = line - 1;
+
+        if (error.code === '1878') {
+            startLine = 0;
+            endLine = 2;
+            endCharacter = 0;
+            startCharacter = 1;
+         }
         return {
             diagnostic: {
                 message: errorMessage,
                 code: error.errorCode,
                 range: {
                     end: {
-                        character: column + error.sourceLocation.end - error.sourceLocation.start - 1,
-                        line: line - 1,
+                        character: endCharacter,
+                        line: endLine,
                     },
                     start: {
-                        character: column - 1,
-                        line: line - 1,
+                        character: startCharacter,
+                        line: startLine,
                     },
                 },
                 severity: severity,

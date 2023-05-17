@@ -6,7 +6,9 @@ export class AddressChecksumCodeActionProvider implements vscode.CodeActionProvi
 
         public static readonly providedCodeActionKinds = [
             vscode.CodeActionKind.QuickFix,
+            vscode.CodeActionKind.Empty,
         ];
+
         public static ADDRESS_CHECKSUM_ERRORCODE = '9429';
 
         private static regex = /Correct checksummed address: "0x(?<address>[0-9a-fA-F]*)"/gm;
@@ -22,6 +24,7 @@ export class AddressChecksumCodeActionProvider implements vscode.CodeActionProvi
                     fix.edit = new vscode.WorkspaceEdit();
                     fix.edit.replace(document.uri, new vscode.Range(diagnostic.range.start, diagnostic.range.start.translate(0, fixedAddress.length + 2)), '0x' + fixedAddress);
                     fix.isPreferred = true;
+                    fix.diagnostics = [diagnostic];
                     return fix;
                 }
             }
@@ -44,16 +47,18 @@ export class AddressChecksumCodeActionProvider implements vscode.CodeActionProvi
 
 
         public static readonly providedCodeActionKinds = [
+            vscode.CodeActionKind.QuickFix,
             vscode.CodeActionKind.Empty,
         ];
         public static COMPILER_ERRORCODE = '5333';
 
         public static createFix(document: vscode.TextDocument, diagnostic: vscode.Diagnostic): vscode.CodeAction {
 
-            const fix = new vscode.CodeAction(`Change workspace compiler version`, vscode.CodeActionKind.Empty);
+            const fix = new vscode.CodeAction(`Change workspace compiler version`, vscode.CodeActionKind.QuickFix);
             fix.command = { command: 'solidity.selectWorkspaceRemoteSolcVersion',
                             title: 'Change the workspace remote compiler version',
                             tooltip: 'This will open a prompt with the solidity version' };
+            fix.diagnostics = [diagnostic];
             return fix;
         }
 
@@ -77,6 +82,7 @@ export class AddressChecksumCodeActionProvider implements vscode.CodeActionProvi
 
         public static readonly providedCodeActionKinds = [
             vscode.CodeActionKind.QuickFix,
+            vscode.CodeActionKind.Empty,
         ];
         public static SPDX_ERRORCODE = '1878';
         public static licenses: string[] = ['MIT', 'UNKNOWN', 'UNLICENSED'];
@@ -88,7 +94,8 @@ export class AddressChecksumCodeActionProvider implements vscode.CodeActionProvi
             const licenseText = '// SPDX-License-Identifier: ' + license + ' \n';
             fix.edit = new vscode.WorkspaceEdit();
             fix.edit.insert(document.uri, diagnostic.range.start, licenseText);
-            fix.isPreferred = true;
+            fix.isPreferred = isPreferred;
+            fix.diagnostics = [diagnostic];
             return fix;
         }
 
@@ -97,12 +104,12 @@ export class AddressChecksumCodeActionProvider implements vscode.CodeActionProvi
             const results: vscode.CodeAction[] = [];
             const diagnostics = context.diagnostics
                 .filter(diagnostic => diagnostic.code === SPDXCodeActionProvider.SPDX_ERRORCODE);
-            diagnostics.forEach(diagnostic => {
-                results.push(SPDXCodeActionProvider.createFix(document, diagnostic, SPDXCodeActionProvider.preferredLicense, true));
-                SPDXCodeActionProvider.licenses.forEach(license => {
-                    if (license !== SPDXCodeActionProvider.preferredLicense) {
-                        results.push(SPDXCodeActionProvider.createFix(document, diagnostic, license, false));
-                    }
+                 diagnostics.forEach(diagnostic => {
+                        results.push(SPDXCodeActionProvider.createFix(document, diagnostic, SPDXCodeActionProvider.preferredLicense, true));
+                        SPDXCodeActionProvider.licenses.forEach(license => {
+                            if (license !== SPDXCodeActionProvider.preferredLicense) {
+                                results.push(SPDXCodeActionProvider.createFix(document, diagnostic, license, false));
+                        }
                 });
 
             } );
