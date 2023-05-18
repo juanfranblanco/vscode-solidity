@@ -124,13 +124,16 @@ To provide mono repo support the project is idenfifed by by finding one of the d
 
 Mono repo support is enabled by default now in the settings, but if wanted it can be disabled.
 
-### OpenZeppelin (Default)
+### Dependencies for both "Node_modules" and "Lib" (Default)
 
-If you're using [`@openzeppelin/contracts`](https://github.com/OpenZeppelin/openzeppelin-contracts), the OpenZeppelin Contracts will be found in your node_modules folder, so the user settings will be the following, assuming your solidity project is at root. 
+If you're using a library like [`@openzeppelin/contracts`](https://github.com/OpenZeppelin/openzeppelin-contracts), the OpenZeppelin Contracts will be found in your node_modules folder, or you might be using a library like [`Solmate`](https://github.com/transmissions11/solmate) and you might put it in your `lib` folder.
+So the user settings will be the following, assuming your solidity project is at root. 
+
+This is the default now, so you don't need to set it.
 
 ```
   "solidity.packageDefaultDependenciesContractsDirectory": "",
-  "solidity.packageDefaultDependenciesDirectory": "node_modules"
+  "solidity.packageDefaultDependenciesDirectory": ["node_modules", "lib"],
 ```
 
 If you have a deeper structure, like
@@ -176,6 +179,11 @@ The user settings for this structure is:
   "solidity.packageDefaultDependenciesContractsDirectory": "src",
   "solidity.packageDefaultDependenciesDirectory": "lib"
 ```
+
+## Resolving imports from different contract directories shortcuts
+There are projects that may have their contracts in the "contracts" directory or you may have a mixture of them that are both in "contracts", "src" or just not specific shortcut. For this the extension internally tries to resolve these generic shortcuts if an import is not found. The default are ["contract", "src", ""]
+
+This behaves in the same way as ```"solidity.packageDefaultDependenciesDirectory": "lib"```. If you see there is a need for other folder names shortcuts, raise an issue.
 
 ### Remappings
 Another option is to use remappings to define where your dependency libraries are, this can be achieved using the settings or creating a "remappings.txt" file in the root folder. For more info on remappings check the solidity documentation here https://docs.soliditylang.org/en/latest/path-resolution.html?highlight=remapping#import-remapping
