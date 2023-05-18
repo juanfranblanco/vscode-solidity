@@ -1,5 +1,6 @@
 'use strict';
 import * as path from 'path';
+import * as fs from 'fs';
 import { Remapping } from './remapping';
 
 export class Package {
@@ -9,6 +10,7 @@ export class Package {
     public build_dir: string;
     public absoluletPath: string;
     public dependencies: any;
+    public sol_sources_alternative_directories: string[] = [];
 
     constructor(solidityDirectory: string) {
         this.build_dir = 'bin';
@@ -32,7 +34,20 @@ export class Package {
 
     public resolveImport(contractDependencyImport: string) {
         if (this.isImportForThis(contractDependencyImport)) {
-            return path.join(this.getSolSourcesAbsolutePath(), contractDependencyImport.substring(this.name.length));
+            const defaultPath = path.join(this.getSolSourcesAbsolutePath(), contractDependencyImport.substring(this.name.length));
+             if (fs.existsSync(defaultPath)) {
+                return defaultPath;
+             } else {
+                for (let index = 0; index < this.sol_sources_alternative_directories.length; index++) {
+                    const directory = this.sol_sources_alternative_directories[index];
+                    if (directory !== undefined || directory === '') {
+                        const fullpath = path.join(this.absoluletPath, directory, contractDependencyImport.substring(this.name.length));
+                        if (fs.existsSync(fullpath)) {
+                            return fullpath;
+                        }
+                    }
+                }
+             }
         }
         return null;
     }

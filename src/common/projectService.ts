@@ -25,20 +25,21 @@ const foundryConfigFileName = 'foundry.toml';
 const projectFilesAtRoot = [remappingConfigFileName, brownieConfigFileName, foundryConfigFileName, hardhatConfigFileName, truffleConfigFileName, packageConfigFileName];
 
 // These are set using user configuration settings
-let packageDependenciesDirectory = 'lib';
+let defaultPackageDependenciesDirectory = 'lib';
 let packageDependenciesContractsDirectory = 'src';
+let defaultPackageDependenciesContractsDirectories = ['', 'src', 'contracts'];
 
 export function findFirstRootProjectFile(rootPath: string, currentDocument: string) {
     return util.findDirUpwardsToCurrentDocumentThatContainsAtLeastFileNameSync(projectFilesAtRoot, currentDocument, rootPath);
 }
 
-function createPackage(rootPath: string) {
+function createPackage(rootPath: string, packageContractsDirectory: string) {
     const projectPackageFile = path.join(rootPath, packageConfigFileName);
     if (fs.existsSync(projectPackageFile)) {
         // TODO: automapper
         const packageConfig = readYamlSync(projectPackageFile);
         // TODO: throw expection / warn user of invalid package file
-        const projectPackage = new Package(packageDependenciesContractsDirectory);
+        const projectPackage = new Package(packageContractsDirectory);
         projectPackage.absoluletPath = rootPath;
         if (packageConfig) {
             if (packageConfig.layout !== undefined) {
@@ -74,20 +75,26 @@ function readYamlSync(filePath: string) {
 }
 
 export function initialiseProject(rootPath: string,
-    packageDefaultDependenciesDirectory: string,
+    packageDefaultDependenciesDirectories: string[],
     packageDefaultDependenciesContractsDirectory: string,
     remappings: string[]): Project {
 
-    packageDependenciesDirectory = packageDefaultDependenciesDirectory;
     packageDependenciesContractsDirectory = packageDefaultDependenciesContractsDirectory;
-    const projectPackage = createProjectPackage(rootPath);
-    const dependencies = loadDependencies(rootPath, projectPackage);
+    const projectPackage = createProjectPackage(rootPath, packageDefaultDependenciesContractsDirectory);
+    // adding defaults to packages
+    const packegesContractsDirectories = [...new Set(defaultPackageDependenciesContractsDirectories.concat(packageDefaultDependenciesContractsDirectory))];
+    const packageDependencies: Package[] = loadAllPackageDependencies(packageDefaultDependenciesDirectories, rootPath, projectPackage, packegesContractsDirectories);
     remappings = loadRemappings(rootPath, remappings);
-    let packagesDirAbsolutePath = null;
-    if (packageDefaultDependenciesDirectory !== undefined && packageDefaultDependenciesDirectory !== '') {
-         packagesDirAbsolutePath = path.join(rootPath, packageDependenciesDirectory);
-    }
-    return new Project(projectPackage, dependencies, packagesDirAbsolutePath, remappings);
+    return new Project(projectPackage, packageDependencies, packageDefaultDependenciesDirectories, remappings);
+}
+
+function loadAllPackageDependencies(packageDefaultDependenciesDirectories: string[], rootPath: string, projectPackage: Package, packageDependenciesContractsDirectories: string[]) {
+    let packageDependencies: Package[] = [];
+    packageDefaultDependenciesDirectories.forEach(packageDependenciesDirectory => {
+            packageDependencies = packageDependencies.concat(loadDependencies(rootPath, projectPackage, packageDependenciesDirectory,
+                packageDependenciesContractsDirectories));
+    });
+    return packageDependencies;
 }
 
 function getRemappingsFromFoundryConfig(rootPath: string): string[] {
@@ -170,17 +177,21 @@ export function loadRemappings(rootPath: string, remappings: string[]): string[]
     return remappings;
 }
 
-function loadDependencies(rootPath: string, projectPackage: Package, depPackages: Array<Package> = new Array<Package>()) {
+function loadDependencies(rootPath: string, projectPackage: Package,
+                        packageDefaultDependenciesDirectory: string,
+                        dependencyAlternativeSmartContractDirectories: string[],
+                        depPackages: Array<Package> = new Array<Package>()) {
     if (projectPackage.dependencies !== undefined) {
         Object.keys(projectPackage.dependencies).forEach(dependency => {
             if (!depPackages.some((existingDepPack: Package) => existingDepPack.name === dependency)) {
-                const depPackageDependencyPath = path.join(rootPath, packageDependenciesDirectory, dependency);
-                const depPackage = createPackage(depPackageDependencyPath);
+                const depPackageDependencyPath = path.join(rootPath, packageDefaultDependenciesDirectory, dependency);
+                const depPackage = createPackage(depPackageDependencyPath, '');
+                depPackage.sol_sources_alternative_directories = dependencyAlternativeSmartContractDirectories;
 
                 if (depPackage !== null) {
                     depPackages.push(depPackage);
                     // Assumed the package manager will install all the dependencies at root so adding all the existing ones
-                    loadDependencies(rootPath, depPackage, depPackages);
+                    loadDependencies(rootPath, depPackage, packageDefaultDependenciesDirectory, dependencyAlternativeSmartContractDirectories, depPackages);
                 } else {
                     // should warn user of a package dependency missing
                 }
@@ -188,18 +199,19 @@ function loadDependencies(rootPath: string, projectPackage: Package, depPackages
         });
     }
     // lets not skip packages in lib
-    const depPackagePath = path.join(projectPackage.absoluletPath, packageDependenciesDirectory);
+    const depPackagePath = path.join(projectPackage.absoluletPath, packageDefaultDependenciesDirectory);
     if (fs.existsSync(depPackagePath)) {
         const depPackagesDirectories = getDirectories(depPackagePath);
         depPackagesDirectories.forEach(depPackageDir => {
             const fullPath = path.join(depPackagePath, depPackageDir);
-            let depPackage = createPackage(fullPath);
+            let depPackage = createPackage(fullPath, null);
             if (depPackage == null) {
                 depPackage = createDefaultPackage(fullPath);
+                depPackage.sol_sources_alternative_directories = dependencyAlternativeSmartContractDirectories;
             }
             if (!depPackages.some((existingDepPack: Package) => existingDepPack.name === depPackage.name)) {
                 depPackages.push(depPackage);
-                    loadDependencies(rootPath, depPackage, depPackages);
+                    loadDependencies(rootPath, depPackage, packageDefaultDependenciesDirectory, dependencyAlternativeSmartContractDirectories, depPackages);
             }
         });
     }
@@ -213,18 +225,18 @@ function getDirectories(dirPath: string): string[] {
   });
 }
 
-function createDefaultPackage(packagePath: string): Package {
-    const defaultPackage = new Package(packageDependenciesContractsDirectory);
+function createDefaultPackage(packagePath: string, packageDependencySmartContractDirectory = ''): Package {
+    const defaultPackage = new Package(packageDependencySmartContractDirectory);
     defaultPackage.absoluletPath = packagePath;
     defaultPackage.name = path.basename(packagePath);
     return defaultPackage;
 }
 
-function createProjectPackage(rootPath: string): Package {
-    let projectPackage = createPackage(rootPath);
+function createProjectPackage(rootPath: string, packageDependencySmartContractDirectory = ''): Package {
+    let projectPackage = createPackage(rootPath, packageDependencySmartContractDirectory);
     // Default project package,this could be passed as a function
     if (projectPackage === null) {
-        projectPackage = createDefaultPackage(rootPath);
+        projectPackage = createDefaultPackage(rootPath, packageDependencySmartContractDirectory);
     }
     return projectPackage;
 }

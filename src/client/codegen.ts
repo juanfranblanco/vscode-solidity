@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as codegen from 'nethereum-codegen';
 import { initialiseProject } from '../common/projectService';
 import * as workspaceUtil from './workspaceUtil';
+import { SettingsService } from './settingsService';
 
 
 export function autoCodeGenerateAfterCompilation(compiledFiles: Array<string>, args: any, diagnostics: vscode.DiagnosticCollection) {
@@ -91,8 +92,8 @@ export function codeGenerateNethereumCQSCSharpAll(args: any, diagnostics: vscode
 }
 
 function getBuildPath() {
-    const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
-    const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
+    const packageDefaultDependenciesDirectory = SettingsService.getPackageDefaultDependenciesDirectories();
+    const packageDefaultDependenciesContractsDirectory = SettingsService.getPackageDefaultDependenciesContractsDirectory();
     const rootPath = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
     const remappings = workspaceUtil.getSolidityRemappings();
     const project = initialiseProject(rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory, remappings);

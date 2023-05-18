@@ -19,9 +19,7 @@ export class CompletionService {
         this.rootPath = rootPath;
     }
 
-    public getAllCompletionItems(packageDefaultDependenciesDirectory: string,
-        packageDefaultDependenciesContractsDirectory: string,
-        remappings: string[],
+    public getAllCompletionItems(
         document: vscode.TextDocument,
         position: vscode.Position,
         walker: CodeWalkerService,
@@ -63,10 +61,12 @@ export class CompletionService {
         if (triggeredByImport) {
             const files = glob.sync(this.rootPath + '/**/*.sol');
             files.forEach(item => {
-                const dependenciesDir = path.join(this.rootPath, packageDefaultDependenciesDirectory);
+                const dependenciesDirectories = walker.project.packagesDir.map(x =>  path.join(this.rootPath, x));
+
                 item = path.join(item);
-                if (item.startsWith(dependenciesDir)) {
-                    let pathLibrary = item.substr(dependenciesDir.length + 1);
+                const foundDependency = dependenciesDirectories.find(x => item.startsWith(x));
+                if (foundDependency !== undefined) {
+                    let pathLibrary = item.substr(foundDependency.length + 1);
                     pathLibrary = pathLibrary.split('\\').join('/');
                     const completionItem = CompletionItem.create(pathLibrary);
                     completionItem.kind = CompletionItemKind.Reference;

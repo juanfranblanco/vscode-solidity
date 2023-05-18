@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
 import { replaceRemappings } from '../common/util';
 import { findFirstRootProjectFile } from '../common/projectService';
+import { SettingsService } from './settingsService';
 
 
 export function getCurrentProjectInWorkspaceRootFsPath() {
-    const monoreposupport = vscode.workspace.getConfiguration('solidity').get<boolean>('monoRepoSupport');
+    const monoreposupport = SettingsService.getMonoRepoSupport();
     const currentRootPath = getCurrentWorkspaceRootFsPath();
     if ( monoreposupport ) {
         const editor = vscode.window.activeTextEditor;
@@ -33,10 +34,10 @@ export function getCurrentWorkspaceRootFolder() {
 }
 
 export function getSolidityRemappings(): string[] {
-    const remappings = vscode.workspace.getConfiguration('solidity').get<string[]>('remappings');
+    const remappings = SettingsService.getRemappings();
     if (process.platform === 'win32') {
-        return replaceRemappings(remappings, vscode.workspace.getConfiguration('solidity').get<string[]>('remappingsWindows'));
+        return replaceRemappings(remappings, SettingsService.getRemappingsWindows());
     } else {
-        return replaceRemappings(remappings, vscode.workspace.getConfiguration('solidity').get<string[]>('remappingsUnix'));
+        return replaceRemappings(remappings, SettingsService.getRemappingsUnix());
     }
 }

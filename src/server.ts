@@ -15,11 +15,7 @@ import {
     TextDocumentPositionParams,
     CompletionItem, Location, SignatureHelp, TextDocumentSyncKind, VersionedTextDocumentIdentifier,
     WorkspaceFolder,
-    ReferenceParams,
     Hover,
-    MarkedString,
-    MarkupContent,
-    MarkupKind,
 } from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -28,7 +24,6 @@ import { URI } from 'vscode-uri';
 import { CodeWalkerService } from './server/parsedCodeModel/codeWalkerService';
 import { replaceRemappings } from './common/util';
 import { findFirstRootProjectFile } from './common/projectService';
-import { TestRunProfileKind } from 'vscode';
 
 interface Settings {
     solidity: SoliditySettings;
@@ -45,7 +40,7 @@ interface SoliditySettings {
     soliumRules: any;
     solhintRules: any;
     validationDelay: number;
-    packageDefaultDependenciesDirectory: string;
+    packageDefaultDependenciesDirectory: string|string[];
     packageDefaultDependenciesContractsDirectory: string;
     remappings: string[];
     remappingsWindows: string[];
@@ -82,7 +77,7 @@ let monoRepoSupport = false;
 // flags to avoid trigger concurrent validations (compiling is slow)
 let validatingDocument = false;
 let validatingAllDocuments = false;
-let packageDefaultDependenciesDirectory = 'lib';
+let packageDefaultDependenciesDirectory: string[] = ['lib'];
 let packageDefaultDependenciesContractsDirectory = 'src';
 let workspaceFolders: WorkspaceFolder[];
 let remappings: string[];
@@ -93,7 +88,7 @@ let codeWalkerService: CodeWalkerService = null;
 function getCodeWalkerService() {
     if (codeWalkerService !== null) {
         if (codeWalkerService.rootPath === selectedProjectFolder &&
-            codeWalkerService.packageDefaultDependenciesDirectory === packageDefaultDependenciesDirectory &&
+            codeWalkerService.packageDefaultDependenciesDirectory.sort().join('') === packageDefaultDependenciesDirectory.sort().join('') &&
             codeWalkerService.packageDefaultDependenciesContractsDirectory === packageDefaultDependenciesContractsDirectory &&
             codeWalkerService.remappings.sort().join('') === remappings.sort().join('')) {
             return codeWalkerService;
@@ -215,9 +210,7 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
     const service = new CompletionService(projectRootPath);
 
     completionItems = completionItems.concat(
-        service.getAllCompletionItems(packageDefaultDependenciesDirectory,
-            packageDefaultDependenciesContractsDirectory,
-            remappings,
+        service.getAllCompletionItems(
             document,
             textDocumentPosition.position,
             getCodeWalkerService(),
@@ -383,7 +376,11 @@ connection.onDidChangeConfiguration((change) => {
     nodeModulePackage = settings.solidity.nodemodulespackage;
     defaultCompiler = compilerType[settings.solidity.defaultCompiler];
     packageDefaultDependenciesContractsDirectory = settings.solidity.packageDefaultDependenciesContractsDirectory;
-    packageDefaultDependenciesDirectory = settings.solidity.packageDefaultDependenciesDirectory;
+    if (typeof settings.solidity.packageDefaultDependenciesDirectory === 'string') {
+        packageDefaultDependenciesDirectory = [<string>settings.solidity.packageDefaultDependenciesDirectory];
+    } else {
+        packageDefaultDependenciesDirectory = <string[]>settings.solidity.packageDefaultDependenciesDirectory;
+    }
     remappings = settings.solidity.remappings;
     monoRepoSupport = settings.solidity.monoRepoSupport;
 

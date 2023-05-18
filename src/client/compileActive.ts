@@ -7,6 +7,7 @@ import { initialiseProject } from '../common/projectService';
 import { formatPath } from '../common/util';
 import { compilerType } from '../common/solcCompiler';
 import * as workspaceUtil from './workspaceUtil';
+import { SettingsService } from './settingsService';
 
 
 
@@ -38,16 +39,19 @@ export function compileActiveContract(compiler: Compiler, overrideDefaultCompile
     const contractCode = editor.document.getText();
     const contractPath = editor.document.fileName;
 
-    const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
-    const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
-    const compilationOptimisation = vscode.workspace.getConfiguration('solidity').get<number>('compilerOptimization');
+    const packageDefaultDependenciesDirectory = SettingsService.getPackageDefaultDependenciesDirectories();
+    const packageDefaultDependenciesContractsDirectory = SettingsService.getPackageDefaultDependenciesContractsDirectory();
+    const compilationOptimisation = SettingsService.getCompilerOptimisation();
     const remappings = workspaceUtil.getSolidityRemappings();
-    const project = initialiseProject(workspaceUtil.getCurrentProjectInWorkspaceRootFsPath(), packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory, remappings);
+    const project = initialiseProject(workspaceUtil.getCurrentProjectInWorkspaceRootFsPath(),
+                                     packageDefaultDependenciesDirectory,
+                                     packageDefaultDependenciesContractsDirectory,
+                                     remappings);
     const contract = contractsCollection.addSourceDocumentAndResolveImports(contractPath, contractCode, project);
 
-    let packagesPath = null;
+    const packagesPath: string[] = [];
     if (project.packagesDir != null) {
-        packagesPath = formatPath(project.packagesDir);
+        project.packagesDir.forEach(x => packagesPath.push(formatPath(x)));
     }
 
     return compiler.compile(contractsCollection.getDefaultSourceDocumentsForCompilation(compilationOptimisation),

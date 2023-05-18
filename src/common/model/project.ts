@@ -7,10 +7,10 @@ import { glob } from 'glob';
 export class Project {
     public projectPackage: Package;
     public dependencies: Array<Package>;
-    public packagesDir: string;
+    public packagesDir: string[];
     public remappings: Remapping[];
 
-    constructor(projectPackage: Package, dependencies: Array<Package>, packagesDir: string, remappings: string[]) {
+    constructor(projectPackage: Package, dependencies: Array<Package>, packagesDir: string[], remappings: string[]) {
         this.projectPackage = projectPackage;
         this.dependencies = dependencies;
         this.packagesDir = packagesDir;
@@ -23,7 +23,10 @@ export class Project {
 
     public getAllSolFilesIgnoringDependencyFolders() {
        const solPath = this.projectPackage.getSolSourcesAbsolutePath() + '/**/*.sol';
-       const exclusions: string[] = [path.join(this.projectPackage.getSolSourcesAbsolutePath(), this.packagesDir, '**')];
+       const exclusions: string[] = [];
+       this.packagesDir.forEach(x => {
+            exclusions.push(path.join(this.projectPackage.getSolSourcesAbsolutePath(), x, '**'));
+       });
        exclusions.push(path.join(this.projectPackage.getSolSourcesAbsolutePath(), this.projectPackage.build_dir, '**'));
        this.getAllRelativeLibrariesAsExclusionsFromRemappings().forEach(x => exclusions.push(x));
        return glob.sync( solPath, { ignore: exclusions});

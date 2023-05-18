@@ -115,7 +115,7 @@ export class Compiler {
         buildDir: string,
         rootDir: string,
         sourceDir: string,
-        excludePath?: string,
+        excludePath?: string[],
         singleContractFilePath?: string,
         overrideDefaultCompiler: compilerType = null): Promise<Array<string>> {
         // Did we find any sol files after all?
@@ -216,7 +216,7 @@ export class Compiler {
     }
 
     private processCompilationOutput(outputString: any, outputChannel: vscode.OutputChannel, diagnosticCollection: vscode.DiagnosticCollection,
-        buildDir: string, sourceDir: string, excludePath?: string, singleContractFilePath?: string): Array<string> {
+        buildDir: string, sourceDir: string, excludePath?: string[], singleContractFilePath?: string): Array<string> {
         const output = JSON.parse(outputString);
         if (Object.keys(output).length === 0) {
             const noOutputMessage = `No output by the compiler`;
@@ -268,7 +268,7 @@ export class Compiler {
     }
 
     private writeCompilationOutputToBuildDirectory(output: any, buildDir: string, sourceDir: string,
-        excludePath?: string, singleContractFilePath?: string): Array<string> {
+        excludePath?: string[], singleContractFilePath?: string): Array<string> {
         const rootPath = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
         const binPath = path.join(rootPath, buildDir);
         const compiledFiles: Array<string> = new Array<string>();
@@ -302,7 +302,7 @@ export class Compiler {
             // Output only single contract compilation or all
             if (!singleContractFilePath || source === singleContractFilePath) {
 
-                if (!excludePath || !source.startsWith(excludePath)) {
+                if (!excludePath || !excludePath.some(x => source.startsWith(x))) {
                     // Output only source directory compilation or all (this will exclude external references)
                     if (!sourceDir || source.startsWith(sourceDir)) {
 

@@ -16,7 +16,7 @@ export class SolidityHoverProvider {
     document: vscode.TextDocument,
     position: vscode.Position,
     walker: CodeWalkerService,
-  ): vscode.Hover | undefined{
+  ): vscode.Hover | undefined {
 
     const offset = document.offsetAt(position);
     const documentContractSelected = walker.getSelectedDocument(document, position);
@@ -98,14 +98,14 @@ export class SolidityDefinitionProvider {
 
 export class SolidityDefinitionProviderOld {
   private rootPath: string;
-  private packageDefaultDependenciesDirectory: string;
+  private packageDefaultDependenciesDirectory: string[];
   private packageDefaultDependenciesContractsDirectory: string;
   private project: Project;
   private remappings: string[];
 
   constructor(
     rootPath: string,
-    packageDefaultDependenciesDirectory: string,
+    packageDefaultDependenciesDirectory: string[],
     packageDefaultDependenciesContractsDirectory: string,
     remappings: string[],
   ) {

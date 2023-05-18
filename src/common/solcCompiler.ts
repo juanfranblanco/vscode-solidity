@@ -460,7 +460,7 @@ export class SolcCompiler {
     }
 
     public compileSolidityDocumentAndGetDiagnosticErrors(filePath: string, documentText: string,
-        packageDefaultDependenciesDirectory: string, packageDefaultDependenciesContractsDirectory: string, remappings: string[], selectedCompiler: compilerType = null) {
+        packageDefaultDependenciesDirectory: string[], packageDefaultDependenciesContractsDirectory: string, remappings: string[], selectedCompiler: compilerType = null) {
             if (selectedCompiler == null) {
                 selectedCompiler = this.selectedCompiler;
             }

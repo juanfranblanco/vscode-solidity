@@ -7,6 +7,7 @@ import {SourceDocumentCollection} from '../common/model/sourceDocumentCollection
 import { initialiseProject } from '../common/projectService';
 import { formatPath, isPathSubdirectory } from '../common/util';
 import * as workspaceUtil from './workspaceUtil';
+import { SettingsService } from './settingsService';
 
 export function compileAllContracts(compiler: Compiler, diagnosticCollection: vscode.DiagnosticCollection) {
 
@@ -16,9 +17,9 @@ export function compileAllContracts(compiler: Compiler, diagnosticCollection: vs
         return;
     }
     const rootPath = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
-    const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesDirectory');
-    const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
-    const compilationOptimisation = vscode.workspace.getConfiguration('solidity').get<number>('compilerOptimization');
+    const packageDefaultDependenciesDirectory = SettingsService.getPackageDefaultDependenciesDirectories();
+    const packageDefaultDependenciesContractsDirectory = SettingsService.getPackageDefaultDependenciesContractsDirectory();
+    const compilationOptimisation = SettingsService.getCompilerOptimisation();
     const remappings = workspaceUtil.getSolidityRemappings();
 
     const contractsCollection = new SourceDocumentCollection();
@@ -45,9 +46,9 @@ export function compileAllContracts(compiler: Compiler, diagnosticCollection: vs
         }
     });
     const sourceDirPath = formatPath(project.projectPackage.getSolSourcesAbsolutePath());
-    let packagesPath = null;
+    const packagesPath: string[] = [];
     if (project.packagesDir != null) {
-            packagesPath = formatPath(project.packagesDir);
+        project.packagesDir.forEach(x => packagesPath.push(formatPath(x)));
     }
 
     compiler.compile(contractsCollection.getDefaultSourceDocumentsForCompilation(compilationOptimisation),
