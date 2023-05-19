@@ -61,6 +61,8 @@ export class EtherscanContractDownloader {
     }
 
     public static async downloadContractWithPrompts() {
+
+        if (vscode.window.activeTextEditor) {
         try {
             const chains = EtherscanDomainChainMapper.getChains();
             const selectedChain: string = await vscode.window.showQuickPick(chains);
@@ -82,8 +84,11 @@ export class EtherscanContractDownloader {
                     vscode.window.showTextDocument(doc);
                 });
             }
-        } catch (e) {
-            vscode.window.showErrorMessage('Error downloading contract: ' + e);
+            } catch (e) {
+                vscode.window.showErrorMessage('Error downloading contract: ' + e);
+            }
+        } else {
+            throw 'Please open a file to identify the worspace';
         }
     }
 
