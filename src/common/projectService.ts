@@ -169,9 +169,10 @@ export function loadRemappings(rootPath: string, remappings: string[]): string[]
     if (remappings === undefined) { remappings = []; }
 
     // Brownie prioritezes brownie-config.yml over remappings.txt
+    // but changing to remappings over foundry
     remappings = getRemappingsFromBrownieConfig(rootPath) ??
-                 getRemappingsFromFoundryConfig(rootPath) ??
                  getRemappingsFromRemappingsFile(rootPath) ??
+                 getRemappingsFromFoundryConfig(rootPath) ??
                  remappings;
 
     return remappings;
