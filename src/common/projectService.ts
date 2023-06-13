@@ -90,8 +90,8 @@ export function initialiseProject(rootPath: string,
 
 function loadAllPackageDependencies(packageDefaultDependenciesDirectories: string[], rootPath: string, projectPackage: Package, packageDependenciesContractsDirectories: string[]) {
     let packageDependencies: Package[] = [];
-    packageDefaultDependenciesDirectories.forEach(packageDependenciesDirectory => {
-            packageDependencies = packageDependencies.concat(loadDependencies(rootPath, projectPackage, packageDependenciesDirectory,
+    packageDefaultDependenciesDirectories.forEach(packageDirectory => {
+            packageDependencies = packageDependencies.concat(loadDependencies(rootPath, projectPackage, packageDirectory,
                 packageDependenciesContractsDirectories));
     });
     return packageDependencies;
@@ -179,20 +179,20 @@ export function loadRemappings(rootPath: string, remappings: string[]): string[]
 }
 
 function loadDependencies(rootPath: string, projectPackage: Package,
-                        packageDefaultDependenciesDirectory: string,
+                        packageDirectory: string,
                         dependencyAlternativeSmartContractDirectories: string[],
                         depPackages: Array<Package> = new Array<Package>()) {
     if (projectPackage.dependencies !== undefined) {
         Object.keys(projectPackage.dependencies).forEach(dependency => {
             if (!depPackages.some((existingDepPack: Package) => existingDepPack.name === dependency)) {
-                const depPackageDependencyPath = path.join(rootPath, packageDefaultDependenciesDirectory, dependency);
+                const depPackageDependencyPath = path.join(rootPath, packageDirectory, dependency);
                 const depPackage = createPackage(depPackageDependencyPath, '');
                 depPackage.sol_sources_alternative_directories = dependencyAlternativeSmartContractDirectories;
 
                 if (depPackage !== null) {
                     depPackages.push(depPackage);
                     // Assumed the package manager will install all the dependencies at root so adding all the existing ones
-                    loadDependencies(rootPath, depPackage, packageDefaultDependenciesDirectory, dependencyAlternativeSmartContractDirectories, depPackages);
+                    loadDependencies(rootPath, depPackage, packageDirectory, dependencyAlternativeSmartContractDirectories, depPackages);
                 } else {
                     // should warn user of a package dependency missing
                 }
@@ -200,7 +200,7 @@ function loadDependencies(rootPath: string, projectPackage: Package,
         });
     }
     // lets not skip packages in lib
-    const depPackagePath = path.join(projectPackage.absoluletPath, packageDefaultDependenciesDirectory);
+    const depPackagePath = path.join(projectPackage.absoluletPath, packageDirectory);
     if (fs.existsSync(depPackagePath)) {
         const depPackagesDirectories = getDirectories(depPackagePath);
         depPackagesDirectories.forEach(depPackageDir => {
@@ -212,7 +212,7 @@ function loadDependencies(rootPath: string, projectPackage: Package,
             }
             if (!depPackages.some((existingDepPack: Package) => existingDepPack.name === depPackage.name)) {
                 depPackages.push(depPackage);
-                    loadDependencies(rootPath, depPackage, packageDefaultDependenciesDirectory, dependencyAlternativeSmartContractDirectories, depPackages);
+                    loadDependencies(rootPath, depPackage, packageDirectory, dependencyAlternativeSmartContractDirectories, depPackages);
             }
         });
     }

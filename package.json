@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.163",
+  "version": "0.0.164",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -178,8 +178,8 @@
         },
         "solidity.packageDefaultDependenciesDirectory": {
           "type": ["string", "string[]"],
-          "default": "['node_modules', 'lib']",
-          "description": "Default directory for Packages Dependencies, i.e: 'node_modules', 'lib'. This is used to avoid typing imports with that path prefix"
+          "default": ["node_modules", "lib"],
+          "description": "Default directory for Packages Dependencies, i.e: 'node_modules', 'lib'. This is used to avoid typing imports with that path prefix, multiple dependency paths can be set as an array: ['node_modules', 'lib'] "
         },
         "solidity.monoRepoSupport": {
           "type": "boolean",
