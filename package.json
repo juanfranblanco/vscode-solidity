@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.164",
+  "version": "0.0.165",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -303,6 +303,10 @@
         "title": "Solidity: Code generate FSharp Definitions for Abi files in current folder"
       },
       {
+        "command": "solidity.codeGenFromNethereumGenAbisFile",
+        "title": "Solidity: Code generate Definitions for Abi files in selected 'nethereum-gen.abis'"
+      },
+      {
         "command": "solidity.fixDocument",
         "title": "Solidity: Fix document rules using Solium"
       },
@@ -514,6 +518,11 @@
         {
           "when": "resourceExtname == .abi",
           "command": "solidity.codegenFSharpProjectAllAbiCurrent",
+          "group": "3_solidity"
+        },
+        {
+          "when": "resourceFilename == nethereum-gen.abis",
+          "command": "solidity.codeGenFromNethereumGenAbisFile",
           "group": "3_solidity"
         },
         {

@@ -55,6 +55,36 @@ export function generateNethereumCodeSettingsFile() {
     }
 }
 
+export function codeGenerateAllFilesFromNethereumGenAbisFile(args: any, diagnostics: vscode.DiagnosticCollection) {
+    try {
+        const abiFiles = getCodeGenerationAbiFilesFromSettings(args.fsPath);
+        if (abiFiles !== undefined) {
+        const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+        const settings = getCodeGenerationSettings();
+        let lang = 0; // csharp
+        if (settings !== undefined) {
+            if (settings.lang !== undefined) {
+                lang = settings.lang;
+            }
+        }
+        // /home/juan/Documents/repos/artifacts/contracts/tokens/Items.sol/Items.json
+        // /home/juan/Documents/repos/visions-contracts/artifacts/contracts/tokens/Items.sol
+
+        abiFiles.forEach(file => codeGenerateCQS(path.join(root, file), lang, args, diagnostics));
+
+        } else {
+            throw 'nethereum-gen.abis not found';
+        }
+    } catch (e) {
+        const outputChannel = vscode.window.createOutputChannel('solidity code generation');
+        outputChannel.clear();
+        outputChannel.appendLine('Error generating code:');
+        outputChannel.appendLine('Please provide a file named: nethereum-gen.abis with at the project root, with an array of xxx.abi or yyy.json files');
+        outputChannel.appendLine(e.message);
+        outputChannel.show();
+    }
+}
+
 export function codeGenerateNethereumCQSCsharp(args: any, diagnostics: vscode.DiagnosticCollection) {
     const lang = 0;
     const editor = vscode.window.activeTextEditor;
@@ -137,6 +167,16 @@ function getCodeGenerationSettings() {
     if (fs.existsSync(settingsFile)) {
         const settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
         return settings;
+    }
+    return undefined;
+}
+
+function getCodeGenerationAbiFilesFromSettings(abisPath: string) {
+    if(path.basename(abisPath) === 'nethereum-gen.abis') {
+        if (fs.existsSync(abisPath)) {
+            const settings = JSON.parse(fs.readFileSync(abisPath, 'utf8'));
+            return settings;
+        }
     }
     return undefined;
 }

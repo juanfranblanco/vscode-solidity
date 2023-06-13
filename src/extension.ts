@@ -7,7 +7,7 @@ import { compileActiveContract, initDiagnosticCollection } from './client/compil
 import {
     generateNethereumCodeSettingsFile, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
     codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll, autoCodeGenerateAfterCompilation,
-    codeGenerateCQS, codeGenerateAllFilesFromAbiInCurrentFolder,
+    codeGenerateCQS, codeGenerateAllFilesFromAbiInCurrentFolder, codeGenerateAllFilesFromNethereumGenAbisFile,
 } from './client/codegen';
 import { LanguageClientOptions, RevealOutputChannelOn } from 'vscode-languageclient';
 import {
@@ -127,6 +127,10 @@ export async function activate(context: vscode.ExtensionContext) {
         codeGenerateAllFilesFromAbiInCurrentFolder(3, args, diagnosticCollection);
     }));
 
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.codeGenFromNethereumGenAbisFile', (args: any[]) => {
+        codeGenerateAllFilesFromNethereumGenAbisFile(args, diagnosticCollection);
+    }));
+
     context.subscriptions.push(vscode.commands.registerCommand('solidity.fixDocument', () => {
         lintAndfixCurrentDocument();
     }));
@@ -236,3 +240,5 @@ export async function activate(context: vscode.ExtensionContext) {
     // client can be deactivated on extension deactivation
     context.subscriptions.push(clientDisposable);
 }
+
+
