@@ -118,11 +118,11 @@ Optimize for how many times you intend to run the code. Lower values will optimi
 ## Project structure and Remappings
 
 ## Mono repo support
-Mono repo support, enables to have different projects in the same workspace as opposed to having open different workspaces in the same window.
+Mono repo support enables having different projects in the same workspace as opposed to different open workspaces in the same window.
 
-To provide mono repo support the project is idenfifed by by finding one of the different files used by different tools, for example remappings.txt, foundry.toml, brownie-config.yaml, truffle-config.js, hardhat.config.js. Solidity does not have a standard project file yet, or many not have it ever, so this is the best solution.
+To provide mono repo support, idenfify the project by finding one of the files used by different tools, for example remappings.txt, foundry.toml, brownie-config.yaml, truffle-config.js, hardhat.config.js. Solidity does not have a standard project file yet, or many not have it ever, so this is the best solution.
 
-Mono repo support is enabled by default now in the settings, but if wanted it can be disabled.
+The settings enable Mono repo support by default, but if wanted can be disabled.
 
 ### Dependencies for both "Node_modules" and "Lib" (Default)
 
