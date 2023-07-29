@@ -66,10 +66,10 @@
   "devDependencies": {
     "@types/node": "^11.15.3",
     "@types/vscode": "^1.77.0",
+    "@vscode/vsce": "^2.20.0",
     "ts-node": "^7.0.1",
     "tslint": "^5.20.1",
-    "typescript": "^5.0.4",
-    "vsce": "^2.12.0"
+    "typescript": "^5.0.4"
   },
   "nyc": {
     "extension": [
@@ -177,8 +177,14 @@
           "description": "Delay to trigger the validation of the changes of the current document (compilation, solium)"
         },
         "solidity.packageDefaultDependenciesDirectory": {
-          "type": ["string", "string[]"],
-          "default": ["node_modules", "lib"],
+          "type": [
+            "string",
+            "string[]"
+          ],
+          "default": [
+            "node_modules",
+            "lib"
+          ],
           "description": "Default directory for Packages Dependencies, i.e: 'node_modules', 'lib'. This is used to avoid typing imports with that path prefix, multiple dependency paths can be set as an array: ['node_modules', 'lib'] "
         },
         "solidity.monoRepoSupport": {
@@ -354,7 +360,7 @@
           "command": "solidity.compile.active"
         },
         {
-          "when": "explorerResourceIsFolder || resourceExtname == .sol || resourceExtname == .abi" ,
+          "when": "explorerResourceIsFolder || resourceExtname == .sol || resourceExtname == .abi",
           "command": "solidity.downloadVerifiedSmartContractEtherscan"
         },
         {
@@ -526,7 +532,7 @@
           "group": "3_solidity"
         },
         {
-          "when": "explorerResourceIsFolder || resourceExtname == .sol || resourceExtname == .abi" ,
+          "when": "explorerResourceIsFolder || resourceExtname == .sol || resourceExtname == .abi",
           "command": "solidity.downloadVerifiedSmartContractEtherscan",
           "group": "2_solidity"
         }
