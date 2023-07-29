@@ -13,7 +13,7 @@ import {
     Diagnostic,
     ProposedFeatures,
     TextDocumentPositionParams,
-    CompletionItem, Location, SignatureHelp, TextDocumentSyncKind, VersionedTextDocumentIdentifier,
+    CompletionItem, Location, SignatureHelp, TextDocumentSyncKind,
     WorkspaceFolder,
     Hover,
 } from 'vscode-languageserver/node';
@@ -25,9 +25,7 @@ import { CodeWalkerService } from './server/parsedCodeModel/codeWalkerService';
 import { replaceRemappings } from './common/util';
 import { findFirstRootProjectFile } from './common/projectService';
 
-interface Settings {
-    solidity: SoliditySettings;
-}
+import packageJson from '../package.json';
 
 interface SoliditySettings {
     // option for backward compatibilities, please use "linter" option instead
@@ -36,7 +34,7 @@ interface SoliditySettings {
     compileUsingLocalVersion: string;
     compileUsingRemoteVersion: string;
     nodemodulespackage: string;
-    defaultCompiler: string;
+    defaultCompiler: keyof compilerType;
     soliumRules: any;
     solhintRules: any;
     validationDelay: number;
@@ -47,6 +45,15 @@ interface SoliditySettings {
     remappingsUnix: string[];
     monoRepoSupport: boolean;
 }
+
+const defaultSoliditySettings = {} as SoliditySettings;
+Object.entries(packageJson.contributes.configuration.properties)
+    .forEach(([key, value]) => {
+        const keys = key.split('.');
+        if (keys.length === 2 && keys[0] === 'solidity') {
+            defaultSoliditySettings[keys[1]] = value.default;
+        }
+    });
 
 
 // import * as path from 'path';
@@ -186,7 +193,7 @@ function validate(document: TextDocument) {
                 });
             }
         } catch (e) {
-             const x = e; // gracefull catch
+             // gracefull catch
         }
 
         const diagnostics = linterDiagnostics.concat(compileErrorDiagnostics);
@@ -196,7 +203,50 @@ function validate(document: TextDocument) {
     }
 }
 
+function updateSoliditySettings(soliditySettings: SoliditySettings) {
+    enabledAsYouTypeErrorCheck = soliditySettings.enabledAsYouTypeCompilationErrorCheck;
+    compileUsingLocalVersion = soliditySettings.compileUsingLocalVersion;
+    compileUsingRemoteVersion = soliditySettings.compileUsingRemoteVersion;
+    solhintDefaultRules = soliditySettings.solhintRules;
+    soliumDefaultRules = soliditySettings.soliumRules;
+    validationDelay = soliditySettings.validationDelay;
+    nodeModulePackage = soliditySettings.nodemodulespackage;
+    defaultCompiler = compilerType[soliditySettings.defaultCompiler];
+    packageDefaultDependenciesContractsDirectory = soliditySettings.packageDefaultDependenciesContractsDirectory;
+    if (typeof soliditySettings.packageDefaultDependenciesDirectory === 'string') {
+        packageDefaultDependenciesDirectory = [<string>soliditySettings.packageDefaultDependenciesDirectory];
+    } else {
+        packageDefaultDependenciesDirectory = <string[]>soliditySettings.packageDefaultDependenciesDirectory;
+    }
+    remappings = soliditySettings.remappings;
+    monoRepoSupport = soliditySettings.monoRepoSupport;
 
+    if (process.platform === 'win32') {
+        remappings = replaceRemappings(remappings, soliditySettings.remappingsWindows);
+    } else {
+        remappings = replaceRemappings(remappings, soliditySettings.remappingsUnix);
+    }
+
+    switch (linterName(soliditySettings)) {
+        case 'solhint': {
+            linter = new SolhintService(rootPath, solhintDefaultRules);
+            break;
+        }
+        case 'solium': {
+            linter = new SoliumService(rootPath, soliumDefaultRules, connection);
+            break;
+        }
+        default: {
+            linter = null;
+        }
+    }
+
+    if (linter !== null) {
+        linter.setIdeRules(linterRules(soliditySettings));
+    }
+
+    startValidation();
+};
 
 connection.onSignatureHelp((): SignatureHelp => {
     return null;
@@ -221,7 +271,7 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
 
  connection.onReferences((handler: TextDocumentPositionParams): Location[] => {
     initWorkspaceRootFolder(handler.textDocument.uri);
-    const projectRootPath = initCurrentProjectInWorkspaceRootFsPath(handler.textDocument.uri);
+    initCurrentProjectInWorkspaceRootFsPath(handler.textDocument.uri);
 
     const provider = new SolidityReferencesProvider();
     return provider.provideReferences(documents.get(handler.textDocument.uri), handler.position, getCodeWalkerService());
@@ -229,7 +279,7 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
 
 connection.onDefinition((handler: TextDocumentPositionParams): Thenable<Location | Location[]> => {
     initWorkspaceRootFolder(handler.textDocument.uri);
-    const projectRootPath = initCurrentProjectInWorkspaceRootFsPath(handler.textDocument.uri);
+    initCurrentProjectInWorkspaceRootFsPath(handler.textDocument.uri);
 
     const provider = new SolidityDefinitionProvider();
     return provider.provideDefinition(documents.get(handler.textDocument.uri), handler.position, getCodeWalkerService());
@@ -237,7 +287,7 @@ connection.onDefinition((handler: TextDocumentPositionParams): Thenable<Location
 
 connection.onHover((handler: TextDocumentPositionParams): Hover | undefined => {
     initWorkspaceRootFolder(handler.textDocument.uri);
-    const projectRootPath = initCurrentProjectInWorkspaceRootFsPath(handler.textDocument.uri);
+    initCurrentProjectInWorkspaceRootFsPath(handler.textDocument.uri);
 
     const provider = new SolidityHoverProvider();
     return provider.provideHover(documents.get(handler.textDocument.uri), handler.position, getCodeWalkerService());
@@ -330,6 +380,8 @@ connection.onInitialize((params): InitializeResult => {
             },
         };
     }
+
+    updateSoliditySettings(defaultSoliditySettings);
     return result;
 });
 
@@ -366,49 +418,10 @@ connection.onDidChangeWatchedFiles(_change => {
 });
 
 connection.onDidChangeConfiguration((change) => {
-    const settings = <Settings>change.settings;
-    enabledAsYouTypeErrorCheck = settings.solidity.enabledAsYouTypeCompilationErrorCheck;
-    compileUsingLocalVersion = settings.solidity.compileUsingLocalVersion;
-    compileUsingRemoteVersion = settings.solidity.compileUsingRemoteVersion;
-    solhintDefaultRules = settings.solidity.solhintRules;
-    soliumDefaultRules = settings.solidity.soliumRules;
-    validationDelay = settings.solidity.validationDelay;
-    nodeModulePackage = settings.solidity.nodemodulespackage;
-    defaultCompiler = compilerType[settings.solidity.defaultCompiler];
-    packageDefaultDependenciesContractsDirectory = settings.solidity.packageDefaultDependenciesContractsDirectory;
-    if (typeof settings.solidity.packageDefaultDependenciesDirectory === 'string') {
-        packageDefaultDependenciesDirectory = [<string>settings.solidity.packageDefaultDependenciesDirectory];
-    } else {
-        packageDefaultDependenciesDirectory = <string[]>settings.solidity.packageDefaultDependenciesDirectory;
-    }
-    remappings = settings.solidity.remappings;
-    monoRepoSupport = settings.solidity.monoRepoSupport;
-
-    if (process.platform === 'win32') {
-        remappings = replaceRemappings(remappings, settings.solidity.remappingsWindows);
-    } else {
-        remappings = replaceRemappings(remappings, settings.solidity.remappingsUnix);
-    }
-
-    switch (linterName(settings.solidity)) {
-        case 'solhint': {
-            linter = new SolhintService(rootPath, solhintDefaultRules);
-            break;
-        }
-        case 'solium': {
-            linter = new SoliumService(rootPath, soliumDefaultRules, connection);
-            break;
-        }
-        default: {
-            linter = null;
-        }
-    }
-
-    if (linter !== null) {
-        linter.setIdeRules(linterRules(settings.solidity));
-    }
-
-    startValidation();
+    updateSoliditySettings({
+        ...defaultSoliditySettings,
+        ...(change.settings?.solidity || {}),
+    });
 });
 
 function linterName(settings: SoliditySettings) {

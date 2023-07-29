@@ -22,6 +22,12 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
   Auto generation of Nethereum files on compilation
 * Linting using [Solhint](https://github.com/protofire/solhint) or [Ethlint](https://github.com/duaraghav8/Ethlint)
 
+It is also available as a standalone LSP:
+```sh
+npm install -g @juanfranblanco/vscode-solidity-server
+vscode-solidity-server --stdio
+```
+
 # Instructions
 
 
