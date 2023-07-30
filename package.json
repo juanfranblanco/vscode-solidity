@@ -16,7 +16,9 @@
   "engines": {
     "vscode": "^1.77.0"
   },
-  "files": ["/dist"],
+  "files": [
+    "/dist/cli"
+  ],
   "contributors": [
     "Juan Blanco"
   ],
@@ -34,31 +36,25 @@
   ],
   "main": "./out/src/extension",
   "bin": {
-    "vscode-solidity-server": "./dist/server.js"
+    "vscode-solidity-server": "./dist/cli/server.js"
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "package": "vsce package",
-    "prepublishOnly": "npm run build:cli",
-    "build:cli": "tsup && echo '#!/usr/bin/env node' | cat - dist/server.js > dist/server.bak.js && mv dist/server.bak.js dist/server.js",
+    "prepublishOnly": "tsc --noEmit && npm run build:cli",
+    "build:cli": "tsup src/server.ts -d dist/cli && sh scripts/add_shebang.sh dist/cli/server.js",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "test": "nyc --require ts-node/register --require source-map-support/register mocha test/**/*.spec.ts"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
-    "ajv": "^6.10.2",
-    "ajv-keywords": "^3.4.1",
     "axios": "^1.4.0",
-    "chai": "^4.2.0",
-    "find-cache-dir": "^2.1.0",
     "fs-extra": "^4.0.3",
     "glob": "^8.1.0",
-    "mkdirp": "^0.5.1",
     "nethereum-codegen": "^1.0.26",
     "prettier": "^2.8.4",
     "prettier-plugin-solidity": "^1.1.2",
-    "require-from-string": "^2.0.2",
     "solc": "^0.8.19",
     "solhint": "^3.4.0",
     "solium": "^1.2.5",
