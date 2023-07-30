@@ -34,21 +34,22 @@
     "Programming Languages",
     "Snippets"
   ],
-  "main": "./out/src/extension",
+  "main": "./dist/extension/extension",
   "bin": {
     "vscode-solidity-server": "./dist/cli/server.js"
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run build:extension",
     "package": "vsce package",
-    "prepublishOnly": "tsc --noEmit && npm run build:cli",
-    "build:cli": "tsup src/server.ts -d dist/cli && sh scripts/add_shebang.sh dist/cli/server.js",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "prepublishOnly": "npm run build:cli",
+    "build:cli": "tsc --noEmit && tsup src/server.ts -d dist/cli && sh scripts/add_shebang.sh dist/cli/server.js",
+    "build:extension": "tsc --noEmit && tsup --config tsup.config.extension.ts",
+    "watch": "tsc --noEmit --watch",
     "test": "nyc --require ts-node/register --require source-map-support/register mocha test/**/*.spec.ts"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
+    "@vscode/vsce": "^2.20.0",
     "axios": "^1.4.0",
     "fs-extra": "^4.0.3",
     "glob": "^8.1.0",
@@ -71,8 +72,7 @@
     "ts-node": "^7.0.1",
     "tslint": "^5.20.1",
     "tsup": "^7.1.0",
-    "typescript": "^5.0.4",
-    "vsce": "^2.12.0"
+    "typescript": "^5.0.4"
   },
   "nyc": {
     "extension": [

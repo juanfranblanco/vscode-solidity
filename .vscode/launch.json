@@ -9,7 +9,7 @@
             "name": "Extension",
             "type": "extensionHost",
             "request": "launch",
-            "preLaunchTask": "npm: compile",
+            "preLaunchTask": "npm: build:extension",
             "console": "integratedTerminal",
             "runtimeExecutable": "${execPath}",
             "args": [
@@ -17,7 +17,7 @@
             ],
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceFolder}/out/src/**/*.js"
+                "${workspaceFolder}/dist/**/*.js"
             ],        
         
             "stopOnEntry": false
@@ -29,7 +29,7 @@
             "port": 6009,
             "restart": true,
             "outFiles": [
-                "${workspaceRoot}/out/src/**/*.js"
+                "${workspaceRoot}/dist/**/*.js"
             ]
         }
     ]
