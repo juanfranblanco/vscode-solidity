@@ -3,7 +3,8 @@
 .vscode-test
 node_modules
 out
+dist
 tmp
 .nyc_output
 coverage
-
+*.vsix

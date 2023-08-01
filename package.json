@@ -16,6 +16,9 @@
   "engines": {
     "vscode": "^1.77.0"
   },
+  "files": [
+    "/dist/cli"
+  ],
   "contributors": [
     "Juan Blanco"
   ],
@@ -32,27 +35,26 @@
     "Snippets"
   ],
   "main": "./out/src/extension",
+  "bin": {
+    "vscode-solidity-server": "./dist/cli/server.js"
+  },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "package": "vsce package",
+    "prepublishOnly": "tsc --noEmit && npm run build:cli",
+    "build:cli": "tsup src/server.ts -d dist/cli && sh scripts/add_shebang.sh dist/cli/server.js",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "test": "nyc --require ts-node/register --require source-map-support/register mocha test/**/*.spec.ts"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
-    "ajv": "^6.10.2",
-    "ajv-keywords": "^3.4.1",
     "axios": "^1.4.0",
-    "chai": "^4.2.0",
-    "find-cache-dir": "^2.1.0",
     "fs-extra": "^4.0.3",
     "glob": "^8.1.0",
-    "mkdirp": "^0.5.1",
     "nethereum-codegen": "^1.0.26",
     "prettier": "^2.8.4",
     "prettier-plugin-solidity": "^1.1.2",
-    "require-from-string": "^2.0.2",
     "solc": "^0.8.19",
     "solhint": "^3.4.0",
     "solium": "^1.2.5",
@@ -68,6 +70,7 @@
     "@types/vscode": "^1.77.0",
     "ts-node": "^7.0.1",
     "tslint": "^5.20.1",
+    "tsup": "^7.1.0",
     "typescript": "^5.0.4",
     "vsce": "^2.12.0"
   },
@@ -177,8 +180,14 @@
           "description": "Delay to trigger the validation of the changes of the current document (compilation, solium)"
         },
         "solidity.packageDefaultDependenciesDirectory": {
-          "type": ["string", "string[]"],
-          "default": ["node_modules", "lib"],
+          "type": [
+            "string",
+            "string[]"
+          ],
+          "default": [
+            "node_modules",
+            "lib"
+          ],
           "description": "Default directory for Packages Dependencies, i.e: 'node_modules', 'lib'. This is used to avoid typing imports with that path prefix, multiple dependency paths can be set as an array: ['node_modules', 'lib'] "
         },
         "solidity.monoRepoSupport": {
@@ -354,7 +363,7 @@
           "command": "solidity.compile.active"
         },
         {
-          "when": "explorerResourceIsFolder || resourceExtname == .sol || resourceExtname == .abi" ,
+          "when": "explorerResourceIsFolder || resourceExtname == .sol || resourceExtname == .abi",
           "command": "solidity.downloadVerifiedSmartContractEtherscan"
         },
         {
@@ -526,7 +535,7 @@
           "group": "3_solidity"
         },
         {
-          "when": "explorerResourceIsFolder || resourceExtname == .sol || resourceExtname == .abi" ,
+          "when": "explorerResourceIsFolder || resourceExtname == .sol || resourceExtname == .abi",
           "command": "solidity.downloadVerifiedSmartContractEtherscan",
           "group": "2_solidity"
         }
