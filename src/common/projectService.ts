@@ -115,7 +115,8 @@ function getRemappingsFromFoundryConfig(rootPath: string): string[] {
             return remappingsLoaded;
         } catch (error) {
             // ignore error
-            console.log(error);
+            console.log(error.message);
+            console.log(error.stack);
         }
         return ;
     }

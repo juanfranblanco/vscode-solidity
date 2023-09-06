@@ -3,7 +3,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export function formatPath(contractPath: string) {
+        if (contractPath !== null) {
         return contractPath.replace(/\\/g, '/');
+        }
+        return contractPath;
 }
 
 /**

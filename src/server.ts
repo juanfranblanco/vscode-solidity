@@ -5,7 +5,9 @@ import SolhintService from './server/linter/solhint';
 import SoliumService from './server/linter/solium';
 import { CompilerError } from './server/solErrorsToDiagnostics';
 import { CompletionService } from './server/completionService';
-import { SolidityDefinitionProvider, SolidityHoverProvider, SolidityReferencesProvider } from './server/definitionProvider';
+import { SolidityDefinitionProvider } from './server/SolidityDefinitionProvider';
+import { SolidityReferencesProvider } from './server/SolidityReferencesProvider';
+import { SolidityHoverProvider } from './server/SolidityHoverProvider';
 import {
     createConnection,
     TextDocuments,

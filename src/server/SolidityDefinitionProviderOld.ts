@@ -1,99 +1,12 @@
 import * as path from 'path';
 import * as vscode from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
-
 import { SourceDocument } from '../common/model/sourceDocument';
 import { SourceDocumentCollection } from '../common/model/sourceDocumentCollection';
 import { Project } from '../common/model/project';
 import { initialiseProject } from '../common/projectService';
 import * as solparse from 'solparse-exp-jb';
-import { CodeWalkerService } from './parsedCodeModel/codeWalkerService';
 
-
-export class SolidityHoverProvider {
-
-  public provideHover(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    walker: CodeWalkerService,
-  ): vscode.Hover | undefined {
-
-    const offset = document.offsetAt(position);
-    const documentContractSelected = walker.getSelectedDocument(document, position);
-    const item = documentContractSelected.getSelectedItem(offset);
-    if (item !== null) { return item.getHover(); }
-    return undefined;
-  }
-}
-
-
-
-export class SolidityReferencesProvider {
-
-  public provideReferences(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    walker: CodeWalkerService,
-  ): vscode.Location[] {
-
-    const offset = document.offsetAt(position);
-    walker.initialiseChangedDocuments();
-    const documentContractSelected = walker.getSelectedDocument(document, position);
-    const references = documentContractSelected.getAllReferencesToSelected(offset, [].concat(documentContractSelected, walker.parsedDocumentsCache));
-    const foundLocations = references.filter(x => x != null && x.location !== null).map(x => x.location);
-    return <vscode.Location[]>foundLocations;
-  }
-
-  public removeDuplicates(foundLocations: any[], keys: string[]) {
-    return Object.values(foundLocations.reduce((r, o: any) => {
-      const key = keys.map(k => o[k]).join('|');
-      // tslint:disable-next-line:curly
-      if (r[key])
-        r[key].condition = [].concat(r[key].condition, o.condition);
-
-      // tslint:disable-next-line:curly
-      else
-        r[key] = { ...o };
-      return r;
-    }, {}));
-  }
-}
-
-
-
-
-export class SolidityDefinitionProvider {
-
-  public provideDefinition(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    walker: CodeWalkerService,
-  ): Thenable<vscode.Location | vscode.Location[]> {
-
-    const offset = document.offsetAt(position);
-    const documentContractSelected = walker.getSelectedDocument(document, position);
-    const references = documentContractSelected.getSelectedTypeReferenceLocation(offset);
-    const foundLocations = references.filter(x => x.location !== null).map(x => x.location);
-    const keys = ['range', 'uri'];
-    const result = this.removeDuplicates(foundLocations, keys);
-
-    return Promise.resolve(<vscode.Location[]>result);
-  }
-
-  public removeDuplicates(foundLocations: any[], keys: string[]) {
-    return Object.values(foundLocations.reduce((r, o: any) => {
-      const key = keys.map(k => o[k]).join('|');
-      // tslint:disable-next-line:curly
-      if (r[key])
-        r[key].condition = [].concat(r[key].condition, o.condition);
-
-      // tslint:disable-next-line:curly
-      else
-        r[key] = { ...o };
-      return r;
-    }, {}));
-  }
-}
 
 
 export class SolidityDefinitionProviderOld {
@@ -107,8 +20,7 @@ export class SolidityDefinitionProviderOld {
     rootPath: string,
     packageDefaultDependenciesDirectory: string[],
     packageDefaultDependenciesContractsDirectory: string,
-    remappings: string[],
-  ) {
+    remappings: string[] ) {
     this.rootPath = rootPath;
     this.packageDefaultDependenciesDirectory = packageDefaultDependenciesDirectory;
     this.packageDefaultDependenciesContractsDirectory = packageDefaultDependenciesContractsDirectory;
@@ -136,7 +48,7 @@ export class SolidityDefinitionProviderOld {
    */
   public provideDefinition(
     document: vscode.TextDocument,
-    position: vscode.Position,
+    position: vscode.Position
   ): Thenable<vscode.Location | vscode.Location[]> {
 
 
@@ -148,7 +60,7 @@ export class SolidityDefinitionProviderOld {
       contracts.addSourceDocumentAndResolveImports(
         contractPath,
         documentText,
-        this.project,
+        this.project
       );
     }
     // this contract
@@ -166,8 +78,8 @@ export class SolidityDefinitionProviderOld {
           return Promise.resolve(
             vscode.Location.create(
               URI.file(this.resolveImportPath(element.from, contract)).toString(),
-              vscode.Range.create(0, 0, 0, 0),
-            ),
+              vscode.Range.create(0, 0, 0, 0)
+            )
           );
         case 'ContractStatement': {
           // find definition for inheritance
@@ -178,7 +90,7 @@ export class SolidityDefinitionProviderOld {
               result.body,
               isBlock.name,
               'ContractStatement',
-              contracts,
+              contracts
             );
 
             if (directImport.location === undefined) {
@@ -187,7 +99,7 @@ export class SolidityDefinitionProviderOld {
                 result.body,
                 isBlock.name,
                 'InterfaceStatement',
-                contracts,
+                contracts
               );
             }
             return Promise.resolve(directImport.location);
@@ -202,7 +114,7 @@ export class SolidityDefinitionProviderOld {
               statement,
               element,
               offset,
-              contracts,
+              contracts
             );
           }
           break;
@@ -217,7 +129,7 @@ export class SolidityDefinitionProviderOld {
               statement,
               element,
               offset,
-              contracts,
+              contracts
             );
           }
           break;
@@ -232,7 +144,7 @@ export class SolidityDefinitionProviderOld {
               statement,
               element,
               offset,
-              contracts,
+              contracts
             );
           }
           break;
@@ -264,7 +176,7 @@ export class SolidityDefinitionProviderOld {
     statement: any,
     parentStatement: any,
     offset: number,
-    contracts: SourceDocumentCollection,
+    contracts: SourceDocumentCollection
   ): Thenable<vscode.Location | vscode.Location[]> {
     switch (statement.type) {
       case 'UsingStatement':
@@ -276,8 +188,8 @@ export class SolidityDefinitionProviderOld {
               documentStatements,
               statement.library,
               'LibraryStatement',
-              contracts,
-            ).location,
+              contracts
+            ).location
           );
         } else {
           // definition of the using statement target i.e. using Library for **DataType**
@@ -285,7 +197,7 @@ export class SolidityDefinitionProviderOld {
             document,
             documentStatements,
             statement.for,
-            contracts,
+            contracts
           );
         }
       case 'Type':
@@ -297,14 +209,14 @@ export class SolidityDefinitionProviderOld {
             statement.literal,
             statement,
             offset,
-            contracts,
+            contracts
           );
         } else {
           return this.provideDefinitionForType(
             document,
             documentStatements,
             statement,
-            contracts,
+            contracts
           );
         }
       case 'Identifier':
@@ -314,7 +226,7 @@ export class SolidityDefinitionProviderOld {
               // TODO: differentiate function, event, and struct construction
               return this.provideDefinitionForCallee(
                 contracts,
-                statement.name,
+                statement.name
               );
             }
             break;
@@ -324,24 +236,22 @@ export class SolidityDefinitionProviderOld {
               // therefore we can safely assume this is a variable instead
               return this.provideDefinitionForVariable(
                 contracts,
-                statement.name,
+                statement.name
               );
             } else if (parentStatement.property === statement) {
               return Promise.all([
                 // TODO: differentiate better between following possible cases
-
                 // TODO: provide field access definition, which requires us to know the type of object
                 // Consider find the definition of object first and recursive upward till declarative expression for type inference
-
                 // array or mapping access via variable i.e. arr[i] map[k]
                 this.provideDefinitionForVariable(
                   contracts,
-                  statement.name,
+                  statement.name
                 ),
                 // func call in the form of obj.func(arg)
                 this.provideDefinitionForCallee(
                   contracts,
-                  statement.name,
+                  statement.name
                 ),
               ]).then(locationsArray => Array.prototype.concat.apply([], locationsArray));
             }
@@ -349,7 +259,7 @@ export class SolidityDefinitionProviderOld {
           default:
             return this.provideDefinitionForVariable(
               contracts,
-              statement.name,
+              statement.name
             );
         }
         break;
@@ -367,22 +277,20 @@ export class SolidityDefinitionProviderOld {
                   inner,
                   statement,
                   offset,
-                  contracts,
+                  contracts
                 );
               }
             } else if (element instanceof Object) {
               // recursively drill down to elements with start/end e.g. literal type
-              if (
-                element.hasOwnProperty('start') && element.hasOwnProperty('end') &&
-                element.start <= offset && offset <= element.end
-              ) {
+              if (element.hasOwnProperty('start') && element.hasOwnProperty('end') &&
+                element.start <= offset && offset <= element.end) {
                 return this.provideDefinitionInStatement(
                   document,
                   documentStatements,
                   element,
                   statement,
                   offset,
-                  contracts,
+                  contracts
                 );
               }
             }
@@ -410,19 +318,18 @@ export class SolidityDefinitionProviderOld {
    */
   private provideDefinitionForCallee(
     contracts: SourceDocumentCollection,
-    name: string,
+    name: string
   ): Promise<vscode.Location[]> {
     return this.provideDefinitionForContractMember(
       contracts,
       name,
       (element) => {
-        const elements = element.body.filter(contractElement =>
-          contractElement.name === name && (
-            contractElement.type === 'FunctionDeclaration' ||
-            contractElement.type === 'EventDeclaration' ||
-            contractElement.type === 'StructDeclaration' ||
-            contractElement.type === 'EnumDeclaration'
-          ),
+        const elements = element.body.filter(contractElement => contractElement.name === name && (
+          contractElement.type === 'FunctionDeclaration' ||
+          contractElement.type === 'EventDeclaration' ||
+          contractElement.type === 'StructDeclaration' ||
+          contractElement.type === 'EnumDeclaration'
+        )
         );
 
         if (element.type === 'ContractStatement' && element.name === name) {
@@ -430,7 +337,7 @@ export class SolidityDefinitionProviderOld {
         }
 
         return elements;
-      },
+      }
     );
   }
 
@@ -446,15 +353,13 @@ export class SolidityDefinitionProviderOld {
    */
   private provideDefinitionForVariable(
     contracts: SourceDocumentCollection,
-    name: string,
+    name: string
   ): Promise<vscode.Location[]> {
     return this.provideDefinitionForContractMember(
       contracts,
       name,
-      (element) =>
-        element.body.filter(contractElement =>
-          contractElement.name === name && (contractElement.type === 'StateVariableDeclaration'),
-        ),
+      (element) => element.body.filter(contractElement => contractElement.name === name && (contractElement.type === 'StateVariableDeclaration')
+      )
     );
   }
 
@@ -470,7 +375,7 @@ export class SolidityDefinitionProviderOld {
   private provideDefinitionForContractMember(
     contracts: SourceDocumentCollection,
     literalFallbackName: string,
-    extractElements: (any) => Array<any>,
+    extractElements: (any) => Array<any>
   ): Promise<vscode.Location[]> {
     const locations = [];
     for (const contract of contracts.documents) {
@@ -488,19 +393,18 @@ export class SolidityDefinitionProviderOld {
               }
             }
             return [];
-          }),
+          })
         );
 
-        elements.forEach(contractElement =>
-          locations.push(
-            vscode.Location.create(
-              uri,
-              vscode.Range.create(
-                document.positionAt(contractElement.start),
-                document.positionAt(contractElement.end),
-              ),
-            ),
-          ),
+        elements.forEach(contractElement => locations.push(
+          vscode.Location.create(
+            uri,
+            vscode.Range.create(
+              document.positionAt(contractElement.start),
+              document.positionAt(contractElement.end)
+            )
+          )
+        )
         );
       } catch {
         // FALLBACK WORKAROUND ON ERROR PARSING this could be a custom parser
@@ -518,7 +422,7 @@ export class SolidityDefinitionProviderOld {
             locations.push(
               vscode.Location.create(
                 uri,
-                vscode.Range.create(document.positionAt(pos), document.positionAt(pos + literalFallbackName.length)),
+                vscode.Range.create(document.positionAt(pos), document.positionAt(pos + literalFallbackName.length))
               ));
           }
         }
@@ -567,7 +471,7 @@ export class SolidityDefinitionProviderOld {
     document: vscode.TextDocument,
     documentStatements: Array<any>,
     literal: any,
-    contracts: SourceDocumentCollection,
+    contracts: SourceDocumentCollection
   ): Thenable<vscode.Location | vscode.Location[]> {
     if (literal.members.length > 0) {
       // handle scoped type by looking for scoping Contract or Library e.g. MyContract.Struct
@@ -586,7 +490,7 @@ export class SolidityDefinitionProviderOld {
             members: [],
             start: literalDocument.document.offsetAt(literalDocument.location.range.start),
           },
-          contracts,
+          contracts
         );
       }
     } else {
@@ -595,7 +499,7 @@ export class SolidityDefinitionProviderOld {
         document,
         contractStatement.body,
         literal.literal,
-        'StructDeclaration',
+        'StructDeclaration'
       );
       if (structLocation !== undefined) {
         return Promise.resolve(structLocation);
@@ -605,7 +509,7 @@ export class SolidityDefinitionProviderOld {
         document,
         contractStatement.body,
         literal.literal,
-        'EnumDeclaration',
+        'EnumDeclaration'
       );
       if (enumLocation !== undefined) {
         return Promise.resolve(enumLocation);
@@ -615,10 +519,8 @@ export class SolidityDefinitionProviderOld {
       return this.provideDefinitionForContractMember(
         contracts,
         literal.literal,
-        (element) =>
-          element.body.filter(contractElement =>
-            contractElement.name === literal.literal && (contractElement.type === 'StructDeclaration' || contractElement.type === 'EnumDeclaration'),
-          ),
+        (element) => element.body.filter(contractElement => contractElement.name === literal.literal && (contractElement.type === 'StructDeclaration' || contractElement.type === 'EnumDeclaration')
+        )
       );
     }
   }
@@ -642,7 +544,7 @@ export class SolidityDefinitionProviderOld {
     statements: Array<any>,
     name: string,
     type: string,
-    contracts: SourceDocumentCollection,
+    contracts: SourceDocumentCollection
   ) {
     // find in the current file
     let location = this.findStatementLocationByNameType(document, statements, name, type);
@@ -685,13 +587,13 @@ export class SolidityDefinitionProviderOld {
     document: vscode.TextDocument,
     statements: Array<any>,
     name: string,
-    type: string,
+    type: string
   ): vscode.Location {
     const localDef = statements.find(e => e.type === type && e.name === name);
     if (localDef !== undefined) {
       return vscode.Location.create(
         document.uri,
-        vscode.Range.create(document.positionAt(localDef.start), document.positionAt(localDef.end)),
+        vscode.Range.create(document.positionAt(localDef.start), document.positionAt(localDef.end))
       );
     }
   }
@@ -707,7 +609,7 @@ export class SolidityDefinitionProviderOld {
    */
   private findElementByOffset(elements: Array<any>, offset: number): any {
     return elements.find(
-      element => element.start <= offset && offset <= element.end,
+      element => element.start <= offset && offset <= element.end
     );
   }
 

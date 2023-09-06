@@ -543,7 +543,8 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
             }
           }
         } catch (error) {
-          console.log(error);
+          console.log(error.message);
+          console.log(error.stack);
         }
       }
 

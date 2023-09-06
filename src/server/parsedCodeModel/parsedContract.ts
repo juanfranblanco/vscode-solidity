@@ -627,7 +627,7 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
 
     public initialiseVariablesMembersEtc(statement: any, parentStatement: any, child: ParsedExpression) {
         try {
-          if (statement !== undefined && statement.type !== undefined && statement.type !== null) {
+          if (statement !== undefined && statement !== null && statement.type !== undefined && statement.type !== null) {
             switch (statement.type) {
               case 'CallExpression': // e.g. Func(x, y)
                 const callExpression = ParsedExpression.createFromElement(statement, this.document, this.contract, child, this);
@@ -679,7 +679,8 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
             }
           }
         } catch (error) {
-          console.log(error);
+            console.log(error.message);
+            console.log(error.stack);
         }
       }
 
