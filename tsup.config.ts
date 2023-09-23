@@ -5,6 +5,7 @@ export const baseOptions = (options: Options) => ({
   clean: true,
   bundle: !options.watch,
   minify: !options.watch,
+  sourcemap: true,
 })
 
 export default defineConfig(baseOptions);

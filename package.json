@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.165",
+  "version": "0.0.166",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -36,7 +36,7 @@
   ],
   "main": "./out/src/extension",
   "bin": {
-    "vscode-solidity-server": "./dist/cli/server.js"
+    "vscode-solidity-langserver": "./dist/cli/server.js"
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

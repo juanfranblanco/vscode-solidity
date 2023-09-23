@@ -24,8 +24,8 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
 
 It is also available as a standalone LSP:
 ```sh
-npm install -g @juanfranblanco/vscode-solidity-server
-vscode-solidity-server --stdio
+npm install -g vscode-solidity-langserver
+vscode-solidity-langserver --stdio
 ```
 
 # Instructions
