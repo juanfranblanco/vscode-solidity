@@ -214,6 +214,26 @@
           "type": "array",
           "default": [],
           "description": "Unix Remappings to resolve contracts to local Unix files / directories (Note this overrides the generic remapping settings if the OS is Unix based), i.e: [\"@openzeppelin/=/opt/lib/openzeppelin-contracts\",\"ds-test/=/opt/lib/ds-test/src/\"]"
+        },
+        "solidity.ethereum": {
+          "type": "string",
+          "default": "YourApiKey",
+          "description": "Api key for downloading ethereum smart contracts from etherscan.io"
+        },       
+        "solidity.optimism": {
+          "type": "string",
+          "default": "YourApiKey",
+          "description": "Api key for downloading optimism smart contracts from api-optimistic.etherscan.io"
+        },
+        "solidity.binance": {
+          "type": "string",
+          "default": "YourApiKey",
+          "description": "Api key for downloading Binance smart chain smart contracts from api.bscscan.com"
+        },
+        "solidity.polygon": {
+          "type": "string",
+          "default": "YourApiKey",
+          "description": "Api key for downloading polygon smart contracts from api.polygonscan.com"
         }
       }
     },
