@@ -10,7 +10,8 @@ export class EtherscanDomainChainMapper {
     public static getMappings(): any {
         return  {'ethereum' : 'api.etherscan.io',
                  'optimism' : 'api-optimistic.etherscan.io',
-                 'binance' : 'api.bscscan.com'};
+                 'binance': 'api.bscscan.com',
+                 'polygon': 'api.polygonscan.com'        };
     }
 
     public static getDomain(chain: string ) {
