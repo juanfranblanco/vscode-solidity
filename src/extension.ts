@@ -36,7 +36,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(diagnosticCollection);
 
     initDiagnosticCollection(diagnosticCollection);
-
+    
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.active', async () => {
         const compiledResults = await compileActiveContract(compiler);
         autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection);

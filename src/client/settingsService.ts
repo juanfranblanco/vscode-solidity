@@ -35,4 +35,8 @@ export class SettingsService {
         return vscode.workspace.getConfiguration('solidity').get<boolean>('monoRepoSupport');
     }
 
+    public static getApiKey( server: string): string {
+        return vscode.workspace.getConfiguration('solidity').get<string>(server);
+    }
+
 }

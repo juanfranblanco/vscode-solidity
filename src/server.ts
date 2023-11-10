@@ -46,6 +46,10 @@ interface SoliditySettings {
     remappingsWindows: string[];
     remappingsUnix: string[];
     monoRepoSupport: boolean;
+    ethereum: string;
+    optimism: string;
+    binance: string;
+    polygon: string;
 }
 
 const defaultSoliditySettings = {} as SoliditySettings;
@@ -93,6 +97,13 @@ let remappings: string[];
 let selectedDocument = null;
 let selectedProjectFolder = null;
 let codeWalkerService: CodeWalkerService = null;
+
+//api keys
+let ethereum='YourApiKey';
+let optimism='YourApiKey';
+let binance='YourApiKey';
+let polygon='YourApiKey';
+
 
 function getCodeWalkerService() {
     if (codeWalkerService !== null) {
@@ -214,6 +225,10 @@ function updateSoliditySettings(soliditySettings: SoliditySettings) {
     validationDelay = soliditySettings.validationDelay;
     nodeModulePackage = soliditySettings.nodemodulespackage;
     defaultCompiler = compilerType[soliditySettings.defaultCompiler];
+    ethereum=soliditySettings.ethereum;
+    optimism=soliditySettings.optimism;
+    binance=soliditySettings.binance;
+    polygon=soliditySettings.polygon;
     packageDefaultDependenciesContractsDirectory = soliditySettings.packageDefaultDependenciesContractsDirectory;
     if (typeof soliditySettings.packageDefaultDependenciesDirectory === 'string') {
         packageDefaultDependenciesDirectory = [<string>soliditySettings.packageDefaultDependenciesDirectory];

@@ -5,15 +5,19 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import * as workspaceUtil from '../../client/workspaceUtil';
 import { SourceDocumentCollection } from '../model/sourceDocumentCollection';
+import { SettingsService } from '../../client/settingsService';
 
 export class EtherscanDomainChainMapper {
+    public static apiKey = 'YourApiKey';
     public static getMappings(): any {
         return  {'ethereum' : 'api.etherscan.io',
                  'optimism' : 'api-optimistic.etherscan.io',
-                 'binance' : 'api.bscscan.com'};
+                 'binance': 'api.bscscan.com',
+                 'polygon': 'api.polygonscan.com'        };
     }
 
     public static getDomain(chain: string ) {
+        this.apiKey = SettingsService.getApiKey(chain);
         return this.getMappings()[chain];
     }
 
