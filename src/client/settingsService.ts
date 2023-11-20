@@ -1,6 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
+import { EtherscanDomainChainMapper } from '../common/sourceCodeDownloader/etherscanSourceCodeDownloader';
 
 export class SettingsService {
 
@@ -35,8 +36,10 @@ export class SettingsService {
         return vscode.workspace.getConfiguration('solidity').get<boolean>('monoRepoSupport');
     }
 
-    public static getApiKey( server: string): string {
-        return vscode.workspace.getConfiguration('solidity').get<string>(server);
+    public static getExplorerEtherscanBasedApiKey(server: string): string {
+
+        var key = EtherscanDomainChainMapper.getApiKeyMappings()[server];
+        return vscode.workspace.getConfiguration('solidity').get<string>(key);
     }
 
 }

@@ -215,22 +215,22 @@
           "default": [],
           "description": "Unix Remappings to resolve contracts to local Unix files / directories (Note this overrides the generic remapping settings if the OS is Unix based), i.e: [\"@openzeppelin/=/opt/lib/openzeppelin-contracts\",\"ds-test/=/opt/lib/ds-test/src/\"]"
         },
-        "solidity.ethereum": {
+        "solidity.explorer_etherscan_apikey": {
           "type": "string",
           "default": "YourApiKey",
           "description": "Api key for downloading ethereum smart contracts from etherscan.io"
         },       
-        "solidity.optimism": {
+        "solidity.explorer_etherscan_optimism_apikey": {
           "type": "string",
           "default": "YourApiKey",
           "description": "Api key for downloading optimism smart contracts from api-optimistic.etherscan.io"
         },
-        "solidity.binance": {
+        "solidity.explorer_bscscan_apikey": {
           "type": "string",
           "default": "YourApiKey",
           "description": "Api key for downloading Binance smart chain smart contracts from api.bscscan.com"
         },
-        "solidity.polygon": {
+        "solidity.explorer_polygonscan_apikey": {
           "type": "string",
           "default": "YourApiKey",
           "description": "Api key for downloading polygon smart contracts from api.polygonscan.com"
@@ -506,6 +506,11 @@
           "when": "resourceExtname == .abi",
           "command": "solidity.codegenFSharpProjectAllAbiCurrent",
           "group": "3_solidity"
+        },
+        {
+          "when": "resourceFilename == nethereum-gen.abis",
+          "command": "solidity.codeGenFromNethereumGenAbisFile",
+          "group": "3_solidity"
         }
       ],
       "explorer/context": [
@@ -547,11 +552,6 @@
         {
           "when": "resourceExtname == .abi",
           "command": "solidity.codegenFSharpProjectAllAbiCurrent",
-          "group": "3_solidity"
-        },
-        {
-          "when": "resourceFilename == nethereum-gen.abis",
-          "command": "solidity.codeGenFromNethereumGenAbisFile",
           "group": "3_solidity"
         },
         {

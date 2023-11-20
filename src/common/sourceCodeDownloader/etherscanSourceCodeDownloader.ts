@@ -8,7 +8,7 @@ import { SourceDocumentCollection } from '../model/sourceDocumentCollection';
 import { SettingsService } from '../../client/settingsService';
 
 export class EtherscanDomainChainMapper {
-    public static apiKey = 'YourApiKey';
+   // public static apiKey = 'YourApiKey';
     public static getMappings(): any {
         return  {'ethereum' : 'api.etherscan.io',
                  'optimism' : 'api-optimistic.etherscan.io',
@@ -16,8 +16,15 @@ export class EtherscanDomainChainMapper {
                  'polygon': 'api.polygonscan.com'        };
     }
 
+    public static getApiKeyMappings(): any {
+        return  {'ethereum' : 'explorer_etherscan_apikey',
+                 'optimism' : 'explorer_etherscan_optimism_apikey',
+                 'binance': 'explorer_bscscan_apikey',
+                 'polygon': 'explorer_polygonscan_apikey'        };
+    }
+
     public static getDomain(chain: string ) {
-        this.apiKey = SettingsService.getApiKey(chain);
+        
         return this.getMappings()[chain];
     }
 
@@ -98,7 +105,8 @@ export class EtherscanContractDownloader {
 
 
     public static async downloadContract(chain: string, address: string,
-                                         projectPath: string, subfolder = 'chainContracts', apiKey = 'YourApiKeyToken'): Promise<string[]> {
+                                         projectPath: string, subfolder = 'chainContracts'): Promise<string[]> {
+          const apiKey = SettingsService.getExplorerEtherscanBasedApiKey(chain);
           const info = await EtherscanContractInfoService.getContractInfo(chain, address, apiKey);
           const downloadedFiles: string[] = [];
            if (info.result.length > 0) {
