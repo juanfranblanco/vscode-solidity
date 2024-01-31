@@ -174,7 +174,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.languages.registerDocumentFormattingEditProvider('solidity', {
             async provideDocumentFormattingEdits(document: vscode.TextDocument): Promise<vscode.TextEdit[]> {
-                return formatDocument(document, context);
+                return await formatDocument(document, context);
             },
         }));
 
