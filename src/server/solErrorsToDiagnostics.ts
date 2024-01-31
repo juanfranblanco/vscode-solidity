@@ -20,6 +20,27 @@ export interface CompilerError {
     }
 
     export function errorToDiagnostic(error: any): CompilerError {
+        if(error.formattedMessage !== undefined && 
+         error.sourceLocation === undefined) {
+            return {
+                diagnostic: {
+                    message: error.formattedMessage,
+                    code: error.errorCode,
+                    range: {
+                        end: {
+                            character: 0,
+                            line: 0,
+                        },
+                        start: {
+                            character: 0,
+                            line: 0,
+                        },
+                    },
+                    severity:  getDiagnosticSeverity(error.severity),
+                },
+                fileName: '',
+            };
+        }
 
         if (error.sourceLocation.file !== undefined && error.sourceLocation.file !== null) {
             const fileName = error.sourceLocation.file;
