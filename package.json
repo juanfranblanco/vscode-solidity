@@ -53,10 +53,10 @@
     "fs-extra": "^4.0.3",
     "glob": "^8.1.0",
     "nethereum-codegen": "^1.0.26",
-    "prettier": "^2.8.4",
-    "prettier-plugin-solidity": "^1.1.2",
-    "solc": "^0.8.19",
-    "solhint": "^3.4.0",
+    "prettier": "^3.2.4",
+    "prettier-plugin-solidity": "^1.3.1",
+    "solc": "^0.8.24",
+    "solhint": "^4.1.1",
     "solium": "^1.2.5",
     "solparse-exp-jb": "3.0.3",
     "vscode-languageclient": "^8.1.0",
@@ -68,6 +68,7 @@
   "devDependencies": {
     "@types/node": "^11.15.3",
     "@types/vscode": "^1.77.0",
+    
     "ts-node": "^7.0.1",
     "tslint": "^5.20.1",
     "tsup": "^7.1.0",
