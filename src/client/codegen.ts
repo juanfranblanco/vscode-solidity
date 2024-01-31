@@ -71,6 +71,10 @@ export function codeGenerateAllFilesFromNethereumGenAbisFile(args: any, diagnost
         // /home/juan/Documents/repos/visions-contracts/artifacts/contracts/tokens/Items.sol
 
         abiFiles.forEach(file => codeGenerateCQS(path.join(root, file), lang, args, diagnostics));
+        const outputChannel = vscode.window.createOutputChannel('solidity code generation');
+        outputChannel.clear();
+        outputChannel.appendLine('Code generation completed');
+        outputChannel.show();
 
         } else {
             throw 'nethereum-gen.abis not found';
@@ -221,12 +225,16 @@ export function codeGenerateCQS(fileName: string, lang: number, args: any, diagn
             compilationOutput = { 'abi': abi, 'bytecode': '0x' };
             const binFile = fileName.substr(0, fileName.lastIndexOf('.')) + '.bin';
             if (fs.existsSync(binFile)) {
-                const bytecode = fs.readFileSync(binFile, 'utf8');
+                bytecode = fs.readFileSync(binFile, 'utf8');
             }
         } else {
             compilationOutput = JSON.parse(fs.readFileSync(fileName, 'utf8'));
             abi = JSON.stringify(compilationOutput.abi);
-            bytecode = compilationOutput.bytecode;
+            bytecode = compilationOutput.bytecode.object;
+            if(bytecode === undefined) {
+                bytecode = compilationOutput.bytecode;
+            }
+            
         }
         if (abi !== undefined) {
 
