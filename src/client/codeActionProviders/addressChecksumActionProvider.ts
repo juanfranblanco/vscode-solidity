@@ -6,6 +6,7 @@ export class AddressChecksumCodeActionProvider implements vscode.CodeActionProvi
 
         public static readonly providedCodeActionKinds = [
             vscode.CodeActionKind.QuickFix,
+            vscode.CodeActionKind.SourceFixAll,
             vscode.CodeActionKind.Empty,
         ];
 
