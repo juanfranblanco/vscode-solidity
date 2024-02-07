@@ -12,7 +12,7 @@ Solidity is the language used in Ethereum to create smart contracts, this extens
 * Find all references in project
 * Hover information
 * Code actions / quick fixes (change compiler, format address, add sdpx license.. )
-* Mono repo support (identifies the project by finding the files: remappings.txt, foundry.toml, brownie-config.yaml, truffle-config.js, hardhat.config.js)
+* Mono repo support (identifies the project by finding the files: remappings.txt, foundry.toml, brownie-config.yaml, truffle-config.js, hardhat.config.js, hardhat.config.ts)
 * Default project structure (solidity files needs to be in the `src/` directory, and libraries in the `lib/` directory). Libraries will follow the same structure.
 * Compilation supporting EIP82 (dappfile and dependency packages)
 * Support for different solidity versions (Remote and local)

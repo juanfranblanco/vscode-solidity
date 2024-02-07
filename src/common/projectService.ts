@@ -18,11 +18,12 @@ import { Remapping } from './model/remapping';
 const packageConfigFileName = 'dappFile';
 const remappingConfigFileName = 'remappings.txt';
 const brownieConfigFileName = 'brownie-config.yaml';
-const hardhatConfigFileName = 'hardhat.config.js';
+const hardhatConfigJsFileName = 'hardhat.config.js';
+const hardhatConfigTsFileName = 'hardhat.config.ts';
 const truffleConfigFileName = 'truffle-config.js';
 const foundryConfigFileName = 'foundry.toml';
 
-const projectFilesAtRoot = [remappingConfigFileName, brownieConfigFileName, foundryConfigFileName, hardhatConfigFileName, truffleConfigFileName, packageConfigFileName];
+const projectFilesAtRoot = [remappingConfigFileName, brownieConfigFileName, foundryConfigFileName, hardhatConfigJsFileName, hardhatConfigTsFileName, truffleConfigFileName, packageConfigFileName];
 
 // These are set using user configuration settings
 let defaultPackageDependenciesDirectory = 'lib';
