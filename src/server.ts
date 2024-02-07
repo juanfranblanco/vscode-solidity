@@ -50,6 +50,7 @@ interface SoliditySettings {
     explorer_etherscan_optimism_apikey: string;
     explorer_bscscan_apikey: string;
     explorer_polygonscan_apikey: string;
+    evmVersion: string;
 }
 
 const defaultSoliditySettings = {} as SoliditySettings;
@@ -86,6 +87,7 @@ let validationDelay = 1500;
 let solcCachePath = '';
 let hasWorkspaceFolderCapability = false;
 let monoRepoSupport = false;
+let evmVersion = "";
 
 // flags to avoid trigger concurrent validations (compiling is slow)
 let validatingDocument = false;
@@ -192,7 +194,7 @@ function validate(document: TextDocument) {
                 const errors: CompilerError[] = solcCompiler
                     .compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText,
                         packageDefaultDependenciesDirectory,
-                        packageDefaultDependenciesContractsDirectory, remappings);
+                        packageDefaultDependenciesContractsDirectory, remappings, null, evmVersion);
                 errors.forEach(errorItem => {
                     const uriCompileError = URI.file(errorItem.fileName);
                     if (uriCompileError.toString() === uri) {
@@ -220,6 +222,7 @@ function updateSoliditySettings(soliditySettings: SoliditySettings) {
     validationDelay = soliditySettings.validationDelay;
     nodeModulePackage = soliditySettings.nodemodulespackage;
     defaultCompiler = compilerType[soliditySettings.defaultCompiler];
+    evmVersion = soliditySettings.evmVersion;
 
     packageDefaultDependenciesContractsDirectory = soliditySettings.packageDefaultDependenciesContractsDirectory;
     if (typeof soliditySettings.packageDefaultDependenciesDirectory === 'string') {

@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.165",
+  "version": "0.0.166",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -109,6 +109,11 @@
           "type": "number",
           "default": 200,
           "description": "Optimize for how many times you intend to run the code. Lower values will optimize more for initial deployment cost, higher values will optimize more for high-frequency usage."
+        },
+        "solidity.evmVersion": {
+          "type": "string",
+          "default": "",
+          "description": "Evm version, ie london, istanbul, petersburg, constantinople, byzantium, tangerineWhistle, spuriousDragon, homestead, frontier, or leave it blank for the default evm version"
         },
         "solidity.compileUsingLocalVersion": {
           "type": "string",

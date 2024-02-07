@@ -25,7 +25,7 @@ export class SourceDocumentCollection {
         return this.documents.findIndex((contract: SourceDocument) => { return contract.absolutePath === contractPath; }) > -1;
     }
 
-    public getDefaultSourceDocumentsForCompilation(optimizeCompilationRuns = 200) {
+    public getDefaultSourceDocumentsForCompilation(optimizeCompilationRuns = 200, evmVersion = "") {
         const compilerOutputSelection = {
             '*': {
                 '': ['ast'],
@@ -33,10 +33,10 @@ export class SourceDocumentCollection {
             },
         };
 
-        return this.getSourceDocumentsForCompilation(true, optimizeCompilationRuns, compilerOutputSelection);
+        return this.getSourceDocumentsForCompilation(true, optimizeCompilationRuns, evmVersion, compilerOutputSelection);
     }
 
-    public getDefaultSourceDocumentsForCompilationDiagnostics() {
+    public getDefaultSourceDocumentsForCompilationDiagnostics(evmVersion = "") {
         const compilerOutputSelection = {
             '*': {
                 '': [],
@@ -44,10 +44,10 @@ export class SourceDocumentCollection {
             },
         };
 
-        return this.getSourceDocumentsForCompilation(false, 0, compilerOutputSelection);
+        return this.getSourceDocumentsForCompilation(false, 0, evmVersion, compilerOutputSelection);
     }
 
-    public getSourceDocumentsForCompilation(optimizeCompilation: boolean, optimizeCompilationRuns: number, outputSelection) {
+    public getSourceDocumentsForCompilation(optimizeCompilation: boolean, optimizeCompilationRuns: number, evmVersion: string = "", outputSelection) {
         const contractsForCompilation = {};
         this.documents.forEach(contract => {
             contractsForCompilation[contract.absolutePath] = {content: contract.code};
@@ -61,7 +61,10 @@ export class SourceDocumentCollection {
                     runs: optimizeCompilationRuns,
                 },
                 outputSelection: outputSelection,
+                evmVersion: evmVersion,
+                
             },
+           
             sources : contractsForCompilation,
         };
         return compilation;
