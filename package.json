@@ -19,6 +19,7 @@
   "files": [
     "/dist/cli"
   ],
+  "activationEvents": [],
   "contributors": [
     "Juan Blanco"
   ],
@@ -249,6 +250,9 @@
           ".sol"
         ],
         "configuration": "./solidity.configuration.json"
+      },
+      {
+        "id": "solidity-markdown-injection"
       }
     ],
     "commands": [
@@ -593,7 +597,18 @@
         "unbalancedBracketScopes": [
           "meta.scope.case-pattern.solidity"
         ]
-      }
+      },
+      {
+        "language": "solidity-markdown-injection",
+        "scopeName": "markdown.solidity.codeblock",
+        "path": "./syntaxes/solidity-markdown-injection.json",
+        "injectTo": [
+            "text.html.markdown"
+        ],
+        "embeddedLanguages": {
+            "meta.embedded.block.solidity": "solidity"
+        }
+    }
     ]
   }
 }
