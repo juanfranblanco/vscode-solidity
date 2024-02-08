@@ -98,7 +98,7 @@ export class CodeWalkerService {
 
         sourceDocuments.documents.forEach(sourceDocumentItem => {
             if (sourceDocumentItem !== selectedSourceDocument) {
-                const documentImport = this.parseDocumentChanged(sourceDocumentItem.code, false, sourceDocumentItem);
+                const documentImport = this.parseDocumentChanged(sourceDocumentItem.unformattedCode, false, sourceDocumentItem);
             }
         });
 
