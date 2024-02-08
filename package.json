@@ -37,7 +37,7 @@
   ],
   "main": "./out/src/extension",
   "bin": {
-    "vscode-solidity-server": "./dist/cli/server.js"
+    "vscode-solidity-langserver": "./dist/cli/server.js"
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
