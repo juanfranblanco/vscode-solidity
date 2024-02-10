@@ -214,6 +214,7 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
                               .concat(this.receiveFunction);
 
             for (const item of allItems) {
+                if(item === null) { continue; }
                 selectedItem = item.getSelectedItem(offset);
                 if (selectedItem !== null) { return selectedItem; }
             }

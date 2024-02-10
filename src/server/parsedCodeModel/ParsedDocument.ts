@@ -330,10 +330,12 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
                                     .concat(this.imports)
                                     .concat(this.expressions);
 
-            for (const item of allItems) {
-                selectedItem = item.getSelectedItem(offset);
-                if (selectedItem !== null) { return selectedItem; }
-                }
+                    for (const item of allItems) {
+                        if(item === null) { continue; }
+                        selectedItem = item.getSelectedItem(offset);
+                        if (selectedItem !== null) { return selectedItem; }
+                       
+                    }
                 return this;
             }
             return selectedItem;

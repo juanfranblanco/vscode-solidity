@@ -50,6 +50,7 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
                           .concat(this.variables)
                           .concat(this.modifiers);
        for (const item of allItems) {
+          if(item === null) { continue; }
           selectedItem = item.getSelectedItem(offset);
           if (selectedItem !== null) { return selectedItem; }
         }
