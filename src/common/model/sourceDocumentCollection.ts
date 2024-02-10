@@ -1,8 +1,8 @@
 'use strict';
 import * as fs from 'fs';
-import {SourceDocument} from './sourceDocument';
-import {Project} from './project';
-import {formatPath} from '../util';
+import { SourceDocument } from './sourceDocument';
+import { Project } from './project';
+import { formatPath } from '../util';
 
 export class SourceDocumentCollection {
     public documents: Array<SourceDocument>;
@@ -50,24 +50,42 @@ export class SourceDocumentCollection {
     public getSourceDocumentsForCompilation(optimizeCompilation: boolean, optimizeCompilationRuns: number, evmVersion: string = "", outputSelection) {
         const contractsForCompilation = {};
         this.documents.forEach(contract => {
-            contractsForCompilation[contract.absolutePath] = {content: contract.code};
+            contractsForCompilation[contract.absolutePath] = { content: contract.code };
         });
-        const compilation = {
-            language: 'Solidity',
-            settings:
-            {
-                optimizer: {
-                    enabled: optimizeCompilation,
-                    runs: optimizeCompilationRuns,
+
+        if (evmVersion === "" || evmVersion === undefined || evmVersion === null) {
+            const compilation = {
+                language: 'Solidity',
+                settings:
+                {
+                    optimizer: {
+                        enabled: optimizeCompilation,
+                        runs: optimizeCompilationRuns,
+                    },
+                    outputSelection: outputSelection,
                 },
-                outputSelection: outputSelection,
-                evmVersion: evmVersion,
-                
-            },
-           
-            sources : contractsForCompilation,
-        };
-        return compilation;
+
+                sources: contractsForCompilation,
+            };
+            return compilation;
+        } else {
+            const compilation = {
+                language: 'Solidity',
+                settings:
+                {
+                    optimizer: {
+                        enabled: optimizeCompilation,
+                        runs: optimizeCompilationRuns,
+                    },
+                    outputSelection: outputSelection,
+                    evmVersion: evmVersion,
+
+                },
+
+                sources: contractsForCompilation,
+            };
+            return compilation;
+        }
     }
 
 
