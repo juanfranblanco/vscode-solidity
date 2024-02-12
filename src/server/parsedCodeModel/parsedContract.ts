@@ -378,9 +378,15 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
         return returnItems;
     }
 
-    public getAllUsing(type: ParsedDeclarationType): ParsedUsing[] {
+    public getAllUsing(type: ParsedDeclarationType, processedContracts: Set<string> = new Set()): ParsedUsing[] {
         let returnItems: ParsedUsing[] = [];
+
+        // Add the current contract to the processed set
+        processedContracts.add(this.document.sourceDocument.absolutePath);
+
+        // Filter the 'using' declarations based on the specified type
         returnItems = returnItems.concat(this.using.filter(x => {
+            // existing filter logic
             if (x.forStar === true) { return true; }
             if (x.for !== null) {
                 let validTypeName = false;
@@ -390,18 +396,26 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
                 return x.for.isArray === type.isArray && validTypeName && x.for.isMapping === type.isMapping;
             }
             return false;
-
         }));
 
+        // Process each extended contract if not already processed
         this.getExtendContracts().forEach(contract => {
-            returnItems = returnItems.concat(contract.getAllUsing(type));
+            if (!processedContracts.has(contract.document.sourceDocument.absolutePath)) {
+                returnItems = returnItems.concat(contract.getAllUsing(type, processedContracts));
+            }
         });
 
-        returnItems = returnItems.concat(this.document.getAllGlobalUsing(type));
-        return returnItems.filter((v, i) => {
-            return returnItems.map(mapObj => mapObj['name']).indexOf(v['name']) === i;
+        // Process the document's global 'using' declarations if not already processed
+        if (!processedContracts.has(this.document.sourceDocument.absolutePath)) {
+            returnItems = returnItems.concat(this.document.getAllGlobalUsing(type));
+        }
+
+        // Remove duplicate 'using' declarations
+        return returnItems.filter((v, i, self) => {
+            return self.findIndex(item => item.name === v.name) === i;
         });
     }
+
 
     public initialiseChildren() {
         if (typeof this.element.is !== 'undefined' && this.element.is !== null) {

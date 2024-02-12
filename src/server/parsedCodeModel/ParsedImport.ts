@@ -33,9 +33,9 @@ export class ParsedImport extends ParsedCode {
         }
    }
 
-   public getDocumentsThatReference(document: ParsedDocument, includedDocuments: ParsedDocument[] = null): ParsedDocument[] {
+   public getDocumentsThatReference(document: ParsedDocument, processedDocuments: Set<string> = new Set()): ParsedDocument[] {
         if (this.documentReference !== null) {
-            return this.documentReference.getDocumentsThatReference(document, includedDocuments);
+            return this.documentReference.getDocumentsThatReference(document, processedDocuments);
         }
         return [];
    }

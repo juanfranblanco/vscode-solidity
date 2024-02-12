@@ -47,33 +47,31 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
     public fixedSource: string = null;
     public element: any;
 
-    public getDocumentsThatReference(document: ParsedDocument, includedDocuments: ParsedDocument[] = null): ParsedDocument[] {
+    
+
+    public getDocumentsThatReference(document: ParsedDocument, processedDocuments: Set<string> = new Set()): ParsedDocument[] {
         let returnItems: ParsedDocument[] = [];
-        returnItems.concat(includedDocuments);
-        if (
-            this.isTheSame(document) || // it is the doc so needs be added as a flag for the reference return it later on can be filtered dup
-            this.sourceDocument.absolutePath === document.sourceDocument.absolutePath) {
-            returnItems.push(this);
+
+        // Check if this document has already been processed
+        if (processedDocuments.has(this.sourceDocument.absolutePath)) {
             return returnItems;
         }
 
-        this.imports.forEach(x => {
-            if (includedDocuments !== null) {
-                const foundIncludedDocuments = returnItems.filter(incDoc => incDoc.sourceDocument.absolutePath ===
-                    x.documentReference?.sourceDocument?.absolutePath);
-                if (foundIncludedDocuments != null && foundIncludedDocuments.length > 0) {
-                    //do nothing // easier logic already included
-                } else {
-                    returnItems = returnItems.concat(x.getDocumentsThatReference(document, returnItems));
-                }
-            } else {
-                returnItems = returnItems.concat(x.getDocumentsThatReference(document, returnItems));
-            }
-        });
+        // Add the current document to the processed set
+        processedDocuments.add(this.sourceDocument.absolutePath);
 
-        if (returnItems.length > 0) { // if any our our imports has the document import we are also referencing it
+        if (this.isTheSame(document) || this.sourceDocument.absolutePath === document.sourceDocument.absolutePath) {
             returnItems.push(this);
+        } else {
+            this.imports.forEach(importedDoc => {
+                returnItems = returnItems.concat(importedDoc.getDocumentsThatReference(document, processedDocuments));
+            });
+
+            if (returnItems.length > 0) {
+                returnItems.push(this);
+            }
         }
+
         return returnItems;
     }
 
@@ -155,9 +153,15 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
         return returnItems;
     }
 
-    public getAllGlobalUsing(type: ParsedDeclarationType): ParsedUsing[] {
+    public getAllGlobalUsing(type: ParsedDeclarationType, processedDocuments: Set<string> = new Set()): ParsedUsing[] {
         let returnItems: ParsedUsing[] = [];
+
+        // Add the current document to the processed set
+        processedDocuments.add(this.sourceDocument?.absolutePath);
+
+        // Filter the 'using' declarations based on the specified type
         returnItems = returnItems.concat(this.usings.filter(x => {
+            // existing filter logic
             if (x.forStar === true) { return true; }
             if (x.for !== null) {
                 let validTypeName = false;
@@ -167,14 +171,18 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
                 return x.for.isArray === type.isArray && validTypeName && x.for.isMapping === type.isMapping;
             }
             return false;
-
         }));
 
+        // Process each imported document if not already processed
         this.importedDocuments.forEach(document => {
-            returnItems = this.mergeArrays(returnItems, document.getAllGlobalUsing(type));
+            if (!processedDocuments.has(document.sourceDocument?.absolutePath)) {
+                returnItems = this.mergeArrays(returnItems, document.getAllGlobalUsing(type, processedDocuments));
+            }
         });
-        return returnItems.filter((v, i) => {
-            return returnItems.map(mapObj => mapObj['name']).indexOf(v['name']) === i;
+
+        // Remove duplicate 'using' declarations
+        return returnItems.filter((v, i, self) => {
+            return self.findIndex(item => item.name === v.name) === i;
         });
     }
 
