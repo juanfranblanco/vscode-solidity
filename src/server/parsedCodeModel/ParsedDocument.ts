@@ -20,16 +20,16 @@ import { IParsedExpressionContainer } from './IParsedExpressionContainer';
 export class ParsedDocument extends ParsedCode implements IParsedExpressionContainer {
 
     public innerContracts: ParsedContract[] = [];
-    public functions: ParsedFunction[]  = [];
-    public events: ParsedEvent[]  = [];
-    public enums: ParsedEnum[]  = [];
-    public usings: ParsedUsing[]  = [];
-    public structs: ParsedStruct[]  = [];
+    public functions: ParsedFunction[] = [];
+    public events: ParsedEvent[] = [];
+    public enums: ParsedEnum[] = [];
+    public usings: ParsedUsing[] = [];
+    public structs: ParsedStruct[] = [];
     public importedDocuments: ParsedDocument[] = [];
     public imports: ParsedImport[] = [];
     public errors: ParsedError[] = [];
     public constants: ParsedConstant[] = [];
-    public customTypes: ParsedCustomType [] = [];
+    public customTypes: ParsedCustomType[] = [];
     public expressions: ParsedExpression[] = [];
 
     public selectedFunction: ParsedFunction;
@@ -47,8 +47,9 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
     public fixedSource: string = null;
     public element: any;
 
-    public getDocumentsThatReference(document: ParsedDocument): ParsedDocument[] {
+    public getDocumentsThatReference(document: ParsedDocument, includedDocuments: ParsedDocument[] = null): ParsedDocument[] {
         let returnItems: ParsedDocument[] = [];
+        returnItems.concat(includedDocuments);
         if (
             this.isTheSame(document) || // it is the doc so needs be added as a flag for the reference return it later on can be filtered dup
             this.sourceDocument.absolutePath === document.sourceDocument.absolutePath) {
@@ -56,12 +57,25 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
             return returnItems;
         }
 
-        this.imports.forEach(x => returnItems = returnItems.concat(x.getDocumentsThatReference(document)));
+        this.imports.forEach(x => {
+            if (includedDocuments !== null) {
+                const foundIncludedDocuments = returnItems.filter(incDoc => incDoc.sourceDocument.absolutePath ===
+                    x.documentReference?.sourceDocument?.absolutePath);
+                if (foundIncludedDocuments != null && foundIncludedDocuments.length > 0) {
+                    //do nothing // easier logic already included
+                } else {
+                    returnItems = returnItems.concat(x.getDocumentsThatReference(document, returnItems));
+                }
+            } else {
+                returnItems = returnItems.concat(x.getDocumentsThatReference(document, returnItems));
+            }
+        });
 
         if (returnItems.length > 0) { // if any our our imports has the document import we are also referencing it
-                returnItems.push(this); }
+            returnItems.push(this);
+        }
         return returnItems;
-   }
+    }
 
     public addImportedDocument(document: ParsedDocument) {
         if (!this.importedDocuments.includes(document) && this !== document) {
@@ -172,116 +186,116 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
 
 
     public initialiseDocument(documentElement: any, selectedElement: any = null, sourceDocument: SourceDocument, fixedSource: string = null) {
-            this.element = documentElement;
-            this.sourceDocument = sourceDocument;
-            this.document = this;
-            this.fixedSource = fixedSource;
-            this.selectedElement = selectedElement;
-            if (this.element !== undefined && this.element !== null) {
-                this.initialiseVariablesMembersEtc(this.element, null, null);
+        this.element = documentElement;
+        this.sourceDocument = sourceDocument;
+        this.document = this;
+        this.fixedSource = fixedSource;
+        this.selectedElement = selectedElement;
+        if (this.element !== undefined && this.element !== null) {
+            this.initialiseVariablesMembersEtc(this.element, null, null);
+        }
+
+        documentElement.body.forEach(element => {
+
+            if (element.type === 'ContractStatement' || element.type === 'LibraryStatement' || element.type === 'InterfaceStatement') {
+                const contract = new ParsedContract();
+                contract.initialise(element, this);
+                if (this.matchesElement(selectedElement, element)) {
+                    this.selectedContract = contract;
+                }
+                this.innerContracts.push(contract);
             }
 
-            documentElement.body.forEach(element => {
-
-                if (element.type === 'ContractStatement' ||  element.type === 'LibraryStatement' || element.type === 'InterfaceStatement') {
-                    const contract = new ParsedContract();
-                    contract.initialise(element, this);
-                    if (this.matchesElement(selectedElement, element)) {
-                        this.selectedContract = contract;
-                    }
-                    this.innerContracts.push(contract);
+            if (element.type === 'FileLevelConstant') {
+                const constant = new ParsedConstant();
+                constant.initialise(element, this);
+                if (this.matchesElement(selectedElement, element)) {
+                    this.selectedConstant = constant;
                 }
+                this.constants.push(constant);
+            }
 
-                if (element.type === 'FileLevelConstant') {
-                    const constant = new ParsedConstant();
-                    constant.initialise(element, this);
-                    if (this.matchesElement(selectedElement, element)) {
-                        this.selectedConstant = constant;
-                    }
-                    this.constants.push(constant);
+            if (element.type === 'ImportStatement') {
+                const importDocument = new ParsedImport();
+                importDocument.initialise(element, this);
+                if (this.matchesElement(selectedElement, element)) {
+                    this.selectedImport = importDocument;
                 }
+                this.imports.push(importDocument);
+            }
 
-                if (element.type === 'ImportStatement') {
-                    const importDocument = new ParsedImport();
-                    importDocument.initialise(element, this);
-                    if (this.matchesElement(selectedElement, element)) {
-                        this.selectedImport = importDocument;
-                    }
-                    this.imports.push(importDocument);
+            if (element.type === 'FunctionDeclaration') {
+                const functionDocument = new ParsedFunction();
+                functionDocument.initialise(element, this, null, true);
+                if (this.matchesElement(selectedElement, element)) {
+                    this.selectedFunction = functionDocument;
                 }
+                this.functions.push(functionDocument);
+            }
 
-                if (element.type === 'FunctionDeclaration') {
-                    const functionDocument = new ParsedFunction();
-                    functionDocument.initialise(element, this, null, true);
-                    if (this.matchesElement(selectedElement, element)) {
-                        this.selectedFunction = functionDocument;
-                    }
-                    this.functions.push(functionDocument);
+            if (element.type === 'ModifierDeclaration') {
+                const functionDocument = new ParsedFunction();
+                functionDocument.initialise(element, this, null, true);
+                functionDocument.isModifier = true;
+                if (this.matchesElement(selectedElement, element)) {
+                    this.selectedFunction = functionDocument;
                 }
+                this.functions.push(functionDocument);
+            }
 
-                if (element.type === 'ModifierDeclaration') {
-                    const functionDocument = new ParsedFunction();
-                    functionDocument.initialise(element, this, null, true);
-                    functionDocument.isModifier = true;
-                    if (this.matchesElement(selectedElement, element)) {
-                        this.selectedFunction = functionDocument;
-                    }
-                    this.functions.push(functionDocument);
+            if (element.type === 'EventDeclaration') {
+                const eventDocument = new ParsedEvent();
+                eventDocument.initialise(element, this, null, true);
+                if (this.matchesElement(selectedElement, element)) {
+                    this.selectedEvent = eventDocument;
                 }
+                this.events.push(eventDocument);
+            }
 
-                if (element.type === 'EventDeclaration') {
-                    const eventDocument = new ParsedEvent();
-                    eventDocument.initialise(element, this, null, true);
-                    if (this.matchesElement(selectedElement, element)) {
-                        this.selectedEvent = eventDocument;
-                    }
-                    this.events.push(eventDocument);
+            if (element.type === 'EnumDeclaration') {
+                const enumDocument = new ParsedEnum();
+                enumDocument.initialise(element, this, null, true);
+                if (this.matchesElement(selectedElement, element)) {
+                    this.selectedEnum = enumDocument;
                 }
+                this.enums.push(enumDocument);
+            }
 
-                if (element.type === 'EnumDeclaration') {
-                    const enumDocument = new ParsedEnum();
-                    enumDocument.initialise(element, this, null, true);
-                    if (this.matchesElement(selectedElement, element)) {
-                        this.selectedEnum = enumDocument;
-                    }
-                    this.enums.push(enumDocument);
+            if (element.type === 'StructDeclaration') {
+                const struct = new ParsedStruct();
+                struct.initialise(element, this, null, true);
+                if (this.matchesElement(selectedElement, element)) {
+                    this.selectedStruct = struct;
                 }
+                this.structs.push(struct);
+            }
 
-                if (element.type === 'StructDeclaration') {
-                    const struct = new ParsedStruct();
-                    struct.initialise(element, this, null, true);
-                    if (this.matchesElement(selectedElement, element)) {
-                        this.selectedStruct = struct;
-                    }
-                    this.structs.push(struct);
+            if (element.type === 'TypeDeclaration') {
+                const customType = new ParsedCustomType();
+                customType.initialise(element, this, null, true);
+                this.customTypes.push(customType);
+            }
+
+            if (element.type === 'ErrorDeclaration') {
+                const documentError = new ParsedError();
+                documentError.initialise(element, this, null, true);
+                if (this.matchesElement(selectedElement, element)) {
+                    this.selectedError = documentError;
                 }
+                this.errors.push(documentError);
+            }
 
-                if (element.type === 'TypeDeclaration') {
-                    const customType = new ParsedCustomType();
-                    customType.initialise(element, this, null, true);
-                    this.customTypes.push(customType);
+            if (element.type === 'UsingStatement') {
+                const using = new ParsedUsing();
+                using.initialise(element, this, null, true);
+                if (this.matchesElement(selectedElement, element)) {
+                    this.selectedUsing = using;
                 }
+                this.usings.push(using);
+            }
+        });
 
-                if (element.type === 'ErrorDeclaration') {
-                    const documentError = new ParsedError();
-                    documentError.initialise(element, this, null, true);
-                    if (this.matchesElement(selectedElement, element)) {
-                        this.selectedError = documentError;
-                    }
-                    this.errors.push(documentError);
-                }
-
-                if (element.type === 'UsingStatement') {
-                    const using = new ParsedUsing();
-                    using.initialise(element, this, null, true);
-                    if (this.matchesElement(selectedElement, element)) {
-                        this.selectedUsing = using;
-                    }
-                    this.usings.push(using);
-                }
-            });
-
-          }
+    }
 
 
     public findContractByName(name: string): ParsedContract {
@@ -296,16 +310,16 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
     public override getAllReferencesToSelected(offset: number, documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {
         let results: FindTypeReferenceLocationResult[] = [];
         if (this.isCurrentElementedSelected(offset)) {
-          this.functions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
-          this.innerContracts.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
-          this.errors.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
-          this.events.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
-          this.structs.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
-          this.usings.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
-          this.customTypes.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
-          this.constants.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
-          this.imports.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
-          this.expressions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+            this.functions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+            this.innerContracts.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+            this.errors.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+            this.events.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+            this.structs.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+            this.usings.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+            this.customTypes.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+            this.constants.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+            this.imports.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
+            this.expressions.forEach(x => results = results.concat(x.getAllReferencesToSelected(offset, documents)));
         }
         return results;
     }
@@ -318,27 +332,27 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
     public override getSelectedItem(offset: number): ParsedCode {
         let selectedItem: ParsedCode = null;
         if (this.isCurrentElementedSelected(offset)) {
-                let allItems: ParsedCode[] = [];
-                allItems = allItems.concat(this.functions)
-                                    .concat(this.innerContracts)
-                                    .concat(this.errors)
-                                    .concat(this.events)
-                                    .concat(this.structs)
-                                    .concat(this.usings)
-                                    .concat(this.customTypes)
-                                    .concat(this.constants)
-                                    .concat(this.imports)
-                                    .concat(this.expressions);
+            let allItems: ParsedCode[] = [];
+            allItems = allItems.concat(this.functions)
+                .concat(this.innerContracts)
+                .concat(this.errors)
+                .concat(this.events)
+                .concat(this.structs)
+                .concat(this.usings)
+                .concat(this.customTypes)
+                .concat(this.constants)
+                .concat(this.imports)
+                .concat(this.expressions);
 
-                    for (const item of allItems) {
-                        if(item === null) { continue; }
-                        selectedItem = item.getSelectedItem(offset);
-                        if (selectedItem !== null) { return selectedItem; }
-                       
-                    }
-                return this;
+            for (const item of allItems) {
+                if (item === null) { continue; }
+                selectedItem = item.getSelectedItem(offset);
+                if (selectedItem !== null) { return selectedItem; }
+
             }
-            return selectedItem;
+            return this;
+        }
+        return selectedItem;
     }
 
     public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
@@ -358,33 +372,33 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
     }
 
     public getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
-            let results: FindTypeReferenceLocationResult[] = [];
-            this.functions.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
-            this.errors.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
-            this.events.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
-            this.innerContracts.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
-            this.structs.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
-            this.usings.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
-            this.customTypes.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
-            this.constants.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
-            this.imports.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
-            this.expressions.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+        let results: FindTypeReferenceLocationResult[] = [];
+        this.functions.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+        this.errors.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+        this.events.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+        this.innerContracts.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+        this.structs.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+        this.usings.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+        this.customTypes.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+        this.constants.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+        this.imports.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
+        this.expressions.forEach(x => results = this.mergeArrays(results, x.getSelectedTypeReferenceLocation(offset)));
 
-            const foundResult = FindTypeReferenceLocationResult.filterFoundResults(results);
-            if (foundResult.length > 0) {
-                return foundResult;
-            } else {
-                return [FindTypeReferenceLocationResult.create(true)];
-            }
+        const foundResult = FindTypeReferenceLocationResult.filterFoundResults(results);
+        if (foundResult.length > 0) {
+            return foundResult;
+        } else {
+            return [FindTypeReferenceLocationResult.create(true)];
+        }
     }
 
     public findType(name: string): ParsedCode {
         let typesParsed: ParsedCode[] = [];
         typesParsed = typesParsed.concat(this.getAllGlobalConstants())
-                         .concat(this.getAllGlobalCustomTypes())
-                         .concat(this.getAllGlobalStructs())
-                         .concat(this.getAllGlobalEnums())
-                         .concat(this.getAllContracts());
+            .concat(this.getAllGlobalCustomTypes())
+            .concat(this.getAllGlobalStructs())
+            .concat(this.getAllGlobalEnums())
+            .concat(this.getAllContracts());
         return typesParsed.find(x => x.name === name);
     }
 
@@ -395,7 +409,7 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
     }
 
     public findMembersInScope(name: string): ParsedCode[] {
-        return this.getInnerMembers().filter(x => x.name === name );
+        return this.getInnerMembers().filter(x => x.name === name);
     }
 
     public findMethodCalls(name: string): ParsedCode[] {
@@ -410,7 +424,7 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
         return Location.create(
             document.uri,
             Range.create(document.positionAt(this.element.start), document.positionAt(this.element.end)),
-          );
+        );
     }
 
     public getGlobalPathInfo(): string {
@@ -493,62 +507,62 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
 
     public initialiseVariablesMembersEtc(statement: any, parentStatement: any, child: ParsedExpression) {
         try {
-          if (statement !== undefined && statement !== null && statement.type !== undefined && statement.type !== null) {
-            switch (statement.type) {
-              case 'CallExpression': // e.g. Func(x, y)
-                const callExpression = ParsedExpression.createFromElement(statement, this, null, child, this);
-                this.expressions.push(callExpression);
-                break;
-              case 'MemberExpression': // e.g. x.y x.f(y) arr[1] map['1'] arr[i] map[k]
-                const memberCreated = ParsedExpression.createFromMemberExpression(statement, this, null, child, this);
-                if (memberCreated !== undefined) {
-                  this.expressions.push(memberCreated);
-                } else {
-                  console.log(statement);
-                }
-                break;
-              case 'Identifier':
-                const identifier = ParsedExpression.createFromElement(statement, this, null, child, this);
-                this.expressions.push(identifier);
-                break;
-              case 'FunctionDeclaration':
-                break;
-              case 'ContractStatement':
-                break;
-              case 'LibraryStatement':
-                break;
-              case 'InterfaceStatement':
-                break;
-              default:
-                for (const key in statement) {
-                  if (statement.hasOwnProperty(key)) {
-                    const element = statement[key];
-                    if (element instanceof Array) {
-                      // recursively drill down to collections e.g. statements, params
-                      element.forEach(innerElement => {
-                        this.initialiseVariablesMembersEtc(innerElement, statement, null);
-                      });
-                    } else if (element instanceof Object) {
-                      // recursively drill down to elements with start/end e.g. literal type
-                      if (
-                        element.hasOwnProperty('start') && element.hasOwnProperty('end')
-                      ) {
-                        this.initialiseVariablesMembersEtc(
-                          element,
-                          statement,
-                          null,
-                        );
-                      }
-                    }
-                  }
+            if (statement !== undefined && statement !== null && statement.type !== undefined && statement.type !== null) {
+                switch (statement.type) {
+                    case 'CallExpression': // e.g. Func(x, y)
+                        const callExpression = ParsedExpression.createFromElement(statement, this, null, child, this);
+                        this.expressions.push(callExpression);
+                        break;
+                    case 'MemberExpression': // e.g. x.y x.f(y) arr[1] map['1'] arr[i] map[k]
+                        const memberCreated = ParsedExpression.createFromMemberExpression(statement, this, null, child, this);
+                        if (memberCreated !== undefined) {
+                            this.expressions.push(memberCreated);
+                        } else {
+                            console.log(statement);
+                        }
+                        break;
+                    case 'Identifier':
+                        const identifier = ParsedExpression.createFromElement(statement, this, null, child, this);
+                        this.expressions.push(identifier);
+                        break;
+                    case 'FunctionDeclaration':
+                        break;
+                    case 'ContractStatement':
+                        break;
+                    case 'LibraryStatement':
+                        break;
+                    case 'InterfaceStatement':
+                        break;
+                    default:
+                        for (const key in statement) {
+                            if (statement.hasOwnProperty(key)) {
+                                const element = statement[key];
+                                if (element instanceof Array) {
+                                    // recursively drill down to collections e.g. statements, params
+                                    element.forEach(innerElement => {
+                                        this.initialiseVariablesMembersEtc(innerElement, statement, null);
+                                    });
+                                } else if (element instanceof Object) {
+                                    // recursively drill down to elements with start/end e.g. literal type
+                                    if (
+                                        element.hasOwnProperty('start') && element.hasOwnProperty('end')
+                                    ) {
+                                        this.initialiseVariablesMembersEtc(
+                                            element,
+                                            statement,
+                                            null,
+                                        );
+                                    }
+                                }
+                            }
+                        }
                 }
             }
-          }
         } catch (error) {
-          console.log(error.message);
-          console.log(error.stack);
+            console.log(error.message);
+            console.log(error.stack);
         }
-      }
+    }
 
     private matchesElement(selectedElement: any, element: any) {
         return selectedElement !== null && selectedElement === element;
