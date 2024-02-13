@@ -408,6 +408,8 @@ Forest Fang for providing the first implementation of the "Go to definition", al
 
 Bernardo Vieira for adding the capability to read the solium settings from a file in the workspace root directory.
 
+@llllvvuu for all the contributions to make the standalone language server support
+
 Mirko Garozzo and Rocky Bernstein for the work on creating and integrating the Mythx api to analyse smart contracts (OBSOLETE NOW)
 
 Nick Addison, Elazar Gershuni, Joe Whittles, Iñigo Villalba, Thien Toan, Jonathan Carter, Stefan Lew, Nikita Savchenko, Josh Stevens, Paul Berg for their contributions.
