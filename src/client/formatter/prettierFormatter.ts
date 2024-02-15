@@ -1,31 +1,44 @@
-import * as prettier from 'prettier';
+
+const { Worker } = require('worker_threads');
+
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as workspaceUtil from '../workspaceUtil';
-import * as solidityprettier from 'prettier-plugin-solidity';
 
-export async function formatDocument(document: vscode.TextDocument, context: vscode.ExtensionContext): Promise<vscode.TextEdit[]> {
-    const rootPath = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
-    const ignoreOptions = { ignorePath: path.join(rootPath, '.prettierignore') };
-    const fileInfo =  await prettier.getFileInfo(document.uri.fsPath, ignoreOptions);
-    if (!fileInfo.ignored) {
-      const source = document.getText();
-    //  const pluginPath = path.join(context.extensionPath, 'node_modules', 'prettier-plugin-solidity');
-      const options = {
-        'parser': 'solidity-parse',
-        'pluginSearchDirs': [context.extensionPath],
-        'plugins': [solidityprettier],
-      };
-      //
-      const config = await prettier.resolveConfig(document.uri.fsPath);
-      if (config !== null) {
-        await prettier.clearConfigCache();
-      }
-      Object.assign(options, config);
-      const firstLine = document.lineAt(0);
-      const lastLine = document.lineAt(document.lineCount - 1);
-      const fullTextRange = new vscode.Range(firstLine.range.start, lastLine.range.end);
-      const formatted = await prettier.format(source, options);
-      return [vscode.TextEdit.replace(fullTextRange, formatted)];
-    }
+export async function formatDocument(document, context) : Promise<vscode.TextEdit[]> {
+    const source = document.getText();
+    const documentPath = document.uri.fsPath;
+    const pluginPathFile = path.join(context.extensionPath, 'node_modules', 'prettier-plugin-solidity', 'dist','standalone.cjs');
+    const prettierPathFile = path.join(context.extensionPath, 'node_modules', 'prettier');
+    const pluginPath =  pluginPathFile ; 
+    const prettierPath = prettierPathFile; 
+    const options = {
+        parser: 'solidity-parse',
+        pluginSearchDirs: [context.extensionPath],
+    };
+
+    return new Promise((resolve, reject) => {
+        const workerPath = path.join(__dirname, 'formatterPrettierWorker.js');
+        let uri = vscode.Uri.file(workerPath).fsPath;
+        const worker = new Worker(uri.toString());
+        worker.on('message', (response) => {
+            worker.terminate(); 
+            if (response.success) {
+                const firstLine = document.lineAt(0);
+                const lastLine = document.lineAt(document.lineCount - 1);
+                const fullTextRange = new vscode.Range(firstLine.range.start, lastLine.range.end);
+                resolve([vscode.TextEdit.replace(fullTextRange, response.formatted)]);
+            } else {
+                console.error(response.error);
+                resolve([]);
+            }
+        });
+        worker.on('error', (err) => {
+            worker.terminate(); 
+            console.error(err);
+            resolve([]);
+        });
+
+        worker.postMessage({ source, options, documentPath, prettierPath, pluginPath });
+    });
 }
+
