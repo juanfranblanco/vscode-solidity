@@ -24,6 +24,8 @@ export abstract class SolcCompilerLoader {
         return this.localSolc.version();
     }
 
+  
+
     public abstract matchesConfiguration(configuration: string): boolean;
     public abstract canCompilerBeLoaded(): boolean;
     public abstract getConfiguration(): any;
@@ -254,6 +256,7 @@ export class RemoteReleases {
                 if (version === 'latest') { resolve(version); }
                 try {
                     const releases = await this.getSolcReleases();
+                    
                     // tslint:disable-next-line:forin
                     for (const release in releases) {
                         const fullVersion = this.getFullVersionFromFileName(releases[release]);
@@ -273,15 +276,15 @@ export class RemoteReleases {
 
 export class RemoteCompilerLoader extends SolcCompilerLoader {
 
-    private version: string;
+    private configuredVersion: string;
     private solcCachePath: string;
 
     public getConfiguration() {
-        return this.version;
+        return this.configuredVersion;
     }
 
     public matchesConfiguration(configuration: string): boolean {
-        return configuration === this.version;
+       return false;
     }
 
     public setSolcCache(solcCachePath: string): void {
@@ -293,16 +296,18 @@ export class RemoteCompilerLoader extends SolcCompilerLoader {
         this.compilerType = compilerType.remote;
     }
 
-    public init(version: string) {
+    public initVersion(version: string) {
+        console.log("initVersion");
+        console.log(version);
         if (!this.matchesConfiguration(version)) {
-            this.version = version;
+            this.configuredVersion = version;
             this.localSolc = null;
         }
     }
 
     public canCompilerBeLoaded(): boolean {
         // this should check if the string version is valid
-        if (typeof this.version !== 'undefined' && this.version !== null && this.version !== '') {
+        if (typeof this.configuredVersion !== 'undefined' && this.configuredVersion !== null && this.configuredVersion !== '') {
             return true;
         }
         return false;
@@ -311,24 +316,24 @@ export class RemoteCompilerLoader extends SolcCompilerLoader {
 
     public initialiseCompiler(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            if (this.isInitialisedAlready(this.version)) {
+            if (this.isInitialisedAlready(this.configuredVersion)) {
                 resolve();
             }
             if (this.canCompilerBeLoaded()) {
                 const solcService = this;
-                new RemoteReleases().resolveRelease(this.version).then(resolvedVersion =>
+                new RemoteReleases().resolveRelease(this.configuredVersion).then(resolvedVersion =>
                     this.loadRemoteVersionRetry(resolvedVersion, 1, 3).then((solcSnapshot) => {
                             solcService.localSolc = solcSnapshot;
                             resolve();
                         }).catch((error) => {
-                            reject('There was an error loading the remote version: ' + this.version + ',' + error);
+                            reject('There was an error loading the remote version: ' + this.configuredVersion + ',' + error);
                         }),
                     ).catch((error) => {
-                        reject('There was an error loading the remote version: ' + this.version + ',' + error);
+                        reject('There was an error loading the remote version: ' + this.configuredVersion + ',' + error);
                     });
             } else {
                 this.localSolc = null;
-                reject('Compiler cannot load remote version:' + this.version);
+                reject('Compiler cannot load remote version:' + this.configuredVersion);
             }
         });
     }
@@ -422,7 +427,9 @@ export class SolcCompiler {
 
     public initialiseAllCompilerSettings(remoteVersionSetting: string, localPathSetting: string, nodeModuleSetting: string, selectedCompiler: compilerType) {
         this.nodeCompiler.init(this.rootPath, nodeModuleSetting);
-        this.remoteCompiler.init(remoteVersionSetting);
+        console.log("initialiseAllCompilerSettings");
+        console.log(remoteVersionSetting);
+        this.remoteCompiler.initVersion(remoteVersionSetting);
         this.localCompiler.init(localPathSetting);
         this.embeddedCompiler.init();
         this.selectedCompiler = selectedCompiler;
@@ -438,15 +445,33 @@ export class SolcCompiler {
 
     public compile(contracts: any, selectedCompiler: compilerType = null): any {
         const compiler = this.getCompiler(selectedCompiler);
+      
         return compiler.localSolc.compile(contracts);
+    }
+
+    public getLoadedVersion(): string {
+        const compiler = this.getCompiler();
+        return compiler.localSolc.version();
+    }
+
+    public getLoadedCompilerType(): string {
+        const compiler = this.getCompiler();
+        return compilerType[compiler.compilerType];
+    }
+
+    public getSelectedVersion(): string {
+        const compiler = this.getCompiler();
+        return compiler.getConfiguration();
     }
 
     public getCompiler(selectedCompiler: compilerType = null): SolcCompilerLoader {
         if (selectedCompiler == null) {
             selectedCompiler = this.selectedCompiler;
         }
+       
         switch (selectedCompiler) {
             case compilerType.embedded:
+                this.embeddedCompiler.init();
                 return this.embeddedCompiler;
             case compilerType.localNodeModule:
                 return this.nodeCompiler;

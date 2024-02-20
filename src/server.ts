@@ -191,6 +191,12 @@ function validate(document: TextDocument) {
 
         try {
             if (enabledAsYouTypeErrorCheck) {
+               connection.console.info('Validating using the compiler selected: ' + solcCompiler.getLoadedCompilerType());
+               connection.console.info('Validating using compiler version: ' +  solcCompiler.getLoadedVersion());
+               connection.console.info('Validating using compiler selected version: ' +  solcCompiler.getSelectedVersion());
+               
+               //connection.console.info('Validating using compiler configured version: ' +  compileUsingRemoteVersion);
+
                 const errors: CompilerError[] = solcCompiler
                     .compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText,
                         packageDefaultDependenciesDirectory,
@@ -223,6 +229,10 @@ function updateSoliditySettings(soliditySettings: SoliditySettings) {
     nodeModulePackage = soliditySettings.nodemodulespackage;
     defaultCompiler = compilerType[soliditySettings.defaultCompiler];
     evmVersion = soliditySettings.evmVersion;
+    //connection.console.info('changing settings: ' +  soliditySettings.compileUsingRemoteVersion);
+    //connection.console.info('changing settings: ' +  compileUsingRemoteVersion);
+    connection.console.info(defaultCompiler.toString());
+
 
     packageDefaultDependenciesContractsDirectory = soliditySettings.packageDefaultDependenciesContractsDirectory;
     if (typeof soliditySettings.packageDefaultDependenciesDirectory === 'string') {
@@ -324,9 +334,11 @@ function validateAllDocuments() {
 
 function startValidation() {
     if (enabledAsYouTypeErrorCheck) {
+       // connection.console.info('changing settings: ' +  compileUsingRemoteVersion);
         solcCompiler.initialiseAllCompilerSettings(compileUsingRemoteVersion, compileUsingLocalVersion, nodeModulePackage, defaultCompiler);
         solcCompiler.initialiseSelectedCompiler().then(() => {
             connection.console.info('Validating using the compiler selected: ' + compilerType[defaultCompiler]);
+            connection.console.info('Validating using compiler version: ' +  solcCompiler.getLoadedVersion());
             validateAllDocuments();
         }).catch(reason => {
             connection.console.error('An error has occurred initialising the compiler selected ' + compilerType[defaultCompiler] + ', please check your settings, reverting to the embedded compiler. Error: ' + reason);
@@ -346,7 +358,11 @@ documents.onDidChangeContent(event => {
     if (!validatingDocument && !validatingAllDocuments) {
         validatingDocument = true; // control the flag at a higher level
         // slow down, give enough time to type (1.5 seconds?)
-        setTimeout(() => validate(document), validationDelay);
+
+        
+        setTimeout(() => 
+         solcCompiler.initialiseSelectedCompiler().then(() => {
+        validate(document)}), validationDelay);
     }
 });
 
@@ -429,11 +445,21 @@ connection.onDidChangeWatchedFiles(_change => {
     validateAllDocuments();
 });
 
+const standAloneServerSide = false; //put this in the package json
+
 connection.onDidChangeConfiguration((change) => {
-    updateSoliditySettings({
-        ...defaultSoliditySettings,
-        ...(change.settings?.solidity || {}),
-    });
+    if(standAloneServerSide) {
+        updateSoliditySettings({
+            ...defaultSoliditySettings,
+            ...(change.settings?.solidity || {}),
+        });
+    }else{
+        updateSoliditySettings(
+            change.settings?.solidity
+        );
+
+    }
+   
 });
 
 function linterName(settings: SoliditySettings) {
