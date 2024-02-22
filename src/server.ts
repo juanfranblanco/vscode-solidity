@@ -98,7 +98,7 @@ let validatingAllDocuments = false;
 let packageDefaultDependenciesDirectory: string[] = ['lib', 'node_modules'];
 let packageDefaultDependenciesContractsDirectory: string[] = ['src', 'contracts', ''];
 let workspaceFolders: WorkspaceFolder[];
-let remappings: string[];
+let remappings: string[] = [];
 let selectedDocument = null;
 let selectedProjectFolder = null;
 let codeWalkerService: CodeWalkerService = null;
@@ -106,13 +106,26 @@ let codeWalkerService: CodeWalkerService = null;
 
 
 function getCodeWalkerService() {
+    
     if (codeWalkerService !== null) {
         if (codeWalkerService.rootPath === selectedProjectFolder &&
-            codeWalkerService.packageDefaultDependenciesDirectory.sort().join('') === packageDefaultDependenciesDirectory.sort().join('') &&
-            codeWalkerService.packageDefaultDependenciesContractsDirectory.sort().join('') === packageDefaultDependenciesContractsDirectory.sort().join('') &&
-            codeWalkerService.remappings.sort().join('') === remappings.sort().join('')) {
+            (codeWalkerService.packageDefaultDependenciesContractsDirectory !== undefined &&
+                packageDefaultDependenciesDirectory !== undefined &&
+                codeWalkerService.packageDefaultDependenciesDirectory.sort().join('') 
+                === packageDefaultDependenciesDirectory.sort().join('') 
+            ) &&
+            (
+                codeWalkerService.packageDefaultDependenciesContractsDirectory !== undefined && 
+                packageDefaultDependenciesContractsDirectory !== undefined &&
+                codeWalkerService.packageDefaultDependenciesContractsDirectory.sort().join('') 
+                === packageDefaultDependenciesContractsDirectory.sort().join('') 
+            ) &&
+            (
+                codeWalkerService.remappings !== undefined && remappings !== undefined &&
+                codeWalkerService.remappings.sort().join('') === remappings.sort().join('')
+            ) ) {
             return codeWalkerService;
-        }
+            }
     }
     codeWalkerService = new CodeWalkerService(selectedProjectFolder,  packageDefaultDependenciesDirectory,
         packageDefaultDependenciesContractsDirectory, remappings,
@@ -215,7 +228,7 @@ function validate(document: TextDocument) {
                 });
             }
         } catch (e) {
-             // gracefull catch
+            connection.console.info(e.message);
         }
 
         const diagnostics = linterDiagnostics.concat(compileErrorDiagnostics);
