@@ -17,13 +17,13 @@ export class CodeWalkerService {
   public remappings: string[];
   public rootPath: string;
   public packageDefaultDependenciesDirectory: string[];
-  public packageDefaultDependenciesContractsDirectory: string;
+  public packageDefaultDependenciesContractsDirectory: string[];
   public parsedDocumentsCache: ParsedDocument[] = [];
 
   constructor(
     rootPath: string,
     packageDefaultDependenciesDirectory: string[],
-    packageDefaultDependenciesContractsDirectory: string,
+    packageDefaultDependenciesContractsDirectory: string[],
     remappings: string[],
   ) {
     this.rootPath = rootPath;

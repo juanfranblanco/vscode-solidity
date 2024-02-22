@@ -10,11 +10,20 @@ export class Package {
     public build_dir: string;
     public absoluletPath: string;
     public dependencies: any;
-    public sol_sources_alternative_directories: string[] = [];
+    private sol_sources_alternative_directories: string[] = [];
 
-    constructor(solidityDirectory: string) {
+    public appendToSolSourcesAternativeDirectories(extraSolSourcesAlternativeDirectories: string[]) {
+        this.sol_sources_alternative_directories = [...new Set(this.sol_sources_alternative_directories.concat(extraSolSourcesAlternativeDirectories))];
+    }
+
+    constructor(solidityDirectory: string[]) {
         this.build_dir = 'bin';
-        this.sol_sources = solidityDirectory;
+        if (solidityDirectory !== null && solidityDirectory.length > 0 ) {
+            this.sol_sources = solidityDirectory[0];
+            this.sol_sources_alternative_directories = solidityDirectory;
+        } else {
+            this.sol_sources = '';
+        }
     }
 
     public getSolSourcesAbsolutePath() {

@@ -23,18 +23,19 @@ const hardhatConfigTsFileName = 'hardhat.config.ts';
 const truffleConfigFileName = 'truffle-config.js';
 const foundryConfigFileName = 'foundry.toml';
 
-const projectFilesAtRoot = [remappingConfigFileName, brownieConfigFileName, foundryConfigFileName, hardhatConfigJsFileName, hardhatConfigTsFileName, truffleConfigFileName, packageConfigFileName];
+const projectFilesAtRoot = [remappingConfigFileName, brownieConfigFileName, foundryConfigFileName,
+                                hardhatConfigJsFileName, hardhatConfigTsFileName, truffleConfigFileName, packageConfigFileName];
 
 // These are set using user configuration settings
-let defaultPackageDependenciesDirectory = 'lib';
-let packageDependenciesContractsDirectory = 'src';
-let defaultPackageDependenciesContractsDirectories = ['', 'src', 'contracts'];
+const defaultPackageDependenciesDirectory = ['lib', 'node_modules'];
+let packageDependenciesContractsDirectory = ['', 'src', 'contracts'];
+const defaultPackageDependenciesContractsDirectories = ['', 'src', 'contracts'];
 
 export function findFirstRootProjectFile(rootPath: string, currentDocument: string) {
     return util.findDirUpwardsToCurrentDocumentThatContainsAtLeastFileNameSync(projectFilesAtRoot, currentDocument, rootPath);
 }
 
-function createPackage(rootPath: string, packageContractsDirectory: string) {
+function createPackage(rootPath: string, packageContractsDirectory: string[]) {
     const projectPackageFile = path.join(rootPath, packageConfigFileName);
     if (fs.existsSync(projectPackageFile)) {
         // TODO: automapper
@@ -77,7 +78,7 @@ function readYamlSync(filePath: string) {
 
 export function initialiseProject(rootPath: string,
     packageDefaultDependenciesDirectories: string[],
-    packageDefaultDependenciesContractsDirectory: string,
+    packageDefaultDependenciesContractsDirectory: string[],
     remappings: string[]): Project {
 
     packageDependenciesContractsDirectory = packageDefaultDependenciesContractsDirectory;
@@ -188,8 +189,8 @@ function loadDependencies(rootPath: string, projectPackage: Package,
         Object.keys(projectPackage.dependencies).forEach(dependency => {
             if (!depPackages.some((existingDepPack: Package) => existingDepPack.name === dependency)) {
                 const depPackageDependencyPath = path.join(rootPath, packageDirectory, dependency);
-                const depPackage = createPackage(depPackageDependencyPath, '');
-                depPackage.sol_sources_alternative_directories = dependencyAlternativeSmartContractDirectories;
+                const depPackage = createPackage(depPackageDependencyPath, ['']);
+                depPackage.appendToSolSourcesAternativeDirectories(dependencyAlternativeSmartContractDirectories);
 
                 if (depPackage !== null) {
                     depPackages.push(depPackage);
@@ -210,7 +211,7 @@ function loadDependencies(rootPath: string, projectPackage: Package,
             let depPackage = createPackage(fullPath, null);
             if (depPackage == null) {
                 depPackage = createDefaultPackage(fullPath);
-                depPackage.sol_sources_alternative_directories = dependencyAlternativeSmartContractDirectories;
+                depPackage.appendToSolSourcesAternativeDirectories(dependencyAlternativeSmartContractDirectories);
             }
             if (!depPackages.some((existingDepPack: Package) => existingDepPack.name === depPackage.name)) {
                 depPackages.push(depPackage);
@@ -228,14 +229,14 @@ function getDirectories(dirPath: string): string[] {
   });
 }
 
-function createDefaultPackage(packagePath: string, packageDependencySmartContractDirectory = ''): Package {
+function createDefaultPackage(packagePath: string, packageDependencySmartContractDirectory: string[] = ['']): Package {
     const defaultPackage = new Package(packageDependencySmartContractDirectory);
     defaultPackage.absoluletPath = packagePath;
     defaultPackage.name = path.basename(packagePath);
     return defaultPackage;
 }
 
-function createProjectPackage(rootPath: string, packageDependencySmartContractDirectory = ''): Package {
+function createProjectPackage(rootPath: string, packageDependencySmartContractDirectory: string[] = ['']): Package {
     let projectPackage = createPackage(rootPath, packageDependencySmartContractDirectory);
     // Default project package,this could be passed as a function
     if (projectPackage === null) {

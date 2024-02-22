@@ -28,6 +28,9 @@ import { replaceRemappings } from './common/util';
 import { findFirstRootProjectFile } from './common/projectService';
 
 import packageJson from '../package.json';
+const standAloneServerSide = false; // put this in the package json .. use this setting to build
+// the standalone server and loade the default settings from package.json
+
 
 interface SoliditySettings {
     // option for backward compatibilities, please use "linter" option instead
@@ -41,7 +44,7 @@ interface SoliditySettings {
     solhintRules: any;
     validationDelay: number;
     packageDefaultDependenciesDirectory: string|string[];
-    packageDefaultDependenciesContractsDirectory: string;
+    packageDefaultDependenciesContractsDirectory: string|string[];
     remappings: string[];
     remappingsWindows: string[];
     remappingsUnix: string[];
@@ -87,13 +90,13 @@ let validationDelay = 1500;
 let solcCachePath = '';
 let hasWorkspaceFolderCapability = false;
 let monoRepoSupport = false;
-let evmVersion = "";
+let evmVersion = '';
 
 // flags to avoid trigger concurrent validations (compiling is slow)
 let validatingDocument = false;
 let validatingAllDocuments = false;
-let packageDefaultDependenciesDirectory: string[] = ['lib'];
-let packageDefaultDependenciesContractsDirectory = 'src';
+let packageDefaultDependenciesDirectory: string[] = ['lib', 'node_modules'];
+let packageDefaultDependenciesContractsDirectory: string[] = ['src', 'contracts', ''];
 let workspaceFolders: WorkspaceFolder[];
 let remappings: string[];
 let selectedDocument = null;
@@ -106,7 +109,7 @@ function getCodeWalkerService() {
     if (codeWalkerService !== null) {
         if (codeWalkerService.rootPath === selectedProjectFolder &&
             codeWalkerService.packageDefaultDependenciesDirectory.sort().join('') === packageDefaultDependenciesDirectory.sort().join('') &&
-            codeWalkerService.packageDefaultDependenciesContractsDirectory === packageDefaultDependenciesContractsDirectory &&
+            codeWalkerService.packageDefaultDependenciesContractsDirectory.sort().join('') === packageDefaultDependenciesContractsDirectory.sort().join('') &&
             codeWalkerService.remappings.sort().join('') === remappings.sort().join('')) {
             return codeWalkerService;
         }
@@ -194,8 +197,11 @@ function validate(document: TextDocument) {
                connection.console.info('Validating using the compiler selected: ' + solcCompiler.getLoadedCompilerType());
                connection.console.info('Validating using compiler version: ' +  solcCompiler.getLoadedVersion());
                connection.console.info('Validating using compiler selected version: ' +  solcCompiler.getSelectedVersion());
-               
-               //connection.console.info('Validating using compiler configured version: ' +  compileUsingRemoteVersion);
+               // connection.console.info('remappings: ' +  remappings.join(','));
+               // connection.console.info(packageDefaultDependenciesDirectory.join(','));
+               // connection.console.info(packageDefaultDependenciesContractsDirectory.join(','));
+
+               // connection.console.info('Validating using compiler configured version: ' +  compileUsingRemoteVersion);
 
                 const errors: CompilerError[] = solcCompiler
                     .compileSolidityDocumentAndGetDiagnosticErrors(filePath, documentText,
@@ -229,16 +235,20 @@ function updateSoliditySettings(soliditySettings: SoliditySettings) {
     nodeModulePackage = soliditySettings.nodemodulespackage;
     defaultCompiler = compilerType[soliditySettings.defaultCompiler];
     evmVersion = soliditySettings.evmVersion;
-    //connection.console.info('changing settings: ' +  soliditySettings.compileUsingRemoteVersion);
-    //connection.console.info('changing settings: ' +  compileUsingRemoteVersion);
+    // connection.console.info('changing settings: ' +  soliditySettings.compileUsingRemoteVersion);
+    // connection.console.info('changing settings: ' +  compileUsingRemoteVersion);
     connection.console.info(defaultCompiler.toString());
 
-
-    packageDefaultDependenciesContractsDirectory = soliditySettings.packageDefaultDependenciesContractsDirectory;
     if (typeof soliditySettings.packageDefaultDependenciesDirectory === 'string') {
         packageDefaultDependenciesDirectory = [<string>soliditySettings.packageDefaultDependenciesDirectory];
     } else {
         packageDefaultDependenciesDirectory = <string[]>soliditySettings.packageDefaultDependenciesDirectory;
+    }
+
+    if (typeof soliditySettings.packageDefaultDependenciesContractsDirectory === 'string') {
+        packageDefaultDependenciesContractsDirectory = [<string>soliditySettings.packageDefaultDependenciesContractsDirectory];
+    } else {
+        packageDefaultDependenciesContractsDirectory = <string[]>soliditySettings.packageDefaultDependenciesContractsDirectory;
     }
     remappings = soliditySettings.remappings;
     monoRepoSupport = soliditySettings.monoRepoSupport;
@@ -268,7 +278,7 @@ function updateSoliditySettings(soliditySettings: SoliditySettings) {
     }
 
     startValidation();
-};
+}
 
 connection.onSignatureHelp((): SignatureHelp => {
     return null;
@@ -359,10 +369,9 @@ documents.onDidChangeContent(event => {
         validatingDocument = true; // control the flag at a higher level
         // slow down, give enough time to type (1.5 seconds?)
 
-        
-        setTimeout(() => 
+        setTimeout(() =>
          solcCompiler.initialiseSelectedCompiler().then(() => {
-        validate(document)}), validationDelay);
+        validate(document); }), validationDelay);
     }
 });
 
@@ -409,7 +418,9 @@ connection.onInitialize((params): InitializeResult => {
         };
     }
 
-    updateSoliditySettings(defaultSoliditySettings);
+    if (standAloneServerSide) {
+        updateSoliditySettings(defaultSoliditySettings);
+    }
     return result;
 });
 
@@ -445,21 +456,21 @@ connection.onDidChangeWatchedFiles(_change => {
     validateAllDocuments();
 });
 
-const standAloneServerSide = false; //put this in the package json
+
 
 connection.onDidChangeConfiguration((change) => {
-    if(standAloneServerSide) {
+    if (standAloneServerSide) {
         updateSoliditySettings({
             ...defaultSoliditySettings,
             ...(change.settings?.solidity || {}),
         });
-    }else{
+    } else {
         updateSoliditySettings(
-            change.settings?.solidity
+            change.settings?.solidity,
         );
 
     }
-   
+
 });
 
 function linterName(settings: SoliditySettings) {

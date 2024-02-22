@@ -204,8 +204,11 @@
           "description": "Enables mono repo support in the current workspace, a project folder will be signaled if a file is found on the current folder or above including: remappings.txt, truffle-config.js, brownie-config.yaml, foundry.toml, hardhat.config.js, hardhat.config.ts, dappfile"
         },
         "solidity.packageDefaultDependenciesContractsDirectory": {
-          "type": "string",
-          "default": "",
+          "type": [
+            "string",
+            "string[]"
+          ],
+          "default": ["src", "contracts", ""],
           "description": "Default directory where the Package Dependency store its contracts, i.e: 'src', 'contracts', or just a blank string '', this is used to avoid typing imports with subfolder paths"
         },
         "solidity.remappings": {

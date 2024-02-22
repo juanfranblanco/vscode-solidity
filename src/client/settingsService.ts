@@ -7,12 +7,14 @@ export class SettingsService {
 
     public static getPackageDefaultDependenciesDirectories(): string[] {
         const packageDefaultDependenciesDirectory = vscode.workspace.getConfiguration('solidity').get<string|string[]>('packageDefaultDependenciesDirectory');
-        if (typeof packageDefaultDependenciesDirectory === 'string') {return [<string>packageDefaultDependenciesDirectory];}
+        if (typeof packageDefaultDependenciesDirectory === 'string') {return [<string>packageDefaultDependenciesDirectory]; }
         return <string[]>packageDefaultDependenciesDirectory;
     }
 
-    public static getPackageDefaultDependenciesContractsDirectory(): string {
-        return vscode.workspace.getConfiguration('solidity').get<string>('packageDefaultDependenciesContractsDirectory');
+    public static getPackageDefaultDependenciesContractsDirectory(): string[] {
+        const packageDefaultDependenciesContractsDirectory = vscode.workspace.getConfiguration('solidity').get<string|string[]>('packageDefaultDependenciesContractsDirectory');
+        if (typeof packageDefaultDependenciesContractsDirectory === 'string') {return [<string>packageDefaultDependenciesContractsDirectory]; }
+        return <string[]>packageDefaultDependenciesContractsDirectory;
     }
 
     public static getCompilerOptimisation(): number {
@@ -38,7 +40,7 @@ export class SettingsService {
 
     public static getExplorerEtherscanBasedApiKey(server: string): string {
 
-        var key = EtherscanDomainChainMapper.getApiKeyMappings()[server];
+        const key = EtherscanDomainChainMapper.getApiKeyMappings()[server];
         return vscode.workspace.getConfiguration('solidity').get<string>(key);
     }
 

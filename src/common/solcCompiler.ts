@@ -24,7 +24,7 @@ export abstract class SolcCompilerLoader {
         return this.localSolc.version();
     }
 
-  
+
 
     public abstract matchesConfiguration(configuration: string): boolean;
     public abstract canCompilerBeLoaded(): boolean;
@@ -256,7 +256,6 @@ export class RemoteReleases {
                 if (version === 'latest') { resolve(version); }
                 try {
                     const releases = await this.getSolcReleases();
-                    
                     // tslint:disable-next-line:forin
                     for (const release in releases) {
                         const fullVersion = this.getFullVersionFromFileName(releases[release]);
@@ -285,8 +284,7 @@ export class RemoteCompilerLoader extends SolcCompilerLoader {
 
     public matchesConfiguration(configuration: string): boolean {
         if (typeof this.configuredVersion !== 'undefined' && this.configuredVersion !== null && this.configuredVersion !== '') {
-            if(this.localSolc !== null)
-            {
+            if (this.localSolc !== null) {
                 return this.getVersion().startsWith(configuration.substring(1)) && this.configuredVersion === configuration;
             }
             return this.configuredVersion === configuration;
@@ -304,7 +302,7 @@ export class RemoteCompilerLoader extends SolcCompilerLoader {
     }
 
     public initVersion(version: string) {
-        console.log("initVersion");
+        console.log('initVersion');
         console.log(version);
         if (!this.matchesConfiguration(version)) {
             this.configuredVersion = version;
@@ -450,7 +448,7 @@ export class SolcCompiler {
 
     public compile(contracts: any, selectedCompiler: compilerType = null): any {
         const compiler = this.getCompiler(selectedCompiler);
-      
+
         return compiler.localSolc.compile(contracts);
     }
 
@@ -473,7 +471,7 @@ export class SolcCompiler {
         if (selectedCompiler == null) {
             selectedCompiler = this.selectedCompiler;
         }
-       
+
         switch (selectedCompiler) {
             case compilerType.embedded:
                 return this.embeddedCompiler;
@@ -489,7 +487,8 @@ export class SolcCompiler {
     }
 
     public compileSolidityDocumentAndGetDiagnosticErrors(filePath: string, documentText: string,
-        packageDefaultDependenciesDirectory: string[], packageDefaultDependenciesContractsDirectory: string, remappings: string[], selectedCompiler: compilerType = null, evmVersion = "") {
+        packageDefaultDependenciesDirectory: string[], packageDefaultDependenciesContractsDirectory: string[],
+        remappings: string[], selectedCompiler: compilerType = null, evmVersion = '') {
             if (selectedCompiler == null) {
                 selectedCompiler = this.selectedCompiler;
             }

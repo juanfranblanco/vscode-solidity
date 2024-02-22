@@ -29,7 +29,7 @@ export class Project {
        });
        exclusions.push(path.join(this.projectPackage.getSolSourcesAbsolutePath(), this.projectPackage.build_dir, '**'));
        this.getAllRelativeLibrariesAsExclusionsFromRemappings().forEach(x => exclusions.push(x));
-       return glob.sync( solPath, { ignore: exclusions, nodir: true })
+       return glob.sync( solPath, { ignore: exclusions, nodir: true });
     }
 
     public getAllRelativeLibrariesAsExclusionsFromRemappings(): string[] {

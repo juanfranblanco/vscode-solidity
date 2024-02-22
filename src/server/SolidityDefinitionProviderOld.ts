@@ -12,14 +12,14 @@ import * as solparse from 'solparse-exp-jb';
 export class SolidityDefinitionProviderOld {
   private rootPath: string;
   private packageDefaultDependenciesDirectory: string[];
-  private packageDefaultDependenciesContractsDirectory: string;
+  private packageDefaultDependenciesContractsDirectory: string[];
   private project: Project;
   private remappings: string[];
 
   constructor(
     rootPath: string,
     packageDefaultDependenciesDirectory: string[],
-    packageDefaultDependenciesContractsDirectory: string,
+    packageDefaultDependenciesContractsDirectory: string[],
     remappings: string[] ) {
     this.rootPath = rootPath;
     this.packageDefaultDependenciesDirectory = packageDefaultDependenciesDirectory;
@@ -48,7 +48,7 @@ export class SolidityDefinitionProviderOld {
    */
   public provideDefinition(
     document: vscode.TextDocument,
-    position: vscode.Position
+    position: vscode.Position,
   ): Thenable<vscode.Location | vscode.Location[]> {
 
 
