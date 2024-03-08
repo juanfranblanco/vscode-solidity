@@ -130,6 +130,18 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
 
     }
 
+    public getInheritedComment(elementName: string, extendedContractName: string): string {
+        let comment = '';
+        const contract = this.document.findContractByName(extendedContractName);
+        if (contract !== null) {
+            const found = contract.findMethodCalls(elementName);
+            if (found.length > 0) {
+                comment = found[0].getComment();
+            }
+        }
+        return comment;
+    }
+
     public initialiseExtendContracts() {
         if (this.contractIsStatements.length > 0) {
             this.contractIsStatements.forEach(isStatement => {

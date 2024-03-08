@@ -92,6 +92,18 @@ export class ParsedCode {
         }
     }
 
+    public extractContractName(text: string): string | null {
+        const pattern = /@inheritdoc\s+(\w+)/;
+        const matches = text.match(pattern);
+    
+        if (matches && matches.length > 1) {
+            // The second element in the array will be the contract/interface name
+            return matches[1];
+        }
+    
+        return null;
+    }
+
     public getLineRange(lineNumber: number){
         return Range.create(Position.create(lineNumber, 0), Position.create(lineNumber + 1, 0));
     }
@@ -104,6 +116,8 @@ export class ParsedCode {
         }
     }
 
+
+
     public getComment(): string {
         if (this.comment === null && this.supportsNatSpec) {
             const uri = URI.file(this.document.sourceDocument.absolutePath).toString();
@@ -112,8 +126,15 @@ export class ParsedCode {
             let comment = '';
             let currentLine = position.line - 1;
             while (this.isCommentLine(document, currentLine)) {
-                comment = '\t' + document.getText(this.getLineRange(currentLine)).trimStart() + comment;
+                let lineText = document.getText(this.getLineRange(currentLine)).trimStart()
+                
                 currentLine = currentLine - 1;
+                let contractName = this.extractContractName(lineText);
+                if(contractName && this.contract !== null) {
+                    comment = '\t' + lineText + this.contract.getInheritedComment(this.name, contractName) + comment;
+                } else {
+                    comment = '\t' + lineText + comment;
+                }
             }
             this.comment = comment;
          }
