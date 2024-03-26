@@ -42,6 +42,7 @@ export function compileActiveContract(compiler: Compiler, overrideDefaultCompile
     const packageDefaultDependenciesDirectory = SettingsService.getPackageDefaultDependenciesDirectories();
     const packageDefaultDependenciesContractsDirectory = SettingsService.getPackageDefaultDependenciesContractsDirectory();
     const compilationOptimisation = SettingsService.getCompilerOptimisation();
+    const evmVersion = SettingsService.getEVMVersion();
     const remappings = workspaceUtil.getSolidityRemappings();
     const project = initialiseProject(workspaceUtil.getCurrentProjectInWorkspaceRootFsPath(),
                                      packageDefaultDependenciesDirectory,
@@ -54,7 +55,7 @@ export function compileActiveContract(compiler: Compiler, overrideDefaultCompile
         project.packagesDir.forEach(x => packagesPath.push(formatPath(x)));
     }
 
-    return compiler.compile(contractsCollection.getDefaultSourceDocumentsForCompilation(compilationOptimisation),
+    return compiler.compile(contractsCollection.getDefaultSourceDocumentsForCompilation(compilationOptimisation, evmVersion),
             diagnosticCollection,
             project.projectPackage.build_dir,
             project.projectPackage.absoluletPath,

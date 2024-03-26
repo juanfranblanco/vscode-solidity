@@ -21,6 +21,10 @@ export class SettingsService {
         return vscode.workspace.getConfiguration('solidity').get<number>('compilerOptimization');
     }
 
+    public static getEVMVersion(): string {
+        return vscode.workspace.getConfiguration('solidity').get<string>('evmVersion');
+    }
+
 
     public static getRemappings(): string[] {
         return vscode.workspace.getConfiguration('solidity').get<string[]>('remappings');

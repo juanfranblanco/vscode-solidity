@@ -20,6 +20,7 @@ export function compileAllContracts(compiler: Compiler, diagnosticCollection: vs
     const packageDefaultDependenciesDirectory = SettingsService.getPackageDefaultDependenciesDirectories();
     const packageDefaultDependenciesContractsDirectory = SettingsService.getPackageDefaultDependenciesContractsDirectory();
     const compilationOptimisation = SettingsService.getCompilerOptimisation();
+    const evmVersion = SettingsService.getEVMVersion();
     const remappings = workspaceUtil.getSolidityRemappings();
 
     const contractsCollection = new SourceDocumentCollection();
@@ -51,7 +52,7 @@ export function compileAllContracts(compiler: Compiler, diagnosticCollection: vs
         project.packagesDir.forEach(x => packagesPath.push(formatPath(x)));
     }
 
-    compiler.compile(contractsCollection.getDefaultSourceDocumentsForCompilation(compilationOptimisation),
+    compiler.compile(contractsCollection.getDefaultSourceDocumentsForCompilation(compilationOptimisation, evmVersion),
             diagnosticCollection,
             project.projectPackage.build_dir,
             project.projectPackage.absoluletPath,
