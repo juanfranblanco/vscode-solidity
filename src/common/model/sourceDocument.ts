@@ -62,7 +62,7 @@ export class SourceDocument {
                 }
             }
         }
-        return importPath;
+        return path.resolve(this.project.projectPackage.absoluletPath, importPath);
     }
 
     public getAllImportFromPackages() {
