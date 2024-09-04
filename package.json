@@ -268,8 +268,21 @@
       },
       {
         "id": "solidity-markdown-injection"
+      },
+      {
+          "id": "json", 
+          "aliases": ["JSON", "json"],
+          "extensions": [".nethereum-gen.multisettings"]
       }
     ],
+    "configurationDefaults": {
+      "[json]": {
+        "files.associations": {
+          "nethereum-gen.multisettings": "json",
+          "nethereum-gen.settings": "json"
+        }
+      }
+    },
     "commands": [
       {
         "command": "solidity.compile.active",
@@ -353,7 +366,7 @@
       },
       {
         "command": "solidity.codeGenFromNethereumGenAbisFile",
-        "title": "Solidity: Code generate Definitions for Abi files in selected 'nethereum-gen.abis'"
+        "title": "Solidity: Code generate Definitions for Abi files in selected 'nethereum-gen.multisettings'"
       },
       {
         "command": "solidity.fixDocument",
@@ -528,7 +541,7 @@
           "group": "3_solidity"
         },
         {
-          "when": "resourceFilename == nethereum-gen.abis",
+          "when": "resourceFilename =~ /^(.*\\.)?nethereum-gen\\.multisettings$/",
           "command": "solidity.codeGenFromNethereumGenAbisFile",
           "group": "3_solidity"
         }
@@ -578,6 +591,10 @@
           "when": "explorerResourceIsFolder || resourceExtname == .sol || resourceExtname == .abi",
           "command": "solidity.downloadVerifiedSmartContractEtherscan",
           "group": "2_solidity"
+        },{
+          "when": "resourceFilename =~ /^(.*\\.)?nethereum-gen\\.multisettings$/",
+          "command": "solidity.codeGenFromNethereumGenAbisFile",
+          "group": "3_solidity"
         }
       ]
     },

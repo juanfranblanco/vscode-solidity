@@ -368,14 +368,108 @@ You may have only the abi of a smart contract and want to code generate the cont
 ![Screenshot](screenshots/abigeneration.png)
 
 
-## Single smart contract manual code generation
+## Single smart contract manual code generation/
 To code generate the Nethereum contract api from a single smart contract, you need to select the compiled "json" output file from the "bin" folder, press F1 and start typing "Solidity: Code generate" and select what language you want to generate for the current selected file.
 
 ## All smart contracts manual code generation
 To code generate the Nethereum contract for all smart contracts already compiled, just press F1, and start typing "Solidity: Code generate" and select the option for all contracts for your desired language.
 
-### (Deprecated) Analysis of smart contracts with Mythx
-Mythx analysis tool, has been moved to its own stand alone extension, [please download it here](https://marketplace.visualstudio.com/items?itemName=MythX.mythxvsc).
+Here's the updated section for the **VSCode Solidity** extension's `README.md`, including the note that multiple `nethereum-gen.multisettings` files can be used, and explaining that they need to be prefixed if desired:
+
+---
+
+### Code Generation with `nethereum-gen.multisettings`
+
+The Solidity extension for VSCode supports advanced contract code generation through configuration files like `nethereum-gen.multisettings`. These files allow you to define multiple code generation settings for your smart contracts, enabling the generation of client-side code for various platforms (e.g., C#, Unity) based on Solidity ABI files.
+
+You can have **multiple `nethereum-gen.multisettings` files** for different projects, modules, or environments by prefixing the file name as needed (e.g., `project1.nethereum-gen.multisettings`, `moduleX.nethereum-gen.multisettings`). This allows for flexibility in organizing large projects with distinct code generation needs.
+
+A typical `nethereum-gen.multisettings` file uses the following structure:
+
+```json
+[
+    {
+        "paths": ["out/ERC20.sol/Standard_Token.json"],
+        "generatorConfigs": [
+            {
+                "baseNamespace": "MyProject.Contracts",
+                "basePath": "codeGenNodeTest/GeneratorSets/Example2/MyProject.Contracts",
+                "codeGenLang": 0,  // Code generation for C#
+                "generatorType": "ContractDefinition"  // Generates contract definitions in C#
+            },
+            {
+                "baseNamespace": "MyProject.Contracts",
+                "basePath": "codeGenNodeTest/GeneratorSets/Example2/MyProject.Contracts",
+                "codeGenLang": 0,  // Code generation for C#
+                "generatorType": "UnityRequest"  // Generates Unity client request code
+            }
+        ]
+    },
+    {
+        "paths": ["out/IncrementSystem.sol/IncrementSystem.json"],
+        "generatorConfigs": [
+            {
+                "baseNamespace": "MyProject.Contracts.MyWorld1.Systems",
+                "basePath": "codeGenNodeTest/GeneratorSets/Example2/MyProject.Contracts.MyWorld1.Systems",
+                "codeGenLang": 0,  // Code generation for C#
+                "generatorType": "ContractDefinition"
+            },
+            {
+                "baseNamespace": "MyProject.Contracts.MyWorld1.Systems",
+                "basePath": "codeGenNodeTest/GeneratorSets/Example2/MyProject.Contracts.MyWorld1.Systems",
+                "codeGenLang": 0,
+                "generatorType": "MudExtendedService",  // Generates Mud services
+                "mudNamespace": "myworld1"
+            }
+        ]
+    },
+    {
+        "paths": ["mudMultipleNamespace/mud.config.ts"],
+        "generatorConfigs": [
+            {
+                "baseNamespace": "MyProject.Contracts.MyWorld1.Tables",
+                "basePath": "codeGenNodeTest/GeneratorSets/Example2/MyProject.Contracts.MyWorld1.Tables",
+                "generatorType": "MudTables",  // Generates Mud tables
+                "mudNamespace": "myworld1"
+            }
+        ]
+    },
+    {
+        "paths": ["mudMultipleNamespace/mud.config.ts"],
+        "generatorConfigs": [
+            {
+                "baseNamespace": "MyProject.Contracts.MyWorld2.Tables",
+                "basePath": "codeGenNodeTest/GeneratorSets/Example2/MyProject.Contracts.MyWorld2.Tables",
+                "generatorType": "MudTables",
+                "mudNamespace": "myworld2"
+            }
+        ]
+    }
+]
+```
+
+### Key Configuration Fields
+
+- **`paths`**: Points to the ABI or config files generated from Solidity contracts or Mud system configurations.
+- **`generatorConfigs`**: Specifies how the code should be generated.
+  - **`baseNamespace`**: The root namespace for generated code (e.g., `MyProject.Contracts`).
+  - **`basePath`**: The output path for the generated code files.
+  - **`codeGenLang`**: Specifies the language for code generation (e.g., `0` for C#).
+  - **`generatorType`**: Determines the type of code to generate:
+    - `"ContractDefinition"`: Generates contract classes.
+    - `"UnityRequest"`: Generates Unity Request (Coroutines) code for interacting with contracts. NOTE: Async is now the preferred option.
+    - `"MudExtendedService"`: Generates services for the Mud system.
+    - `"MudTables"`: Generates table-related code for the Mud framework.
+  - **`mudNamespace`**: Specifies the namespace for Mud system-related code.
+
+### Usage
+
+1. Define your code generation settings in one or more `nethereum-gen.multisettings` files.
+2. Each file can independently specify multiple generator configurations for different languages or platforms, such as Unity or C#.
+3. When using multiple files, prefix the `nethereum-gen.multisettings` files with a project or module name (e.g., `project1.nethereum-gen.multisettings`, `moduleX.nethereum-gen.multisettings`) to separate different configurations.
+4. When the code generation tool runs, it will generate the code according to the settings in the files, creating contract classes, services, or Unity client code depending on your configuration.
+
+
 
 ## Contributing / Issues / Requests
 

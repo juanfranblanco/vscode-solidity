@@ -8,6 +8,7 @@ import * as fsex from 'fs-extra';
 import * as https from 'https';
 import { SolcCompiler, compilerType, RemoteCompilerDownloader, RemoteReleases } from '../common/solcCompiler';
 import { errorsToDiagnostics } from './solErrorsToDiaganosticsClient';
+import { OutputChannelService } from './outputChannelService';
 
 
 export class Compiler {
@@ -17,7 +18,7 @@ export class Compiler {
 
     constructor(solcCachePath: string) {
         this.solcCachePath = solcCachePath;
-        this.outputChannel = vscode.window.createOutputChannel('Solidity compiler');
+        this.outputChannel = OutputChannelService.getInstance().getSolidityCompilerOutputChannel();
     }
 
     public outputCompilerInfoEnsuringInitialised() {

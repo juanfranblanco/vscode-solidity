@@ -6,6 +6,7 @@ import * as codegen from 'nethereum-codegen';
 import { initialiseProject } from '../common/projectService';
 import * as workspaceUtil from './workspaceUtil';
 import { SettingsService } from './settingsService';
+import { OutputChannelService} from './outputChannelService';
 
 
 export function autoCodeGenerateAfterCompilation(compiledFiles: Array<string>, args: any, diagnostics: vscode.DiagnosticCollection) {
@@ -55,26 +56,30 @@ export function generateNethereumCodeSettingsFile() {
     }
 }
 
+
 export function codeGenerateAllFilesFromNethereumGenAbisFile(args: any, diagnostics: vscode.DiagnosticCollection) {
     try {
         const settingsPath = args.fsPath;
-        if (path.basename(settingsPath) === 'nethereum-gen.abis') {
+        const fileName = path.basename(settingsPath);
+
+        const isValid = fileName.match(/^(.*\.)?nethereum-gen\.multisettings$/);
+        if (isValid) {
             if (fs.existsSync(settingsPath)) {
                 const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
                 const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
                 const files = codegen.generateFilesFromConfigSetsArray(settings, root);
-                const outputChannel = vscode.window.createOutputChannel('solidity code generation');
+                const outputChannel = OutputChannelService.getInstance().getNethereumCodeGenerationOutputChannel();
                 outputChannel.clear();
                 outputChannel.appendLine('Code generation completed');
                 files.forEach(file => {
                     outputChannel.appendLine(file);
                 });
             } else {
-                throw 'nethereum-gen.abis not found';
+                throw 'nethereum-gen.multisettings not found';
             }
         }
     } catch (e) {
-        const outputChannel = vscode.window.createOutputChannel('solidity code generation');
+        const outputChannel = OutputChannelService.getInstance().getNethereumCodeGenerationOutputChannel();
         outputChannel.clear();
         outputChannel.appendLine('Error generating code:');
         outputChannel.appendLine('Please provide a file named: nethereum-gen.abis with at the project root, with an array of xxx.abi or yyy.json files');
@@ -262,7 +267,7 @@ export function codeGenerateCQS(fileName: string, lang: number, args: any, diagn
                 lang);
         }
     } catch (e) {
-        const outputChannel = vscode.window.createOutputChannel('solidity code generation');
+        const outputChannel = OutputChannelService.getInstance().getNethereumCodeGenerationOutputChannel();
         outputChannel.clear();
         outputChannel.appendLine('Error generating code:');
         outputChannel.appendLine(e.message);
