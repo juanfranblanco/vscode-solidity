@@ -488,7 +488,7 @@ export class SolcCompiler {
 
     public compileSolidityDocumentAndGetDiagnosticErrors(filePath: string, documentText: string,
         packageDefaultDependenciesDirectory: string[], packageDefaultDependenciesContractsDirectory: string[],
-        remappings: string[], selectedCompiler: compilerType = null, evmVersion = '') {
+        remappings: string[], selectedCompiler: compilerType = null, evmVersion = '', viaIR = false): any[] {
             if (selectedCompiler == null) {
                 selectedCompiler = this.selectedCompiler;
             }
@@ -498,7 +498,7 @@ export class SolcCompiler {
                 filePath,
                 documentText,
                 initialiseProject(this.rootPath, packageDefaultDependenciesDirectory, packageDefaultDependenciesContractsDirectory, remappings));
-            const contractsForCompilation = contracts.getDefaultSourceDocumentsForCompilationDiagnostics(evmVersion);
+            const contractsForCompilation = contracts.getDefaultSourceDocumentsForCompilationDiagnostics(evmVersion, viaIR);
             contractsForCompilation.settings.optimizer = null;
             contractsForCompilation.settings.outputSelection = null;
             const outputString = this.compile(JSON.stringify(contractsForCompilation), selectedCompiler);

@@ -54,6 +54,7 @@ interface SoliditySettings {
     explorer_bscscan_apikey: string;
     explorer_polygonscan_apikey: string;
     evmVersion: string;
+    viaIR: boolean;
 }
 
 const defaultSoliditySettings = {} as SoliditySettings;
@@ -91,6 +92,7 @@ let solcCachePath = '';
 let hasWorkspaceFolderCapability = false;
 let monoRepoSupport = false;
 let evmVersion = '';
+let viaIR = false;
 
 // flags to avoid trigger concurrent validations (compiling is slow)
 let validatingDocument = false;
@@ -248,6 +250,7 @@ function updateSoliditySettings(soliditySettings: SoliditySettings) {
     nodeModulePackage = soliditySettings.nodemodulespackage;
     defaultCompiler = compilerType[soliditySettings.defaultCompiler];
     evmVersion = soliditySettings.evmVersion;
+    viaIR = soliditySettings.viaIR;
     // connection.console.info('changing settings: ' +  soliditySettings.compileUsingRemoteVersion);
     // connection.console.info('changing settings: ' +  compileUsingRemoteVersion);
     connection.console.info(defaultCompiler.toString());

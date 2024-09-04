@@ -23,13 +23,13 @@ export function getCurrentProjectInWorkspaceRootFsPath() {
 }
 
 export function getCurrentWorkspaceRootFsPath() {
-    return getCurrentWorkspaceRootFolder().uri.fsPath;
+    return getCurrentWorkspaceRootFolder()?.uri?.fsPath;
 }
 
 export function getCurrentWorkspaceRootFolder() {
     const editor = vscode.window.activeTextEditor;
-    const currentDocument = editor.document.uri;
-    return vscode.workspace.getWorkspaceFolder(currentDocument);
+    const currentDocument = editor.document.fileName;
+    return vscode.workspace.getWorkspaceFolder(vscode.Uri.file(currentDocument));
 
 }
 

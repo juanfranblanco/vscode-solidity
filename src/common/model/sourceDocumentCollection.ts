@@ -25,7 +25,7 @@ export class SourceDocumentCollection {
         return this.documents.findIndex((contract: SourceDocument) => { return contract.absolutePath === contractPath; }) > -1;
     }
 
-    public getDefaultSourceDocumentsForCompilation(optimizeCompilationRuns = 200, evmVersion = "") {
+    public getDefaultSourceDocumentsForCompilation(optimizeCompilationRuns = 200, evmVersion = "", viaIR: boolean = false) {
         const compilerOutputSelection = {
             '*': {
                 '': ['ast'],
@@ -33,10 +33,10 @@ export class SourceDocumentCollection {
             },
         };
 
-        return this.getSourceDocumentsForCompilation(true, optimizeCompilationRuns, evmVersion, compilerOutputSelection);
+        return this.getSourceDocumentsForCompilation(true, optimizeCompilationRuns, evmVersion, viaIR, compilerOutputSelection);
     }
 
-    public getDefaultSourceDocumentsForCompilationDiagnostics(evmVersion = "") {
+    public getDefaultSourceDocumentsForCompilationDiagnostics(evmVersion: string = "", viaIR: boolean = false) {
         const compilerOutputSelection = {
             '*': {
                 '': [],
@@ -44,10 +44,10 @@ export class SourceDocumentCollection {
             },
         };
 
-        return this.getSourceDocumentsForCompilation(false, 0, evmVersion, compilerOutputSelection);
+        return this.getSourceDocumentsForCompilation(false, 0, evmVersion, viaIR, compilerOutputSelection);
     }
 
-    public getSourceDocumentsForCompilation(optimizeCompilation: boolean, optimizeCompilationRuns: number, evmVersion: string = "", outputSelection) {
+    public getSourceDocumentsForCompilation(optimizeCompilation: boolean, optimizeCompilationRuns: number, evmVersion: string = "", viaIR: boolean = false, outputSelection) {
         const contractsForCompilation = {};
         this.documents.forEach(contract => {
             contractsForCompilation[contract.absolutePath] = { content: contract.code };
@@ -63,6 +63,7 @@ export class SourceDocumentCollection {
                         runs: optimizeCompilationRuns,
                     },
                     outputSelection: outputSelection,
+                    viaIR: true,
                 },
 
                 sources: contractsForCompilation,

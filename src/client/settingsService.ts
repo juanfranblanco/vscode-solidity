@@ -25,6 +25,10 @@ export class SettingsService {
         return vscode.workspace.getConfiguration('solidity').get<string>('evmVersion');
     }
 
+    public static getViaIR(): boolean {
+        return vscode.workspace.getConfiguration('solidity').get<boolean>('viaIR');
+    }
+
 
     public static getRemappings(): string[] {
         return vscode.workspace.getConfiguration('solidity').get<string[]>('remappings');

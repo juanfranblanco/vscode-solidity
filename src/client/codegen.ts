@@ -57,27 +57,21 @@ export function generateNethereumCodeSettingsFile() {
 
 export function codeGenerateAllFilesFromNethereumGenAbisFile(args: any, diagnostics: vscode.DiagnosticCollection) {
     try {
-        const abiFiles = getCodeGenerationAbiFilesFromSettings(args.fsPath);
-        if (abiFiles !== undefined) {
-        const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
-        const settings = getCodeGenerationSettings();
-        let lang = 0; // csharp
-        if (settings !== undefined) {
-            if (settings.lang !== undefined) {
-                lang = settings.lang;
+        const settingsPath = args.fsPath;
+        if (path.basename(settingsPath) === 'nethereum-gen.abis') {
+            if (fs.existsSync(settingsPath)) {
+                const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+                const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+                const files = codegen.generateFilesFromConfigSetsArray(settings, root);
+                const outputChannel = vscode.window.createOutputChannel('solidity code generation');
+                outputChannel.clear();
+                outputChannel.appendLine('Code generation completed');
+                files.forEach(file => {
+                    outputChannel.appendLine(file);
+                });
+            } else {
+                throw 'nethereum-gen.abis not found';
             }
-        }
-        // /home/juan/Documents/repos/artifacts/contracts/tokens/Items.sol/Items.json
-        // /home/juan/Documents/repos/visions-contracts/artifacts/contracts/tokens/Items.sol
-
-        abiFiles.forEach(file => codeGenerateCQS(path.join(root, file), lang, args, diagnostics));
-        const outputChannel = vscode.window.createOutputChannel('solidity code generation');
-        outputChannel.clear();
-        outputChannel.appendLine('Code generation completed');
-        outputChannel.show();
-
-        } else {
-            throw 'nethereum-gen.abis not found';
         }
     } catch (e) {
         const outputChannel = vscode.window.createOutputChannel('solidity code generation');
@@ -234,7 +228,6 @@ export function codeGenerateCQS(fileName: string, lang: number, args: any, diagn
             if(bytecode === undefined) {
                 bytecode = compilationOutput.bytecode;
             }
-            
         }
         if (abi !== undefined) {
 
