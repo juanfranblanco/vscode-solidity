@@ -378,14 +378,19 @@ Here's the updated section for the **VSCode Solidity** extension's `README.md`, 
 
 ---
 
-### Code Generation with `nethereum-gen.multisettings`
+## Code Generation with `.nethereum-gen.multisettings`
 
-The Solidity extension for VSCode supports advanced contract code generation through configuration files like `nethereum-gen.multisettings`. These files allow you to define multiple code generation settings for your smart contracts, enabling the generation of client-side code for various platforms (e.g., C#, Unity) based on Solidity ABI files.
+The Solidity extension for VSCode supports advanced contract code generation through configuration files like `.nethereum-gen.multisettings`. These files allow you to define multiple code generation settings for your smart contracts, enabling the generation of client-side code for various platforms (e.g., C#, Unity Coroutines)  based on Solidity ABI files.
+
+To generate the code just right click on the file as demonstrated here:
+
+![Screenshot](screenshots/codeGenerateNethereumMultiSettings.png)
 
 You can have **multiple `nethereum-gen.multisettings` files** for different projects, modules, or environments by prefixing the file name as needed (e.g., `project1.nethereum-gen.multisettings`, `moduleX.nethereum-gen.multisettings`). This allows for flexibility in organizing large projects with distinct code generation needs.
 
-A typical `nethereum-gen.multisettings` file uses the following structure:
+A typical `.nethereum-gen.multisettings` file uses the following structure:
 
+Note: DO NOT INCLUDE THE COMMENTS
 ```json
 [
     {

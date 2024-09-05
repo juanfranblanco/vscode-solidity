@@ -82,7 +82,7 @@ export function codeGenerateAllFilesFromNethereumGenAbisFile(args: any, diagnost
         const outputChannel = OutputChannelService.getInstance().getNethereumCodeGenerationOutputChannel();
         outputChannel.clear();
         outputChannel.appendLine('Error generating code:');
-        outputChannel.appendLine('Please provide a file named: nethereum-gen.abis with at the project root, with an array of xxx.abi or yyy.json files');
+        outputChannel.appendLine('Please provide a valid file named: nethereum-gen.multisettings at the project root, with paths containing properly formatted xxx.abi or yyy.json files from the compilation output of the extension (bin folder) or other tools like fondry (out folder)');
         outputChannel.appendLine(e.message);
         outputChannel.show();
     }
