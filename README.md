@@ -60,7 +60,7 @@ You can simply change this setting using the context menu:
 ![Screenshot](screenshots/change-compiler-version-selectversion.png) 
 
 #### Using a code action
-If your code is targetting a specific version for solidity, and see the issue highlighted you can also trigger the menu directly from the import.
+If your code is targetting a specific version for solidity, and sees the issue highlighted you can also trigger the menu directly from the import.
 
 ![Screenshot](screenshots/solidity-change-workspacecompiler-codeaction.gif)
 
@@ -258,7 +258,7 @@ The extension provides some code actions and quick fixes, like change compiler, 
 ![Screenshot](screenshots/solidity-corrections.gif)
 
 ## Download source code and ABI from Etherscan
-To download verified source code from Etherscan, you can right click on the folder area or in a soldity file. First select what chain the smart contract it(for example Ethereum) and then input the smart contract address. The source code will be saved in the root folder of your project. Please note that remappings will be generated for multiple files, so these might conflict with existing ones.
+To download verified source code from Etherscan, you can right click on the folder area or in a solidity file. First select what chain the smart contract it(for example Ethereum) and then input the smart contract address. The source code will be saved in the root folder of your project. Please note that remappings will be generated for multiple files, so these might conflict with existing ones.
 
 ![Screenshot](screenshots/solidity-etherscan-download.gif)
 
