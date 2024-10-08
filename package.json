@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.177",
+  "version": "0.0.178",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -394,9 +394,22 @@
       },
       {
         "command": "solidity.downloadVerifiedSmartContractEtherscan",
-        "title": "Solidity: Download smart contract source code / abi (Etherscan)"
+        "title": "Solidity: Download from Etherscan"
       }
     ],
+    "submenus": [
+      {
+        "id": "solidity.codegen.submenu",
+        "label": "Solidity: Code Generation"
+      },
+      {
+        "id": "solidity.compilerSettings.submenu",
+        "label": "Solidity: Compiler Settings and Solc Versions"
+      },
+      {
+        "id": "solidity.downloadVerifiedContracts.submenu",
+        "label": "Solidity: Download smart contract source code / ABIs"
+      }],
     "menus": {
       "commandPalette": [
         {
@@ -424,72 +437,7 @@
           "command": "solidity.compile"
         }
       ],
-      "editor/context": [
-        {
-          "when": "editorLangId == 'solidity'",
-          "command": "solidity.compile.active",
-          "group": "1_solidity"
-        },
-        {
-          "when": "editorLangId == 'solidity'",
-          "command": "solidity.compile",
-          "group": "1_solidity"
-        },
-        {
-          "when": "editorLangId == 'solidity'",
-          "command": "solidity.compilerInfo",
-          "group": "1_solidity"
-        },
-        {
-          "when": "editorLangId == 'solidity'",
-          "command": "solidity.compile.activeUsingRemote",
-          "group": "1_solidity"
-        },
-        {
-          "when": "editorLangId == 'solidity'",
-          "command": "solidity.compile.activeUsingLocalFile",
-          "group": "1_solidity"
-        },
-        {
-          "when": "editorLangId == 'solidity'",
-          "command": "solidity.compile.activeUsingNodeModule",
-          "group": "1_solidity"
-        },
-        {
-          "when": "editorLangId == 'solidity'",
-          "command": "solidity.downloadVerifiedSmartContractEtherscan",
-          "group": "1_solidity"
-        },
-        {
-          "when": "editorLangId == 'solidity'",
-          "command": "solidity.changeDefaultCompilerType",
-          "group": "2_solidity"
-        },
-        {
-          "when": "editorLangId == 'solidity'",
-          "command": "solidity.solcReleases",
-          "group": "2_solidity"
-        },
-        {
-          "when": "editorLangId == 'solidity'",
-          "command": "solidity.selectGlobalRemoteSolcVersion",
-          "group": "2_solidity"
-        },
-        {
-          "when": "editorLangId == 'solidity'",
-          "command": "solidity.selectWorkspaceRemoteSolcVersion",
-          "group": "2_solidity"
-        },
-        {
-          "when": "editorLangId == 'solidity'",
-          "command": "solidity.downloadRemoteSolcVersion",
-          "group": "2_solidity"
-        },
-        {
-          "when": "editorLangId == 'solidity'",
-          "command": "solidity.downloadRemoteVersionAndSetLocalPathSetting",
-          "group": "2_solidity"
-        },
+      "solidity.codegen.submenu": [
         {
           "when": "editorLangId == 'solidity'",
           "command": "solidity.codegenNethereumCodeGenSettings",
@@ -545,6 +493,94 @@
           "command": "solidity.codeGenFromNethereumGenAbisFile",
           "group": "3_solidity"
         }
+
+      ],
+      "solidity.compilerSettings.submenu":[
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.changeDefaultCompilerType",
+          "group": "2_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.solcReleases",
+          "group": "2_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.selectGlobalRemoteSolcVersion",
+          "group": "2_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.selectWorkspaceRemoteSolcVersion",
+          "group": "2_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.downloadRemoteSolcVersion",
+          "group": "2_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.downloadRemoteVersionAndSetLocalPathSetting",
+          "group": "2_solidity"
+        }
+      ],
+      "solidity.downloadVerifiedContracts.submenu":[
+        {
+          "when": "explorerResourceIsFolder || resourceExtname == .sol || resourceExtname == .abi",
+          "command": "solidity.downloadVerifiedSmartContractEtherscan",
+          "group": "2_solidity"
+        }
+      ]
+      ,
+      "editor/context": [
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.compile.active",
+          "group": "1_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.compile",
+          "group": "1_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.compilerInfo",
+          "group": "1_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.compile.activeUsingRemote",
+          "group": "1_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.compile.activeUsingLocalFile",
+          "group": "1_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.compile.activeUsingNodeModule",
+          "group": "1_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "submenu": "solidity.downloadVerifiedContracts.submenu",
+          "group": "4_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "submenu": "solidity.compilerSettings.submenu",
+          "group": "2_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "submenu": "solidity.codegen.submenu",
+          "group": "3_solidity"
+        }  
       ],
       "explorer/context": [
         {
