@@ -104,35 +104,61 @@ let remappings: string[] = [];
 let selectedDocument = null;
 let selectedProjectFolder = null;
 let codeWalkerService: CodeWalkerService = null;
+const codeWalkerServiceCache: CodeWalkerService[] = [];
 
+function removeAllCodeWalkerServiceFromCacheThatAreNotInCurrentWorkspacesOrSettings() {
+    codeWalkerServiceCache.forEach(x => {
+        if (!workspaceFolders.find(y => x.rootPath.startsWith(URI.parse(y.uri).fsPath))) {
+            removeCodeWalkerServiceFromCache(x.rootPath);
+        }
+    });
+
+}
+
+function removeCodeWalkerServiceFromCache(projectFolder: string) {
+    const index = codeWalkerServiceCache.findIndex(x => x.isTheSameCodeWalkerservice(projectFolder));
+    if (index !== -1) {
+        codeWalkerServiceCache.splice(index, 1);
+    }
+}
+
+function getCodeWalkerServiceFromCache(projectFolder: string) {
+    return codeWalkerServiceCache.find(x => x.isTheSameCodeWalkerservice(projectFolder));
+}
+
+function getCodeWalkerServiceFromCacheAndCreateIfNotExistsOrSettingsChanged(projectFolder: string) {
+
+    removeAllCodeWalkerServiceFromCacheThatAreNotInCurrentWorkspacesOrSettings();
+    let cacheCodeWalkerService = getCodeWalkerServiceFromCache(projectFolder);
+    if (cacheCodeWalkerService !== undefined) {
+        if(cacheCodeWalkerService.hasTheSameDependencySettings(packageDefaultDependenciesDirectory,
+            packageDefaultDependenciesContractsDirectory, remappings)){
+            codeWalkerService = cacheCodeWalkerService;
+            return cacheCodeWalkerService;
+         } else {
+            removeCodeWalkerServiceFromCache(selectedProjectFolder);
+         }
+    }
+    cacheCodeWalkerService = new CodeWalkerService(selectedProjectFolder,  packageDefaultDependenciesDirectory,
+        packageDefaultDependenciesContractsDirectory, remappings,
+    );
+    cacheCodeWalkerService.initialiseAllDocuments();
+    codeWalkerServiceCache.push(cacheCodeWalkerService);
+    return cacheCodeWalkerService;
+}
 
 
 function getCodeWalkerService() {
-    
     if (codeWalkerService !== null) {
-        if (codeWalkerService.rootPath === selectedProjectFolder &&
-            (codeWalkerService.packageDefaultDependenciesContractsDirectory !== undefined &&
-                packageDefaultDependenciesDirectory !== undefined &&
-                codeWalkerService.packageDefaultDependenciesDirectory.sort().join('') 
-                === packageDefaultDependenciesDirectory.sort().join('') 
-            ) &&
-            (
-                codeWalkerService.packageDefaultDependenciesContractsDirectory !== undefined && 
-                packageDefaultDependenciesContractsDirectory !== undefined &&
-                codeWalkerService.packageDefaultDependenciesContractsDirectory.sort().join('') 
-                === packageDefaultDependenciesContractsDirectory.sort().join('') 
-            ) &&
-            (
-                codeWalkerService.remappings !== undefined && remappings !== undefined &&
-                codeWalkerService.remappings.sort().join('') === remappings.sort().join('')
-            ) ) {
-            return codeWalkerService;
-            }
+        if (codeWalkerService.isTheSameCodeWalkerservice(selectedProjectFolder)) {
+            if (codeWalkerService.hasTheSameDependencySettings(packageDefaultDependenciesDirectory,
+                                                             packageDefaultDependenciesContractsDirectory,
+                                                            remappings)) {
+                return codeWalkerService;
+        }
+        }
     }
-    codeWalkerService = new CodeWalkerService(selectedProjectFolder,  packageDefaultDependenciesDirectory,
-        packageDefaultDependenciesContractsDirectory, remappings,
-    );
-    codeWalkerService.initialiseAllDocuments();
+    codeWalkerService = getCodeWalkerServiceFromCacheAndCreateIfNotExistsOrSettingsChanged(selectedProjectFolder);
     return codeWalkerService;
 }
 
@@ -155,7 +181,7 @@ function initWorkspaceRootFolder(uri: string) {
     }
 }
 
-export function initCurrentProjectInWorkspaceRootFsPath(currentDocument: string) {
+ function initCurrentProjectInWorkspaceRootFsPath(currentDocument: string) {
     if (monoRepoSupport) {
         if (selectedDocument === currentDocument && selectedProjectFolder != null) {
             return selectedProjectFolder;
@@ -388,6 +414,7 @@ documents.onDidChangeContent(event => {
         setTimeout(() =>
          solcCompiler.initialiseSelectedCompiler().then(() => {
         validate(document); }), validationDelay);
+        getCodeWalkerService().refreshDocument(document);
     }
 });
 
@@ -505,3 +532,4 @@ function linterRules(settings: SoliditySettings) {
 }
 
 connection.listen();
+

@@ -42,6 +42,32 @@ export class CodeWalkerService {
     }
   }
 
+  public isTheSameCodeWalkerservice(projectPath: string): boolean{
+    return this.rootPath === projectPath;
+  }
+
+  public hasTheSameDependencySettings(
+    packageDefaultDependenciesDirectory: string[],
+    packageDefaultDependenciesContractsDirectory: string[],
+    remappings: string[],
+  ): boolean {
+   return (this.packageDefaultDependenciesContractsDirectory !== undefined &&
+      packageDefaultDependenciesDirectory !== undefined &&
+      this.packageDefaultDependenciesDirectory.sort().join('') 
+      === packageDefaultDependenciesDirectory.sort().join('') 
+  ) &&
+  (
+      this.packageDefaultDependenciesContractsDirectory !== undefined && 
+      packageDefaultDependenciesContractsDirectory !== undefined &&
+      this.packageDefaultDependenciesContractsDirectory.sort().join('') 
+      === packageDefaultDependenciesContractsDirectory.sort().join('') 
+  ) &&
+  (
+      this.remappings !== undefined && remappings !== undefined &&
+      this.remappings.sort().join('') === remappings.sort().join('')
+  ) ;
+  }
+
   public initialiseAllDocuments() {
      const sourceDocuments = new SourceDocumentCollection();
      const files = this.project.getAllSolFilesIgnoringDependencyFolders();
@@ -75,6 +101,25 @@ export class CodeWalkerService {
      });
  }
 
+ public refreshDocument(document: vscode.TextDocument) {
+  const documentText = document.getText();
+  const documentPath = URI.parse(document.uri).fsPath;
+  const sourceDocuments = new SourceDocumentCollection();
+  if (this.project !== undefined) {
+    sourceDocuments.addSourceDocumentAndResolveImports(
+        documentPath,
+        documentText,
+        this.project,
+    );
+  }
+    const selectedSourceDocument = sourceDocuments.documents[0];
+    const offset = document.offsetAt(document.positionAt(0));
+    const parsedDoc = this.parseSelectedDocument(documentText, offset, document.positionAt(0).line, false, selectedSourceDocument);
+    parsedDoc.initialiseDocumentReferences(this.parsedDocumentsCache);
+    return;
+ }
+
+
 
   public getSelectedDocument(
     document: vscode.TextDocument,
@@ -98,15 +143,44 @@ export class CodeWalkerService {
 
         sourceDocuments.documents.forEach(sourceDocumentItem => {
             if (sourceDocumentItem !== selectedSourceDocument) {
-                const documentImport = this.parseDocumentChanged(sourceDocumentItem.unformattedCode, false, sourceDocumentItem);
+                this.parseDocumentChanged(sourceDocumentItem.unformattedCode, false, sourceDocumentItem);
             }
         });
 
         this.parsedDocumentsCache.forEach(element => {
           element.initialiseDocumentReferences(this.parsedDocumentsCache);
         });
+
         return selectedDocument;
   }
+
+  public parseDocumentReference(documentText: string, fixedSource: boolean, sourceDocument: SourceDocument): ParsedDocument {
+    const foundDocument = this.parsedDocumentsCache.find(x => x.sourceDocument.absolutePath ===  sourceDocument.absolutePath);
+    const newDocument: ParsedDocument = new ParsedDocument();
+    if (foundDocument !== undefined && foundDocument !== null) {
+         return null;
+    }
+    try {
+        const result = solparse.parse(documentText);
+        if (fixedSource) {
+          newDocument.initialiseDocument(result, null, sourceDocument, documentText);
+        } else {
+          newDocument.initialiseDocument(result, null, sourceDocument, null );
+        }
+        this.parsedDocumentsCache.push(newDocument);
+    } catch (error) {
+        /*
+        // if we error parsing (cannot cater for all combos) we fix by removing current line.
+        const lines = documentText.split(/\r?\n/g);
+        if (lines[line].trim() !== '') { // have we done it already?
+            lines[line] = ''.padStart(lines[line].length, ' '); // adding the same number of characters so the position matches where we are at the moment
+            const code = lines.join('\r\n');
+            return this.parseDocument(code, true, sourceDocument);
+        }*/
+    }
+    return newDocument;
+}
+
 
   public parseSelectedDocument(documentText: string, offset: number, line: number, fixedSource: boolean, sourceDocument: SourceDocument): ParsedDocument {
     const foundDocument = this.parsedDocumentsCache.find(x => x.sourceDocument.absolutePath ===  sourceDocument.absolutePath);

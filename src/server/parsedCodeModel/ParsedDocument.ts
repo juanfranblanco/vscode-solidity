@@ -47,7 +47,6 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
     public fixedSource: string = null;
     public element: any;
 
-    
 
     public getDocumentsThatReference(document: ParsedDocument, processedDocuments: Set<string> = new Set()): ParsedDocument[] {
         let returnItems: ParsedDocument[] = [];
@@ -78,6 +77,14 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
     public addImportedDocument(document: ParsedDocument) {
         if (!this.importedDocuments.includes(document) && this !== document) {
             this.importedDocuments.push(document);
+        }
+
+        // two level of imports down to support for nested imports for libraries
+        for (let index2 = 0; index2 < document.importedDocuments.length; index2++) {
+            const importedDocument = document.importedDocuments[index2];
+            if (!this.importedDocuments.includes(importedDocument) && this !== importedDocument) {
+                this.importedDocuments.push(importedDocument);
+            }
         }
     }
 
