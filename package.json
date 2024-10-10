@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.178",
+  "version": "0.0.179",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -580,6 +580,11 @@
           "when": "editorLangId == 'solidity'",
           "submenu": "solidity.codegen.submenu",
           "group": "3_solidity"
+        },
+        {
+          "when": "resourceFilename =~ /^(.*\\.)?nethereum-gen\\.multisettings$/",
+          "command": "solidity.codeGenFromNethereumGenAbisFile",
+          "group": "3_solidity"
         }  
       ],
       "explorer/context": [
@@ -627,7 +632,8 @@
           "when": "explorerResourceIsFolder || resourceExtname == .sol || resourceExtname == .abi",
           "command": "solidity.downloadVerifiedSmartContractEtherscan",
           "group": "2_solidity"
-        },{
+        },
+        {
           "when": "resourceFilename =~ /^(.*\\.)?nethereum-gen\\.multisettings$/",
           "command": "solidity.codeGenFromNethereumGenAbisFile",
           "group": "3_solidity"
