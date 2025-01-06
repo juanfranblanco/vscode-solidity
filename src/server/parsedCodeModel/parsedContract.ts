@@ -10,7 +10,7 @@ import { ParsedError } from './ParsedError';
 import { ParsedDocument } from './ParsedDocument';
 import { ParsedConstant } from './ParsedConstant';
 import { ParsedCustomType } from './ParsedCustomType';
-import { CompletionItem, CompletionItemKind, Location, Range, TextDocument } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind, Location, Range, TextDocument, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
 import { ParsedContractIs } from './ParsedContractIs';
 import { IParsedExpressionContainer } from './IParsedExpressionContainer';
 import { ParsedExpression } from './ParsedExpression';
@@ -114,6 +114,52 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
             this.initialiseVariablesMembersEtc(this.element, null, null);
         }
     }
+
+    public toDocumentSymbol(): DocumentSymbol {
+        const contractRange = this.getRange();
+        const name = this.name || 'Unnamed';
+        const contractSymbol = DocumentSymbol.create(
+            name,
+            this.getContractTypeName(this.contractType),
+            SymbolKind.Class, // Use SymbolKind.Class for contracts, interfaces, or libraries
+            contractRange,
+            contractRange,
+        );
+
+        // Add child symbols
+        contractSymbol.children = [
+            ...this.getFunctionSymbols(),
+            ...this.getStateVariableSymbols(),
+            ...this.getEnumSymbols(),
+            ...this.getEventSymbols(),
+            ...this.getStructSymbols(),
+        ];
+
+        return contractSymbol;
+    }
+
+    public getFunctionSymbols(): DocumentSymbol[] {
+        return this.functions.map(fn => fn.toDocumentSymbol());
+    }
+
+    public getStateVariableSymbols(): DocumentSymbol[] {
+        return this.stateVariables.map(variable => variable.toDocumentSymbolType());
+    }
+
+    public getEnumSymbols(): DocumentSymbol[] {
+        return this.enums.map(enm => enm.toDocumentSymbol());
+    }
+
+    public getEventSymbols(): DocumentSymbol[] {
+        return this.events.map(event => event.toDocumentSymbol());
+    }
+
+    public getStructSymbols(): DocumentSymbol[] {
+        return this.structs.map(struct => struct.toDocumentSymbol());
+    }
+
+
+
 
     public getExtendContracts(): ParsedContract[] {
         const result: ParsedContract[] = [];

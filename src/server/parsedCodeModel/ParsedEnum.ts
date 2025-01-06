@@ -1,7 +1,7 @@
 import { ParsedContract } from './parsedContract';
 import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 import { ParsedDocument } from './ParsedDocument';
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
 
 
 
@@ -15,6 +15,23 @@ export class ParsedEnum extends ParsedCode {
         this.name = element.name;
         this.id = element.id;
         element.members.forEach(member => { this.items.push(member); });
+    }
+
+     public toDocumentSymbol(): DocumentSymbol {
+                const enumRange = this.getRange();
+                const enumSymbol = DocumentSymbol.create(
+                    this.name,
+                    this.getEnumInfo(),
+                    SymbolKind.Enum,
+                    enumRange,
+                    enumRange,
+                );
+                return enumSymbol;
+    }
+
+    public getEnumInfo(): string {
+        const members = this.items.map(member => member).join(', ');
+        return `Enum ${this.name} { ${members} }`;
     }
 
     public override createCompletionItem(): CompletionItem {

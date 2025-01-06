@@ -7,6 +7,7 @@ import { CompilerError } from './server/solErrorsToDiagnostics';
 import { CompletionService } from './server/completionService';
 import { SolidityDefinitionProvider } from './server/SolidityDefinitionProvider';
 import { SolidityReferencesProvider } from './server/SolidityReferencesProvider';
+import { SolidityDocumentSymbolProvider } from './server/SolidityDocumentSymbolProvider';
 import { SolidityHoverProvider } from './server/SolidityHoverProvider';
 import {
     createConnection,
@@ -418,6 +419,25 @@ documents.onDidChangeContent(event => {
     }
 });
 
+connection.onDocumentSymbol((params) => {
+    const document = documents.get(params.textDocument.uri);
+
+    if (document) {
+        // Initialize project root and ensure CodeWalkerService is up-to-date
+        initWorkspaceRootFolder(document.uri);
+        initCurrentProjectInWorkspaceRootFsPath(document.uri);
+
+        // Use the provider to generate document symbols
+        const provider = new SolidityDocumentSymbolProvider();
+        const symbols = provider.provideDocumentSymbols(document, getCodeWalkerService());
+
+        // Return the generated symbols
+        return symbols || [];
+    }
+
+    return [];
+});
+
 // remove diagnostics from the Problems panel when we close the file
 documents.onDidClose(event => connection.sendDiagnostics({
     diagnostics: [],
@@ -450,6 +470,7 @@ connection.onInitialize((params): InitializeResult => {
             referencesProvider : true,
             hoverProvider: true,
             textDocumentSync: TextDocumentSyncKind.Full,
+            documentSymbolProvider: true,
         },
     };
 

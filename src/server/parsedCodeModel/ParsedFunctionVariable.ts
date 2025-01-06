@@ -1,4 +1,4 @@
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
 import { ParsedCodeTypeHelper } from './ParsedCodeTypeHelper';
 import { ParsedFunction } from './ParsedFunction';
 import { ParsedVariable } from './ParsedVariable';
@@ -61,6 +61,18 @@ export class ParsedFunctionVariable extends ParsedVariable {
 
     public getSignature(): string {
         return ParsedParameter.getParamInfo(this.element);
+    }
+
+    public toDocumentSymbolType(): DocumentSymbol {
+        const name = this.name || 'Unnamed';
+        const varRange = this.getRange();
+        return DocumentSymbol.create(
+          name,
+          `Variable: ${this.type.getSimpleInfo()}`,
+          SymbolKind.Variable,
+          varRange,
+          varRange,
+        );
     }
 }
 

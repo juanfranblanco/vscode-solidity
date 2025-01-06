@@ -1,7 +1,7 @@
 import { ParsedDeclarationType } from './parsedDeclarationType';
 import { ParsedVariable } from './ParsedVariable';
 import { ParsedCodeTypeHelper } from './ParsedCodeTypeHelper';
-import { CompletionItem, CompletionItemKind, Hover, MarkupContent, MarkupKind } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind, DocumentSymbol, Hover, MarkupContent, MarkupKind, SymbolKind } from 'vscode-languageserver';
 import { ParsedDocument } from './ParsedDocument';
 import { ParsedContract } from './parsedContract';
 import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
@@ -155,5 +155,16 @@ export class ParsedParameter extends ParsedVariable {
         return ParsedParameter.getParamInfo(this.element);
     }
 
+    public toDocumentSymbolType(parameterType: string): DocumentSymbol {
+        const name = this.name || 'Unnamed';
+        const paramRange = this.getRange();
+        return DocumentSymbol.create(
+          name,
+          `${parameterType}: ${this.type.getSimpleInfo()}`,
+          SymbolKind.Variable,
+          paramRange,
+          paramRange,
+        );
+    }
 
 }

@@ -2,7 +2,7 @@ import { ParsedContract } from './parsedContract';
 import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 import { ParsedParameter } from './ParsedParameter';
 import { ParsedDocument } from './ParsedDocument';
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
 
 
 export class ParsedError extends ParsedCode {
@@ -16,6 +16,26 @@ export class ParsedError extends ParsedCode {
         this.initialiseParamters();
         this.id = element.id;
     }
+
+    public toDocumentSymbol(): DocumentSymbol {
+            const errorRange = this.getRange();
+            const errorSymbol = DocumentSymbol.create(
+                this.name,
+                this.getErrorInfo(),
+                SymbolKind.Class,
+                errorRange,
+                errorRange,
+            );
+            errorSymbol.children = this.input.map(param => param.toDocumentSymbolType('Input Parameter'));
+            return errorSymbol;
+        }
+
+        public getErrorInfo(): string {
+            const params = this.input
+                .map(param => `${param.name}: ${param.type}`)
+                .join(', ');
+            return `Error ${this.name}(${params})`;
+        }
 
     public initialiseParamters() {
         this.input = ParsedParameter.extractParameters(this.element.params, this.contract, this.document, this);

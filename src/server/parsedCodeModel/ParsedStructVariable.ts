@@ -1,4 +1,4 @@
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
 import { ParsedCodeTypeHelper } from './ParsedCodeTypeHelper';
 import { ParsedStruct } from './ParsedStruct';
 import { ParsedVariable } from './ParsedVariable';
@@ -27,6 +27,19 @@ export class ParsedStructVariable extends ParsedVariable {
         }
         return this.completionItem;
     }
+
+     public toDocumentSymbolType(): DocumentSymbol {
+            const name = this.name || 'Unnamed';
+            const range = this.getRange();
+            const symbol = DocumentSymbol.create(
+                name,
+                this.type.getSimpleInfo(),
+                SymbolKind.Variable,
+                range,
+                range,
+            );
+            return symbol;
+        }
 
     public override getParsedObjectType(): string {
         return 'Struct Property';

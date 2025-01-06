@@ -2,7 +2,7 @@ import { ParsedContract } from './parsedContract';
 import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 import { ParsedParameter } from './ParsedParameter';
 import { ParsedDocument } from './ParsedDocument';
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
 
 
 export class ParsedEvent extends ParsedCode {
@@ -22,6 +22,27 @@ export class ParsedEvent extends ParsedCode {
 
     public initialiseParamters() {
         this.input = ParsedParameter.extractParameters(this.element.params, this.contract, this.document, this);
+    }
+
+    public toDocumentSymbol(): DocumentSymbol {
+        const eventRange = this.getRange();
+        const eventSymbol = DocumentSymbol.create(
+            this.name,
+            this.getEventInfo(),
+            SymbolKind.Event,
+            eventRange,
+            eventRange,
+        );
+        eventSymbol.children = this.input.map(param => param.toDocumentSymbolType('Input Parameter'));
+
+        return eventSymbol;
+    }
+
+    public getEventInfo(): string {
+        const params = this.input
+            .map(param => `${param.name}: ${param.type}`)
+            .join(', ');
+        return `Event ${this.name}(${params})`;
     }
 
     public override createCompletionItem(skipFirstParamSnipppet = false): CompletionItem {

@@ -1,4 +1,4 @@
-import { CompletionItem, CompletionItemKind, Location } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind, DocumentSymbol, Location, SymbolKind } from 'vscode-languageserver';
 import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 import { ParsedDeclarationType } from './parsedDeclarationType';
 import { ParsedCodeTypeHelper } from './ParsedCodeTypeHelper';
@@ -17,6 +17,19 @@ export class ParsedVariable extends ParsedCode {
         }
         return [this.createNotFoundReferenceLocationResult()];
    }
+
+   public toDocumentSymbol(): DocumentSymbol {
+               const name = this.name || 'Unnamed';
+               const range = this.getRange();
+               const symbol = DocumentSymbol.create(
+                   name,
+                   this.type.getSimpleInfo(),
+                   SymbolKind.Variable,
+                   range,
+                   range,
+               );
+               return symbol;
+           }
 
     public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
         if (this.isTheSame(parsedCode)) {

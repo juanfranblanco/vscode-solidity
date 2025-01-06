@@ -204,6 +204,12 @@ export class ParsedCode {
             );
     }
 
+    public getRange(): Range {
+        const uri = URI.file(this.document.sourceDocument.absolutePath).toString();
+        const document = TextDocument.create(uri, null, null, this.document.sourceDocument.unformattedCode);
+        return Range.create(document.positionAt(this.element.start), document.positionAt(this.element.end));
+    }
+
     public getSelectedTypeReferenceLocation(offset: number): FindTypeReferenceLocationResult[] {
         if (this.isCurrentElementedSelected(offset)) {
 

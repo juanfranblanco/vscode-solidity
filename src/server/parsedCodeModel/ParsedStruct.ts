@@ -3,7 +3,7 @@ import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 import { ParsedDeclarationType } from './parsedDeclarationType';
 import { ParsedStructVariable } from './ParsedStructVariable';
 import { ParsedDocument } from './ParsedDocument';
-import { CompletionItem, CompletionItemKind, Location } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind, DocumentSymbol, Location, SymbolKind } from 'vscode-languageserver';
 
 export class ParsedStruct extends ParsedCode {
     public properties: ParsedStructVariable[] = [];
@@ -27,6 +27,28 @@ export class ParsedStruct extends ParsedCode {
                 }
             });
         }
+    }
+
+    public toDocumentSymbol(): DocumentSymbol {
+        const name = this.name || 'Unnamed';
+        const structRange = this.getRange();
+        const structSymbol = DocumentSymbol.create(
+            name,
+            this.getStructInfo(),
+            SymbolKind.Struct,
+            structRange,
+            structRange,
+        );
+        structSymbol.children = this.properties.map(property => property.toDocumentSymbolType());
+
+        return structSymbol;
+    }
+
+    public getStructInfo(): string {
+        const properties = this.properties
+            .map(prop => `${prop.name}: ${prop.type}`)
+            .join(', ');
+        return `Struct ${this.name} { ${properties} }`;
     }
 
     public getInnerMembers(): ParsedCode[] {

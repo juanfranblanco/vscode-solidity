@@ -1,4 +1,4 @@
-import { Location, Range } from 'vscode-languageserver';
+import { DocumentSymbol, Location, Range, SymbolKind } from 'vscode-languageserver';
 import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 import { ParsedDocument } from './ParsedDocument';
 import { URI } from 'vscode-uri';
@@ -32,7 +32,6 @@ export class ParsedImport extends ParsedCode {
                 this.documentReference = element;
                 if (this.document.importedDocuments.indexOf(element) < 0) {
                     this.document.addImportedDocument(element);
-                   
                 }
             }
         }
@@ -62,6 +61,28 @@ export class ParsedImport extends ParsedCode {
             URI.file(this.resolvedImportPath).toString(),
             Range.create(0, 0, 0, 0),
           );
+    }
+
+    public toDocumentSymbol(): DocumentSymbol {
+        const importRange = this.getRange();
+        // Display the import details
+        const resolvedPath = this.getResolvedImportPath();
+        const detail = `Import from: ${this.from}\nResolved to: ${resolvedPath}`;
+
+        return DocumentSymbol.create(
+            `import "${this.from}"`,
+            detail, // Additional metadata
+            SymbolKind.File, // Represent imports as files
+            importRange,
+            importRange,
+        );
+    }
+
+    private getResolvedImportPath(): string {
+        if (this.resolvedImportPath === null) {
+            this.resolvedImportPath = this.document.sourceDocument.resolveImportPath(this.from);
+        }
+        return this.resolvedImportPath;
     }
 }
 

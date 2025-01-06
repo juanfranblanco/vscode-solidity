@@ -4,7 +4,7 @@ import { ParsedDeclarationType } from './parsedDeclarationType';
 import { ParsedParameter } from './ParsedParameter';
 import { ParsedFunctionVariable } from './ParsedFunctionVariable';
 import { ParsedDocument } from './ParsedDocument';
-import { CompletionItem, CompletionItemKind, Location } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind, DocumentSymbol, Location, SymbolKind } from 'vscode-languageserver';
 import { ParsedModifierArgument } from './ParsedModifierArgument';
 import { ParsedExpression } from './ParsedExpression';
 import { IParsedExpressionContainer } from './IParsedExpressionContainer';
@@ -57,6 +57,44 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
        return this;
     }
     return selectedItem;
+  }
+
+  public toDocumentSymbol(): DocumentSymbol {
+    const functionRange = this.getRange();
+    const functionSymbol = DocumentSymbol.create(
+      this.name || this.getParsedObjectType(),
+      this.getFunctionInfo(),
+      this.getSymbolKind(),
+      functionRange,
+      functionRange,
+    );
+
+    functionSymbol.children = [
+      ...this.input.map(param => param.toDocumentSymbolType('Input Parameter')),
+      ...this.output.map(param => param.toDocumentSymbolType('Output Parameter')),
+      ...this.variables.map(variable => variable.toDocumentSymbolType()),
+    ];
+    return functionSymbol;
+  }
+
+  public getFunctionInfo(): string {
+    const params = this.input.map(param => `${param.name}: ${param.type}`).join(', ');
+    const returns = this.output.map(param => param.type).join(', ');
+    const modifiers = this.modifiers.map(mod => mod.name).join(' ');
+    const visibility = this.isModifier ? 'Modifier' :
+                       this.isConstructor ? 'Constructor' :
+                       this.isFallback ? 'Fallback' :
+                       this.isReceive ? 'Receive' : 'Function';
+
+    return `${visibility} ${this.name}(${params})${returns ? ' returns (' + returns + ')' : ''}${modifiers ? ' ' + modifiers : ''}`;
+}
+
+  public getSymbolKind(): SymbolKind {
+    if (this.isConstructor) { return SymbolKind.Constructor; }
+    if (this.isReceive) { return SymbolKind.Method; }
+    if (this.isFallback) { return SymbolKind.Method; }
+    if (this.isModifier) { return SymbolKind.Property; }
+    return SymbolKind.Function;
   }
 
   public override getAllReferencesToObject(parsedCode: ParsedCode): FindTypeReferenceLocationResult[] {
@@ -397,4 +435,6 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
     }
     return null;
   }
+
+
 }

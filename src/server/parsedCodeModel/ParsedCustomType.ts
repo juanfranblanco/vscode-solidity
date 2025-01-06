@@ -1,4 +1,4 @@
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
 import { ParsedDocument } from './ParsedDocument';
 import { ParsedCode } from './parsedCode';
 import { ParsedContract } from './parsedContract';
@@ -13,6 +13,18 @@ export class ParsedCustomType extends ParsedCode {
         this.isType = element.isType;
     }
 
+     public toDocumentSymbol(): DocumentSymbol {
+                   const range = this.getRange();
+                   const name = this.name || 'Unnamed';
+                   const symbol = DocumentSymbol.create(
+                       name,
+                       this.getInfo(),
+                       SymbolKind.Class,
+                       range,
+                       range,
+                   );
+                   return symbol;
+               }
 
     public override createCompletionItem(): CompletionItem {
         if (this.completionItem === null) {

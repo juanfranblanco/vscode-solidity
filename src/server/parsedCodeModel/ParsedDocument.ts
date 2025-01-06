@@ -11,7 +11,7 @@ import { SourceDocument } from '../../common/model/sourceDocument';
 import { ParsedDeclarationType } from './parsedDeclarationType';
 import { ParsedCustomType } from './ParsedCustomType';
 import { URI } from 'vscode-uri';
-import { CompletionItem, Hover, Location, Range, TextDocument } from 'vscode-languageserver';
+import { CompletionItem, DocumentSymbol, Hover, Location, Range, SymbolKind, TextDocument } from 'vscode-languageserver';
 import { FindTypeReferenceLocationResult, ParsedCode } from './parsedCode';
 import { ParsedExpression } from './ParsedExpression';
 import { IParsedExpressionContainer } from './IParsedExpressionContainer';
@@ -86,6 +86,35 @@ export class ParsedDocument extends ParsedCode implements IParsedExpressionConta
                 this.importedDocuments.push(importedDocument);
             }
         }
+    }
+
+    public toDocumentSymbol(): DocumentSymbol {
+        const documentRange = this.getRange();
+
+        // Create the main DocumentSymbol for the document
+        const documentSymbol = DocumentSymbol.create(
+            this.sourceDocument?.absolutePath || 'Document',
+            'Solidity Document',
+            SymbolKind.File,
+            documentRange,
+            documentRange,
+        );
+
+        // Add child symbols for all document elements
+        documentSymbol.children = [
+            ...this.innerContracts.map(contract => contract.toDocumentSymbol()),
+            ...this.functions.map(fn => fn.toDocumentSymbol()),
+            ...this.events.map(event => event.toDocumentSymbol()),
+            ...this.enums.map(enm => enm.toDocumentSymbol()),
+            ...this.structs.map(struct => struct.toDocumentSymbol()),
+            ...this.usings.map(using => using.toDocumentSymbol()),
+            ...this.errors.map(error => error.toDocumentSymbol()),
+            ...this.constants.map(constant => constant.toDocumentSymbol()),
+            ...this.customTypes.map(customType => customType.toDocumentSymbol()),
+            ...this.imports.map(imp => imp.toDocumentSymbol()),
+        ];
+
+        return documentSymbol;
     }
 
     public getAllContracts(): ParsedContract[] {
