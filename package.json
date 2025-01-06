@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.179",
+  "version": "0.0.181",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -55,7 +55,7 @@
     "glob": "^8.1.0",
     "@vscode/vsce": "^2.23.0",
     "nethereum-codegen-old": "npm:nethereum-codegen@^1.0.26",
-    "nethereum-codegen": "npm:nethereum-codegen@^2.0.3",
+    "nethereum-codegen": "npm:nethereum-codegen@^2.0.6",
     "prettier": "^3.2.4",
     "prettier-plugin-solidity": "^1.3.1",
     "solc": "^0.8.24",
