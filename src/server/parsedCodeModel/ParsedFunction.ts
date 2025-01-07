@@ -63,7 +63,7 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
     const functionRange = this.getRange();
     const functionSymbol = DocumentSymbol.create(
       this.name || this.getParsedObjectType(),
-      this.getFunctionInfo(),
+      this.getSimpleInfo(),
       this.getSymbolKind(),
       functionRange,
       functionRange,
@@ -77,9 +77,9 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
     return functionSymbol;
   }
 
-  public getFunctionInfo(): string {
-    const params = this.input.map(param => `${param.name}: ${param.type}`).join(', ');
-    const returns = this.output.map(param => param.type).join(', ');
+  public getSimpleInfo(): string {
+    const params = this.input.map(param => `${param.name}: ${param.type.getSimpleInfo()}`).join(', ');
+    const returns = this.output.map(param => param.type.getSimpleInfo()).join(', ');
     const modifiers = this.modifiers.map(mod => mod.name).join(' ');
     const visibility = this.isModifier ? 'Modifier' :
                        this.isConstructor ? 'Constructor' :

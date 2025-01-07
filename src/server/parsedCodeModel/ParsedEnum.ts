@@ -21,7 +21,7 @@ export class ParsedEnum extends ParsedCode {
                 const enumRange = this.getRange();
                 const enumSymbol = DocumentSymbol.create(
                     this.name,
-                    this.getEnumInfo(),
+                    this.getSimpleInfo(),
                     SymbolKind.Enum,
                     enumRange,
                     enumRange,
@@ -29,7 +29,7 @@ export class ParsedEnum extends ParsedCode {
                 return enumSymbol;
     }
 
-    public getEnumInfo(): string {
+    public override getSimpleInfo(): string {
         const members = this.items.map(member => member).join(', ');
         return `Enum ${this.name} { ${members} }`;
     }

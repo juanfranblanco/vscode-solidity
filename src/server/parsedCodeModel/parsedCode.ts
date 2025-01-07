@@ -92,15 +92,18 @@ export class ParsedCode {
         }
     }
 
+    public getSimpleInfo(): string {
+        const name = this.name || 'Unnamed';
+        return name;
+    }
+
     public extractContractName(text: string): string | null {
         const pattern = /@inheritdoc\s+(\w+)/;
         const matches = text.match(pattern);
-    
         if (matches && matches.length > 1) {
             // The second element in the array will be the contract/interface name
             return matches[1];
         }
-    
         return null;
     }
 

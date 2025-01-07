@@ -21,7 +21,7 @@ export class ParsedError extends ParsedCode {
             const errorRange = this.getRange();
             const errorSymbol = DocumentSymbol.create(
                 this.name,
-                this.getErrorInfo(),
+                this.getSimpleInfo(),
                 SymbolKind.Class,
                 errorRange,
                 errorRange,
@@ -30,9 +30,9 @@ export class ParsedError extends ParsedCode {
             return errorSymbol;
         }
 
-        public getErrorInfo(): string {
+        public override getSimpleInfo(): string {
             const params = this.input
-                .map(param => `${param.name}: ${param.type}`)
+                .map(param => `${param.name}: ${param.type.getSimpleInfo()}`)
                 .join(', ');
             return `Error ${this.name}(${params})`;
         }

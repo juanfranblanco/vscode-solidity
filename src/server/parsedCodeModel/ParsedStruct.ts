@@ -34,7 +34,7 @@ export class ParsedStruct extends ParsedCode {
         const structRange = this.getRange();
         const structSymbol = DocumentSymbol.create(
             name,
-            this.getStructInfo(),
+            this.getSimpleInfo(),
             SymbolKind.Struct,
             structRange,
             structRange,
@@ -44,9 +44,9 @@ export class ParsedStruct extends ParsedCode {
         return structSymbol;
     }
 
-    public getStructInfo(): string {
+    public override getSimpleInfo(): string {
         const properties = this.properties
-            .map(prop => `${prop.name}: ${prop.type}`)
+            .map(prop => `${prop.name}: ${prop.type.getSimpleInfo()}`)
             .join(', ');
         return `Struct ${this.name} { ${properties} }`;
     }

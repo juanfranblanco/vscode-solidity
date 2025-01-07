@@ -138,12 +138,12 @@ export class ParsedDeclarationType extends ParsedCode {
         return returnString + '### ' + this.name;
     }
 
-    public getSimpleInfo(): string {
+    public override getSimpleInfo(): string {
         let returnString = '';
         if (this.isArray) { returnString = 'Array:'; }
         const type = this.findType();
         if (this.type != null) {
-            return returnString + type.getInfo();
+            return returnString + type.getSimpleInfo();
         }
         return returnString + ' ' + this.name;
     }

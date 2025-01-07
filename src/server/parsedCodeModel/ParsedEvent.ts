@@ -28,7 +28,7 @@ export class ParsedEvent extends ParsedCode {
         const eventRange = this.getRange();
         const eventSymbol = DocumentSymbol.create(
             this.name,
-            this.getEventInfo(),
+            this.getSimpleInfo(),
             SymbolKind.Event,
             eventRange,
             eventRange,
@@ -38,9 +38,9 @@ export class ParsedEvent extends ParsedCode {
         return eventSymbol;
     }
 
-    public getEventInfo(): string {
+    public override getSimpleInfo(): string {
         const params = this.input
-            .map(param => `${param.name}: ${param.type}`)
+            .map(param => `${param.name}: ${param.type.getSimpleInfo()}`)
             .join(', ');
         return `Event ${this.name}(${params})`;
     }
