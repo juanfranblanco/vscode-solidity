@@ -33,7 +33,8 @@ vscode-solidity-server --stdio
 
 ## Using a different version of the solidity compiler
 
-Sometimes you may want to use a different compiler than the one provided. You can find all the different versions in the solc-bin repository https://binaries.soliditylang.org/ 
+Sometimes you may want to use a different compiler than the one provided. You can find all the different versions in the solc-bin repository https://binaries.soliditylang.org/,
+using the context menu within the extension, or included in the extension github repository [Solidity versions](solidity-versions.txt).
 
 Currently we support four ways supported to use a different version of the solidity compiler. Remote, Local, NodeModule and Embedded
 
