@@ -31,6 +31,17 @@
             "outFiles": [
                 "${workspaceRoot}/out/src/**/*.js"
             ]
+        },
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Attach to Solidity Language Server (external)",
+            "port": 9229,
+            "restart": true,
+            "protocol": "inspector",
+            "outFiles": [
+                "${workspaceRoot}/out/src/**/*.js"
+            ]
         }
     ]
 }
