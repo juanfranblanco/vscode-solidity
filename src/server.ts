@@ -1,4 +1,5 @@
 'use strict';
+import * as path from 'path';
 import { compilerType, SolcCompiler } from './common/solcCompiler';
 import Linter from './server/linter/linter';
 import SolhintService from './server/linter/solhint';
@@ -27,10 +28,12 @@ import { URI } from 'vscode-uri';
 import { CodeWalkerService } from './server/parsedCodeModel/codeWalkerService';
 import { replaceRemappings } from './common/util';
 import { findFirstRootProjectFile } from './common/projectService';
+import { readFileSync } from 'fs';
 
-import packageJson from '../package.json';
+
 const standAloneServerSide = false; // put this in the package json .. use this setting to build
 // the standalone server and loade the default settings from package.json
+
 
 
 interface SoliditySettings {
@@ -58,14 +61,7 @@ interface SoliditySettings {
     viaIR: boolean;
 }
 
-const defaultSoliditySettings = {} as SoliditySettings;
-Object.entries(packageJson.contributes.configuration.properties)
-    .forEach(([key, value]) => {
-        const keys = key.split('.');
-        if (keys.length === 2 && keys[0] === 'solidity') {
-            defaultSoliditySettings[keys[1]] = value.default;
-        }
-    });
+
 
 
 // import * as path from 'path';
@@ -74,6 +70,36 @@ const connection = createConnection(ProposedFeatures.all);
 
 console.log = connection.console.log.bind(connection.console);
 console.error = connection.console.error.bind(connection.console);
+
+
+const defaultSoliditySettings = {} as SoliditySettings;
+
+let packageJson: any;
+try {
+    const packageJsonPath = path.resolve(__dirname, '../../package.json');
+    packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+
+    if (packageJson &&
+        typeof packageJson === 'object' &&
+        packageJson.contributes &&
+        typeof packageJson.contributes === 'object' &&
+        packageJson.contributes.configuration &&
+        typeof packageJson.contributes.configuration === 'object' &&
+        packageJson.contributes.configuration.properties &&
+        typeof packageJson.contributes.configuration.properties === 'object') {
+        Object.entries(packageJson.contributes.configuration.properties)
+            .forEach(([key, value]) => {
+                const keys = key.split('.');
+                if (keys.length === 2 && keys[0] === 'solidity') {
+                    defaultSoliditySettings[keys[1]] = (value as any).default;
+                }
+            });
+    } else {
+        console.error("⚠️ package.json loaded but 'contributes' key is missing.");
+    }
+} catch (error) {
+    console.error('❌ Error loading package.json:', error.message);
+}
 
 const documents = new TextDocuments(TextDocument);
 
@@ -456,7 +482,13 @@ connection.onInitialize((params): InitializeResult => {
     if (params.workspaceFolders) {
         workspaceFolders = params.workspaceFolders;
     }
-    solcCachePath = params.initializationOptions;
+
+    if (params.initializationOptions && typeof params.initializationOptions === 'string') {
+        solcCachePath = params.initializationOptions;
+    } else {
+        solcCachePath = '';
+    }
+
     solcCompiler = new SolcCompiler(rootPath);
     solcCompiler.setSolcCache(solcCachePath);
 
