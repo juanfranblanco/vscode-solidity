@@ -20,6 +20,8 @@ import {
     CompletionItem, Location, SignatureHelp, TextDocumentSyncKind,
     WorkspaceFolder,
     Hover,
+    RenameParams,
+    WorkspaceEdit,
 } from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -29,6 +31,7 @@ import { CodeWalkerService } from './server/parsedCodeModel/codeWalkerService';
 import { replaceRemappings } from './common/util';
 import { findFirstRootProjectFile } from './common/projectService';
 import { readFileSync } from 'fs';
+import { SolidityRenameProvider } from './server/SolidityRenameProvider';
 
 
 const standAloneServerSide = false; // put this in the package json .. use this setting to build
@@ -503,6 +506,7 @@ connection.onInitialize((params): InitializeResult => {
             hoverProvider: true,
             textDocumentSync: TextDocumentSyncKind.Full,
             documentSymbolProvider: true,
+            renameProvider: true
         },
     };
 
@@ -568,6 +572,30 @@ connection.onDidChangeConfiguration((change) => {
     }
 
 });
+
+
+connection.onRenameRequest(
+    async (RenameParams: RenameParams): Promise<WorkspaceEdit | undefined> => {  
+      const document = documents.get(RenameParams.textDocument.uri);
+
+      if (document) {
+          // Initialize project root and ensure CodeWalkerService is up-to-date
+          initWorkspaceRootFolder(document.uri);
+          initCurrentProjectInWorkspaceRootFsPath(document.uri);
+            
+      const provider = new SolidityRenameProvider();
+      return provider.provideRenameEdits(
+        document,
+        RenameParams.position,
+        RenameParams.newName,
+        getCodeWalkerService(),
+      );
+      }  
+        return undefined;
+
+    },
+  );
+  
 
 function linterName(settings: SoliditySettings) {
     return settings.linter;
