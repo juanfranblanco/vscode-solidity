@@ -584,11 +584,13 @@ connection.onRenameRequest(
           initCurrentProjectInWorkspaceRootFsPath(document.uri);
             
       const provider = new SolidityRenameProvider();
+      
       return provider.provideRenameEdits(
         document,
         RenameParams.position,
         RenameParams.newName,
         getCodeWalkerService(),
+        connection
       );
       }  
         return undefined;
