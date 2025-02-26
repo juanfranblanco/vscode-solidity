@@ -590,7 +590,6 @@ connection.onRenameRequest(
         RenameParams.position,
         RenameParams.newName,
         getCodeWalkerService(),
-        connection
       );
       }  
         return undefined;
