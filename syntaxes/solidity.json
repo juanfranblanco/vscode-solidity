@@ -547,6 +547,10 @@
             "match": "\\b(immutable)\\b",
             "name": "storage.type.modifier.readonly"
         },
+        "type-modifier-transient": {
+            "match": "\\b(transient)\\b",
+            "name": "storage.type.modifier.readonly"
+        },
         "type-modifier-extended-scope": {
             "match": "\\b(pure|view|inherited|indexed|storage|memory|virtual|calldata|override|abstract)\\b",
             "name": "storage.type.modifier.extendedscope"
@@ -641,6 +645,9 @@
                 },
                 {
                     "include": "#type-modifier-immutable"
+                },
+                {
+                    "include": "#type-modifier-transient"
                 },
                 {
                     "include": "#type-modifier-extend-scope"

@@ -15,12 +15,15 @@ export class ParsedUsing extends ParsedCode {
         this.name = element.library.literal;
         this.document = document;
         this.isGlobal = isGlobal;
-
-        if (element.for === '*') {
-            this.forStar = true;
+        if (element.for === null) {
             this.for = null;
         } else {
-            this.for = ParsedDeclarationType.create(element.for, this.contract, this.document);
+            if (element.for === '*') {
+                this.forStar = true;
+                this.for = null;
+            } else {
+                this.for = ParsedDeclarationType.create(element.for, this.contract, this.document);
+           }
         }
     }
 
