@@ -13,6 +13,7 @@ export class SolidityReferencesProvider {
 
     const offset = document.offsetAt(position);
     walker.initialiseChangedDocuments();
+    
     const documentContractSelected = walker.getSelectedDocument(document, position);
     const references = documentContractSelected.getAllReferencesToSelected(offset, [].concat(documentContractSelected, walker.parsedDocumentsCache));
     const foundLocations = references.filter(x => x != null && x.location !== null).map(x => x.location);

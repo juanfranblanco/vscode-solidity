@@ -68,6 +68,10 @@ export class CodeWalkerService {
   ) ;
   }
 
+  public getParsedDocumentsCache(): ParsedDocument[] {
+    return this.parsedDocumentsCache;
+  }
+
   public initialiseAllDocuments() {
      const sourceDocuments = new SourceDocumentCollection();
      const files = this.project.getAllSolFilesIgnoringDependencyFolders();

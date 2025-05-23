@@ -10,6 +10,7 @@ import { SolidityDefinitionProvider } from './server/SolidityDefinitionProvider'
 import { SolidityReferencesProvider } from './server/SolidityReferencesProvider';
 import { SolidityDocumentSymbolProvider } from './server/SolidityDocumentSymbolProvider';
 import { SolidityHoverProvider } from './server/SolidityHoverProvider';
+import { SolidityWorkspaceSymbolProvider } from './server/SolidityWorkspaceSymbolProvider';
 import {
     createConnection,
     TextDocuments,
@@ -464,6 +465,17 @@ connection.onDocumentSymbol((params) => {
     return [];
 });
 
+connection.onWorkspaceSymbol((params) => {
+    const provider = new SolidityWorkspaceSymbolProvider();
+
+    if (!selectedProjectFolder) { return []; }
+    const projectFolder = initCurrentProjectInWorkspaceRootFsPath(selectedProjectFolder);
+    const walker = getCodeWalkerServiceFromCacheAndCreateIfNotExistsOrSettingsChanged(projectFolder);
+
+    return provider.provideWorkspaceSymbols(params.query, walker);
+  });
+
+
 // remove diagnostics from the Problems panel when we close the file
 documents.onDidClose(event => connection.sendDiagnostics({
     diagnostics: [],
@@ -503,6 +515,7 @@ connection.onInitialize((params): InitializeResult => {
             hoverProvider: true,
             textDocumentSync: TextDocumentSyncKind.Full,
             documentSymbolProvider: true,
+            workspaceSymbolProvider: true,
         },
     };
 

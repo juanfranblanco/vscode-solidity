@@ -7,7 +7,7 @@ export class SolidityDocumentSymbolProvider {
    */
   public provideDocumentSymbols(
     document: vscode.TextDocument,
-    walker: CodeWalkerService
+    walker: CodeWalkerService,
   ): vscode.DocumentSymbol[] | undefined {
     // Always use position (0, 0) for reusability
     const startOfDocument = vscode.Position.create(0, 0);
