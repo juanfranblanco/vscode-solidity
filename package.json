@@ -59,7 +59,7 @@
     "glob": "^8.1.0",
     "@vscode/vsce": "^2.23.0",
     "nethereum-codegen-old": "npm:nethereum-codegen@^1.0.26",
-    "nethereum-codegen": "npm:nethereum-codegen@^3.0.0",
+    "nethereum-codegen": "npm:nethereum-codegen@^3.0.4",
     "prettier": "^3.2.4",
     "prettier-plugin-solidity": "^1.3.1",
     "solc": "^0.8.29",
