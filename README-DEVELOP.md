@@ -50,7 +50,7 @@ $ code .
 
 ## Running
 
-If you just want to run the code, on the top there is a "Debug" menu item and under that, the second item is "Start Without Debugging", which is also bound the key sequence `Ctrl`-`F5`.
+If you just want to run the code, on the top there is a "Debug" menu item and under that, the second item is "Start Without Debugging", which is also bound to the key sequence `Ctrl`-`F5`.
 
 After that, the VSCode window should turn from blue to orange and another window will pop up. In this window you will have the vscode extension installed and enabled.
 
@@ -92,7 +92,7 @@ But if everything is good, enter `Ctrl`-`Shift`-`P` and a list of commands will 
 
 You may want to extend this code of may find a problem and want to debug what is going wrong. For this, you start off from the "Debug" menu using the first item on the list "Start Debugging" which is also bound to the function key `F5`. As before the window will go orange a popup menu bar will appear at the top.
 
-__NOTE__: It may happen that after the window goes orange, another and VSCode window with the blue, the "play button" may go from a the parallel bars to "pause" back to "play". When that happens you may also be stopped in `bootstrap-fork.js` at some nonsensical like like line 9 which has no code on it. If this happens (and it may happen several times for each solidity file loaded) just hit the play button to make sure it goes back to the parallel bars. You have 10 seconds from the time this button goes from "Pause" to "Play" to hit the "Play" button. Otherwise in the other VSCode you will get a popup message that reads:
+__NOTE__: It may happen that after the window goes orange, another and VSCode window with the blue, the "play button" may go from the parallel bars to "pause" back to "play". When that happens you may also be stopped in `bootstrap-fork.js` at some nonsensical like like line 9 which has no code on it. If this happens (and it may happen several times for each solidity file loaded) just hit the play button to make sure it goes back to the parallel bars. You have 10 seconds from the time this button goes from "Pause" to "Play" to hit the "Play" button. Otherwise in the other VSCode you will get a popup message that reads:
 
 > Extension host did not start in 10 seconds, it might be stopped on the first line and needs a debugger to continue.
 
