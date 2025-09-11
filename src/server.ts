@@ -436,6 +436,19 @@ function startValidation() {
     }
 }
 
+documents.onDidSave(event => {
+    const document = event.document;
+    if (!validatingDocument && !validatingAllDocuments) {
+        validatingDocument = true; // control the flag at a higher level
+        // slow down, give enough time to type (1.5 seconds?)
+
+        setTimeout(() =>
+         solcCompiler.initialiseSelectedCompiler().then(() => {
+        validate(document); }), validationDelay);
+        getCodeWalkerService().refreshDocument(document);
+    }
+});
+
 documents.onDidChangeContent(event => {
     const document = event.document;
     if (!validatingDocument && !validatingAllDocuments) {

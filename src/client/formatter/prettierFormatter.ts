@@ -7,12 +7,12 @@ import * as path from 'path';
 export async function formatDocument(document, context) : Promise<vscode.TextEdit[]> {
     const source = document.getText();
     const documentPath = document.uri.fsPath;
-    const pluginPathFile = path.join(context.extensionPath, 'node_modules', 'prettier-plugin-solidity', 'dist','standalone.cjs');
+    const pluginPathFile = path.join(context.extensionPath, 'node_modules', 'prettier-plugin-solidity', 'dist','index.js');
     const prettierPathFile = path.join(context.extensionPath, 'node_modules', 'prettier');
     const pluginPath =  pluginPathFile ; 
     const prettierPath = prettierPathFile; 
     const options = {
-        parser: 'solidity-parse',
+        parser: 'slang',
         pluginSearchDirs: [context.extensionPath],
     };
 
