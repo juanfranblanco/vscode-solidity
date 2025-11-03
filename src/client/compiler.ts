@@ -244,7 +244,7 @@ export class Compiler {
                 }
             } else if (errorWarningCounts.warnings > 0) {
                 const files = this.writeCompilationOutputToBuildDirectory(output, buildDir, sourceDir, rootPath, excludePath, singleContractFilePath);
-                if(files.length === 0) {
+                if (files.length === 0) {
                     const noOutputMessage = `Could not output any files from the compilation, compilation warnings: ${errorWarningCounts.warnings} warnings`;
                     vscode.window.showWarningMessage(noOutputMessage);
                     vscode.window.setStatusBarMessage(noOutputMessage);
@@ -260,16 +260,16 @@ export class Compiler {
             }
         } else {
             const files = this.writeCompilationOutputToBuildDirectory(output, buildDir, sourceDir, rootPath, excludePath, singleContractFilePath);
-            if(files.length === 0) {
+            if (files.length === 0) {
                 const noOutputMessage = `Could not output any files from the compilation`;
                 vscode.window.showWarningMessage(noOutputMessage);
                 vscode.window.setStatusBarMessage(noOutputMessage);
                 outputChannel.appendLine(noOutputMessage);
                 return files;
-            }else{
+            } else {
                 const compilationSuccessMessage = `Compilation completed successfully!`;
-                vscode.window.showInformationMessage(compilationSuccessMessage);
-                vscode.window.setStatusBarMessage(compilationSuccessMessage);
+                // vscode.window.showInformationMessage(compilationSuccessMessage);
+                // vscode.window.setStatusBarMessage(compilationSuccessMessage);
                 outputChannel.appendLine(compilationSuccessMessage);
             }
             return files;
@@ -288,12 +288,12 @@ export class Compiler {
     private writeCompilationOutputToBuildDirectory(output: any, buildDir: string, sourceDir: string, rootPath: string,
         excludePath?: string[], singleContractFilePath?: string): Array<string> {
         const compiledFiles: Array<string> = new Array<string>();
-        if(rootPath == null) {
+        if (rootPath == null) {
             this.outputChannel.appendLine('No root path found');
             return compiledFiles;
         }
+
         const binPath = path.join(rootPath, buildDir);
-       
 
         if (!fs.existsSync(binPath)) {
             fs.mkdirSync(binPath);

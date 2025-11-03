@@ -9,9 +9,9 @@ import { SettingsService } from './settingsService';
 import { OutputChannelService} from './outputChannelService';
 
 
-export function autoCodeGenerateAfterCompilation(compiledFiles: Array<string>, args: any, diagnostics: vscode.DiagnosticCollection) {
+export function autoCodeGenerateAfterCompilation(compiledFiles: Array<string>, args: any, diagnostics: vscode.DiagnosticCollection, root: any = null) {
     if (compiledFiles !== undefined && compiledFiles.length > 0) {
-        const settings = getCodeGenerationSettings();
+        const settings = getCodeGenerationSettings(root);
         if (settings !== undefined) {
             if (settings.autoCodeGen === true) {
                 let lang = 0;
@@ -19,7 +19,7 @@ export function autoCodeGenerateAfterCompilation(compiledFiles: Array<string>, a
                     lang = settings.lang;
                 }
                 compiledFiles.forEach(file => {
-                    codeGenerateCQS(file, lang, args, diagnostics);
+                    codeGenerateCQS(file, lang, args, diagnostics, root);
                 });
             }
         }
@@ -37,8 +37,10 @@ export function getProjectExtensionFromLang(lang: number) {
     }
 }
 
-export function generateNethereumCodeSettingsFile() {
-    const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+export function generateNethereumCodeSettingsFile(root = null) {
+    if (root == null) {
+        root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+    }
     const settingsFile = path.join(root, 'nethereum-gen.settings');
     if (!fs.existsSync(settingsFile)) {
 
@@ -56,8 +58,61 @@ export function generateNethereumCodeSettingsFile() {
     }
 }
 
+export function generateNethereumMultiSettingsFile(root: string | null = null) {
+    if (root == null) {
+        root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+    }
 
-export function codeGenerateAllFilesFromNethereumGenAbisFile(args: any, diagnostics: vscode.DiagnosticCollection) {
+    const settingsFile = path.join(root, '.nethereum-gen.multisettings');
+
+    if (!fs.existsSync(settingsFile)) {
+        const prettyRootName = prettifyRootNameAsNamespace(path.basename(root));
+
+        const jsonTemplate = [
+            {
+                paths: [
+                    'out/YourContract.sol/YourContract.json',
+                    'out/AnotherContract.sol/AnotherContract.json',
+                ],
+                generatorConfigs: [
+                    {
+                        baseNamespace: `${prettyRootName}.Contracts`,
+                        basePath: `../${prettyRootName}/${prettyRootName}.Contracts`,
+                        codeGenLang: 0,
+                        generatorType: 'ContractDefinition',
+                    },
+                    {
+                        baseNamespace: `${prettyRootName}.Contracts`,
+                        basePath: `../${prettyRootName}/${prettyRootName}.Contracts`,
+                        codeGenLang: 0,
+                        generatorType: 'MudExtendedService',
+                    },
+                    {
+                        baseNamespace: `${prettyRootName}.Contracts`,
+                        basePath: `../${prettyRootName}/${prettyRootName}.Contracts`,
+                        codeGenLang: 0,
+                        generatorType: 'BlazorPageService',
+                    },
+                ],
+            },
+            {
+                paths: [ 'mud.config.ts' ],
+                generatorConfigs: [
+                    {
+                        baseNamespace: `${prettyRootName}.Contracts.Tables`,
+                        basePath: `../${prettyRootName}Contracts/Tables`,
+                        generatorType: 'MudTables',
+                    },
+                ],
+            },
+        ];
+
+        fs.writeFileSync(settingsFile, JSON.stringify(jsonTemplate, null, 4));
+    }
+}
+
+
+export function codeGenerateAllFilesFromNethereumGenAbisFile(args: any, diagnostics: vscode.DiagnosticCollection, root = null) {
     try {
         const settingsPath = args.fsPath;
         const fileName = path.basename(settingsPath);
@@ -66,7 +121,9 @@ export function codeGenerateAllFilesFromNethereumGenAbisFile(args: any, diagnost
         if (isValid) {
             if (fs.existsSync(settingsPath)) {
                 const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
-                const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+                if (root == null) {
+                    root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+                }
                 const files = codegen.generateFilesFromConfigSetsArray(settings, root);
                 const outputChannel = OutputChannelService.getInstance().getNethereumCodeGenerationOutputChannel();
                 outputChannel.clear();
@@ -88,40 +145,40 @@ export function codeGenerateAllFilesFromNethereumGenAbisFile(args: any, diagnost
     }
 }
 
-export function codeGenerateNethereumCQSCsharp(args: any, diagnostics: vscode.DiagnosticCollection) {
+export function codeGenerateNethereumCQSCsharp(args: any, diagnostics: vscode.DiagnosticCollection, root = null) {
     const lang = 0;
     const editor = vscode.window.activeTextEditor;
     const fileName = editor.document.fileName;
-    codeGenerateCQS(fileName, lang, args, diagnostics);
+    codeGenerateCQS(fileName, lang, args, diagnostics, root);
 }
 
-export function codeGenerateNethereumCQSVbNet(args: any, diagnostics: vscode.DiagnosticCollection) {
+export function codeGenerateNethereumCQSVbNet(args: any, diagnostics: vscode.DiagnosticCollection, root = null) {
     const lang = 1;
     const editor = vscode.window.activeTextEditor;
     const fileName = editor.document.fileName;
-    codeGenerateCQS(fileName, lang, args, diagnostics);
+    codeGenerateCQS(fileName, lang, args, diagnostics, root);
 }
 
-export function codeGenerateNethereumCQSFSharp(args: any, diagnostics: vscode.DiagnosticCollection) {
+export function codeGenerateNethereumCQSFSharp(args: any, diagnostics: vscode.DiagnosticCollection, root = null) {
     const lang = 3;
     const editor = vscode.window.activeTextEditor;
     const fileName = editor.document.fileName;
-    codeGenerateCQS(fileName, lang, args, diagnostics);
+    codeGenerateCQS(fileName, lang, args, diagnostics, root);
 }
 
-export function codeGenerateNethereumCQSVbAll(args: any, diagnostics: vscode.DiagnosticCollection) {
+export function codeGenerateNethereumCQSVbAll(args: any, diagnostics: vscode.DiagnosticCollection, root = null) {
     const lang = 1;
-    codeGenerateAllFiles(lang, args, diagnostics);
+    codeGenerateAllFiles(lang, args, diagnostics, root);
 }
 
-export function codeGenerateNethereumCQSFSharpAll(args: any, diagnostics: vscode.DiagnosticCollection) {
+export function codeGenerateNethereumCQSFSharpAll(args: any, diagnostics: vscode.DiagnosticCollection, root = null) {
     const lang = 3;
-    codeGenerateAllFiles(lang, args, diagnostics);
+    codeGenerateAllFiles(lang, args, diagnostics, root);
 }
 
-export function codeGenerateNethereumCQSCSharpAll(args: any, diagnostics: vscode.DiagnosticCollection) {
+export function codeGenerateNethereumCQSCSharpAll(args: any, diagnostics: vscode.DiagnosticCollection, root = null) {
     const lang = 0;
-    codeGenerateAllFiles(lang, args, diagnostics);
+    codeGenerateAllFiles(lang, args, diagnostics, root);
 }
 
 function getBuildPath() {
@@ -133,20 +190,20 @@ function getBuildPath() {
     return path.join(rootPath, project.projectPackage.build_dir);
 }
 
-function codeGenerateAllFiles(lang: number, args: any, diagnostics: vscode.DiagnosticCollection) {
+function codeGenerateAllFiles(lang: number, args: any, diagnostics: vscode.DiagnosticCollection, root = null) {
     const buildPath = getBuildPath();
     const outputPath = '**/*.json';
     const files = vscode.workspace.findFiles(outputPath, null, 1000);
     files.then(documents => {
         documents.forEach(document => {
             if (document.fsPath.startsWith(buildPath)) {
-                codeGenerateCQS(document.fsPath, lang, args, diagnostics);
+                codeGenerateCQS(document.fsPath, lang, args, diagnostics, root);
             }
         });
     });
 }
 
-export function codeGenerateAllFilesFromAbiInCurrentFolder(lang: number, args: any, diagnostics: vscode.DiagnosticCollection) {
+export function codeGenerateAllFilesFromAbiInCurrentFolder(lang: number, args: any, diagnostics: vscode.DiagnosticCollection, root = null) {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
         return; // We need something open
@@ -157,15 +214,18 @@ export function codeGenerateAllFilesFromAbiInCurrentFolder(lang: number, args: a
     files.then(documents => {
         documents.forEach(document => {
             if (document.fsPath.startsWith(buildPath)) {
-                codeGenerateCQS(document.fsPath, lang, args, diagnostics);
+                codeGenerateCQS(document.fsPath, lang, args, diagnostics, root);
             }
         });
     });
 }
 
 
-function getCodeGenerationSettings() {
-    const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+function getCodeGenerationSettings(root = null) {
+    if (root == null) {
+        root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+    }
+
     const settingsFile = path.join(root, 'nethereum-gen.settings');
     if (fs.existsSync(settingsFile)) {
         const settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
@@ -184,11 +244,13 @@ function getCodeGenerationAbiFilesFromSettings(abisPath: string) {
     return undefined;
 }
 
-export function codeGenerateCQS(fileName: string, lang: number, args: any, diagnostics: vscode.DiagnosticCollection) {
+export function codeGenerateCQS(fileName: string, lang: number, args: any, diagnostics: vscode.DiagnosticCollection, root = null) {
     try {
         const extension = getProjectExtensionFromLang(lang);
-        const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
-        const settings = getCodeGenerationSettings();
+        if (root == null) {
+            root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+        }
+        const settings = getCodeGenerationSettings(root);
         const prettyRootName = prettifyRootNameAsNamespace(path.basename(root));
         let baseNamespace = prettyRootName + '.Contracts';
         let projectName = baseNamespace;
@@ -263,6 +325,8 @@ export function codeGenerateCQS(fileName: string, lang: number, args: any, diagn
                 bytecode,
                 contractName,
                 baseNamespace,
+                '',
+                '',
                 projectPath,
                 lang);
         }
