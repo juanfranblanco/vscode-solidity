@@ -5,7 +5,7 @@ import { compileAllContracts } from './client/compileAll';
 import { Compiler } from './client/compiler';
 import { compileActiveContract, initDiagnosticCollection } from './client/compileActive';
 import {
-    generateNethereumCodeSettingsFile, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
+    generateNethereumCodeSettingsFile, generateNethereumMultiSettingsFile, codeGenerateNethereumCQSCsharp, codeGenerateNethereumCQSFSharp, codeGenerateNethereumCQSVbNet,
     codeGenerateNethereumCQSCSharpAll, codeGenerateNethereumCQSFSharpAll, codeGenerateNethereumCQSVbAll, autoCodeGenerateAfterCompilation,
     codeGenerateCQS, codeGenerateAllFilesFromAbiInCurrentFolder, codeGenerateAllFilesFromNethereumGenAbisFile,
 } from './client/codegen';
@@ -38,20 +38,23 @@ export async function activate(context: vscode.ExtensionContext) {
     initDiagnosticCollection(diagnosticCollection);
     
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.active', async () => {
+        const root = workspaceUtil.getCurrentWorkspaceRootFolder();
         const compiledResults = await compileActiveContract(compiler);
-        autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection);
+        autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection, root);
         return compiledResults;
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.activeUsingRemote', async () => {
+        const root = workspaceUtil.getCurrentWorkspaceRootFolder();
         const compiledResults = await compileActiveContract(compiler, compilerType.remote);
-        autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection);
+        autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection, root);
         return compiledResults;
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compile.activeUsingLocalFile', async () => {
+        const root = workspaceUtil.getCurrentWorkspaceRootFolder();
         const compiledResults = await compileActiveContract(compiler, compilerType.localFile);
-        autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection);
+        autoCodeGenerateAfterCompilation(compiledResults, null, diagnosticCollection, root);
         return compiledResults;
     }));
 
@@ -67,68 +70,87 @@ export async function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenCSharpProject', (args: any[]) => {
-        codeGenerateNethereumCQSCsharp(args, diagnosticCollection);
+        const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+        codeGenerateNethereumCQSCsharp(args, diagnosticCollection, root);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compileAndCodegenCSharpProject', async (args: any[]) => {
+        const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
         const compiledResults = await compileActiveContract(compiler);
         compiledResults.forEach(file => {
-            codeGenerateCQS(file, 0, args, diagnosticCollection);
+            codeGenerateCQS(file, 0, args, diagnosticCollection, root);
         });
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenNethereumCodeGenSettings', (args: any[]) => {
-        generateNethereumCodeSettingsFile();
+        const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+        generateNethereumCodeSettingsFile(root);
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand('solidity.generateNethereumMultiSettingsFile', async (args: any[]) => {
+        const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+        generateNethereumMultiSettingsFile(root);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenVbNetProject', (args: any[]) => {
-        codeGenerateNethereumCQSVbNet(args, diagnosticCollection);
+        const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+        codeGenerateNethereumCQSVbNet(args, diagnosticCollection, root);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compileAndCodegenVbNetProject', async (args: any[]) => {
+         const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
         const compiledResults = await compileActiveContract(compiler);
         compiledResults.forEach(file => {
-            codeGenerateCQS(file, 1, args, diagnosticCollection);
+            codeGenerateCQS(file, 1, args, diagnosticCollection, root);
         });
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenFSharpProject', (args: any[]) => {
-        codeGenerateNethereumCQSFSharp(args, diagnosticCollection);
+        const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+        codeGenerateNethereumCQSFSharp(args, diagnosticCollection, root);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.compileAndCodegenFSharpProject', async (args: any[]) => {
+        const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
         const compiledResults = await compileActiveContract(compiler);
         compiledResults.forEach(file => {
-            codeGenerateCQS(file, 3, args, diagnosticCollection);
+            codeGenerateCQS(file, 3, args, diagnosticCollection, root);
         });
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenCSharpProjectAll', (args: any[]) => {
-        codeGenerateNethereumCQSCSharpAll(args, diagnosticCollection);
+        const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+        codeGenerateNethereumCQSCSharpAll(args, diagnosticCollection, root);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenVbNetProjectAll', (args: any[]) => {
-        codeGenerateNethereumCQSVbAll(args, diagnosticCollection);
+        const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+        codeGenerateNethereumCQSVbAll(args, diagnosticCollection, root);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenFSharpProjectAll', (args: any[]) => {
-        codeGenerateNethereumCQSFSharpAll(args, diagnosticCollection);
+        const root = workspaceUtil.getCurrentProjectInWorkspaceRootFsPath();
+        codeGenerateNethereumCQSFSharpAll(args, diagnosticCollection, root);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenCSharpProjectAllAbiCurrent', (args: any[]) => {
-        codeGenerateAllFilesFromAbiInCurrentFolder(0, args, diagnosticCollection);
+        const root = workspaceUtil.getCurrentWorkspaceRootFolder();
+        codeGenerateAllFilesFromAbiInCurrentFolder(0, args, diagnosticCollection, root);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenVbNetProjectAllAbiCurrent', (args: any[]) => {
-        codeGenerateAllFilesFromAbiInCurrentFolder(1, args, diagnosticCollection);
+        const root = workspaceUtil.getCurrentWorkspaceRootFolder();
+        codeGenerateAllFilesFromAbiInCurrentFolder(1, args, diagnosticCollection, root);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codegenFSharpProjectAllAbiCurrent', (args: any[]) => {
-        codeGenerateAllFilesFromAbiInCurrentFolder(3, args, diagnosticCollection);
+        const root = workspaceUtil.getCurrentWorkspaceRootFolder();
+        codeGenerateAllFilesFromAbiInCurrentFolder(3, args, diagnosticCollection, root);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.codeGenFromNethereumGenAbisFile', (args: any[]) => {
-        codeGenerateAllFilesFromNethereumGenAbisFile(args, diagnosticCollection);
+        const root = workspaceUtil.getCurrentWorkspaceRootFolder();
+        codeGenerateAllFilesFromNethereumGenAbisFile(args, diagnosticCollection, root);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('solidity.fixDocument', () => {
