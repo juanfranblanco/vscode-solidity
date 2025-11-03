@@ -170,13 +170,41 @@ export class ParsedDeclarationType extends ParsedCode {
         let returnString = '';
         if (this.isArray) { returnString = '### Array \n'; }
         if (this.isMapping) {
-            returnString = '### Mapping (' + this.mappingKeyType + ' => ' + this.mappingValueType + ') \n';
+            returnString = '### Mapping (' + this.mappingKeyType + ' => ' + this.getMappingValueInfo(this.mappingValueType) + ') \n';
         }
         const type = this.findType();
         if (this.type != null) {
             return returnString + type.getInfo();
         }
         return returnString + '### ' + this.name;
+    }
+
+    public getMappingValueInfo(literalType: any): string {
+       if (typeof literalType.type !== 'undefined')  {
+             if (literalType.type === 'MappingExpression') {
+                const from = this.getTypeString(literalType.from);
+                const literal = literalType.to;
+                if (typeof literal === 'string') {
+                    return 'Mapping (' + from + ' => ' + literal + ')';
+                }
+
+                if (typeof literal.type !== 'undefined') {
+                    if (literal.type === 'MappingExpression') {
+                        return 'Mapping (' + from + ' => ' + this.findMappingValueType(literal) + ')';
+                    }
+                }
+
+                if (literal && typeof literal.literal !== 'undefined') {
+                     return 'Mapping (' + from + ' => ' + literal.literal + ')';
+                }
+
+                if (literal && typeof literal.name !== 'undefined') {
+                    return 'Mapping (' + from + ' => ' + literal.name + ')';
+                }
+
+             }
+        }
+        return literalType;
     }
 
     public override getSimpleInfo(): string {

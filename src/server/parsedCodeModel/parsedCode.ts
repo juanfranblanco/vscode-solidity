@@ -245,11 +245,39 @@ export class ParsedCode {
     }
 
     public findTypeInScope(name: string): ParsedCode {
+        name = this.findMappingValueType(name);
         if (this.contract === null) {
             return this.document.findType(name);
         } else {
             return this.contract.findType(name);
         }
+    }
+
+    public findMappingValueType(literalType: any): string {
+       if (typeof literalType.type !== 'undefined')  {
+             if (literalType.type === 'MappingExpression') {
+                const literal = literalType.to;
+                if (typeof literal === 'string') {
+                    return literal;
+                }
+
+                if (typeof literal.type !== 'undefined') {
+                    if (literal.type === 'MappingExpression') {
+                        return this.findMappingValueType(literal);
+                    }
+                }
+
+                if (literal && typeof literal.literal !== 'undefined') {
+                    return literal.literal;
+                }
+
+                if (literal && typeof literal.name !== 'undefined') {
+                    return literal.name;
+                }
+
+             }
+        }
+        return literalType;
     }
 
     public findMethodsInScope(name: string): ParsedCode[] {
