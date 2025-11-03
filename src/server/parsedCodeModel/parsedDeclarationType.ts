@@ -9,6 +9,8 @@ export class ParsedDeclarationType extends ParsedCode {
     public isMapping: boolean;
     public parentTypeName: any = null;
     public type: ParsedCode = null;
+    public mappingValueType: string = null;
+    public mappingKeyType: string = null;
 
     public static create(literal: any, contract: ParsedContract, document: ParsedDocument): ParsedDeclarationType {
         const declarationType = new ParsedDeclarationType();
@@ -33,14 +35,44 @@ export class ParsedDeclarationType extends ParsedCode {
         const literalType = element.literal;
         if (typeof literalType.type !== 'undefined')  {
              this.isMapping = literalType.type === 'MappingExpression';
-             this.name = 'mapping'; // do something here
+             this.name = 'mapping'; // 保持语义正确
+             // Extract key and value types from mapping expression
+             if (this.isMapping) {
+                 this.mappingKeyType = this.getTypeString(literalType.from);
+                 this.mappingValueType = this.getTypeString(literalType.to);
+             }
              // suffixType = '(' + this.getTypeString(literalType.from) + ' => ' + this.getTypeString(literalType.to) + ')';
         }
+    }
+
+    private getTypeString(literal: any): string {
+        if (typeof literal === 'string') {
+            return literal;
+        }
+
+        if (literal && typeof literal.literal !== 'undefined') {
+            return literal.literal;
+        }
+
+        if (literal && typeof literal.name !== 'undefined') {
+            return literal.name;
+        }
+
+        return 'unknown';
     }
 
     public override getInnerCompletionItems(): CompletionItem[] {
         const result: CompletionItem[] = [];
         this.getExtendedMethodCallsFromUsing().forEach(x => result.push(x.createCompletionItem()));
+
+        // 对于映射类型，返回值类型的自动补全项
+        if (this.isMapping && this.mappingValueType !== null) {
+            const valueType = this.findTypeInScope(this.mappingValueType);
+            if (valueType !== null && valueType !== undefined) {
+                return result.concat(valueType.getInnerCompletionItems());
+            }
+        }
+
         const type = this.findType();
         if (type === null || type === undefined) {
             return result;
@@ -49,6 +81,14 @@ export class ParsedDeclarationType extends ParsedCode {
     }
 
     public override getInnerMembers(): ParsedCode[] {
+        // 对于映射类型，返回值类型的成员
+        if (this.isMapping && this.mappingValueType !== null) {
+            const valueType = this.findTypeInScope(this.mappingValueType);
+            if (valueType !== null && valueType !== undefined) {
+                return valueType.getInnerMembers();
+            }
+        }
+
         const type = this.findType();
         if (type === null || type === undefined) { return []; }
         return type.getInnerMembers();
@@ -57,6 +97,15 @@ export class ParsedDeclarationType extends ParsedCode {
     public override getInnerMethodCalls(): ParsedCode[] {
         let result: ParsedCode[] = [];
         result = result.concat(this.getExtendedMethodCallsFromUsing());
+
+        // 对于映射类型，返回值类型的方法调用
+        if (this.isMapping && this.mappingValueType !== null) {
+            const valueType = this.findTypeInScope(this.mappingValueType);
+            if (valueType !== null && valueType !== undefined) {
+                return result.concat(valueType.getInnerMethodCalls());
+            }
+        }
+
         const type = this.findType();
         if (type === null || type === undefined) {
             return result;
@@ -131,6 +180,9 @@ export class ParsedDeclarationType extends ParsedCode {
     public getInfo(): string {
         let returnString = '';
         if (this.isArray) { returnString = '### Array \n'; }
+        if (this.isMapping) {
+            returnString = '### Mapping (' + this.mappingKeyType + ' => ' + this.mappingValueType + ') \n';
+        }
         const type = this.findType();
         if (this.type != null) {
             return returnString + type.getInfo();
@@ -141,6 +193,7 @@ export class ParsedDeclarationType extends ParsedCode {
     public override getSimpleInfo(): string {
         let returnString = '';
         if (this.isArray) { returnString = 'Array:'; }
+        if (this.isMapping) { returnString = 'Mapping:'; }
         const type = this.findType();
         if (this.type != null) {
             return returnString + type.getSimpleInfo();
