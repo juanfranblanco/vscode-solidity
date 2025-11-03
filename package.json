@@ -60,10 +60,10 @@
     "@vscode/vsce": "^2.23.0",
     "nethereum-codegen-old": "npm:nethereum-codegen@^1.0.26",
     "nethereum-codegen": "npm:nethereum-codegen@^3.0.4",
-    "prettier": "^3.2.4",
-    "prettier-plugin-solidity": "^1.3.1",
+    "prettier": "^3.6.2",
+    "prettier-plugin-solidity": "2.0.0",
     "solc": "^0.8.29",
-    "solhint": "^5.0.5",
+    "solhint": "^6.0.1",
     "solium": "^1.2.5",
     "solparse-exp-jb": "4.0.0",
     "vscode-languageclient": "^8.1.0",
@@ -157,6 +157,11 @@
           ],
           "default": null,
           "description": "Solhint linting validation rules"
+        },
+        "solidity.solhintPackageDirectory": {
+          "type": "string",
+          "default": "",
+          "description": "The package directory to find the solhint linter"
         },
         "solidity.formatter": {
           "type": "string",

@@ -21,10 +21,12 @@ import {
     CompletionItem, Location, SignatureHelp, TextDocumentSyncKind,
     WorkspaceFolder,
     Hover,
+    type TextDocumentChangeEvent
 } from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
+
 
 import { CodeWalkerService } from './server/parsedCodeModel/codeWalkerService';
 import { replaceRemappings } from './common/util';
@@ -47,6 +49,7 @@ interface SoliditySettings {
     defaultCompiler: keyof compilerType;
     soliumRules: any;
     solhintRules: any;
+    solhintPackageDirectory: string;
     validationDelay: number;
     packageDefaultDependenciesDirectory: string|string[];
     packageDefaultDependenciesContractsDirectory: string|string[];
@@ -115,6 +118,7 @@ let nodeModulePackage = '';
 let defaultCompiler = compilerType.embedded;
 let solhintDefaultRules = {};
 let soliumDefaultRules = {};
+let solhintPackageDirectory = '';
 let validationDelay = 1500;
 let solcCachePath = '';
 let hasWorkspaceFolderCapability = false;
@@ -300,6 +304,7 @@ function updateSoliditySettings(soliditySettings: SoliditySettings) {
     compileUsingRemoteVersion = soliditySettings.compileUsingRemoteVersion;
     solhintDefaultRules = soliditySettings.solhintRules;
     soliumDefaultRules = soliditySettings.soliumRules;
+    solhintPackageDirectory = soliditySettings.solhintPackageDirectory;
     validationDelay = soliditySettings.validationDelay;
     nodeModulePackage = soliditySettings.nodemodulespackage;
     defaultCompiler = compilerType[soliditySettings.defaultCompiler];
@@ -331,7 +336,7 @@ function updateSoliditySettings(soliditySettings: SoliditySettings) {
 
     switch (linterName(soliditySettings)) {
         case 'solhint': {
-            linter = new SolhintService(rootPath, solhintDefaultRules);
+            linter = new SolhintService(rootPath, solhintDefaultRules, solhintPackageDirectory);
             break;
         }
         case 'solium': {
@@ -433,7 +438,7 @@ function startValidation() {
     }
 }
 
-documents.onDidChangeContent(event => {
+function onDidChangeContent(event: TextDocumentChangeEvent<TextDocument>) {
     const document = event.document;
     if (!validatingDocument && !validatingAllDocuments) {
         validatingDocument = true; // control the flag at a higher level
@@ -444,7 +449,11 @@ documents.onDidChangeContent(event => {
         validate(document); }), validationDelay);
         getCodeWalkerService().refreshDocument(document);
     }
-});
+}
+
+documents.onDidSave(onDidChangeContent);
+
+documents.onDidChangeContent(onDidChangeContent);
 
 connection.onDocumentSymbol((params) => {
     const document = documents.get(params.textDocument.uri);

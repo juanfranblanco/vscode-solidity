@@ -1,15 +1,18 @@
 import * as fs from 'fs';
+import * as path from 'path';
 
-import * as linter from 'solhint/lib/index';
+import * as linter_ from 'solhint';
 import { Diagnostic, Range, DiagnosticSeverity as Severity } from 'vscode-languageserver';
 
 import Linter from './linter';
 
 export default class SolhintService implements Linter {
     private config: ValidationConfig;
+    private linter: any;
 
-    constructor(rootPath: string, rules: any) {
+    constructor(rootPath: string, rules: any, packageDirectory: string) {
         this.config = new ValidationConfig(rootPath, rules);
+        this.linter = packageDirectory ? require(path.join(rootPath, packageDirectory)) : linter_;
     }
 
     public loadFileConfig(rootPath: string) {
@@ -21,8 +24,8 @@ export default class SolhintService implements Linter {
     }
 
     public validate(filePath: string, documentText: string): Diagnostic[] {
-        return linter
-            .processStr(documentText, this.config.build())
+        return this.linter
+            .processStr(documentText, this.config.build(), filePath)
             .messages
             .map(e => this.toDiagnostic(e));
     }
@@ -75,9 +78,15 @@ class ValidationConfig {
             extendsConfig = this.fileConfig.extends;
         }
 
+        let pluginsConfig = [];
+        if (this.fileConfig.plugins !== 'undefined' && this.fileConfig.plugins !== null) {
+            console.log(`pluginsConfig: ${this.fileConfig.plugins}`);
+            pluginsConfig = this.fileConfig.plugins;
+        }
+
         return {
             extends: extendsConfig,
-            // plugins: ["prettier"], // removed plugins as it crashes the extension until this is fully supported path etc loading in solhint
+            plugins: pluginsConfig,
             rules: Object.assign(
                 ValidationConfig.DEFAULT_RULES,
                 this.ideRules,
