@@ -27,10 +27,27 @@ export function getCurrentWorkspaceRootFsPath() {
 }
 
 export function getCurrentWorkspaceRootFolder() {
-    const editor = vscode.window.activeTextEditor;
-    const currentDocument = editor.document.fileName;
-    return vscode.workspace.getWorkspaceFolder(vscode.Uri.file(currentDocument));
 
+    //  Try active editor
+    const activeUri = vscode.window.activeTextEditor?.document?.uri;
+    if (activeUri) {
+        const folder = vscode.workspace.getWorkspaceFolder(activeUri);
+        if (folder) { return folder; }
+    }
+
+    // Try first visible editor
+    const visibleUri = vscode.window.visibleTextEditors[0]?.document?.uri;
+    if (visibleUri) {
+        const folder = vscode.workspace.getWorkspaceFolder(visibleUri);
+        if (folder) { return folder; }
+    }
+
+    // Try workspace folders
+    const folders = vscode.workspace.workspaceFolders;
+    if (folders && folders.length > 0) {
+        return folders[0];
+    }
+    return undefined;
 }
 
 export function getSolidityRemappings(): string[] {
