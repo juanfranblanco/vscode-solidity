@@ -46,9 +46,9 @@ export class SettingsService {
         return vscode.workspace.getConfiguration('solidity').get<boolean>('monoRepoSupport');
     }
 
-    public static getExplorerEtherscanBasedApiKey(server: string): string {
+    public static getExplorerEtherscanBasedApiKey(): string {
 
-        const key = EtherscanDomainChainMapper.getApiKeyMappings()[server];
+        const key = EtherscanDomainChainMapper.getApiKeyMappings()['ethereum'];
         return vscode.workspace.getConfiguration('solidity').get<string>(key);
     }
 

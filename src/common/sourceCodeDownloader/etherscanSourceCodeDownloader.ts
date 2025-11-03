@@ -8,36 +8,15 @@ import { SourceDocumentCollection } from '../model/sourceDocumentCollection';
 import { SettingsService } from '../../client/settingsService';
 
 export class EtherscanDomainChainMapper {
-   // public static apiKey = 'YourApiKey';
-    public static getMappings(): any {
-        return  {'ethereum' : 'api.etherscan.io',
-                 'optimism' : 'api-optimistic.etherscan.io',
-                 'binance': 'api.bscscan.com',
-                 'polygon': 'api.polygonscan.com'        };
-    }
-
     public static getApiKeyMappings(): any {
-        return  {'ethereum' : 'explorer_etherscan_apikey',
-                 'optimism' : 'explorer_etherscan_optimism_apikey',
-                 'binance': 'explorer_bscscan_apikey',
-                 'polygon': 'explorer_polygonscan_apikey'        };
-    }
-
-    public static getDomain(chain: string ) {
-        
-        return this.getMappings()[chain];
-    }
-
-    public static getChains(): string[] {
-        return Object.keys(this.getMappings());
+        return  {'ethereum' : 'explorer_etherscan_apikey'};
     }
 }
 
 
 export class EtherscanContractDownloader {
 
-
-    public static isValiAddressMessage(address: string): string | vscode.InputBoxValidationMessage | Thenable<string | vscode.InputBoxValidationMessage> {
+    public static isValidAddressMessage(address: string): string | vscode.InputBoxValidationMessage | Thenable<string | vscode.InputBoxValidationMessage> {
         const invalidAddress = <vscode.InputBoxValidationMessage>{ message: 'Invalid address', severity: vscode.InputBoxValidationSeverity.Error};
         if (address === null || address === undefined) {return invalidAddress; }
         address = address.toLowerCase();
@@ -48,6 +27,21 @@ export class EtherscanContractDownloader {
             return null;
         }
         return invalidAddress;
+    }
+
+    public static isNumber(value: string): boolean {
+        // accept non-negative integers only
+        return /^\d+$/.test(value);
+    }
+
+    public static validateChainId(value: string): string | vscode.InputBoxValidationMessage | undefined {
+        if (!value) {
+            return { message: 'Chain ID is required', severity: vscode.InputBoxValidationSeverity.Error };
+        }
+        if (!EtherscanContractDownloader.isNumber(value)) {
+            return { message: 'Chain ID must be a valid number and non-negative integer', severity: vscode.InputBoxValidationSeverity.Error };
+        }
+        return undefined;
     }
 
     public static hexLenth(hex: string): number {
@@ -75,13 +69,23 @@ export class EtherscanContractDownloader {
 
         if (vscode.window.activeTextEditor) {
         try {
-            const chains = EtherscanDomainChainMapper.getChains();
-            const selectedChain: string = await vscode.window.showQuickPick(chains);
+            const inputBoxChain: vscode.InputBoxOptions = {};
+            inputBoxChain.title = 'Please enter the chain ID:';
+            inputBoxChain.prompt = 'Please enter the chain ID';
+            inputBoxChain.ignoreFocusOut = true;
+            inputBoxChain.validateInput = this.validateChainId;
+
+            const selectedChain: string = await vscode.window.showInputBox(inputBoxChain);
+
+            if (selectedChain === undefined) { // cancelled
+                return;
+            }
+
             const inputBox: vscode.InputBoxOptions = {};
             inputBox.title = 'Please enter the contract address:';
             inputBox.prompt = 'Please enter the contract address';
             inputBox.ignoreFocusOut = true;
-            inputBox.validateInput = this.isValiAddressMessage;
+            inputBox.validateInput = this.isValidAddressMessage;
 
             let selectedAddress: string = await vscode.window.showInputBox(inputBox);
             if (selectedAddress !== undefined) { // cancelled
@@ -106,7 +110,7 @@ export class EtherscanContractDownloader {
 
     public static async downloadContract(chain: string, address: string,
                                          projectPath: string, subfolder = 'chainContracts'): Promise<string[]> {
-          const apiKey = SettingsService.getExplorerEtherscanBasedApiKey(chain);
+          const apiKey = SettingsService.getExplorerEtherscanBasedApiKey();
           const info = await EtherscanContractInfoService.getContractInfo(chain, address, apiKey);
           const downloadedFiles: string[] = [];
            if (info.result.length > 0) {
@@ -146,11 +150,9 @@ export class EtherscanContractDownloader {
      }
 }
 
-
 export class EtherscanContractInfoService {
     public static async getContractInfo(chain: string, address: string, apiKey = 'YourApiKeyToken'): Promise<EtherscanContractInfoResponse> {
-      const domain = EtherscanDomainChainMapper.getDomain(chain);
-       const url = `https://${domain}/api?module=contract&action=getsourcecode&address=${address}&apikey=${apiKey}`;
+       const url = `https://api.etherscan.io/v2/api?module=contract&chainid=${chain}&action=getsourcecode&address=${address}&apikey=${apiKey}`;
        const response = await axios.get(url);
        return response.data as EtherscanContractInfoResponse;
     }
