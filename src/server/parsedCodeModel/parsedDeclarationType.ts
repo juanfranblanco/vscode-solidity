@@ -35,37 +35,19 @@ export class ParsedDeclarationType extends ParsedCode {
         const literalType = element.literal;
         if (typeof literalType.type !== 'undefined')  {
              this.isMapping = literalType.type === 'MappingExpression';
-             this.name = 'mapping'; // 保持语义正确
              // Extract key and value types from mapping expression
              if (this.isMapping) {
+                 this.name = 'mapping';
                  this.mappingKeyType = this.getTypeString(literalType.from);
                  this.mappingValueType = this.getTypeString(literalType.to);
              }
-             // suffixType = '(' + this.getTypeString(literalType.from) + ' => ' + this.getTypeString(literalType.to) + ')';
         }
-    }
-
-    private getTypeString(literal: any): string {
-        if (typeof literal === 'string') {
-            return literal;
-        }
-
-        if (literal && typeof literal.literal !== 'undefined') {
-            return literal.literal;
-        }
-
-        if (literal && typeof literal.name !== 'undefined') {
-            return literal.name;
-        }
-
-        return 'unknown';
     }
 
     public override getInnerCompletionItems(): CompletionItem[] {
         const result: CompletionItem[] = [];
         this.getExtendedMethodCallsFromUsing().forEach(x => result.push(x.createCompletionItem()));
 
-        // 对于映射类型，返回值类型的自动补全项
         if (this.isMapping && this.mappingValueType !== null) {
             const valueType = this.findTypeInScope(this.mappingValueType);
             if (valueType !== null && valueType !== undefined) {
@@ -81,7 +63,7 @@ export class ParsedDeclarationType extends ParsedCode {
     }
 
     public override getInnerMembers(): ParsedCode[] {
-        // 对于映射类型，返回值类型的成员
+
         if (this.isMapping && this.mappingValueType !== null) {
             const valueType = this.findTypeInScope(this.mappingValueType);
             if (valueType !== null && valueType !== undefined) {
@@ -98,7 +80,6 @@ export class ParsedDeclarationType extends ParsedCode {
         let result: ParsedCode[] = [];
         result = result.concat(this.getExtendedMethodCallsFromUsing());
 
-        // 对于映射类型，返回值类型的方法调用
         if (this.isMapping && this.mappingValueType !== null) {
             const valueType = this.findTypeInScope(this.mappingValueType);
             if (valueType !== null && valueType !== undefined) {
@@ -146,15 +127,23 @@ export class ParsedDeclarationType extends ParsedCode {
 
     public findType(): ParsedCode {
         if (this.type === null) {
-        if (this.parentTypeName !== null) {
-            const parentType = this.findTypeInScope(this.parentTypeName);
-            if (parentType !== undefined) {
-                this.type = parentType.findTypeInScope(this.name);
+            if (this.parentTypeName !== null) {
+                const parentType = this.findTypeInScope(this.parentTypeName);
+                if (parentType !== undefined) {
+                    this.type = parentType.findTypeInScope(this.name);
+                }
+            } else {
+                this.type = this.findTypeInScope(this.name);
             }
-        } else {
-            this.type = this.findTypeInScope(this.name);
         }
+
+        if (this.isMapping && this.mappingValueType !== null) { 
+            const valueType = this.findTypeInScope(this.mappingValueType);
+            if (valueType !== null && valueType !== undefined) {
+                return valueType;
+            }
         }
+
         return this.type;
     }
 
@@ -199,6 +188,22 @@ export class ParsedDeclarationType extends ParsedCode {
             return returnString + type.getSimpleInfo();
         }
         return returnString + ' ' + this.name;
+    }
+
+    private getTypeString(literal: any): string {
+        if (typeof literal === 'string') {
+            return literal;
+        }
+
+        if (literal && typeof literal.literal !== 'undefined') {
+            return literal.literal;
+        }
+
+        if (literal && typeof literal.name !== 'undefined') {
+            return literal.name;
+        }
+
+        return 'unknown';
     }
 
 }

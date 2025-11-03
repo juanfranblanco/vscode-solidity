@@ -230,19 +230,17 @@ export class ParsedCode {
     }
 
     public getAllReferencesToThis(documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {
-        let results: FindTypeReferenceLocationResult[] = [];
+        const results: FindTypeReferenceLocationResult[] = [];
         results.push(this.createFoundReferenceLocationResult());
         let documentsToSearch: ParsedDocument[] = [];
-    
+
         documents.forEach(x => {
             documentsToSearch.push(...x.getDocumentsThatReference(this.document));
         });
         documentsToSearch = [...new Set(documentsToSearch)];
-    
         documentsToSearch.forEach(x => {
             results.push(...x.getAllReferencesToObject(this));
         });
-    
         return results;
     }
 
