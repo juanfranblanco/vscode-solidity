@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.185",
+  "version": "0.0.186",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -248,21 +248,6 @@
           "type": "string",
           "default": "YourApiKey",
           "description": "Api key for downloading ethereum smart contracts from etherscan.io"
-        },
-        "solidity.explorer_etherscan_optimism_apikey": {
-          "type": "string",
-          "default": "YourApiKey",
-          "description": "Api key for downloading optimism smart contracts from api-optimistic.etherscan.io"
-        },
-        "solidity.explorer_bscscan_apikey": {
-          "type": "string",
-          "default": "YourApiKey",
-          "description": "Api key for downloading Binance smart chain smart contracts from api.bscscan.com"
-        },
-        "solidity.explorer_polygonscan_apikey": {
-          "type": "string",
-          "default": "YourApiKey",
-          "description": "Api key for downloading polygon smart contracts from api.polygonscan.com"
         }
       }
     },
@@ -332,6 +317,10 @@
       {
         "command": "solidity.codegenNethereumCodeGenSettings",
         "title": "Solidity: Create 'nethereum-gen.settings' with default values at root"
+      },
+      {
+        "command": "solidity.generateNethereumMultiSettingsFile",
+        "title": "Solidity: Create 'nethereum-gen.multisettings' with default values at root"
       },
       {
         "command": "solidity.codegenCSharpProject",
@@ -459,6 +448,11 @@
         {
           "when": "editorLangId == 'solidity'",
           "command": "solidity.codegenNethereumCodeGenSettings",
+          "group": "3_solidity"
+        },
+        {
+          "when": "editorLangId == 'solidity'",
+          "command": "solidity.generateNethereumMultiSettingsFile",
           "group": "3_solidity"
         },
         {
