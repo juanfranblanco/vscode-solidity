@@ -142,7 +142,7 @@ export class CompletionService {
 
 export function GetCompletionTypes(): CompletionItem[] {
     const completionItems = [];
-    const types = ['address', 'string', 'bytes', 'byte', 'int', 'uint', 'bool', 'hash'];
+    const types = ['address', 'string', 'bytes', 'byte', 'int', 'uint', 'bool'];
     for (let index = 8; index <= 256; index += 8) {
         types.push('int' + index);
         types.push('uint' + index);
@@ -184,6 +184,7 @@ export function GetCompletionKeywords(): CompletionItem[] {
     completionItems.push(CreateCompletionItem('var', CompletionItemKind.Field, null));
     completionItems.push(CreateCompletionItem('constant', CompletionItemKind.Constant, null));
     completionItems.push(CreateCompletionItem('immutable', CompletionItemKind.Keyword, null));
+    completionItems.push(CreateCompletionItem('transient', CompletionItemKind.Keyword, null));
     completionItems.push(CreateCompletionItem('constructor', CompletionItemKind.Constructor, null));
     completionItems.push(CreateCompletionItem('event', CompletionItemKind.Event, null));
     completionItems.push(CreateCompletionItem('import', CompletionItemKind.Module, null));
