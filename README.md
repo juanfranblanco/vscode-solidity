@@ -1,6 +1,8 @@
 # Solidity support for Visual Studio code
 [![Version](https://vsmarketplacebadges.dev/version/juanblanco.solidity.png)](https://marketplace.visualstudio.com/items?itemName=juanblanco.solidity)  [![Downloads](https://vsmarketplacebadges.dev/downloads-short/juanblanco.solidity.png)](https://marketplace.visualstudio.com/items?itemName=juanblanco.solidity) [![Installs](https://vsmarketplacebadges.dev/installs-short/juanblanco.solidity.png)](https://marketplace.visualstudio.com/items?itemName=juanblanco.solidity) [![Rating](https://vsmarketplacebadges.dev/rating-short/juanblanco.solidity.png)](https://marketplace.visualstudio.com/items?itemName=juanblanco.solidity#review-details)
 
+NOTE: BE CAREFUL WITH EXTENSIONS IMPERSONATIONS, CHECK THE PUBLISHING HISTORY. VSCODE MARKETPLACE 10 YEARS OPENVSX 5 YEARS.
+
 [Solidity](https://soliditylang.org/) is the language used in Ethereum to create smart contracts, this extension provides: 
 
 * Syntax highlighting
@@ -259,7 +261,7 @@ The extension provides some code actions and quick fixes, like change compiler, 
 ![Screenshot](screenshots/solidity-corrections.gif)
 
 ## Download source code and ABI from Etherscan
-To download verified source code from Etherscan, you can right click on the folder area or in a soldity file. First select what chain the smart contract it(for example Ethereum) and then input the smart contract address. The source code will be saved in the root folder of your project. Please note that remappings will be generated for multiple files, so these might conflict with existing ones.
+To download verified source code from Etherscan, you can right click on the folder area or in a soldity file. First select the chain id the smart contract is (for example Ethereum: 1) and then input the smart contract address. The source code will be saved in the root folder of your project. Please note that remappings will be generated for multiple files, so these might conflict with existing ones.
 
 ![Screenshot](screenshots/solidity-etherscan-download.gif)
 
