@@ -10,7 +10,7 @@
     "nethereum",
     "solhint"
   ],
-  "version": "0.0.186",
+  "version": "0.0.187",
   "publisher": "JuanBlanco",
   "license": "MIT",
   "engines": {
@@ -65,7 +65,7 @@
     "solc": "^0.8.29",
     "solhint": "^6.0.1",
     "solium": "^1.2.5",
-    "solparse-exp-jb": "4.0.0",
+    "solparse-exp-jb": "4.1.0",
     "vscode-languageclient": "^8.1.0",
     "vscode-languageserver": "^8.1.0",
     "vscode-languageserver-textdocument": "^1.0.8",
@@ -259,7 +259,9 @@
           "solidity"
         ],
         "extensions": [
-          ".sol"
+          ".sol",
+          ".s.sol",
+          ".t.sol"
         ],
         "configuration": "./solidity.configuration.json"
       },
