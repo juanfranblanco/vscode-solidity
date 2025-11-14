@@ -48,7 +48,6 @@ interface SoliditySettings {
     nodemodulespackage: string;
     defaultCompiler: keyof compilerType;
     soliumRules: any;
-    solhintRules: any;
     solhintPackageDirectory: string;
     validationDelay: number;
     packageDefaultDependenciesDirectory: string|string[];
@@ -116,7 +115,6 @@ let compileUsingRemoteVersion = '';
 let compileUsingLocalVersion = '';
 let nodeModulePackage = '';
 let defaultCompiler = compilerType.embedded;
-let solhintDefaultRules = {};
 let soliumDefaultRules = {};
 let solhintPackageDirectory = '';
 let validationDelay = 1500;
@@ -302,7 +300,6 @@ function updateSoliditySettings(soliditySettings: SoliditySettings) {
     enabledAsYouTypeErrorCheck = soliditySettings.enabledAsYouTypeCompilationErrorCheck;
     compileUsingLocalVersion = soliditySettings.compileUsingLocalVersion;
     compileUsingRemoteVersion = soliditySettings.compileUsingRemoteVersion;
-    solhintDefaultRules = soliditySettings.solhintRules;
     soliumDefaultRules = soliditySettings.soliumRules;
     solhintPackageDirectory = soliditySettings.solhintPackageDirectory;
     validationDelay = soliditySettings.validationDelay;
@@ -336,7 +333,7 @@ function updateSoliditySettings(soliditySettings: SoliditySettings) {
 
     switch (linterName(soliditySettings)) {
         case 'solhint': {
-            linter = new SolhintService(rootPath, solhintDefaultRules, solhintPackageDirectory);
+            linter = new SolhintService(rootPath, solhintPackageDirectory);
             break;
         }
         case 'solium': {
@@ -602,7 +599,7 @@ function linterRules(settings: SoliditySettings) {
     if (_linterName === 'solium') {
         return settings.soliumRules;
     } else {
-        return settings.solhintRules;
+        return null;
     }
 }
 

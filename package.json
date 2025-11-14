@@ -151,13 +151,6 @@
           "default": "solhint",
           "description": "Enables linting using either solium (ethlint) or solhint. Possible options 'solhint' and 'solium', the default is solhint"
         },
-        "solidity.solhintRules": {
-          "type": [
-            "object"
-          ],
-          "default": null,
-          "description": "Solhint linting validation rules"
-        },
         "solidity.solhintPackageDirectory": {
           "type": "string",
           "default": "",
