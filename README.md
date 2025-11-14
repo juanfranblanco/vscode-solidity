@@ -276,22 +276,14 @@ There are two linters included with the extension, solhint and solium / ethlint.
 
 ### Solhint
 
-To lint Solidity code you can use the Solhint linter https://github.com/protofire/solhint, the linter can be configured it using the following user settings:
+To lint Solidity code you can use the Solhint linter https://github.com/protofire/solhint, the linter is configured using `.solhint.json` files.
 
-```json
-"solidity.linter": "solhint",
-"solidity.solhintRules": {
-  "avoid-sha3": "warn"
-}
-```
-
-This extension supports `.solhint.json` configuration file. It must be placed to project root 
-directory. After any changes in `.solhint.json` it will be synchronized with current IDE 
-configuration. 
+This extension supports `.solhint.json` configuration files placed **anywhere in the project** (not only the root).  
+Solhint automatically merges configurations following the [official configuration scheme](https://github.com/protofire/solhint?tab=readme-ov-file#configuration), with support for [multiple config files](https://github.com/protofire/solhint?tab=readme-ov-file#multiple-configs).
 
 This is the default linter now.
 
-NOTE: Solhint plugins are not supported yet.
+NOTE: Solhint plugins are not supported yet. NOTE: The `solidity.solhintRules` setting is no longer supported.
 
 ### Solium / Ethlint
 

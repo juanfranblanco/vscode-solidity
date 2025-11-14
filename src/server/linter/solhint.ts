@@ -7,27 +7,27 @@ import { Diagnostic, Range, DiagnosticSeverity as Severity } from 'vscode-langua
 import Linter from './linter';
 
 export default class SolhintService implements Linter {
-    private config: ValidationConfig;
+    private rootPath: string;
     private linter: any;
 
-    constructor(rootPath: string, rules: any, packageDirectory: string) {
-        this.config = new ValidationConfig(rootPath, rules);
+    constructor(rootPath: string, packageDirectory: string) {
+        this.rootPath = rootPath;
         this.linter = packageDirectory ? require(path.join(rootPath, packageDirectory)) : linter_;
     }
 
     public loadFileConfig(rootPath: string) {
-        this.config.loadFileConfig(rootPath);
+      // No-op: configuration is handled by solhint processFile
     }
 
     public setIdeRules(rules: any) {
-        this.config.setIdeRules(rules);
+      // No-op: IDE rules are not supported anymore
     }
 
     public validate(filePath: string, documentText: string): Diagnostic[] {
-        return this.linter
-            .processStr(documentText, this.config.build(), filePath)
-            .messages
-            .map(e => this.toDiagnostic(e));
+        const result = this.rootPath
+          ? this.linter.processFile(filePath, undefined, this.rootPath)
+          : this.linter.processFile(filePath);
+        return (result.messages || []).map((e) => this.toDiagnostic(e));
     }
 
     private toDiagnostic(error) {
@@ -52,72 +52,4 @@ export default class SolhintService implements Linter {
             end: { line, character: character + 1 },
         };
     }
-}
-
-
-class ValidationConfig {
-    public static readonly DEFAULT_RULES = {'func-visibility': false};
-    public static readonly EMPTY_CONFIG = {rules: {}};
-
-    private ideRules: any;
-    private fileConfig: any;
-    private currentWatchFile: string;
-
-    constructor(rootPath: string, ideRules: any) {
-        this.setIdeRules(ideRules);
-        this.loadFileConfig(rootPath);
-    }
-
-    public setIdeRules(rules: any) {
-        this.ideRules = rules || {};
-    }
-
-    public build() {
-        let extendsConfig = ['solhint:recommended'];
-        if (this.fileConfig.extends !== 'undefined' && this.fileConfig.extends !== null) {
-            extendsConfig = this.fileConfig.extends;
-        }
-
-        let pluginsConfig = [];
-        if (this.fileConfig.plugins !== 'undefined' && this.fileConfig.plugins !== null) {
-            console.log(`pluginsConfig: ${this.fileConfig.plugins}`);
-            pluginsConfig = this.fileConfig.plugins;
-        }
-
-        return {
-            extends: extendsConfig,
-            plugins: pluginsConfig,
-            rules: Object.assign(
-                ValidationConfig.DEFAULT_RULES,
-                this.ideRules,
-                this.fileConfig.rules,
-            ),
-        };
-    }
-
-    public isRootPathSet(rootPath: string): boolean {
-        return typeof rootPath !== 'undefined' && rootPath !== null;
-    }
-
-    public loadFileConfig(rootPath: string) {
-
-        if (this.isRootPathSet(rootPath)) {
-            const filePath = `${rootPath}/.solhint.json`;
-            const readConfig = this.readFileConfig.bind(this, filePath);
-
-            readConfig();
-            this.currentWatchFile = filePath;
-            // fs.watchFile(filePath, {persistent: false}, readConfig);
-        } else {
-            this.fileConfig = ValidationConfig.EMPTY_CONFIG;
-        }
-    }
-
-    private readFileConfig(filePath: string) {
-        this.fileConfig = ValidationConfig.EMPTY_CONFIG;
-        if (fs.existsSync(filePath)) {
-            this.fileConfig = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-        }
-    }
-
 }
