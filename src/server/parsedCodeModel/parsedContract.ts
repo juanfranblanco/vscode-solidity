@@ -126,9 +126,12 @@ export class ParsedContract extends ParsedCode implements IParsedExpressionConta
             contractRange,
         );
 
-        // Add child symbols
+        // Add child symbols (including constructor, fallback, and receive functions)
         contractSymbol.children = [
+            ...(this.constructorFunction ? [this.constructorFunction.toDocumentSymbol()] : []),
             ...this.getFunctionSymbols(),
+            ...(this.fallbackFunction ? [this.fallbackFunction.toDocumentSymbol()] : []),
+            ...(this.receiveFunction ? [this.receiveFunction.toDocumentSymbol()] : []),
             ...this.getStateVariableSymbols(),
             ...this.getEnumSymbols(),
             ...this.getEventSymbols(),
