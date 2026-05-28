@@ -842,6 +842,9 @@
                         },
                         {
                             "include": "#punctuation"
+                        },
+                        {
+                            "include": "#comment"
                         }
                     ]
                 },
