@@ -40,6 +40,60 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
     return results;
   }
 
+  /**
+   * Also returns the references of the same function declared in base contracts / interfaces
+   * and in inheriting contracts, so that calls made through an interface (IFoo(x).bar())
+   * are found when looking for references of the implementation (Foo.bar) and vice versa.
+   */
+  public override getAllReferencesToThis(documents: ParsedDocument[]): FindTypeReferenceLocationResult[] {
+    let results = super.getAllReferencesToThis(documents);
+    this.getRelatedFunctions(documents).forEach(relatedFunction => {
+      results = results.concat(ParsedCode.prototype.getAllReferencesToThis.call(relatedFunction, documents));
+    });
+    const seen = new Set<string>();
+    return results.filter(result => {
+      if (result === null || result === undefined || result.location === null || result.location === undefined) { return true; }
+      const range = result.location.range;
+      const key = `${result.location.uri}:${range.start.line}:${range.start.character}:${range.end.line}:${range.end.character}`;
+      if (seen.has(key)) { return false; }
+      seen.add(key);
+      return true;
+    });
+  }
+
+  /**
+   * Functions with the same signature declared in the ancestors of this function's contract
+   * (interfaces, abstract contracts) or in the contracts inheriting from it (and their ancestors).
+   */
+  public getRelatedFunctions(documents: ParsedDocument[]): ParsedFunction[] {
+    const related: ParsedFunction[] = [];
+    if (this.contract === null || this.contract === undefined || !this.name) { return related; }
+    const addMatching = (contract: ParsedContract) => {
+      contract.functions.forEach(candidate => {
+        if (this.hasSameSignature(candidate) && !this.isTheSame(candidate) && !related.some(x => x.isTheSame(candidate))) {
+          related.push(candidate);
+        }
+      });
+    };
+    getAncestorContracts(this.contract).forEach(addMatching);
+    getAllContracts(documents).forEach(contract => {
+      const ancestors = getAncestorContracts(contract);
+      if (ancestors.some(x => isSameContract(x, this.contract))) {
+        addMatching(contract);
+        ancestors.forEach(addMatching);
+      }
+    });
+    return related;
+  }
+
+  public hasSameSignature(other: ParsedFunction): boolean {
+    if (other === null || other === undefined || other === this || other.name !== this.name || other.input.length !== this.input.length) {
+      return false;
+    }
+    return this.input.every((param, index) => getParameterTypeKey(param) === getParameterTypeKey(other.input[index]));
+  }
+
+
   public override getSelectedItem(offset: number): ParsedCode {
     let selectedItem: ParsedCode = null;
     if (this.isCurrentElementedSelected(offset)) {
@@ -437,4 +491,42 @@ export class ParsedFunction extends ParsedCode implements IParsedExpressionConta
   }
 
 
+}
+
+const ELEMENTARY_TYPE = /^(address|bool|string|byte|bytes\d*|u?int\d*|u?fixed[\dx]*)$/;
+
+/**
+ * Key used to compare parameter types between declarations. User defined types (structs, enums, contracts)
+ * can be written qualified (IFoo.Kind) or not (Kind) depending on the declaring contract, so they all
+ * share the same key.
+ */
+function getParameterTypeKey(param: ParsedParameter): string {
+  const type = param !== null && param !== undefined ? param.type : null;
+  if (type === null || type === undefined || !type.name) { return '*'; }
+  const name = type.name === 'address_payable' ? 'address' : type.name;
+  return (ELEMENTARY_TYPE.test(name) ? name : '*') + (type.isArray ? '[]' : '');
+}
+
+function isSameContract(a: ParsedContract, b: ParsedContract): boolean {
+  if (a === b) { return true; }
+  if (a === null || a === undefined || b === null || b === undefined) { return false; }
+  return a.name === b.name && a.document.sourceDocument.absolutePath === b.document.sourceDocument.absolutePath;
+}
+
+function getAncestorContracts(contract: ParsedContract, found: ParsedContract[] = []): ParsedContract[] {
+  contract.getExtendContracts().forEach(base => {
+    if (base !== null && base !== undefined && !found.some(x => isSameContract(x, base))) {
+      found.push(base);
+      getAncestorContracts(base, found);
+    }
+  });
+  return found;
+}
+
+function getAllContracts(documents: ParsedDocument[]): ParsedContract[] {
+  const contracts: ParsedContract[] = [];
+  documents.forEach(document => document.innerContracts.forEach(contract => {
+    if (!contracts.some(x => isSameContract(x, contract))) { contracts.push(contract); }
+  }));
+  return contracts;
 }
