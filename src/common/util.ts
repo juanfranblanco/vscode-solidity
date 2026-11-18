@@ -41,7 +41,11 @@ export function findDirUpwardsToCurrentDocumentThatContainsAtLeastFileNameSync(f
             return currentDir;
           }
 
-          currentDir = path.dirname(currentDir);
+          const parentDir = path.dirname(currentDir);
+          if (parentDir === currentDir) {
+            break;
+          }
+          currentDir = parentDir;
         }
 
         return null;
